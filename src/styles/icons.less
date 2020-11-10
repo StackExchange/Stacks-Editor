@@ -1,0 +1,108 @@
+//TODO: get rid of this when Stacks-Icons version is live
+
+// set the parameter of the icon itself
+// size is important here since we're setting our image to "contain"
+.icon-bg {
+    display: inline-block;
+    vertical-align: bottom; // This is the same alignment as .svg-icon
+    border: none;
+    height: 18px;
+    width: 18px;
+    padding: 0;
+}
+
+// use ::after so we can theme our icons without affecting the mask
+// useful for e.g. setting the background-color for buttons, etc
+.icon-bg::after {
+    content: "";
+    height: 100%;
+    width: 100%;
+    display: inline-block;
+    background-color: currentColor;
+    -webkit-mask: var(--bg-icon) no-repeat center;
+    mask: var(--bg-icon) no-repeat center;
+    -webkit-mask-size: contain;
+    mask-size: contain;
+}
+
+.icon-bg.iconBold {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Bold.svg");
+}
+
+.icon-bg.iconHeader {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Header.svg");
+}
+
+.icon-bg.iconItalic {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Italic.svg");
+}
+
+.icon-bg.iconCode {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Code.svg");
+}
+
+.icon-bg.iconStrikethrough {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Strikethrough.svg");
+}
+
+.icon-bg.iconLink {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Link.svg");
+}
+
+.icon-bg.iconQuote {
+    width: 17px;
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Quote.svg");
+}
+.icon-bg.iconCodeblock {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Codeblock.svg");
+}
+.icon-bg.iconImage {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Image.svg");
+}
+
+.icon-bg.iconTable {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Table.svg");
+}
+.icon-bg.iconOrderedList {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/OrderedList.svg");
+}
+.icon-bg.iconUnorderedList {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/UnorderedList.svg");
+}
+
+.icon-bg.iconHorizontalRule {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/HorizontalRule.svg");
+}
+.icon-bg.iconUndo {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Undo.svg");
+}
+.icon-bg.iconRefresh {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Refresh.svg");
+}
+.icon-bg.iconHelp {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Help.svg");
+}
+
+.icon-bg.iconPlay {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Play.svg");
+}
+
+.icon-bg.iconShare {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Share.svg");
+}
+
+.icon-bg.iconPencilSm {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/PencilSm.svg");
+    height: 14px;
+    width: 14px;
+}
+.icon-bg.iconTrashSm {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/TrashSm.svg");
+    height: 14px;
+    width: 14px;
+}
+
+.icon-bg.iconMarkdown {
+    width: 21px;
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Markdown.svg");
+}
