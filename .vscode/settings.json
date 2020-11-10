@@ -1,0 +1,13 @@
+{
+    "files.exclude": {
+        ".vscode": true,
+        "dist": true,
+        "node_modules": true
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "eslint.lintTask.enable": true,
+    "eslint.run": "onSave",
+    "telemetry.enableTelemetry": false,
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true
+}

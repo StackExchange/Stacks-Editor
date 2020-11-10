@@ -1,0 +1,5 @@
+node_modules
+dist
+scripts/*
+# ignore config files in the root directory only
+/*.js

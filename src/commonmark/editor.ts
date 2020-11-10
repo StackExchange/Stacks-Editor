@@ -1,0 +1,103 @@
+import { baseKeymap } from "prosemirror-commands";
+import { history } from "prosemirror-history";
+import { keymap } from "prosemirror-keymap";
+import { Node as ProseMirrorNode } from "prosemirror-model";
+import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
+import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
+import { log } from "../shared/logger";
+import {
+    commonmarkImageUpload,
+    defaultImageUploadHandler,
+} from "../shared/prosemirror-plugins/image-upload";
+import {
+    editableCheck,
+    readonlyPlugin,
+} from "../shared/prosemirror-plugins/readonly";
+import { CodeStringParser, commonmarkSchema } from "../shared/schema";
+import { deepMerge } from "../shared/utils";
+import { CommonViewOptions, defaultParserFeatures, View } from "../shared/view";
+import { createMenu } from "./commands";
+import { commonmarkKeymap } from "./key-bindings";
+
+export type CommonmarkOptions = CommonViewOptions;
+
+export class CommonmarkEditor implements View {
+    public editorView: EditorView;
+    private options: CommonmarkOptions;
+
+    constructor(
+        target: Node,
+        content: string,
+        options: CommonmarkOptions = {}
+    ) {
+        this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
+
+        this.editorView = new EditorView(
+            (node: HTMLElement) => {
+                node.classList.add(...this.options.classList);
+                target.appendChild(node);
+            },
+            {
+                editable: editableCheck,
+                state: EditorState.create({
+                    doc: CodeStringParser.fromSchema(
+                        commonmarkSchema
+                    ).parseCode(content),
+                    plugins: [
+                        history(),
+                        commonmarkKeymap,
+                        keymap(baseKeymap),
+                        createMenu(this.options),
+                        CodeBlockHighlightPlugin(null),
+                        commonmarkImageUpload(
+                            this.options.imageUpload,
+                            this.options.pluginParentContainer
+                        ),
+                        readonlyPlugin(),
+                    ],
+                }),
+            }
+        );
+
+        log(
+            "prosemirror commonmark document",
+            this.editorView.state.doc.toJSON()
+        );
+    }
+
+    get content(): string {
+        return CodeStringParser.toString(this.editorView.state.doc);
+    }
+
+    get document(): ProseMirrorNode {
+        return this.editorView.state.doc;
+    }
+
+    get dom(): Element {
+        return this.editorView.dom;
+    }
+
+    get readonly(): boolean {
+        return !this.editorView.editable;
+    }
+
+    static get defaultOptions(): CommonmarkOptions {
+        return {
+            // set to null to disable by default
+            editorHelpLink: null,
+            menuParentContainer: null,
+            parserFeatures: defaultParserFeatures,
+            imageUpload: {
+                handler: defaultImageUploadHandler,
+            },
+        };
+    }
+
+    focus(): void {
+        this.editorView?.focus();
+    }
+    destroy(): void {
+        this.editorView?.destroy();
+    }
+}
