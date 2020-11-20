@@ -226,6 +226,23 @@
         visibility: visible;
     }
 
+    // Our editor often wraps things in their own divs. These wrappers should have the proper spacing below them
+    &.s-prose div {
+        margin-bottom: var(--s-prose-spacing);
+
+        &:last-child,
+        &:only-child {
+            margin-bottom: 0;
+        }
+    }
+
+    &.s-prose ol,
+    &.s-prose ul {
+        div {
+            margin-bottom: var(--s-prose-spacing-condensed);
+        }
+    }
+
     // ensure proper line breaks in markdown-mode where everything is one big code block
     pre,
     code {
