@@ -276,8 +276,8 @@ export class ImageUploader implements PluginView {
         validationElement.innerHTML = "";
     }
 
-    showImagePreview(file: File): Promise<string> {
-        const promise = new Promise<string>((resolve, reject) =>
+    showImagePreview(file: File): Promise<void> {
+        const promise = new Promise<void>((resolve, reject) =>
             this.showImagePreviewAsync(file, resolve, reject)
         );
 
