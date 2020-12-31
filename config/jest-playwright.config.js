@@ -16,4 +16,5 @@ module.exports = {
     //     headless: false,
     //     slowMo: 200,
     // },
+    rootDir: "../",
 };

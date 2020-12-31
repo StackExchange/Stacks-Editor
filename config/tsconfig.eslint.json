@@ -1,5 +1,5 @@
 {
-    "extends": "./tsconfig.json",
+    "extends": "../tsconfig.json",
     // lint *all* ts files in the project, not just the ones we want to compile
     "include": [
         "src/**/*.ts",

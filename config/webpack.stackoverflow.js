@@ -2,7 +2,7 @@ const { merge } = require("webpack-merge");
 const common = require("./webpack.common.js");
 const childProcess = require("child_process");
 const webpack = require("webpack");
-const package = require("./package.json");
+const package = require("../package.json");
 const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = merge(common, {

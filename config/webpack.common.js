@@ -28,7 +28,14 @@ module.exports = {
                 use: [
                     MiniCssExtractPlugin.loader,
                     { loader: "css-loader", options: { importLoaders: 2 } },
-                    "postcss-loader",
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                config: "./config/postcss.config.js",
+                            },
+                        },
+                    },
                     "less-loader",
                 ],
             },
@@ -39,7 +46,7 @@ module.exports = {
     },
     output: {
         filename: "[name].bundle.js",
-        path: path.resolve(__dirname, "dist"),
+        path: path.resolve(__dirname, "../dist"),
         library: "stacksEditor",
         libraryTarget: "umd",
     },
