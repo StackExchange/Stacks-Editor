@@ -1,4 +1,3 @@
-import { stacksEditorAsync } from "../src/browser";
 import "./site.less";
 import type { StacksEditor } from "../src";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
@@ -82,30 +81,34 @@ domReady(() => {
     }
 
     // asynchronously load the required bundles
-    void stacksEditorAsync(place, content.value, {
-        defaultView: getDefaultEditor(),
-        editorHelpLink: "#TODO",
-        commonmarkOptions: {},
-        parserFeatures: {
-            tables: enableTables,
-            tagLinks: {
-                allowNonAscii: false,
-                allowMetaTags: true,
-                renderer: (tagName, isMetaTag) => {
-                    return {
-                        link: "#" + tagName,
-                        linkTitle: "Show questions tagged '" + tagName + "'",
-                        additionalClasses: isMetaTag ? ["s-tag__muted"] : [],
-                    };
+    void import("../src/index").then(function ({ StacksEditor }) {
+        const editorInstance = new StacksEditor(place, content.value, {
+            defaultView: getDefaultEditor(),
+            editorHelpLink: "#TODO",
+            commonmarkOptions: {},
+            parserFeatures: {
+                tables: enableTables,
+                tagLinks: {
+                    allowNonAscii: false,
+                    allowMetaTags: true,
+                    renderer: (tagName, isMetaTag) => {
+                        return {
+                            link: "#" + tagName,
+                            linkTitle:
+                                "Show questions tagged '" + tagName + "'",
+                            additionalClasses: isMetaTag
+                                ? ["s-tag__muted"]
+                                : [],
+                        };
+                    },
                 },
             },
-        },
-        richTextOptions: {
-            linkPreviewProviders: [ExampleLinkPreviewProvider],
-        },
-        imageUpload: imageUploadOptions,
-        externalPlugins: [StackSnippetsPlugin],
-    }).then((editorInstance) => {
+            richTextOptions: {
+                linkPreviewProviders: [ExampleLinkPreviewProvider],
+            },
+            imageUpload: imageUploadOptions,
+            externalPlugins: [StackSnippetsPlugin],
+        });
         // set the instance on the window for developers to poke around in
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
         (window as any)["editorInstance"] = editorInstance;

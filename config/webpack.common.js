@@ -5,9 +5,6 @@ const svgToMiniDataURI = require("mini-svg-data-uri");
 
 module.exports = {
     mode: "production",
-    entry: {
-        app: "./src/browser.ts",
-    },
     module: {
         rules: [
             {
