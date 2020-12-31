@@ -17,14 +17,9 @@ module.exports = {
             },
             {
                 test: /\.svg$/i,
-                use: {
-                    loader: "url-loader",
-                    options: {
-                        // always inline the images, don't copy to output
-                        limit: Infinity,
-                        generator: (content) =>
-                            svgToMiniDataURI(content.toString()),
-                    },
+                type: "asset/inline",
+                generator: {
+                    dataUrl: (content) => svgToMiniDataURI(content.toString()),
                 },
                 issuer: /\.less$/i,
             },
