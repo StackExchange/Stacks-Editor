@@ -10,6 +10,9 @@
     "main": "dist/app.bundle.js",
     "module": "src/index.js",
     "types": "dist/src/index.d.ts",
+    "files": [
+        "dist/"
+    ],
     "scripts": {
         "test": "jest --testPathIgnorePatterns=test/e2e --config config/jest-unit.config.js",
         "test:e2e": "jest e2e.test.ts --config config/jest-playwright.config.js --runInBand",
@@ -21,7 +24,8 @@
         "print-stats:stackoverflow": "webpack --config config/webpack.stackoverflow.js --profile --json > stats.json",
         "eslint": "eslint .",
         "eslint:fix": "npm run eslint -- --fix",
-        "generate-types": "tsc --project tsconfig.json --module amd --outFile ./dist/Stacks-Editor.d.ts --emitDeclarationOnly"
+        "generate-types": "tsc --project tsconfig.json --module amd --outFile ./dist/Stacks-Editor.d.ts --emitDeclarationOnly",
+        "prepublishOnly": "npm run build"
     },
     "keywords": [],
     "author": "Stack Exchange Inc",
