@@ -1,29 +1,12 @@
 const { merge } = require("webpack-merge");
-const common = require("./webpack.common.js");
+const prod = require("./webpack.prod.js");
 const childProcess = require("child_process");
 const webpack = require("webpack");
 const package = require("../package.json");
 const TerserPlugin = require("terser-webpack-plugin");
 
-module.exports = merge(common, {
-    entry: {
-        app: "./src/index.ts",
-        // NOTE we also get a `styles.bundle.js`, ignore this
-        styles: "./src/styles/index.less",
-    },
-    mode: "production",
-    // don't bundle highlight.js or its languages since it is already on the site
-    externals: function (_, request, callback) {
-        if (/^highlight.js/.test(request)) {
-            return callback(null, {
-                commonjs: request,
-                commonjs2: request,
-                root: "hljs",
-            });
-        }
-
-        callback();
-    },
+// extend the base "prod" config, with some extras for deploying to the Stack Exchange network
+module.exports = merge(prod, {
     optimization: {
         // customize the minimizer settings so that it minimizes it *just* enough for the diff
         // to show in the GitHub ui, but not so much that the bundle isn't somewhat human readable
