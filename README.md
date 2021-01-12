@@ -4,7 +4,7 @@
 
 ### Installation
 
-This package is not yet on npm. Installation is a manual only process for now.
+`npm install @stackoverflow/stacks-editor`
 
 ### Import via Modules or CommonJS
 
