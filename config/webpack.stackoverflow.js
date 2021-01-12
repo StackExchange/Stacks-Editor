@@ -8,13 +8,16 @@ const TerserPlugin = require("terser-webpack-plugin");
 // extend the base "prod" config, with some extras for deploying to the Stack Exchange network
 module.exports = (env, argv) =>
     merge(prod(env, argv), {
+        target: ["web", "es5"],
         optimization: {
+            minimize: false,
             // customize the minimizer settings so that it minimizes it *just* enough for the diff
             // to show in the GitHub ui, but not so much that the bundle isn't somewhat human readable
             minimizer: [
                 new TerserPlugin({
                     extractComments: false,
                     terserOptions: {
+                        ecma: 5,
                         compress: true,
                         mangle: false,
                         output: {
