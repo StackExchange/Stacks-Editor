@@ -2,12 +2,10 @@ const { merge } = require("webpack-merge");
 const common = require("./webpack.common.js");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 
-// set to `true` if you'd like an idea of how the bundle looks minified / gzipped
-// set to `false` by default, don't check this change in!
-const emulateProdServer = false;
-
-module.exports = (env, argv) =>
-    merge(common(env, argv), {
+module.exports = (env, argv) => {
+    // add --mode=production to flip this into a pseudo-production server
+    const emulateProdServer = argv.mode === "production";
+    return merge(common(env, argv), {
         entry: {
             app: "./site/index.ts",
         },
@@ -56,3 +54,4 @@ module.exports = (env, argv) =>
             },
         },
     });
+};
