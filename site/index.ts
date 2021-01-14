@@ -1,7 +1,8 @@
-import "./site.less";
 import type { StacksEditor } from "../src";
-import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
+import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
+import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
+import "./site.less";
 
 function domReady(callback: (e: Event) => void) {
     if (document.readyState === "loading") {
@@ -19,26 +20,61 @@ function setDefaultEditor(value: number) {
     localStorage.setItem("defaultEditor", value.toString());
 }
 
+function setTimeoutAsync(delay: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), Math.max(delay, 2000));
+    });
+}
+
 /**
  * Sample preview provider attached to `example.com` domain that simulates
- * a fetch by waiting one second from time of request to time of render
+ * a fetch by waiting five seconds from time of request to time of render
  */
 export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
     domainTest: /^https?:\/\/(www\.)?(example\.com)|(example\.org)/i,
     renderer: (url: string) => {
-        return fetch("/posts/link-previews?url=" + encodeURIComponent(url))
-            .then((r) => r.json())
-            .then((r: { data: string }) => {
-                if (!r.data) {
-                    return null;
-                }
+        let returnValue: string = null;
 
-                const el = document.createElement("div");
-                el.innerHTML = r.data;
-                return el;
-            });
+        // only render example.com urls, no matter what's registered downstream
+        if (url.includes("example.com")) {
+            const date = new Date().toString();
+            returnValue = `
+            <div class="s-link-preview js-onebox">
+                <div class="s-link-preview--header">
+                    <div>
+                        <a href="${url}" target="_blank" class="s-link-preview--title">Example link preview</a>
+                        <div class="s-link-preview--details">Not really a real link preview, but it acts like one!</div>
+                    </div>
+                </div>
+                <div class="s-link-preview--body">
+                    <strong>This is a link preview, yo.</strong><br><br>We can run arbitrary JS in here, so here's the current date:<br><em>${date}</em>
+                </div>
+            </div>`;
+        }
+
+        return setTimeoutAsync(5000).then(() => {
+            const el = document.createElement("div");
+            el.innerHTML = returnValue;
+            return el;
+        });
     },
 };
+
+/**
+ * Sample image handler that processes the uploaded image and returns a data url
+ * rather than sending it to an external service
+ */
+const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
+    setTimeoutAsync(2000).then(() => {
+        return new Promise(function (resolve) {
+            // read the image in and translate it to a data url to use in the <img> tag
+            const reader = new FileReader();
+            reader.readAsDataURL(file);
+            reader.addEventListener("load", () =>
+                resolve(reader.result as string)
+            );
+        });
+    });
 
 domReady(() => {
     document
@@ -68,7 +104,8 @@ domReady(() => {
     const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
 
-    const imageUploadOptions: { [key: string]: unknown } = {
+    const imageUploadOptions: ImageUploadOptions = {
+        handler: ImageUploadHandler,
         brandingHtml: "Powered by... <strong>Nothing!</strong>",
         contentPolicyHtml:
             "These images are uploaded nowhere, so no content policy applies",
