@@ -132,7 +132,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         let escapedText = state.esc(node.text, startOfLine);
 
         // built in escape doesn't get all the cases TODO upstream!
-        escapedText = escapedText.replace(/_/g, "\\_");
+        escapedText = escapedText.replace(/\b_|_\b/g, "\\_");
 
         state.text(escapedText, false);
     },

@@ -6,7 +6,6 @@
         "type": "git",
         "url": "https://github.com/StackExchange/Stacks-Editor.git"
     },
-    "private": true,
     "main": "./dist/app.bundle.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
@@ -20,6 +19,7 @@
         "build": "webpack --config config/webpack.prod.js",
         "build:dev": "webpack --config config/webpack.dev.js",
         "build:stackoverflow": "webpack --config config/webpack.stackoverflow.js",
+        "build:gh-pages": "webpack --config config/webpack.dev.js --mode=production --",
         "print-stats": "webpack --config config/webpack.prod.js --profile --json > stats.json",
         "print-stats:stackoverflow": "webpack --config config/webpack.stackoverflow.js --profile --json > stats.json",
         "eslint": "eslint .",
