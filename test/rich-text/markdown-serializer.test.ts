@@ -205,8 +205,9 @@ describe("markdown-serializer", () => {
     );
 
     const escapeData = [
-        String.raw`¯\\\_(ツ)_/¯`,
+        String.raw`¯\\\_(ツ)\_/¯`,
         String.raw`\_not-underlined\_`,
+        String.raw`_intra_text_underlines_also_underlined_`,
         String.raw`http://www.example.com/dont_escape_urls`,
     ];
 
