@@ -24,7 +24,6 @@ module.exports = (env, argv) =>
             ],
         },
         optimization: {
-            minimize: false,
             // customize the minimizer settings so that it minimizes it *just* enough for the diff
             // to show in the GitHub ui, but not so much that the bundle isn't somewhat human readable
             minimizer: [
