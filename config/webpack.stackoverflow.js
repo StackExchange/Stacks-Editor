@@ -9,6 +9,20 @@ const TerserPlugin = require("terser-webpack-plugin");
 module.exports = (env, argv) =>
     merge(prod(env, argv), {
         target: ["web", "es5"],
+        module: {
+            rules: [
+                // transpile our js dependencies to es5
+                {
+                    test: /\.js$/,
+                    use: {
+                        loader: "babel-loader",
+                        options: {
+                            presets: ["@babel/preset-env"],
+                        },
+                    },
+                },
+            ],
+        },
         optimization: {
             minimize: false,
             // customize the minimizer settings so that it minimizes it *just* enough for the diff
