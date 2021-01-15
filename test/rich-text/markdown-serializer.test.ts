@@ -204,7 +204,11 @@ describe("markdown-serializer", () => {
         }
     );
 
-    const escapeData = [String.raw`¯\\\_(ツ)_/¯`];
+    const escapeData = [
+        String.raw`¯\\\_(ツ)_/¯`,
+        String.raw`\_not-underlined\_`,
+        String.raw`http://www.example.com/dont_escape_urls`,
+    ];
 
     it.each(escapeData)(
         "should escape plain-text containing markdown characters",
