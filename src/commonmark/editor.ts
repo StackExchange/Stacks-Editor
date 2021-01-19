@@ -16,14 +16,17 @@ import {
 } from "../shared/prosemirror-plugins/readonly";
 import { CodeStringParser, commonmarkSchema } from "../shared/schema";
 import { deepMerge } from "../shared/utils";
-import { CommonViewOptions, defaultParserFeatures, View } from "../shared/view";
+import {
+    BaseView,
+    CommonViewOptions,
+    defaultParserFeatures,
+} from "../shared/view";
 import { createMenu } from "./commands";
 import { commonmarkKeymap } from "./key-bindings";
 
 export type CommonmarkOptions = CommonViewOptions;
 
-export class CommonmarkEditor implements View {
-    public editorView: EditorView;
+export class CommonmarkEditor extends BaseView {
     private options: CommonmarkOptions;
 
     constructor(
@@ -31,6 +34,7 @@ export class CommonmarkEditor implements View {
         content: string,
         options: CommonmarkOptions = {}
     ) {
+        super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
         this.editorView = new EditorView(
@@ -41,9 +45,7 @@ export class CommonmarkEditor implements View {
             {
                 editable: editableCheck,
                 state: EditorState.create({
-                    doc: CodeStringParser.fromSchema(
-                        commonmarkSchema
-                    ).parseCode(content),
+                    doc: this.parseContent(content),
                     plugins: [
                         history(),
                         commonmarkKeymap,
@@ -66,22 +68,6 @@ export class CommonmarkEditor implements View {
         );
     }
 
-    get content(): string {
-        return CodeStringParser.toString(this.editorView.state.doc);
-    }
-
-    get document(): ProseMirrorNode {
-        return this.editorView.state.doc;
-    }
-
-    get dom(): Element {
-        return this.editorView.dom;
-    }
-
-    get readonly(): boolean {
-        return !this.editorView.editable;
-    }
-
     static get defaultOptions(): CommonmarkOptions {
         return {
             // set to null to disable by default
@@ -94,10 +80,11 @@ export class CommonmarkEditor implements View {
         };
     }
 
-    focus(): void {
-        this.editorView?.focus();
+    parseContent(content: string): ProseMirrorNode {
+        return CodeStringParser.fromSchema(commonmarkSchema).parseCode(content);
     }
-    destroy(): void {
-        this.editorView?.destroy();
+
+    serializeContent(): string {
+        return CodeStringParser.toString(this.editorView.state.doc);
     }
 }

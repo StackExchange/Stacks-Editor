@@ -6,7 +6,7 @@ import {
     STICKY_OBSERVER_CLASS,
     StickyChangeDetails,
 } from "../shared/utils";
-import { View, CommonViewOptions } from "../shared/view";
+import { View, CommonViewOptions, BaseView } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { toggleReadonly } from "../shared/prosemirror-plugins/readonly";
@@ -45,7 +45,7 @@ export class StacksEditor implements View {
     /** The element to render the menu into */
     private pluginContainer: HTMLElement;
     /** The current backing view instance */
-    private backingView: View;
+    private backingView: BaseView;
     /** The fully filled out (passed merged with default) options */
     private options: StacksEditorOptions;
     /** An internal-only, randomly generated id for selector targeting */
@@ -79,6 +79,10 @@ export class StacksEditor implements View {
 
     get content(): string {
         return this.backingView?.content || "";
+    }
+
+    set content(value: string) {
+        this.backingView.content = value;
     }
 
     get document(): ProseMirrorNode {

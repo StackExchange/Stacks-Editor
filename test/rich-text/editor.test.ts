@@ -329,6 +329,22 @@ _world_.
     });
 
     describe("general", () => {
+        it.each(["", "# testing some *stuff*"])(
+            "should get and set content",
+            (content) => {
+                const baseContent = "# Here is _some_\n\n> **base** content";
+                const view = richView(baseContent);
+                // check the initial value
+                expect(view.content).toBe(baseContent);
+
+                // set it
+                view.content = content;
+
+                // check that the new value is correct
+                expect(view.content).toBe(content);
+            }
+        );
+
         it("should recover from catastrophic markdown parse crashes", () => {
             // update the mock of buildMarkdownParser to add in a faulty md plugin
             mockedMdp.buildMarkdownParser.mockImplementation((...args) => {
