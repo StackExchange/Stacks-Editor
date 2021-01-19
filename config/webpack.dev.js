@@ -30,15 +30,15 @@ module.exports = (env, argv) => {
                 template: "./site/index.html",
             }),
             new HtmlWebpackPlugin({
-                template: "./site/empty.html",
+                template: "./site/variants/empty.html",
                 filename: "empty.html",
             }),
             new HtmlWebpackPlugin({
-                template: "./site/noimage.html",
+                template: "./site/variants/noimage.html",
                 filename: "noimage.html",
             }),
             new HtmlWebpackPlugin({
-                template: "./site/tables.html",
+                template: "./site/variants/tables.html",
                 filename: "tables.html",
             }),
         ],
