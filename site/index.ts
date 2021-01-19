@@ -78,8 +78,8 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
 
 domReady(() => {
     document
-        .querySelector(".js-toggle-dark")
-        ?.addEventListener("click", (e) => {
+        .querySelector("#js-toggle-dark")
+        ?.addEventListener("change", (e) => {
             e.preventDefault();
             e.stopPropagation();
 
@@ -87,8 +87,8 @@ domReady(() => {
         });
 
     document
-        .querySelector(".js-toggle-readonly")
-        ?.addEventListener("click", (e) => {
+        .querySelector("#js-toggle-readonly")
+        ?.addEventListener("change", (e) => {
             e.preventDefault();
             e.stopPropagation();
 
