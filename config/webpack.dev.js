@@ -1,8 +1,18 @@
 const { merge } = require("webpack-merge");
 const common = require("./webpack.common.js");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
+const fs = require("fs");
 
 module.exports = (env, argv) => {
+    // create an html page for every item in ./site/variants
+    const pageVariantPlugins = fs.readdirSync("./site/variants").map(
+        (f) =>
+            new HtmlWebpackPlugin({
+                template: "./site/variants/" + f,
+                filename: f,
+            })
+    );
+
     // add --mode=production to flip this into a pseudo-production server
     const emulateProdServer = argv.mode === "production";
     return merge(common(env, argv), {
@@ -29,18 +39,7 @@ module.exports = (env, argv) => {
             new HtmlWebpackPlugin({
                 template: "./site/index.html",
             }),
-            new HtmlWebpackPlugin({
-                template: "./site/variants/empty.html",
-                filename: "empty.html",
-            }),
-            new HtmlWebpackPlugin({
-                template: "./site/variants/noimage.html",
-                filename: "noimage.html",
-            }),
-            new HtmlWebpackPlugin({
-                template: "./site/variants/tables.html",
-                filename: "tables.html",
-            }),
+            ...pageVariantPlugins,
         ],
         optimization: {
             splitChunks: {
