@@ -18,5 +18,5 @@ export function getHljsInstance(): HLJSApi {
         }
     }
 
-    return hljs || null;
+    return hljs && hljs.highlight ? hljs : null;
 }
