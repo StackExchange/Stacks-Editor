@@ -51,7 +51,7 @@ class LinkTooltip {
             class="wmx3 grid--cell fs-body1 fw-normal d-inline-block truncate ml8 mr4"
             target="_blank"
             rel="nofollow noreferrer">${this.href}</a>
-        <div class="grid--cell d-none wmn2 ml2 mr4 js-link-tooltip-input-wrapper">
+        <div class="grid--cell d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
             <input type="text"
                     class="s-input s-input__sm js-link-tooltip-input"
                     autocomplete="off"
