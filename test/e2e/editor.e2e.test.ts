@@ -12,6 +12,8 @@ const addImageButtonSelector = ".js-add-image";
 const uploadImageMenuItemSelector = ".js-insert-image-btn";
 const insertLinkMenuItemSelector = ".js-insert-link-btn";
 const boldMenuButtonSelector = ".js-bold-btn";
+const insertHeadingDropdownButtonSelector = ".js-heading-dropdown";
+const insertH1ButtonSelector = "button[data-key='h1-btn']";
 
 const linkViewTooltipSelector = ".js-link-tooltip";
 const removeLinkSelector = ".js-link-tooltip-remove";
@@ -114,6 +116,17 @@ describe("editor", () => {
             expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
                 true
             );
+        });
+
+        it("should insert heading from dropdown", async () => {
+            await enterTextAsMarkdown("plain text");
+
+            await page.click(insertHeadingDropdownButtonSelector);
+            expect(await isElementVisible(insertH1ButtonSelector)).toBe(false);
+
+            await page.click(insertH1ButtonSelector);
+
+            expect(await getMarkdownContent()).toEqual("# plain text");
         });
 
         describe("editing images", () => {
