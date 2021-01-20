@@ -84,7 +84,7 @@ const enterTextAsMarkdown = async (text: string) => {
 jest.setTimeout(35 * 1000);
 
 beforeAll(async () => {
-    await page.goto("http://localhost:8080");
+    await page.goto("http://localhost:8081");
 });
 
 describe("rich-text mode", () => {
