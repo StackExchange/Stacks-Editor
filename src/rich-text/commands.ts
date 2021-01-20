@@ -724,7 +724,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
 
 const headingDropdown = makeMenuDropdown(
     "Header",
-    "Insert heading",
+    "Header",
     "heading-dropdown",
     () => true,
     nodeTypeActive(schema.nodes.heading),

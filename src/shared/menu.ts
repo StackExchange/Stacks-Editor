@@ -276,12 +276,13 @@ export function makeMenuDropdown(
     ...children: MenuCommandEntry[]
 ): MenuCommandEntry {
     const popoverId = `${key}-popover`;
+    const buttonId = `${key}-btn`
     const button = makeMenuIcon(svg, title, key);
     button.classList.add("s-btn", "s-btn__dropdown");
     button.setAttribute("aria-controls", popoverId);
-    button.setAttribute("data-controller", "s-popover s-tooltip");
     button.setAttribute("data-action", "s-popover#toggle");
-    button.setAttribute("data-s-popover-toggle-class", "is-selected");
+    button.setAttribute("data-controller", "s-tooltip");
+    button.id = buttonId;
     button.dataset.key = key;
 
     const popover = document.createElement("div");
@@ -301,6 +302,11 @@ export function makeMenuDropdown(
     popover.appendChild(content);
 
     const wrapper = document.createElement("div");
+    wrapper.dataset.controller = "s-popover";
+    wrapper.setAttribute("data-s-popover-toggle-class", "is-selected");
+    wrapper.setAttribute("data-s-popover-placement", "bottom");
+    wrapper.setAttribute("data-s-popover-reference-selector", `#${buttonId}`);
+
     wrapper.appendChild(button);
     wrapper.appendChild(popover);
 
@@ -333,6 +339,7 @@ export function dropdownItem(
     button.type = "button";
     button.dataset.key = key;
     button.innerHTML = title;
+    button.dataset.action = "s-popover#hide";
     button.className = `s-editor-btn s-editor-btn__dropdown-item js-editor-btn`;
 
     if (cssClasses) {
