@@ -139,13 +139,13 @@ describe("editor", () => {
                 ).toBe(true);
             });
 
-            it("should hide image popover when deselecting an image", async () => {
+            it.only("should hide image popover when deselecting an image", async () => {
                 await enterTextAsMarkdown(
                     "![an image](https://localhost/some-image)"
                 );
 
                 await page.click(".js-editor img"); // select image
-                await page.click(".js-editor"); // deselect image
+                await page.click(boldMenuButtonSelector); // deselect image
 
                 expect(
                     await page.$eval(imagePopoverSelector, (el) =>
