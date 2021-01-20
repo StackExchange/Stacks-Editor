@@ -1,10 +1,5 @@
-const { defaults: tsjPreset } = require("ts-jest/presets");
-
 module.exports = {
-    preset: "jest-playwright-preset",
-    transform: {
-        ...tsjPreset.transform,
-    },
+    verbose: true,
     globals: {
         "ts-jest": {
             tsconfig: "./test/tsconfig.json",
@@ -12,9 +7,8 @@ module.exports = {
     },
 
     // uncomment to see what playwright's doing
-    // launchOptions: {
-    //     headless: false,
-    //     slowMo: 200,
-    // },
-    rootDir: "../",
+    launchOptions: {
+        headless: false,
+        slowMo: 200,
+    },
 };
