@@ -311,7 +311,7 @@ export class StacksEditor implements View {
 <label class="grid--cell mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
     <span class="icon-bg iconMarkdown"></span>
 </label>
-<div class="grid--cell s-editor-toggle">
+<div class="grid--cell s-editor-toggle js-editor-mode-switcher">
     <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
     <label class="js-editor-toggle-label" for="js-editor-toggle-${this.internalId}"></label>
 </div>`;

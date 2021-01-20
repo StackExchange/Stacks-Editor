@@ -2,7 +2,7 @@
 /// <reference types="expect-playwright" />
 
 const editorToggleStateSelector = ".js-editor-toggle-state";
-const editorToggleLabelSelector = ".js-editor-toggle-label";
+const editorModeSwitcherSelector = ".js-editor-mode-switcher";
 const editorSelector = ".js-editor";
 const menuSelector = ".js-editor-menu";
 const imageUploaderSelector = ".js-image-uploader";
@@ -18,7 +18,7 @@ const removeLinkSelector = ".js-link-tooltip-remove";
 
 const switchMode = async (switchToMarkdown: boolean) => {
     if ((await getIsMarkdown()) !== switchToMarkdown) {
-        await page.click(editorToggleLabelSelector);
+        return await page.click(editorModeSwitcherSelector);
     }
 };
 
