@@ -272,9 +272,10 @@ export function makeMenuDropdown(
     title: string,
     key: string,
     visible?: (state: EditorState) => boolean,
+    active?: (state: EditorState) => boolean,
     ...children: MenuCommandEntry[]
 ): MenuCommandEntry {
-    const popoverId = "table-button-popover";
+    const popoverId = `${key}-popover`;
     const button = makeMenuIcon(svg, title, key);
     button.classList.add("s-btn", "s-btn__dropdown");
     button.setAttribute("aria-controls", popoverId);
@@ -309,6 +310,7 @@ export function makeMenuDropdown(
         children: children,
         command: () => true,
         visible: visible,
+        active: active,
     };
 }
 
@@ -317,22 +319,31 @@ export function makeMenuDropdown(
  * @param title The text to be displayed for this item
  * @param command The command to be executed when this item is clicked
  * @param key A unique identifier used for identifying the command to be executed on click
+ * @param active A function to determine whether this item should be rendered as "active"
+ * @param cssClasses Additional css classes to be applied to this dropdown item
  */
 export function dropdownItem(
     title: string,
     command: MenuCommand,
-    key: string
+    key: string,
+    active?: (state: EditorState) => boolean,
+    cssClasses?: string[]
 ): MenuCommandEntry {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `s-btn s-btn__unset grid--cell ta-left px12 py4 h:bg-black-050 c-pointer js-editor-btn`;
     button.dataset.key = key;
     button.innerHTML = title;
+    button.className = `s-editor-dropdown-menu-btn js-editor-btn`;
+
+    if (cssClasses) {
+        button.classList.add(...cssClasses);
+    }
 
     return {
         key: key,
         command: command,
         dom: button,
+        active: active,
     };
 }
 

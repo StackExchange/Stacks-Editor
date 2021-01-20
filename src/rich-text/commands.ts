@@ -70,7 +70,7 @@ function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
-    const nodeCheck = nodeTypeActive(nodeType);
+    const nodeCheck = nodeTypeActive(nodeType, attrs);
     const setBlockTypeCommand = setBlockType(nodeType, attrs);
 
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
@@ -558,20 +558,27 @@ export function insertLinkCommand(
  * Creates an `active` method that returns true of the current selection is/contained in the current block type
  * @param nodeType The type of the node to check for
  */
-function nodeTypeActive(nodeType: NodeType) {
+function nodeTypeActive(
+    nodeType: NodeType,
+    attrs?: { [key: string]: unknown }
+) {
     return function (state: EditorState) {
         const { from, to } = state.selection;
         let isNodeType = false;
+        let hasAttrs = attrs ? false : true;
 
         // check all nodes in the selection for the right type
         state.doc.nodesBetween(from, to, (node) => {
             isNodeType = node.type.name === nodeType.name;
+            for (const attr in attrs) {
+                hasAttrs = node.attrs[attr] === attrs[attr];
+            }
 
             // stop recursing if the current node is the right type
-            return !isNodeType;
+            return !(isNodeType && hasAttrs);
         });
 
-        return isNodeType;
+        return isNodeType && hasAttrs;
     };
 }
 
@@ -593,12 +600,7 @@ function markActive(mark: MarkType) {
 export const createMenu = (options: CommonViewOptions): Plugin =>
     createMenuPlugin(
         [
-            {
-                key: "toggleHeading",
-                command: toggleBlockType(schema.nodes.heading, { level: 1 }),
-                dom: makeMenuIcon("Header", "Heading", "heading-btn"),
-                active: nodeTypeActive(schema.nodes.heading),
-            },
+            headingDropdown,
             {
                 key: "toggleBold",
                 command: toggleMark(schema.marks.strong),
@@ -652,11 +654,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertImage",
                     command: insertImageCommand,
-                    dom: makeMenuIcon(
-                        "Image",
-                        "Image",
-                        "insert-image-btn"
-                    ),
+                    dom: makeMenuIcon("Image", "Image", "insert-image-btn"),
                 },
                 !!options.imageUpload?.handler
             ),
@@ -664,11 +662,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertTable",
                     command: insertTableCommand,
-                    dom: makeMenuIcon(
-                        "Table",
-                        "Table",
-                        "insert-table-btn"
-                    ),
+                    dom: makeMenuIcon("Table", "Table", "insert-table-btn"),
                     visible: (state: EditorState) => !inTable(state.selection),
                 },
                 options.parserFeatures.tables
@@ -728,12 +722,42 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
         options.menuParentContainer
     );
 
+const headingDropdown = makeMenuDropdown(
+    "Header",
+    "Insert heading",
+    "heading-dropdown",
+    () => true,
+    nodeTypeActive(schema.nodes.heading),
+
+    dropdownItem(
+        "Header 1",
+        toggleBlockType(schema.nodes.heading, { level: 1 }),
+        "h1-btn",
+        nodeTypeActive(schema.nodes.heading, { level: 1 }),
+        ["fs-body3", "mt8"]
+    ),
+    dropdownItem(
+        "Header 2",
+        toggleBlockType(schema.nodes.heading, { level: 2 }),
+        "h2-btn",
+        nodeTypeActive(schema.nodes.heading, { level: 2 }),
+        ["fs-body2"]
+    ),
+    dropdownItem(
+        "Header 3",
+        toggleBlockType(schema.nodes.heading, { level: 3 }),
+        "h3-btn",
+        nodeTypeActive(schema.nodes.heading, { level: 3 }),
+        ["fs-body1"]
+    )
+);
+
 const tableDropdown = makeMenuDropdown(
     "Table",
     "Edit table",
     "table-dropdown",
     (state: EditorState) => inTable(state.selection),
-
+    () => false,
     dropdownSection("Column", "columnSection"),
     dropdownItem("Remove column", removeColumnCommand, "remove-column-btn"),
     dropdownItem(
