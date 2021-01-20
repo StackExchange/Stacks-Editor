@@ -1,53 +1,74 @@
 <!DOCTYPE html>
 <html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>Stacks Editor</title>
+        <link
+            rel="icon"
+            href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐸</text></svg>"
+        />
+        <link
+            rel="stylesheet"
+            href="https://unpkg.com/@stackoverflow/stacks/dist/css/stacks.min.css"
+        />
+        <script src="https://unpkg.com/@stackoverflow/stacks/dist/js/stacks.min.js"></script>
+    </head>
 
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Stacks Editor</title>
-    <link rel="icon"
-        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐸</text></svg>" />
-    <link rel="stylesheet" href="https://unpkg.com/@stackoverflow/stacks/dist/css/stacks.min.css" />
-    <script src="https://unpkg.com/@stackoverflow/stacks/dist/js/stacks.min.js"></script>
-</head>
-
-<body class="p24">
-    <div class="ps-fixed t8 r8 sm:d-none">
-        <button type="button" class="s-btn s-btn__dropdown" role="button" aria-controls="js-settings-popover"
-            data-controller="s-popover" data-action="s-popover#toggle" data-s-popover-placement="bottom-end">
-            Settings
-        </button>
-        <div class="s-popover" id="js-settings-popover" role="menu">
-            <div class="s-popover--arrow"></div>
-            <ul class="s-sidebarwidget--content s-sidebarwidget__items btw0 p0">
-                <li class="grid ai-center s-sidebarwidget--item">
-                    <div class="grid--cell s-editor-toggle">
-                        <input class="js-editor-toggle-state" id="js-toggle-dark" type="checkbox" />
-                        <label class="js-editor-toggle-label" for="js-toggle-dark"></label>
-                    </div>
-                    <label for="js-toggle-dark" class="grid--cell ml4">Dark mode</label>
-                </li>
-                <li class="grid ai-center s-sidebarwidget--item">
-                    <div class="grid--cell s-editor-toggle">
-                        <input class="js-editor-toggle-state" id="js-toggle-readonly" type="checkbox">
-                        <label class="js-editor-toggle-label" for="js-toggle-readonly"></label>
-                    </div>
-                    <label for="js-toggle-readonly" class="grid--cell ml4">Readonly</label>
-                </li>
-                <li class="s-sidebarwidget--item">
-                    <a href="./empty.html" class="s-link">Empty editor</a>
-                </li>
-                <li class="s-sidebarwidget--item">
-                    <a href="./noimage.html" class="s-link">No image upload</a>
-                </li>
-                <li class="s-sidebarwidget--item">
-                    <a href="./tables.html" class="s-link">Tables playground</a>
-                </li>
-            </ul>
+    <body class="p24">
+        <div class="ps-fixed t8 r8 sm:d-none">
+            <button
+                type="button"
+                class="s-btn s-btn__dropdown"
+                role="button"
+                aria-controls="js-settings-popover"
+                data-controller="s-popover"
+                data-action="s-popover#toggle"
+                data-s-popover-placement="bottom-end"
+            >
+                Settings
+            </button>
+            <div class="s-popover" id="js-settings-popover" role="menu">
+                <div class="s-popover--arrow"></div>
+                <ul
+                    class="s-sidebarwidget--content s-sidebarwidget__items btw0 p0"
+                >
+                    <li class="grid ai-center s-sidebarwidget--item">
+                        <div class="grid--cell s-editor-toggle">
+                            <input id="js-toggle-dark" type="checkbox" />
+                            <label for="js-toggle-dark"></label>
+                        </div>
+                        <label for="js-toggle-dark" class="grid--cell ml4"
+                            >Dark mode</label
+                        >
+                    </li>
+                    <li class="grid ai-center s-sidebarwidget--item">
+                        <div class="grid--cell s-editor-toggle">
+                            <input id="js-toggle-readonly" type="checkbox" />
+                            <label for="js-toggle-readonly"></label>
+                        </div>
+                        <label for="js-toggle-readonly" class="grid--cell ml4"
+                            >Readonly</label
+                        >
+                    </li>
+                    <li class="s-sidebarwidget--item">
+                        <a href="./empty.html" class="s-link">Empty editor</a>
+                    </li>
+                    <li class="s-sidebarwidget--item">
+                        <a href="./noimage.html" class="s-link"
+                            >No image upload</a
+                        >
+                    </li>
+                    <li class="s-sidebarwidget--item">
+                        <a href="./tables.html" class="s-link"
+                            >Tables playground</a
+                        >
+                    </li>
+                </ul>
+            </div>
         </div>
-    </div>
-    <div class="wmx6 m-auto mt32">
-        <textarea id="content" class="d-none">
+        <div class="wmx6 m-auto mt32">
+            <textarea id="content" class="d-none">
 # Here’s a thought
 
 What if our editor removed the preview state entirely? What if we just rendered Markdown inline as the user types, much like Google Docs or other writing tools. Allowing users to do so would offer a better experience, since writing is closer to the final output. *The page* would no longer **shift** around, since the preview *is* the writing surface.
@@ -86,7 +107,7 @@ echo "Done!"
 
 Alternatively, you can use indented code blocks
 
-    console.log("Hello, World!");
+console.log("Hello, World!");
 
 ### Lists
 _Ordered_:
@@ -100,7 +121,7 @@ _Unordered_:
 
 * unordered
 * lists
-    * even with nesting
+* even with nesting
 * and back again
 
 ### Formatting
@@ -117,9 +138,9 @@ Then we’ve got <sup>superscript</sup> and <sub>subscript</sub>. If you prefer,
 And you can use HTML to define lists, too:
 
 <ol>
-    <li>One</li>
-    <li>Two</li>
-    <li>Three</li>
+<li>One</li>
+<li>Two</li>
+<li>Three</li>
 </ol>
 
 ### Miscellaneous
@@ -150,27 +171,27 @@ And finally, Stack Snippets:
 
 <!-- language: lang-js -->
 
-    console.log("something here");
+console.log("something here");
 
 <!-- language: lang-css -->
 
-    div {
-      background: hotpink;
-      padding: 12px;
-    }
+div {
+    background: hotpink;
+    padding: 12px;
+}
 
 <!-- language: lang-html -->
 
-    <div>
-      <strong>foo</strong>
-    </div>
+<div>
+    <strong>foo</strong>
+</div>
 
 <!-- end snippet -->
-        </textarea>
-        <h1>Stacks Editor</h1>
-        <h3>Showcasing our new editing experience for Stack Overflow</h3>
-        <div id="example-1"></div>
-    </div>
-</body>
-
+    </textarea
+            >
+            <h1>Stacks Editor</h1>
+            <h3>Showcasing our new editing experience for Stack Overflow</h3>
+            <div id="example-1"></div>
+        </div>
+    </body>
 </html>
