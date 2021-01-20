@@ -279,7 +279,7 @@ export function makeMenuDropdown(
     const button = makeMenuIcon(svg, title, key);
     button.classList.add("s-btn", "s-btn__dropdown");
     button.setAttribute("aria-controls", popoverId);
-    button.setAttribute("data-controller", "s-popover");
+    button.setAttribute("data-controller", "s-popover s-tooltip");
     button.setAttribute("data-action", "s-popover#toggle");
     button.setAttribute("data-s-popover-toggle-class", "is-selected");
     button.dataset.key = key;
