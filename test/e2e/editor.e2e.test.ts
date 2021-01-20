@@ -83,223 +83,205 @@ const enterTextAsMarkdown = async (text: string) => {
 
 jest.setTimeout(35 * 1000);
 
-describe("editor", () => {
+beforeAll(async () => {
+    await page.goto("http://localhost:8080");
+});
+
+describe("rich-text mode", () => {
     beforeAll(async () => {
-        await page.goto("http://localhost:8080");
+        await switchMode(false);
     });
 
-    describe("rich-text mode", () => {
-        beforeAll(async () => {
-            await switchMode(false);
+    it("should show toggle switch", async () => {
+        const isMarkdown = await getIsMarkdown();
+        expect(isMarkdown).toBeFalsy();
+    });
+
+    it("should render menu bar", async () => {
+        const menu = await getMenu();
+        expect(menu).not.toBeNull();
+    });
+
+    it("should highlight bold menu button after click", async () => {
+        await clearEditor();
+
+        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
+            false
+        );
+        await page.click(boldMenuButtonSelector);
+
+        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
+            true
+        );
+    });
+
+    describe("editing images", () => {
+        const imagePopoverSelector = ".js-img-popover";
+
+        it("should show image popover when selecting an image", async () => {
+            await enterTextAsMarkdown(
+                "![an image](https://localhost/some-image)"
+            );
+
+            expect(
+                await page.$eval(imagePopoverSelector, (el) =>
+                    el.classList.contains("is-visible")
+                )
+            ).toBe(false);
+
+            await page.click(".js-editor img");
+
+            expect(
+                await page.$eval(imagePopoverSelector, (el) =>
+                    el.classList.contains("is-visible")
+                )
+            ).toBe(true);
         });
 
-        it("should show toggle switch", async () => {
-            const isMarkdown = await getIsMarkdown();
-            expect(isMarkdown).toBeFalsy();
-        });
+        it("should hide image popover when deselecting an image", async () => {
+            await enterTextAsMarkdown(
+                "![an image](https://localhost/some-image)"
+            );
 
-        it("should render menu bar", async () => {
-            const menu = await getMenu();
-            expect(menu).not.toBeNull();
-        });
+            await page.click(".js-editor img"); // select image
+            await page.click(boldMenuButtonSelector); // deselect image
 
-        it("should highlight bold menu button after click", async () => {
+            expect(
+                await page.$eval(imagePopoverSelector, (el) =>
+                    el.classList.contains("is-visible")
+                )
+            ).toBe(false);
+        });
+    });
+
+    describe("editing links", () => {
+        it("should insert a link for selected text when clicking menu item", async () => {
             await clearEditor();
+            expect(await elementExists(linkViewTooltipSelector)).toBe(false);
 
-            expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-                false
-            );
-            await page.click(boldMenuButtonSelector);
+            await typeText("some link here");
 
-            expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-                true
+            // select some text
+            await page.keyboard.down("Shift");
+            await page.press(editorSelector, "ArrowLeft");
+            await page.press(editorSelector, "ArrowLeft");
+            await page.press(editorSelector, "ArrowLeft");
+            await page.keyboard.up("Shift");
+
+            await page.click(insertLinkMenuItemSelector);
+
+            expect(await isElementVisible(linkViewTooltipSelector)).toBe(true);
+        });
+
+        it("should show link popover when selecting a link", async () => {
+            // enter a link in markdown mode and switch back to rich text mode
+            await enterTextAsMarkdown("[a link](https://example.com/a-link)");
+
+            expect(await elementExists(linkViewTooltipSelector)).toBe(false);
+
+            await page.press(editorSelector, "ArrowRight");
+
+            expect(await isElementVisible(linkViewTooltipSelector)).toBe(true);
+            expect(await page.innerText(linkViewTooltipSelector)).toEqual(
+                "https://example.com/a-link"
             );
         });
 
-        describe("editing images", () => {
-            const imagePopoverSelector = ".js-img-popover";
+        it("should hide link popover when deselecting a link", async () => {
+            await enterTextAsMarkdown("[a link](https://example.com/a-link)");
 
-            it("should show image popover when selecting an image", async () => {
-                await enterTextAsMarkdown(
-                    "![an image](https://localhost/some-image)"
-                );
+            await page.press(editorSelector, "ArrowRight"); // select link
+            await page.press(editorSelector, "ArrowLeft"); // and deselect again
 
-                expect(
-                    await page.$eval(imagePopoverSelector, (el) =>
-                        el.classList.contains("is-visible")
-                    )
-                ).toBe(false);
-
-                await page.click(".js-editor img");
-
-                expect(
-                    await page.$eval(imagePopoverSelector, (el) =>
-                        el.classList.contains("is-visible")
-                    )
-                ).toBe(true);
-            });
-
-            it.only("should hide image popover when deselecting an image", async () => {
-                await enterTextAsMarkdown(
-                    "![an image](https://localhost/some-image)"
-                );
-
-                await page.click(".js-editor img"); // select image
-                await page.click(boldMenuButtonSelector); // deselect image
-
-                expect(
-                    await page.$eval(imagePopoverSelector, (el) =>
-                        el.classList.contains("is-visible")
-                    )
-                ).toBe(false);
-            });
+            expect(await elementExists(linkViewTooltipSelector)).toBe(false);
         });
 
-        describe("editing links", () => {
-            it("should insert a link for selected text when clicking menu item", async () => {
-                await clearEditor();
-                expect(await elementExists(linkViewTooltipSelector)).toBe(
-                    false
-                );
+        it("should remove link mark when clicking popover action", async () => {
+            await enterTextAsMarkdown("[a link](https://example.com/a-link)");
+            expect(await getMarkdownContent()).toEqual(
+                "[a link](https://example.com/a-link)"
+            );
 
-                await typeText("some link here");
+            await page.press(editorSelector, "ArrowRight"); // select link
+            await page.click(removeLinkSelector);
 
-                // select some text
-                await page.keyboard.down("Shift");
-                await page.press(editorSelector, "ArrowLeft");
-                await page.press(editorSelector, "ArrowLeft");
-                await page.press(editorSelector, "ArrowLeft");
-                await page.keyboard.up("Shift");
-
-                await page.click(insertLinkMenuItemSelector);
-
-                expect(await isElementVisible(linkViewTooltipSelector)).toBe(
-                    true
-                );
-            });
-
-            it("should show link popover when selecting a link", async () => {
-                // enter a link in markdown mode and switch back to rich text mode
-                await enterTextAsMarkdown(
-                    "[a link](https://example.com/a-link)"
-                );
-
-                expect(await elementExists(linkViewTooltipSelector)).toBe(
-                    false
-                );
-
-                await page.press(editorSelector, "ArrowRight");
-
-                expect(await isElementVisible(linkViewTooltipSelector)).toBe(
-                    true
-                );
-                expect(await page.innerText(linkViewTooltipSelector)).toEqual(
-                    "https://example.com/a-link"
-                );
-            });
-
-            it("should hide link popover when deselecting a link", async () => {
-                await enterTextAsMarkdown(
-                    "[a link](https://example.com/a-link)"
-                );
-
-                await page.press(editorSelector, "ArrowRight"); // select link
-                await page.press(editorSelector, "ArrowLeft"); // and deselect again
-
-                expect(await elementExists(linkViewTooltipSelector)).toBe(
-                    false
-                );
-            });
-
-            it("should remove link mark when clicking popover action", async () => {
-                await enterTextAsMarkdown(
-                    "[a link](https://example.com/a-link)"
-                );
-                expect(await getMarkdownContent()).toEqual(
-                    "[a link](https://example.com/a-link)"
-                );
-
-                await page.press(editorSelector, "ArrowRight"); // select link
-                await page.click(removeLinkSelector);
-
-                expect(await getMarkdownContent()).toEqual("a link");
-            });
+            expect(await getMarkdownContent()).toEqual("a link");
         });
     });
+});
 
-    describe("markdown mode", () => {
-        beforeAll(async () => {
-            await switchMode(true);
-        });
-
-        it("should show toggle switch", async () => {
-            const isMarkdown = await getIsMarkdown();
-
-            expect(isMarkdown).toBeTruthy();
-        });
-
-        it("should render menu bar", async () => {
-            const menu = await getMenu();
-            expect(menu).not.toBeNull();
-        });
-
-        it("should not highlight bold menu button after click", async () => {
-            await clearEditor();
-
-            expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-                false
-            );
-            await page.click(boldMenuButtonSelector);
-
-            expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-                false
-            );
-        });
+describe("markdown mode", () => {
+    beforeAll(async () => {
+        await switchMode(true);
     });
 
-    describe("inserting images", () => {
-        beforeAll(async () => {
-            await switchMode(false);
-        });
+    it("should show toggle switch", async () => {
+        const isMarkdown = await getIsMarkdown();
 
-        it("should show image upload on keyboard shortcut", async () => {
-            expect(await isElementVisible(imageUploaderSelector)).toBe(false);
-
-            await page.keyboard.down("Control");
-            await page.press(editorSelector, "g");
-            await page.keyboard.up("Control");
-            expect(await isElementVisible(imageUploaderSelector)).toBe(true);
-
-            await page.click(imageUploaderSelector + " .js-cancel-button");
-            expect(await isElementVisible(imageUploaderSelector)).toBe(false);
-        });
-
-        it("should show upload when clicking menu icon", async () => {
-            expect(await isElementVisible(imageUploaderSelector)).toBe(false);
-
-            await page.click(uploadImageMenuItemSelector);
-            expect(await isElementVisible(imageUploaderSelector)).toBe(true);
-
-            await page.click(imageUploaderSelector + " .js-cancel-button");
-            expect(await isElementVisible(imageUploaderSelector)).toBe(false);
-        });
-        it.todo("should show upload when pasting");
-        it.todo("should show upload when dropping a file");
-
-        it("should show image preview", async () => {
-            await page.click(uploadImageMenuItemSelector);
-            const fileInput = await page.$("input[type=file]");
-
-            expect(await isElementVisible(imagePreviewSelector)).toBe(false);
-            expect(await isEnabled(addImageButtonSelector)).toBe(false);
-
-            await fileInput.setInputFiles("./test/e2e/test-image.png");
-
-            expect(await isElementVisible(imagePreviewSelector)).toBe(true);
-            expect(await isEnabled(addImageButtonSelector)).toBe(true);
-        });
-
-        it.todo("should insert uploaded image into document");
-        it.todo("should show placeholder while uploading");
+        expect(isMarkdown).toBeTruthy();
     });
+
+    it("should render menu bar", async () => {
+        const menu = await getMenu();
+        expect(menu).not.toBeNull();
+    });
+
+    it("should not highlight bold menu button after click", async () => {
+        await clearEditor();
+
+        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
+            false
+        );
+        await page.click(boldMenuButtonSelector);
+
+        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
+            false
+        );
+    });
+});
+
+describe("inserting images", () => {
+    beforeAll(async () => {
+        await switchMode(false);
+    });
+
+    it("should show image upload on keyboard shortcut", async () => {
+        expect(await isElementVisible(imageUploaderSelector)).toBe(false);
+
+        await page.keyboard.down("Control");
+        await page.press(editorSelector, "g");
+        await page.keyboard.up("Control");
+        expect(await isElementVisible(imageUploaderSelector)).toBe(true);
+
+        await page.click(imageUploaderSelector + " .js-cancel-button");
+        expect(await isElementVisible(imageUploaderSelector)).toBe(false);
+    });
+
+    it("should show upload when clicking menu icon", async () => {
+        expect(await isElementVisible(imageUploaderSelector)).toBe(false);
+
+        await page.click(uploadImageMenuItemSelector);
+        expect(await isElementVisible(imageUploaderSelector)).toBe(true);
+
+        await page.click(imageUploaderSelector + " .js-cancel-button");
+        expect(await isElementVisible(imageUploaderSelector)).toBe(false);
+    });
+    it.todo("should show upload when pasting");
+    it.todo("should show upload when dropping a file");
+
+    it("should show image preview", async () => {
+        await page.click(uploadImageMenuItemSelector);
+        const fileInput = await page.$("input[type=file]");
+
+        expect(await isElementVisible(imagePreviewSelector)).toBe(false);
+        expect(await isEnabled(addImageButtonSelector)).toBe(false);
+
+        await fileInput.setInputFiles("./test/e2e/test-image.png");
+
+        expect(await isElementVisible(imagePreviewSelector)).toBe(true);
+        expect(await isEnabled(addImageButtonSelector)).toBe(true);
+    });
+
+    it.todo("should insert uploaded image into document");
+    it.todo("should show placeholder while uploading");
 });
