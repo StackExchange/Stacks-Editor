@@ -333,7 +333,7 @@ export function dropdownItem(
     button.type = "button";
     button.dataset.key = key;
     button.innerHTML = title;
-    button.className = `s-editor-dropdown-menu-btn js-editor-btn`;
+    button.className = `s-editor-btn s-editor-btn__dropdown-item js-editor-btn`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);

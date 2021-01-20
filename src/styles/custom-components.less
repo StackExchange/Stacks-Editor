@@ -105,47 +105,17 @@
             right: @su4;
         }
     }
-}
 
-.s-editor-dropdown-menu-btn {
-    position: relative;
-    display: block;
-    padding: @su4 @su12;
-    border: none;
-    color: var(--black-800);
-    background-color: transparent;
-    outline: none;
-    font-family: inherit;
-    font-size: @fs-body1;
-    font-weight: normal;
-    line-height: @lh-sm;
-    text-align: center;
-    text-decoration: none;
-    cursor: pointer;
-    text-align: left;
-
-    &:hover {
-        background-color: var(--black-050);
-        // retain the font color on hover (overrides hover colors for links)
+    &.s-editor-btn__dropdown-item {
+        display: block;
+        padding: @su4 @su12;
+        border: none;
         color: var(--black-800);
-    }
+        text-align: left;
 
-    &.is-selected,
-    &:active {
-        color: var(--black-900);
-        background-color: var(--black-100);
-    }
-
-    &.is-disabled {
-        color: var(--black-150);
-        cursor: default;
         &:hover {
-            background-color: transparent;
+            color: var(--black-800);
         }
-    }
-
-    &:focus {
-        box-shadow: 0 0 0 @su4 var(--focus-ring-muted);
     }
 }
 
