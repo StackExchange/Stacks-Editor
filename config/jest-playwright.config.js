@@ -1,5 +1,4 @@
 module.exports = {
-    verbose: true,
     globals: {
         "ts-jest": {
             tsconfig: "./test/tsconfig.json",
@@ -7,8 +6,8 @@ module.exports = {
     },
 
     // uncomment to see what playwright's doing
-    launchOptions: {
-        headless: false,
-        slowMo: 200,
-    },
+    // launchOptions: {
+    //     headless: false,
+    //     slowMo: 200,
+    // },
 };
