@@ -557,6 +557,7 @@ export function insertLinkCommand(
 /**
  * Creates an `active` method that returns true of the current selection is/contained in the current block type
  * @param nodeType The type of the node to check for
+ * @param attrs? A key-value map of attributes that must be present on this node
  */
 function nodeTypeActive(
     nodeType: NodeType,
@@ -565,20 +566,20 @@ function nodeTypeActive(
     return function (state: EditorState) {
         const { from, to } = state.selection;
         let isNodeType = false;
-        let hasAttrs = attrs ? false : true;
+        let passesAttrsCheck = !attrs;
 
         // check all nodes in the selection for the right type
         state.doc.nodesBetween(from, to, (node) => {
             isNodeType = node.type.name === nodeType.name;
             for (const attr in attrs) {
-                hasAttrs = node.attrs[attr] === attrs[attr];
+                passesAttrsCheck = node.attrs[attr] === attrs[attr];
             }
 
             // stop recursing if the current node is the right type
-            return !(isNodeType && hasAttrs);
+            return !(isNodeType && passesAttrsCheck);
         });
 
-        return isNodeType && hasAttrs;
+        return isNodeType && passesAttrsCheck;
     };
 }
 

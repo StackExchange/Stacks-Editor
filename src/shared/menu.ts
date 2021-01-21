@@ -264,7 +264,8 @@ export function makeMenuSpacerEntry(
  * @param svg The html of the svg to use as the dropdown icon
  * @param title The text to place in the dropdown button's title attribute
  * @param key A unique identifier used for this dropdown menu
- * @param visible A function that determines wether the dropdown should be visible or hidden
+ * @param visible A function that determines if the dropdown should be visible or hidden
+ * @param active A function to determine if the dropdown should be highlighted as active
  * @param children The child MenuComandEntry items to be placed in the dropdown menu
  */
 export function makeMenuDropdown(
@@ -276,7 +277,7 @@ export function makeMenuDropdown(
     ...children: MenuCommandEntry[]
 ): MenuCommandEntry {
     const popoverId = `${key}-popover`;
-    const buttonId = `${key}-btn`
+    const buttonId = `${key}-btn`;
     const button = makeMenuIcon(svg, title, key);
     button.classList.add("s-btn", "s-btn__dropdown");
     button.setAttribute("aria-controls", popoverId);
