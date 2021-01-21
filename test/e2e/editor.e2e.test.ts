@@ -13,6 +13,7 @@ const uploadImageMenuItemSelector = ".js-insert-image-btn";
 const insertLinkMenuItemSelector = ".js-insert-link-btn";
 const boldMenuButtonSelector = ".js-bold-btn";
 const insertHeadingDropdownButtonSelector = ".js-heading-dropdown";
+const headingPopoverSelector = "#heading-dropdown-popover";
 const insertH1ButtonSelector = "button[data-key='h1-btn']";
 
 const linkViewTooltipSelector = ".js-link-tooltip";
@@ -36,7 +37,11 @@ const getIsMarkdown = async () => {
 };
 
 const isElementVisible = async (selector: string) => {
-    return await page.$eval(selector, (el) => !el.classList.contains("d-none"));
+    return !(await hasClass(selector, "d-none"));
+};
+
+const isPopoverVisible = async (selector: string) => {
+    return await hasClass(selector, "is-visible");
 };
 
 const elementExists = async (selector: string) => {
@@ -119,11 +124,13 @@ describe("rich-text mode", () => {
 
     it("should insert heading from dropdown", async () => {
         await enterTextAsMarkdown("plain text");
+        expect(await isPopoverVisible(headingPopoverSelector)).toBe(false);
 
         await page.click(insertHeadingDropdownButtonSelector);
-        expect(await isElementVisible(insertH1ButtonSelector)).toBe(false);
+        expect(await isPopoverVisible(headingPopoverSelector)).toBe(true);
 
         await page.click(insertH1ButtonSelector);
+        expect(await isPopoverVisible(headingPopoverSelector)).toBe(false);
 
         expect(await getMarkdownContent()).toEqual("# plain text");
     });
