@@ -115,6 +115,18 @@ describe("rich-text mode", () => {
         );
     });
 
+    describe("input rules", () => {
+        it.each([
+            [`"`, `“`],
+            ["...", "…"],
+            ["--", "—"],
+        ])("should transform special characters", async (input, expected) => {
+            await typeText(input);
+            const text = await page.innerText(editorSelector);
+            expect(text).toBe(expected);
+        });
+    });
+
     describe("editing images", () => {
         const imagePopoverSelector = ".js-img-popover";
 
