@@ -116,15 +116,14 @@ describe("rich-text mode", () => {
     });
 
     describe("input rules", () => {
-        it.each([
-            [`"`, `“`],
-            ["...", "…"],
-            ["--", "—"],
-        ])("should transform special characters", async (input, expected) => {
-            await typeText(input);
-            const text = await page.innerText(editorSelector);
-            expect(text).toBe(expected);
-        });
+        it.each([`"`, "...", "--"])(
+            "should not transform special characters",
+            async (input) => {
+                await typeText(input);
+                const text = await page.innerText(editorSelector);
+                expect(text).toBe(input);
+            }
+        );
     });
 
     describe("editing images", () => {
