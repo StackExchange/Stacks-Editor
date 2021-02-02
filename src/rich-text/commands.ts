@@ -731,21 +731,21 @@ const headingDropdown = makeMenuDropdown(
     nodeTypeActive(schema.nodes.heading),
 
     dropdownItem(
-        "Header 1",
+        "Heading 1",
         toggleBlockType(schema.nodes.heading, { level: 1 }),
         "h1-btn",
         nodeTypeActive(schema.nodes.heading, { level: 1 }),
         ["fs-body3", "mt8"]
     ),
     dropdownItem(
-        "Header 2",
+        "Heading 2",
         toggleBlockType(schema.nodes.heading, { level: 2 }),
         "h2-btn",
         nodeTypeActive(schema.nodes.heading, { level: 2 }),
         ["fs-body2"]
     ),
     dropdownItem(
-        "Header 3",
+        "Heading 3",
         toggleBlockType(schema.nodes.heading, { level: 3 }),
         "h3-btn",
         nodeTypeActive(schema.nodes.heading, { level: 3 }),
