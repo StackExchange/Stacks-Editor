@@ -169,7 +169,7 @@ interface MarkdownParserState {
  * We do this because we need some special functionality that is not exposed by default with the existing
  * handler generation code (from adding tokens)
  */
-class SOMarkdownParser extends MarkdownParser {
+export class SOMarkdownParser extends MarkdownParser {
     // TODO map the (private?) backing property not exposed by the typings
     declare tokenizer: MarkdownIt;
 

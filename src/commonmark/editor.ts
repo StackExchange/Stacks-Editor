@@ -7,6 +7,10 @@ import { EditorView } from "prosemirror-view";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
 import {
+    buildMarkdownParser,
+    SOMarkdownParser,
+} from "../shared/markdown-parser";
+import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
 } from "../shared/prosemirror-plugins/image-upload";
@@ -14,7 +18,11 @@ import {
     editableCheck,
     readonlyPlugin,
 } from "../shared/prosemirror-plugins/readonly";
-import { CodeStringParser, commonmarkSchema } from "../shared/schema";
+import {
+    CodeStringParser,
+    commonmarkSchema,
+    richTextSchema,
+} from "../shared/schema";
 import { deepMerge } from "../shared/utils";
 import {
     BaseView,
@@ -28,6 +36,7 @@ export type CommonmarkOptions = CommonViewOptions;
 
 export class CommonmarkEditor extends BaseView {
     private options: CommonmarkOptions;
+    private markdownRenderer: SOMarkdownParser;
 
     constructor(
         target: Node,
@@ -62,10 +71,40 @@ export class CommonmarkEditor extends BaseView {
             }
         );
 
+        this.setupPreviewPane(target);
+
         log(
             "prosemirror commonmark document",
             this.editorView.state.doc.toJSON()
         );
+    }
+
+    setupPreviewPane(target: Node) {
+        const preview = document.createElement("div");
+        preview.className = "mt12 p12 s-card s-prose js-preview-pane";
+        preview.innerText = "Preview will appear here";
+        target.parentElement.appendChild(preview);
+
+        this.markdownRenderer = buildMarkdownParser(
+            this.options.parserFeatures,
+            richTextSchema,
+            null
+        );
+
+        let syncPreview = (): void => {
+            preview.innerHTML = this.markdownRenderer.tokenizer.render(
+                this.content
+            );
+        };
+
+        const debouncedSync = debounce(syncPreview, 300);
+
+        this.editorView.props.handleKeyDown = (view: EditorView) => {
+            debouncedSync();
+            return false;
+        };
+
+        syncPreview();
     }
 
     static get defaultOptions(): CommonmarkOptions {
@@ -87,4 +126,12 @@ export class CommonmarkEditor extends BaseView {
     serializeContent(): string {
         return CodeStringParser.toString(this.editorView.state.doc);
     }
+}
+
+function debounce(fn: Function, ms = 300) {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    return function (this: any, ...args: any[]) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => fn.apply(this, args), ms);
+    };
 }
