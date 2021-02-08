@@ -194,7 +194,7 @@ export class ImageUploader implements PluginView {
 
         this.uploadContainer
             .querySelector(".js-add-image")
-            .addEventListener("click", (e) =>
+            .addEventListener("click", (e: Event) =>
                 this.handleUploadTrigger(e, this.image, view)
             );
     }

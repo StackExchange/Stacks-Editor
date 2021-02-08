@@ -78,7 +78,7 @@ class LinkTooltip {
         this.content.innerHTML = tooltipString;
 
         // never allow the popover to hide itself. It either exists visibly or not at all
-        this.content.addEventListener("s-popover:hide", (e) => {
+        this.content.addEventListener("s-popover:hide", (e: Event) => {
             e.preventDefault();
         });
 
