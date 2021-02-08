@@ -18,6 +18,7 @@ module.exports = (env, argv) => {
     return merge(common(env, argv), {
         entry: {
             app: "./site/index.ts",
+            serviceworker: "./site/serviceworker.ts",
         },
         mode: emulateProdServer ? "production" : "development",
         devtool: emulateProdServer ? false : "inline-source-map",
