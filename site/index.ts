@@ -119,6 +119,7 @@ domReady(() => {
         brandingHtml: "Powered by... <strong>Nothing!</strong>",
         contentPolicyHtml:
             "These images are uploaded nowhere, so no content policy applies",
+        wrapImagesInLinks: true,
     };
 
     // TODO should null out entire object, but that currently just defaults back to the original on merge
