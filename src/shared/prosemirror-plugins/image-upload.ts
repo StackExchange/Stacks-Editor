@@ -36,6 +36,10 @@ export interface ImageUploadOptions {
      * NOTE: this is injected as-is and can potentially be a XSS hazard!
      */
     contentPolicyHtml?: string;
+    /**
+     * If true, wraps all images in links that point to the uploaded image url
+     */
+    wrapImagesInLinks?: boolean;
 }
 
 /**
@@ -293,9 +297,9 @@ export class ImageUploader implements PluginView {
             ".js-image-preview"
         );
 
-        const addImageButton = this.uploadContainer.querySelector<
-            HTMLButtonElement
-        >(".js-add-image");
+        const addImageButton = this.uploadContainer.querySelector<HTMLButtonElement>(
+            ".js-add-image"
+        );
 
         this.hideValidationError();
         const validationResult = this.validateImage(file);
@@ -353,13 +357,13 @@ export class ImageUploader implements PluginView {
             return;
         }
 
-        this.startImageUpload(view, file);
+        void this.startImageUpload(view, file);
         this.resetUploader();
         hideImageUploader(view);
         view.focus();
     }
 
-    startImageUpload(view: EditorView, file: File): void {
+    startImageUpload(view: EditorView, file: File): Promise<void> {
         // A fresh object to act as the ID for this upload
         const id = {};
 
@@ -384,7 +388,7 @@ export class ImageUploader implements PluginView {
             return;
         }
 
-        this.uploadOptions.handler(file).then(
+        return this.uploadOptions.handler(file).then(
             (url) => {
                 // find where we inserted our placeholder so the content insert knows where to go
                 const decos = IMAGE_UPLOADER_KEY.getState(view.state)
@@ -578,7 +582,6 @@ function imageUploaderPlaceholderPlugin(
                     file: null,
                 };
             },
-            //TODO any
             apply(tr: Transaction, state: ImageUploadState) {
                 let set = state.decorations || DecorationSet.empty;
 
@@ -711,11 +714,17 @@ export function richTextImageUpload(
         uploadOptions,
         containerFn,
         (state, url, pos) => {
-            return state.tr.replaceWith(
-                pos,
-                pos,
-                richTextSchema.nodes.image.create({ src: url })
+            const marks = uploadOptions.wrapImagesInLinks
+                ? [richTextSchema.marks.link.create({ href: url })]
+                : null;
+
+            const imgNode = richTextSchema.nodes.image.create(
+                { src: url },
+                null,
+                marks
             );
+
+            return state.tr.replaceWith(pos, pos, imgNode);
         }
     );
 }
@@ -743,7 +752,15 @@ export function commonmarkImageUpload(
         (state, url, pos) => {
             // construct the raw markdown
             const defaultAltText = "enter image description here";
-            const mdString = `![${defaultAltText}](${url})`;
+            let mdString = `![${defaultAltText}](${url})`;
+            let selectionStart = pos + 2;
+            let selectionEnd = selectionStart + defaultAltText.length;
+
+            if (uploadOptions.wrapImagesInLinks) {
+                mdString = `[${mdString}](${url})`;
+                selectionStart += 1;
+                selectionEnd += 1;
+            }
 
             // insert into the document
             const tr = state.tr.insertText(mdString, pos);
@@ -753,8 +770,8 @@ export function commonmarkImageUpload(
             tr.setSelection(
                 TextSelection.create(
                     state.apply(tr).doc,
-                    pos + 2,
-                    pos + defaultAltText.length + 2
+                    selectionStart,
+                    selectionEnd
                 )
             );
 

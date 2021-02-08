@@ -1,9 +1,16 @@
+import { EditorState } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import {
     ImageUploader,
     showImageUploader,
     hideImageUploader,
+    commonmarkImageUpload,
+    richTextImageUpload,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
+import { commonmarkSchema, richTextSchema } from "../../../src/shared/schema";
+import "../../matchers";
+import { getSelectedText } from "../../test-helpers";
 
 let pluginContainer: Element;
 let view: RichTextEditor;
@@ -116,6 +123,102 @@ describe("image upload plugin", () => {
                 const validationMessage = findValidationMessage(uploader);
                 expect(validationMessage.classList).toContain("d-none");
             });
+    });
+
+    describe("wrapImagesInLinks", () => {
+        it.each([false, true])("rich-text", async (optionSet: boolean) => {
+            const plugin = richTextImageUpload(
+                {
+                    handler: () =>
+                        Promise.resolve("https://www.example.com/image"),
+                    wrapImagesInLinks: optionSet,
+                },
+                () => document.createElement("div")
+            );
+
+            const view = new EditorView(document.createElement("div"), {
+                state: EditorState.create({
+                    schema: richTextSchema,
+                    plugins: [plugin],
+                }),
+            });
+
+            const imageUploader = plugin.spec.view(view) as ImageUploader;
+            await imageUploader.startImageUpload(
+                view,
+                mockFile("some image", "image/png")
+            );
+
+            expect(view.state.doc).toMatchNodeTree({
+                childCount: 1,
+                content: [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                "type.name": "image",
+                                "attrs": {
+                                    alt: null,
+                                    height: null,
+                                    markup: "",
+                                    src: "https://www.example.com/image",
+                                    title: null,
+                                    width: null,
+                                },
+                                ...(optionSet
+                                    ? {
+                                          "marks.length": 1,
+                                          "marks.0.type.name": "link",
+                                          "marks.0.attrs.href":
+                                              "https://www.example.com/image",
+                                      }
+                                    : {}),
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+
+        it.each([
+            [
+                false,
+                "![enter image description here](https://www.example.com/image)",
+            ],
+            [
+                true,
+                "[![enter image description here](https://www.example.com/image)](https://www.example.com/image)",
+            ],
+        ])("commonmark", async (optionSet: boolean, expectedText: string) => {
+            const plugin = commonmarkImageUpload(
+                {
+                    handler: () =>
+                        Promise.resolve("https://www.example.com/image"),
+                    wrapImagesInLinks: optionSet,
+                },
+                () => document.createElement("div")
+            );
+
+            const view = new EditorView(document.createElement("div"), {
+                state: EditorState.create({
+                    schema: commonmarkSchema,
+                    plugins: [plugin],
+                }),
+            });
+
+            const imageUploader = plugin.spec.view(view) as ImageUploader;
+            await imageUploader.startImageUpload(
+                view,
+                mockFile("some image", "image/png")
+            );
+
+            expect(view.state.doc.textContent).toBe(expectedText);
+
+            expect(getSelectedText(view.state)).toBe(
+                "enter image description here"
+            );
+        });
     });
 
     function findPreviewElement(uploader: ImageUploader): HTMLElement {
