@@ -3,6 +3,7 @@ import { EditorState, TextSelection } from "prosemirror-state";
 import { commonmarkSchema } from "../../src/shared/schema";
 import * as commands from "../../src/commonmark/commands";
 import { MenuCommand } from "../../src/shared/menu";
+import { getSelectedText } from "../test-helpers";
 
 /**
  * Creates a state with the content optionally selected if selectFrom/To are passed
@@ -47,17 +48,6 @@ function createSelectedState(content: string) {
     const selectTo = content.length;
 
     return createState(content, selectFrom, selectTo);
-}
-
-/**
- * Gets the currently selected text from the state
- */
-function getSelectedText(state: EditorState) {
-    const { to, from } = state.selection;
-
-    // TODO hack?
-    const allText = state.doc.textContent;
-    return allText.slice(from - 1, to - 1);
 }
 
 /**
