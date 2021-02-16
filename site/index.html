@@ -166,11 +166,27 @@ And finally, Stack Snippets:
     </div>
 
 <!-- end snippet -->
-        </textarea>
-        <h1>Stacks Editor</h1>
-        <h3>Showcasing our new editing experience for Stack Overflow</h3>
-        <div id="example-1"></div>
-    </div>
-</body>
-
+        </textarea
+            >
+            <h1>Stacks Editor</h1>
+            <h3>Showcasing our new editing experience for Stack Overflow</h3>
+            <div id="example-1"></div>
+            <button
+                class="s-btn js-preview-toggle"
+                data-controller="s-expandable-control"
+                data-s-expandable-control-toggle-class="is-selected"
+                aria-expanded="false"
+                aria-controls="js-preview-expander"
+            >
+                Show preview
+            </button>
+            <div class="s-expandable" id="js-preview-expander">
+                <div
+                    class="js-preview-pane mt12 p12 s-card s-prose d-none s-expandable--content"
+                >
+                    Preview will appear here
+                </div>
+            </div>
+        </div>
+    </body>
 </html>

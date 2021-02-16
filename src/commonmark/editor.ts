@@ -71,7 +71,9 @@ export class CommonmarkEditor extends BaseView {
             }
         );
 
-        this.setupPreviewPane(target);
+        if (options.previewTarget) {
+            this.setupPreviewPane(options.previewTarget);
+        }
 
         log(
             "prosemirror commonmark document",
@@ -79,11 +81,10 @@ export class CommonmarkEditor extends BaseView {
         );
     }
 
-    setupPreviewPane(target: Node) {
-        const preview = document.createElement("div");
-        preview.className = "mt12 p12 s-card s-prose js-preview-pane";
-        preview.innerText = "Preview will appear here";
-        target.parentElement.appendChild(preview);
+    setupPreviewPane(target: HTMLElement): void {
+        const renderDelayMs = 500; // tweak this to make rendering more or less immediate
+
+        this.options.previewTarget.classList.remove("d-none");
 
         this.markdownRenderer = buildMarkdownParser(
             this.options.parserFeatures,
@@ -91,13 +92,13 @@ export class CommonmarkEditor extends BaseView {
             null
         );
 
-        let syncPreview = (): void => {
-            preview.innerHTML = this.markdownRenderer.tokenizer.render(
+        const syncPreview = (): void => {
+            target.innerHTML = this.markdownRenderer.tokenizer.render(
                 this.content
             );
         };
 
-        const debouncedSync = debounce(syncPreview, 300);
+        const debouncedSync = debounce(syncPreview, renderDelayMs);
 
         this.editorView.props.handleKeyDown = (view: EditorView) => {
             debouncedSync();
@@ -117,6 +118,11 @@ export class CommonmarkEditor extends BaseView {
                 handler: defaultImageUploadHandler,
             },
         };
+    }
+
+    destroy(): void {
+        super.destroy();
+        this.options.previewTarget?.classList.add("d-none");
     }
 
     parseContent(content: string): ProseMirrorNode {

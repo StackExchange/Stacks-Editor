@@ -111,6 +111,7 @@ domReady(() => {
     // create the editor
     const place = document.querySelector<HTMLElement>("#example-1");
     const content = document.querySelector<HTMLTextAreaElement>("#content");
+    const preview = document.querySelector<HTMLElement>(".js-preview-pane");
     const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
 
@@ -133,7 +134,7 @@ domReady(() => {
         const editorInstance = new StacksEditor(place, content.value, {
             defaultView: getDefaultEditor(),
             editorHelpLink: "#TODO",
-            commonmarkOptions: {},
+            commonmarkOptions: { previewTarget: preview },
             parserFeatures: {
                 tables: enableTables,
                 tagLinks: {
