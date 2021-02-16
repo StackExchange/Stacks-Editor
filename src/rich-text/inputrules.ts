@@ -1,8 +1,5 @@
 import {
-    ellipsis,
-    emDash,
     inputRules,
-    smartQuotes,
     textblockTypeInputRule,
     wrappingInputRule,
 } from "prosemirror-inputrules";
@@ -33,17 +30,12 @@ const orderedListRule = wrappingInputRule(
  * Defines all input rules we're using in our rich-text editor.
  * Input rules are formatting operations that trigger as you type based on regular expressions
  *
- * We're reusing some of the built-in input rules like "smart quotes" or "ellipsis".
- *
  * Examples:
  *      * starting a line with "# " will turn the line into a headline
  *      * starting a line with "> " will insert a new blockquote in place
  */
 export const richTextInputRules = inputRules({
     rules: [
-        emDash,
-        ellipsis,
-        ...smartQuotes,
         blockquoteInputRule,
         headingInputRule,
         codeBlockRule,

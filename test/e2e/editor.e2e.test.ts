@@ -135,6 +135,17 @@ describe("rich-text mode", () => {
         expect(await getMarkdownContent()).toEqual("# plain text");
     });
 
+    describe("input rules", () => {
+        it.each([`"`, "...", "--"])(
+            "should not transform special characters",
+            async (input) => {
+                await typeText(input);
+                const text = await page.innerText(editorSelector);
+                expect(text).toBe(input);
+            }
+        );
+    });
+
     describe("editing images", () => {
         const imagePopoverSelector = ".js-img-popover";
 

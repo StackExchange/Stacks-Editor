@@ -1,5 +1,7 @@
 # Stacks-Editor
 
+Stacks-Editor is a combination rich text / markdown editor that powers Stack Overflow's post editing experience.
+
 ## Usage
 
 ### Installation

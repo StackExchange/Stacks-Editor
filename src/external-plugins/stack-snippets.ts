@@ -53,7 +53,7 @@ class StackSnippetsView implements NodeView {
 
         //TODO launch snippet modal
         this.dom.querySelectorAll(".js-not-implemented").forEach((el) => {
-            el.addEventListener("click", (e) => {
+            el.addEventListener("click", (e: Event) => {
                 e.stopPropagation();
                 // eslint-disable-next-line no-alert
                 alert("Sorry, this doesn't work yet :)");

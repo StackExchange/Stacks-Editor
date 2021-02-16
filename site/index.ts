@@ -67,19 +67,29 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
 const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
     setTimeoutAsync(2000).then(() => {
         return new Promise(function (resolve) {
-            // read the image in and translate it to a data url to use in the <img> tag
-            const reader = new FileReader();
-            reader.readAsDataURL(file);
-            reader.addEventListener("load", () =>
-                resolve(reader.result as string)
-            );
+            // if the serviceworker is registered, send it the image and use the local image url hack instead
+            if (navigator.serviceWorker.controller) {
+                const id = Math.floor(Math.random() * 1000);
+                navigator.serviceWorker.controller.postMessage({
+                    id: id,
+                    content: file,
+                });
+                resolve(`https://images.local/${id}`);
+            } else {
+                // read the image in and translate it to a data url to use in the <img> tag
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.addEventListener("load", () =>
+                    resolve(reader.result as string)
+                );
+            }
         });
     });
 
 domReady(() => {
     document
         .querySelector("#js-toggle-dark")
-        ?.addEventListener("change", (e) => {
+        ?.addEventListener("change", (e: Event) => {
             e.preventDefault();
             e.stopPropagation();
 
@@ -88,7 +98,7 @@ domReady(() => {
 
     document
         .querySelector("#js-toggle-readonly")
-        ?.addEventListener("change", (e) => {
+        ?.addEventListener("change", (e: Event) => {
             e.preventDefault();
             e.stopPropagation();
 
@@ -109,6 +119,7 @@ domReady(() => {
         brandingHtml: "Powered by... <strong>Nothing!</strong>",
         contentPolicyHtml:
             "These images are uploaded nowhere, so no content policy applies",
+        wrapImagesInLinks: true,
     };
 
     // TODO should null out entire object, but that currently just defaults back to the original on merge
@@ -158,3 +169,20 @@ domReady(() => {
         }
     );
 });
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/serviceworker.bundle.js").then(
+            () => {
+                // eslint-disable-next-line no-console
+                console.log(
+                    "ServiceWorker registration successful; uploaded image interception enabled"
+                );
+            },
+            (err) => {
+                // eslint-disable-next-line no-console
+                console.log("ServiceWorker registration failed: ", err);
+            }
+        );
+    });
+}
