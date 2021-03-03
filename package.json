@@ -69,7 +69,7 @@
         "webpack-merge": "^5.7.3"
     },
     "dependencies": {
-        "@stackoverflow/stacks": "^0.61.0",
+        "@stackoverflow/stacks": "^0.62.0",
         "@stackoverflow/stacks-icons": "^2.17.0",
         "@types/markdown-it": "10.0.2",
         "@types/prosemirror-commands": "^1.0.3",
