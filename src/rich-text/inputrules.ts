@@ -20,7 +20,7 @@ const unorderedListRule = wrappingInputRule(
     schema.nodes.bullet_list
 );
 const orderedListRule = wrappingInputRule(
-    /^\s*\d\.\s$/,
+    /^\s*\d(\.|\))\s$/,
     schema.nodes.ordered_list,
     (match) => ({ order: +match[1] }),
     (match, node) => node.childCount + <number>node.attrs.order == +match[1]
