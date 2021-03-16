@@ -124,6 +124,37 @@ describe("rich-text mode", () => {
                 expect(text).toBe(input);
             }
         );
+
+        it.each([
+            // valid rules
+            ["1. ", "ordered_list"],
+            ["2) ", "ordered_list"],
+            ["- ", "bullet_list"],
+            ["+ ", "bullet_list"],
+            ["* ", "bullet_list"],
+            ["> ", "blockquote"],
+            [">! ", "spoiler"],
+            ["# ", "heading"],
+            ["## ", "heading"],
+            ["### ", "heading"],
+            ["```", "code_block"],
+
+            // invalid rules
+            ["10. ", "paragraph"],
+            ["#### ", "paragraph"],
+        ])(
+            "should create a node on input '%s'",
+            async (input, expectedNodeType) => {
+                await clearEditor();
+                await typeText(input);
+                // TODO HACK don't use the debugging instance on window since it is unique to our specific view
+                const doc = await page.evaluate(() =>
+                    (<any>window).editorInstance.editorView.state.doc.toJSON()
+                );
+
+                expect(doc.content[0].type).toBe(expectedNodeType);
+            }
+        );
     });
 
     describe("editing images", () => {
