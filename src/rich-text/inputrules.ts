@@ -9,6 +9,7 @@ const blockquoteInputRule = wrappingInputRule(
     /^\s*>\s$/,
     schema.nodes.blockquote
 );
+const spoilerInputRule = wrappingInputRule(/^\s*>!\s$/, schema.nodes.spoiler);
 const headingInputRule = textblockTypeInputRule(
     new RegExp("^(#{1,3})\\s$"),
     schema.nodes.heading,
@@ -37,6 +38,7 @@ const orderedListRule = wrappingInputRule(
 export const richTextInputRules = inputRules({
     rules: [
         blockquoteInputRule,
+        spoilerInputRule,
         headingInputRule,
         codeBlockRule,
         unorderedListRule,
