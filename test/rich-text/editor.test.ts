@@ -150,12 +150,7 @@ describe("rich text editor view", () => {
             "<blockquote>quote here</blockquote>",
             `<blockquote><p>quote here</p></blockquote>`,
         ],
-        // TODO code behaves funky, even for html_inline
-        // [
-        //     "code",
-        //     "<code>rm -rf /</code>",
-        //     `<p><code>rm -rf /</code></p>`,
-        // ],
+        ["code", "<code>rm -rf /</code>", `<p><code>rm -rf /</code></p>`],
         ["del", "<del>deleted</del>", `<p><del>deleted</del></p>`],
         ["em", "<em>emphasis</em>", `<p><em>emphasis</em></p>`],
         ["h1", "<h1>text</h1>", `<h1>text</h1>`],

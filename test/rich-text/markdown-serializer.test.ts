@@ -186,7 +186,7 @@ describe("markdown-serializer", () => {
         [`<sup>test</sup>`, `<sup>test</sup>`],
         [`<sub>test</sub>`, `<sub>test</sub>`],
         ["`test`", "`test`"],
-        //[`<code>test</code>`, "<code>test</code>"],
+        [`<code>test</code>`, "<code>test</code>"],
         [
             `[test](https://www.example.com "title1")`,
             `[test](https://www.example.com "title1")`,

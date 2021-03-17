@@ -193,7 +193,7 @@ function tagInfoToToken(tagInfo: TagInfo, existing?: Token): Token {
             tokenType = "em" + postfix;
             break;
         case TagType.code:
-            tokenType = "code_inline";
+            tokenType = "code_inline_split" + postfix;
             break;
         case TagType.horizontal_rule:
             tokenType = "hr";
