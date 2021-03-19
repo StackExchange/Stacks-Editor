@@ -5,6 +5,7 @@
 .icon-bg {
     display: inline-block;
     vertical-align: bottom; // This is the same alignment as .svg-icon
+    pointer-events: none; // SVGs can troll the parent's events. Disabling this ensures we aren't showing tooltips more than once.
     border: none;
     height: 18px;
     width: 18px;
