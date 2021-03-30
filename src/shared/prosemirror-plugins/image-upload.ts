@@ -122,7 +122,6 @@ export class ImageUploader implements PluginView {
             <div class="fs-body2 p12 pb0"><label class="s-link" for="${
                 this.uploadField.id
             }">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
-            ${this.uploadField.outerHTML}
 
             <div class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
@@ -137,9 +136,8 @@ export class ImageUploader implements PluginView {
             </div>
         `;
 
-        // we need to re-fetch the uploadField instance after it's been added to the DOM
-        // to be able to properly register event handlers
-        this.uploadField = this.uploadContainer.querySelector("#fileUpload");
+        // add in the uploadField right after the first child element
+        this.uploadContainer.children[0].after(this.uploadField);
 
         this.uploadField.addEventListener("change", () => {
             this.handleFileSelection(view);
