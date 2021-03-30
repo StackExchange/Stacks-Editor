@@ -29,6 +29,8 @@ function createState(
     selectTo?: number
 ): EditorState {
     const container = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     container.innerHTML = content;
     const doc = DOMParser.fromSchema(richTextSchema).parse(container);
     let selection: TextSelection = undefined;

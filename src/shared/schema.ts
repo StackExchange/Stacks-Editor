@@ -1,4 +1,3 @@
-import { escapeHtml } from "markdown-it/lib/common/utils";
 import OrderedMap from "orderedmap";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error for some reason, schema is not in the types...
@@ -12,6 +11,7 @@ import {
     ParseRule,
     Schema,
 } from "prosemirror-model";
+import { escapeHTML } from "./utils";
 
 //TODO this relies on Stacks classes, should we abstract?
 
@@ -439,9 +439,8 @@ export class CodeStringParser extends DOMParser {
     declare static schemaRules: (schema: Schema) => ParseRule[];
 
     public parseCode(content: string, options?: ParseOptions): ProseMirrorNode {
-        const htmlContent = "<pre>" + escapeHtml(content) + "</pre>";
         const node = document.createElement("div");
-        node.innerHTML = htmlContent;
+        node.innerHTML = escapeHTML`<pre>${content}</pre>`;
 
         return super.parse(node, options);
     }

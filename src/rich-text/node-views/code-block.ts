@@ -1,6 +1,7 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { NodeView } from "prosemirror-view";
 import { getBlockLanguage } from "../../shared/highlighting/highlight-plugin";
+import { escapeHTML } from "../../shared/utils";
 
 /**
  * View with <code> wrapping/decorations for code_block nodes
@@ -18,7 +19,7 @@ export class CodeBlockView implements NodeView {
         const rawLanguage = this.getLanguageFromBlock(node);
         this.language = rawLanguage;
 
-        this.dom.innerHTML = `
+        this.dom.innerHTML = escapeHTML`
 <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-300 js-language-indicator" contenteditable=false>${rawLanguage}</div>
 <pre class="s-code-block"><code class="content-dom"></code></pre>
         `;

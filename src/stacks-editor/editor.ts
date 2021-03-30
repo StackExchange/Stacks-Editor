@@ -5,6 +5,7 @@ import {
     startStickyObservers,
     STICKY_OBSERVER_CLASS,
     StickyChangeDetails,
+    escapeHTML,
 } from "../shared/utils";
 import { View, CommonViewOptions, BaseView } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
@@ -306,19 +307,20 @@ export class StacksEditor implements View {
     private createEditorSwitcher(defaultItem: EditorType, menuTarget: Element) {
         const checkedProp =
             defaultItem === EditorType.Commonmark ? "checked" : "";
-        // TODO localization
-        const html = `<label class="grid--cell fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
-<label class="grid--cell mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
-    <span class="icon-bg iconMarkdown"></span>
-</label>
-<div class="grid--cell s-toggle-switch js-editor-mode-switcher">
-    <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
-    <div class="s-toggle-switch--indicator"></div>
-</div>`;
 
         const container = document.createElement("div");
         container.className = "grid--cell grid ai-center ml24 fc-medium";
-        container.innerHTML = html;
+
+        // TODO localization
+        container.innerHTML = escapeHTML`<label class="grid--cell fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
+            <label class="grid--cell mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
+                <span class="icon-bg iconMarkdown"></span>
+            </label>
+            <div class="grid--cell s-toggle-switch js-editor-mode-switcher">
+                <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
+                <div class="s-toggle-switch--indicator"></div>
+            </div>`;
+
         container.title = "Toggle Markdown editing";
 
         container

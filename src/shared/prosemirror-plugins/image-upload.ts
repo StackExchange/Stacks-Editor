@@ -9,6 +9,7 @@ import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { richTextSchema } from "../schema";
 import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
+import { escapeHTML } from "../utils";
 
 /**
  * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
@@ -117,7 +118,7 @@ export class ImageUploader implements PluginView {
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload";
 
-        this.uploadContainer.innerHTML = `
+        this.uploadContainer.innerHTML = escapeHTML`
             <div class="fs-body2 p12 pb0"><label class="s-link" for="${
                 this.uploadField.id
             }">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
@@ -267,7 +268,7 @@ export class ImageUploader implements PluginView {
         }
 
         validationElement.classList.remove("d-none");
-        validationElement.innerHTML = errorMessage;
+        validationElement.textContent = errorMessage;
     }
 
     hideValidationError(): void {

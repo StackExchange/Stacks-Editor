@@ -8,6 +8,8 @@ import { insertLinkCommand } from "../../../src/rich-text/commands";
 // TODO move to helpers?
 function createState(content: string) {
     const container = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     container.innerHTML = content;
     const doc = DOMParser.fromSchema(richTextSchema).parse(container);
 

@@ -7,7 +7,7 @@ import {
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
 import { richTextSchema as schema } from "../../shared/schema";
-import { validateLink } from "../../shared/utils";
+import { escapeHTML, validateLink } from "../../shared/utils";
 
 class LinkTooltip {
     private content: HTMLElement;
@@ -41,41 +41,40 @@ class LinkTooltip {
     }
 
     constructor(state: EditorState<Schema>) {
-        // TODO localization (everywhere we have harcoded template strings)
-        const tooltipString = `<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
-    id="link-tooltip-popover"
-    role="menu">
-    <div class="s-popover--arrow"></div>
-    <div class="grid ai-center">
-        <a href="${this.href}"
-            class="wmx3 grid--cell fs-body1 fw-normal d-inline-block truncate ml8 mr4"
-            target="_blank"
-            rel="nofollow noreferrer">${this.href}</a>
-        <div class="grid--cell d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
-            <input type="text"
-                    class="s-input s-input__sm js-link-tooltip-input"
-                    autocomplete="off"
-                    name="link"
-                    value="${this.href}" />
-        </div>
-        <button type="button"
-                class="grid--cell s-btn mr4 js-link-tooltip-edit"
-                title="${"Edit link"}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
-        <button type="button"
-                class="grid--cell s-btn d-none js-link-tooltip-apply"
-                title="${"Apply new link"}">${"Apply"}</button>
-        <button type="button"
-                class="grid--cell s-btn js-link-tooltip-remove"
-                title="${"Remove link"}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
-    </div>
-</div>`;
-
         this.content = document.createElement("span");
         this.content.className = "w0";
         this.content.setAttribute("aria-controls", "link-tooltip-popover");
         this.content.setAttribute("data-controller", "s-popover");
         this.content.setAttribute("data-s-popover-placement", "bottom");
-        this.content.innerHTML = tooltipString;
+
+        // TODO localization (everywhere we have harcoded template strings)
+        this.content.innerHTML = escapeHTML`<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
+            id="link-tooltip-popover"
+            role="menu">
+            <div class="s-popover--arrow"></div>
+            <div class="grid ai-center">
+                <a href="${this.href}"
+                    class="wmx3 grid--cell fs-body1 fw-normal d-inline-block truncate ml8 mr4"
+                    target="_blank"
+                    rel="nofollow noreferrer">${this.href}</a>
+                <div class="grid--cell d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
+                    <input type="text"
+                            class="s-input s-input__sm js-link-tooltip-input"
+                            autocomplete="off"
+                            name="link"
+                            value="${this.href}" />
+                </div>
+                <button type="button"
+                        class="grid--cell s-btn mr4 js-link-tooltip-edit"
+                        title="${"Edit link"}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
+                <button type="button"
+                        class="grid--cell s-btn d-none js-link-tooltip-apply"
+                        title="${"Apply new link"}">${"Apply"}</button>
+                <button type="button"
+                        class="grid--cell s-btn js-link-tooltip-remove"
+                        title="${"Remove link"}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
+            </div>
+        </div>`;
 
         // never allow the popover to hide itself. It either exists visibly or not at all
         this.content.addEventListener("s-popover:hide", (e: Event) => {

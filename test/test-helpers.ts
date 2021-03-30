@@ -12,6 +12,8 @@ import { EditorState } from "prosemirror-state";
  */
 export function normalize(htmlString: string): string {
     const div = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     div.innerHTML = htmlString.replace(/^\s+</gm, "<").replace(/\r?\n/g, "");
     return div.innerHTML;
 }
@@ -22,6 +24,8 @@ export function normalize(htmlString: string): string {
  */
 export function toNode(htmlString: string): Node {
     const div = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     div.innerHTML = htmlString;
     return div.firstChild;
 }

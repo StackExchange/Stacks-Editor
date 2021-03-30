@@ -327,7 +327,7 @@ export function dropdownItem(
     button.type = "button";
     button.className = `s-btn s-btn__unset grid--cell ta-left px12 py4 h:bg-black-050 c-pointer js-editor-btn`;
     button.dataset.key = key;
-    button.innerHTML = title;
+    button.textContent = title;
 
     return {
         key: key,
@@ -346,7 +346,7 @@ export function dropdownSection(title: string, key: string): MenuCommandEntry {
     const section = document.createElement("span");
     section.className = `grid--cell ta-left fs-fine tt-uppercase mx12 mb6 mt12 fc-black-400`;
     section.dataset.key = key;
-    section.innerHTML = title;
+    section.textContent = title;
 
     return {
         key: key,

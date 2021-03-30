@@ -38,6 +38,7 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
         // only render example.com urls, no matter what's registered downstream
         if (url.includes("example.com")) {
             const date = new Date().toString();
+            // NOTE: usually we'd use escapeHTML here, but I don't want to pull in any of the bundle (for demo purposes)
             returnValue = `
             <div class="s-link-preview js-onebox">
                 <div class="s-link-preview--header">
@@ -54,6 +55,8 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
 
         return setTimeoutAsync(5000).then(() => {
             const el = document.createElement("div");
+            // Note: local development only, don't care to sanitize and don't want to import escapeHTML
+            // eslint-disable-next-line no-unsanitized/property
             el.innerHTML = returnValue;
             return el;
         });

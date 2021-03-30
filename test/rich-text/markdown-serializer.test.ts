@@ -15,6 +15,8 @@ function nonMarkdownRichView(domstringInput: string) {
     const editor = richView("");
     const oldState = editor.editorView.state;
     const doc = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     doc.innerHTML = domstringInput;
     editor.editorView.updateState(
         EditorState.create({
