@@ -148,10 +148,13 @@ describe("rich-text mode", () => {
                 await clearEditor();
                 await typeText(input);
                 // TODO HACK don't use the debugging instance on window since it is unique to our specific view
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const doc = await page.evaluate(() =>
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
                     (<any>window).editorInstance.editorView.state.doc.toJSON()
                 );
 
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(doc.content[0].type).toBe(expectedNodeType);
             }
         );

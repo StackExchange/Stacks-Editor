@@ -360,7 +360,10 @@ const defaultCodeMarkDeserializer = defaultMarkdownSerializer.marks
 const extendedCodeMarkDeserializer: MarkSerializerConfig = {
     open(state, mark, parent, index) {
         if (typeof defaultCodeMarkDeserializer.open === "string") {
-            return mark.attrs.markup || defaultCodeMarkDeserializer.open;
+            return (
+                (mark.attrs.markup as string) ||
+                defaultCodeMarkDeserializer.open
+            );
         }
 
         // run the backing method to get where the markup should be placed
@@ -380,7 +383,10 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
     },
     close(state, mark, parent, index) {
         if (typeof defaultCodeMarkDeserializer.close === "string") {
-            return mark.attrs.markup || defaultCodeMarkDeserializer.open;
+            return (
+                (mark.attrs.markup as string) ||
+                defaultCodeMarkDeserializer.open
+            );
         }
 
         // run the backing method to get where the markup should be placed
@@ -394,7 +400,7 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
 
         if (mark.attrs.markup) {
             // insert the `/` on html closing tags
-            const markup = mark.attrs.markup.replace(/^</, "</");
+            const markup = (mark.attrs.markup as string).replace(/^</, "</");
             defaultResult = defaultResult.replace("`", markup);
         }
 
