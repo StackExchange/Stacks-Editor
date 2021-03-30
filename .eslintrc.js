@@ -13,6 +13,7 @@ module.exports = {
         "prettier",
         "plugin:jest/recommended",
         "plugin:jest/style",
+        "plugin:no-unsanitized/DOM",
     ],
     rules: {
         "no-console": "error",
