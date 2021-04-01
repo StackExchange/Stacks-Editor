@@ -119,9 +119,7 @@ export class ImageUploader implements PluginView {
         this.uploadField.id = "fileUpload";
 
         this.uploadContainer.innerHTML = escapeHTML`
-            <div class="fs-body2 p12 pb0"><label class="s-link" for="${
-                this.uploadField.id
-            }">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
+            <div class="fs-body2 p12 pb0"><label class="s-link" for="${this.uploadField.id}">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
 
             <div class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
@@ -130,14 +128,26 @@ export class ImageUploader implements PluginView {
                 <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
                 <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
                 <div class="ml64 grid fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
-                    <div>${this.uploadOptions?.brandingHtml || ""}</div>
-                    <div>${this.uploadOptions?.contentPolicyHtml || ""}</div>
+                    <div class="js-branding-html"></div>
+                    <div class="js-content-policy-html"></div>
                 </div>
             </div>
         `;
 
         // add in the uploadField right after the first child element
         this.uploadContainer.children[0].after(this.uploadField);
+
+        // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
+        // eslint-disable-next-line no-unsanitized/property
+        this.uploadContainer.querySelector(
+            ".js-branding-html"
+        ).innerHTML = this.uploadOptions?.brandingHtml;
+
+        // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
+        // eslint-disable-next-line no-unsanitized/property
+        this.uploadContainer.querySelector(
+            ".js-content-policy-html"
+        ).innerHTML = this.uploadOptions?.contentPolicyHtml;
 
         this.uploadField.addEventListener("change", () => {
             this.handleFileSelection(view);
