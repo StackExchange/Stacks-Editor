@@ -34,7 +34,7 @@ const orderedListRule = wrappingInputRule(
 
 export const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
 export const boldRegex = /\*\*(\S(?:|.*?\S))\*\*$/;
-export const emphasisRegex = /(?<!\*)\*([^*\s](?:|[^*]*?[^*\s]))\*$/;
+export const emphasisRegex = /(?<!\*)\*([^*\s](?:|.*?[^*\s]))\*$/;
 export const linkRegex = /\[(.+)\]\((.+)\)$/;
 
 const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code, {});
