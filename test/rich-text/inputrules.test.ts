@@ -47,6 +47,11 @@ describe("mark input rules", () => {
             "match",
         ],
         ["[match](something)", "[match](something)", "match"],
+        [
+            "[this is a match](something)",
+            "[this is a match](something)",
+            "this is a match",
+        ],
         ["[no-match(https://example.com)", null, null],
         ["[no-match)(https://example.com", null, null],
         ["no-match](https://example.com)", null, null],
