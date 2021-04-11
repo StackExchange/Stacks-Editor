@@ -1,3 +1,5 @@
+import { EditorState } from "prosemirror-state";
+
 /**
  * Normalize HTML given as a string representation.
  * This is useful if you want to compare expected and actual HTML
@@ -10,6 +12,8 @@
  */
 export function normalize(htmlString: string): string {
     const div = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     div.innerHTML = htmlString.replace(/^\s+</gm, "<").replace(/\r?\n/g, "");
     return div.innerHTML;
 }
@@ -20,6 +24,17 @@ export function normalize(htmlString: string): string {
  */
 export function toNode(htmlString: string): Node {
     const div = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     div.innerHTML = htmlString;
     return div.firstChild;
+}
+
+/**
+ * Gets the currently selected text from the state
+ */
+export function getSelectedText(state: EditorState): string {
+    const { to, from } = state.selection;
+
+    return state.doc.textBetween(from, to);
 }

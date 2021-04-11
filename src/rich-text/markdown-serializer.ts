@@ -132,7 +132,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         let escapedText = state.esc(node.text, startOfLine);
 
         // built in escape doesn't get all the cases TODO upstream!
-        escapedText = escapedText.replace(/_/g, "\\_");
+        escapedText = escapedText.replace(/\b_|_\b/g, "\\_");
 
         state.text(escapedText, false);
     },
@@ -354,6 +354,61 @@ const extendedLinkMarkDeserializer: MarkSerializerConfig = {
     },
 };
 
+// add support for <code> markup
+const defaultCodeMarkDeserializer = defaultMarkdownSerializer.marks
+    .code as MarkSerializerConfig;
+const extendedCodeMarkDeserializer: MarkSerializerConfig = {
+    open(state, mark, parent, index) {
+        if (typeof defaultCodeMarkDeserializer.open === "string") {
+            return (
+                (mark.attrs.markup as string) ||
+                defaultCodeMarkDeserializer.open
+            );
+        }
+
+        // run the backing method to get where the markup should be placed
+        // TODO the types are incorrect, the correct return type is "string", not "void"
+        let defaultResult = (defaultCodeMarkDeserializer.open(
+            state,
+            mark,
+            parent,
+            index
+        ) as unknown) as string;
+
+        if (mark.attrs.markup) {
+            defaultResult = defaultResult.replace("`", mark.attrs.markup);
+        }
+
+        return defaultResult;
+    },
+    close(state, mark, parent, index) {
+        if (typeof defaultCodeMarkDeserializer.close === "string") {
+            return (
+                (mark.attrs.markup as string) ||
+                defaultCodeMarkDeserializer.open
+            );
+        }
+
+        // run the backing method to get where the markup should be placed
+        // TODO the types are incorrect, the correct return type is "string", not "void"
+        let defaultResult = (defaultCodeMarkDeserializer.close(
+            state,
+            mark,
+            parent,
+            index
+        ) as unknown) as string;
+
+        if (mark.attrs.markup) {
+            // insert the `/` on html closing tags
+            const markup = (mark.attrs.markup as string).replace(/^</, "</");
+            defaultResult = defaultResult.replace("`", markup);
+        }
+
+        return defaultResult;
+    },
+    escape: defaultCodeMarkDeserializer.escape,
+};
+
 // extend the default markdown serializer's marks and add our own
 const customMarkdownSerializerMarks: { [key: string]: MarkSerializerConfig } = {
     ...defaultMarkdownSerializer.marks,
@@ -362,6 +417,7 @@ const customMarkdownSerializerMarks: { [key: string]: MarkSerializerConfig } = {
         strong: genMarkupAwareMarkConfig(
             defaultMarkdownSerializer.marks.strong
         ),
+        code: extendedCodeMarkDeserializer,
         link: extendedLinkMarkDeserializer,
         strike: genMarkupAwareMarkConfig({
             open: "~~",

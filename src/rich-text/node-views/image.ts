@@ -1,5 +1,6 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { EditorView, NodeView } from "prosemirror-view";
+import { escapeHTML } from "../../shared/utils";
 
 //NOTE relies on Stacks classes. Should we separate out so the view is more agnostic?
 
@@ -30,7 +31,7 @@ export class ImageView implements NodeView {
         this.dom = document.createElement("div");
         this.dom.appendChild(this.img);
         this.dom.appendChild(this.popover);
-        this.dom.addEventListener("s-popover:hide", (event) =>
+        this.dom.addEventListener("s-popover:hide", (event: Event) =>
             this.preventClose(event)
         );
     }
@@ -94,7 +95,7 @@ export class ImageView implements NodeView {
     private createForm(): HTMLFormElement {
         const form = document.createElement("form");
         form.className = "grid fd-column";
-        form.innerHTML = `
+        form.innerHTML = escapeHTML`
             <label class="grid--cell s-label mb4" for="img-src-${this.id}">Image source</label>
             <div class="grid ps-relative mb12">
                 <input class="grid--cell s-input" type="text" name="src" id="img-src-${this.id}" value="${this.img.src}" placeholder="https://example.com/image.png"/>

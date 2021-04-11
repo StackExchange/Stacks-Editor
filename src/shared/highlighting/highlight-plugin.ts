@@ -119,7 +119,7 @@ export function CodeBlockHighlightPlugin(
 
     const hljs = getHljsInstance();
 
-    // if, for some reason, hljs fails to instantiate, don't crash the entire editor
+    // if hljs fails to instantiate (optional dependency), don't crash the entire editor
     if (!hljs) {
         return new Plugin({});
     }

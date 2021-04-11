@@ -13,11 +13,38 @@
 
 <body class="p24">
     <div class="ps-fixed t8 r8 sm:d-none">
-        <a href="#" class="s-btn js-toggle-dark">Toggle dark mode</a>
-        <a href="#" class="s-btn js-toggle-readonly">Toggle readonly</a>
-        <a href="./empty.html" class="s-btn">Empty editor</a>
-        <a href="./noimage.html" class="s-btn">No image upload</a>
-        <a href="./tables.html" class="s-btn">Tables playground</a>
+        <button type="button" class="s-btn s-btn__dropdown" role="button" aria-controls="js-settings-popover"
+            data-controller="s-popover" data-action="s-popover#toggle" data-s-popover-placement="bottom-end">
+            Settings
+        </button>
+        <div class="s-popover" id="js-settings-popover" role="menu">
+            <div class="s-popover--arrow"></div>
+            <ul class="s-sidebarwidget--content s-sidebarwidget__items btw0 p0">
+                <li class="grid ai-center s-sidebarwidget--item">
+                    <div class="grid--cell s-toggle-switch">
+                        <input id="js-toggle-dark" type="checkbox" />
+                        <div class="s-toggle-switch--indicator"></div>
+                    </div>
+                    <label for="js-toggle-dark" class="grid--cell ml4">Dark mode</label>
+                </li>
+                <li class="grid ai-center s-sidebarwidget--item">
+                    <div class="grid--cell s-toggle-switch">
+                        <input id="js-toggle-readonly" type="checkbox" />
+                        <div class="s-toggle-switch--indicator"></div>
+                    </div>
+                    <label for="js-toggle-readonly" class="grid--cell ml4">Readonly</label>
+                </li>
+                <li class="s-sidebarwidget--item">
+                    <a href="./empty.html" class="s-link">Empty editor</a>
+                </li>
+                <li class="s-sidebarwidget--item">
+                    <a href="./noimage.html" class="s-link">No image upload</a>
+                </li>
+                <li class="s-sidebarwidget--item">
+                    <a href="./tables.html" class="s-link">Tables playground</a>
+                </li>
+            </ul>
+        </div>
     </div>
     <div class="wmx6 m-auto mt32">
         <textarea id="content" class="d-none">

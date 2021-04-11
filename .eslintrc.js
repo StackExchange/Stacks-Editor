@@ -3,16 +3,17 @@ module.exports = {
     parser: "@typescript-eslint/parser",
     parserOptions: {
         tsconfigRootDir: __dirname,
-        project: ["./tsconfig.eslint.json"],
+        project: ["./config/tsconfig.eslint.json"],
     },
     plugins: ["@typescript-eslint", "jest"],
     extends: [
         "eslint:recommended",
         "plugin:@typescript-eslint/recommended",
         "plugin:@typescript-eslint/recommended-requiring-type-checking",
-        "prettier/@typescript-eslint",
+        "prettier",
         "plugin:jest/recommended",
         "plugin:jest/style",
+        "plugin:no-unsanitized/DOM",
     ],
     rules: {
         "no-console": "error",

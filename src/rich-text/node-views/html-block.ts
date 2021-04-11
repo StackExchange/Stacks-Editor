@@ -10,6 +10,9 @@ export class HtmlBlock implements NodeView {
         this.dom.className = "html_block ProseMirror-widget";
         // TODO need to indicate that this can't be edited
         //this.dom.classList.add("bg-red-100");
+
+        // NOTE XSS safe, content is sanitized before getting here
+        // eslint-disable-next-line no-unsanitized/property
         this.dom.innerHTML = node.attrs.content as string;
     }
 }
@@ -36,6 +39,8 @@ export class HtmlBlockContainer implements NodeView {
             contentDomPlaceholder +
             (node.attrs.contentClose as string);
 
+        // NOTE XSS safe, content is sanitized before getting here
+        // eslint-disable-next-line no-unsanitized/property
         this.dom.innerHTML = wrappingHtmlString;
         this.contentDOM = this.dom.querySelector(".ProseMirror-contentdom");
     }

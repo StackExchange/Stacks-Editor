@@ -17,7 +17,12 @@ describe("html markdown-it plugin", () => {
             [`<strike>test</strike>`, `strike`, `s_open`, `s_close`],
             [`<i>test</i>`, `i`, `em_open`, `em_close`],
             [`<em>test</em>`, `em`, `em_open`, `em_close`],
-            [`<code>test</code>`, `code`, `code_inline`, `code_inline`],
+            [
+                `<code>test</code>`,
+                `code`,
+                `code_inline_split_open`,
+                `code_inline_split_close`,
+            ],
             [`<a>test</a>`, `a`, `link_open`, `link_close`],
             [`<kbd>test</kbd>`, `kbd`, `kbd_open`, `kbd_close`],
             [`<sup>test</sup>`, `sup`, `sup_open`, `sup_close`],

@@ -1,6 +1,6 @@
 {
-    "extends": "../tsconfig.eslint.json",
+    "extends": "../config/tsconfig.eslint.json",
     "compilerOptions": {
-        "target": "es6",
+        "target": "es6"
     }
 }

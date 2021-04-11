@@ -1,7 +1,7 @@
 // NOTE: It is important that these are all `type` only imports!
 // This keeps code that relies on this file from accidentally introducing cyclical dependencies
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
-import type { Schema } from "prosemirror-model";
+import type { Schema, Node } from "prosemirror-model";
 import type { EditorState } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { ExternalEditorPlugin } from "./external-editor-plugin";
@@ -84,12 +84,62 @@ export const defaultParserFeatures: CommonmarkParserFeatures = {
 
 export interface View {
     readonly dom: Element;
-    readonly content: string;
     readonly editorView: EditorView;
     readonly readonly: boolean;
+    content: string;
 
     focus(): void;
     destroy(): void;
+}
+
+/** Abstract class that contains shared functionality for implementing View */
+export abstract class BaseView implements View {
+    editorView: EditorView;
+
+    get document(): Node {
+        return this.editorView.state.doc;
+    }
+
+    get dom(): Element {
+        return this.editorView.dom;
+    }
+
+    get readonly(): boolean {
+        return !this.editorView.editable;
+    }
+
+    focus(): void {
+        this.editorView?.focus();
+    }
+
+    destroy(): void {
+        this.editorView?.destroy();
+    }
+
+    get content(): string {
+        return this.serializeContent();
+    }
+
+    set content(value: string) {
+        let tr = this.editorView.state.tr;
+        const doc = this.editorView.state.doc;
+
+        const newDoc = this.parseContent(value);
+        tr = tr.replaceWith(0, doc.content.size, newDoc);
+
+        this.editorView.dispatch(tr);
+    }
+
+    /**
+     * Parses a string containing markdown into a Node
+     * @param content The markdown string to parse
+     */
+    abstract parseContent(content: string): Node;
+
+    /**
+     * Serializes the current document's contents into a markdown string
+     */
+    abstract serializeContent(): string;
 }
 
 export interface PluginView {

@@ -493,12 +493,8 @@ export function insertTableCommand(
     const paragraph = () => schema.nodes.paragraph.create(null);
 
     const t = table(
-        head(row(header(), header(), header())),
-        body(
-            row(cell(), cell(), cell()),
-            row(cell(), cell(), cell()),
-            row(cell(), cell(), cell())
-        )
+        head(row(header(), header())),
+        body(row(cell(), cell()), row(cell(), cell()))
     );
     let tr = state.tr.replaceSelectionWith(t);
     dispatch(tr.scrollIntoView());
@@ -652,11 +648,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertImage",
                     command: insertImageCommand,
-                    dom: makeMenuIcon(
-                        "Image",
-                        "Image",
-                        "insert-image-btn"
-                    ),
+                    dom: makeMenuIcon("Image", "Image", "insert-image-btn"),
                 },
                 !!options.imageUpload?.handler
             ),
@@ -664,11 +656,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertTable",
                     command: insertTableCommand,
-                    dom: makeMenuIcon(
-                        "Table",
-                        "Table",
-                        "insert-table-btn"
-                    ),
+                    dom: makeMenuIcon("Table", "Table", "insert-table-btn"),
                     visible: (state: EditorState) => !inTable(state.selection),
                 },
                 options.parserFeatures.tables

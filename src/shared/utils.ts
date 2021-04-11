@@ -1,3 +1,4 @@
+import { escapeHtml } from "markdown-it/lib/common/utils";
 import { EditorState } from "prosemirror-state";
 
 /**
@@ -174,4 +175,21 @@ export function validateLink(url: string): boolean {
         validLinkRegex.test(normalizedUrl) ||
         validMailtoRegex.test(normalizedUrl)
     );
+}
+
+/**
+ * Template function to escape all html in substitions, but not the rest of the template.
+ * For instance, escapeHTML`<p>${"<span>user input</span>"}</p>` will escape the inner span, but not the outer p tags.
+ * Uses markdown-it's @see escapeHtml in the background
+ */
+export function escapeHTML(
+    strings: TemplateStringsArray,
+    ...subs: unknown[]
+): string {
+    let output = strings[0];
+    for (let i = 0, len = subs.length; i < len; i++) {
+        output += escapeHtml(subs[i]?.toString() || "") + strings[i + 1];
+    }
+
+    return output;
 }

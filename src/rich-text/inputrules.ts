@@ -1,8 +1,5 @@
 import {
-    ellipsis,
-    emDash,
     inputRules,
-    smartQuotes,
     textblockTypeInputRule,
     wrappingInputRule,
     InputRule,
@@ -15,6 +12,7 @@ const blockquoteInputRule = wrappingInputRule(
     /^\s*>\s$/,
     schema.nodes.blockquote
 );
+const spoilerInputRule = wrappingInputRule(/^\s*>!\s$/, schema.nodes.spoiler);
 const headingInputRule = textblockTypeInputRule(
     new RegExp("^(#{1,3})\\s$"),
     schema.nodes.heading,
@@ -26,7 +24,7 @@ const unorderedListRule = wrappingInputRule(
     schema.nodes.bullet_list
 );
 const orderedListRule = wrappingInputRule(
-    /^\s*\d\.\s$/,
+    /^\s*\d(\.|\))\s$/,
     schema.nodes.ordered_list,
     (match) => ({ order: +match[1] }),
     (match, node) => node.childCount + <number>node.attrs.order == +match[1]
@@ -103,18 +101,14 @@ function markInputRule(
  * Defines all input rules we're using in our rich-text editor.
  * Input rules are formatting operations that trigger as you type based on regular expressions
  *
- * We're reusing some of the built-in input rules like "smart quotes" or "ellipsis".
- *
  * Examples:
  *      * starting a line with "# " will turn the line into a headline
  *      * starting a line with "> " will insert a new blockquote in place
  */
 export const richTextInputRules = inputRules({
     rules: [
-        emDash,
-        ellipsis,
-        ...smartQuotes,
         blockquoteInputRule,
+        spoilerInputRule,
         headingInputRule,
         codeBlockRule,
         unorderedListRule,

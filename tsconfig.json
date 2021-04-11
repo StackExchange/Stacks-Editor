@@ -8,9 +8,8 @@
         "allowJs": true,
         "esModuleInterop": true,
         "moduleResolution": "node",
-        "declaration": true
+        "declaration": true,
+        "skipLibCheck": true
     },
-    "include": [
-        "src/**/*"
-    ]
+    "include": ["src/**/*"]
 }

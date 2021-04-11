@@ -9,6 +9,7 @@ import { EditorView } from "prosemirror-view";
 import {
     collapseExternalPlugins,
     combineSchemas,
+    ExternalEditorPlugin,
 } from "../shared/external-editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { error, log } from "../shared/logger";
@@ -23,7 +24,11 @@ import {
 } from "../shared/prosemirror-plugins/readonly";
 import { CodeStringParser, richTextSchema } from "../shared/schema";
 import { deepMerge } from "../shared/utils";
-import { CommonViewOptions, defaultParserFeatures, View } from "../shared/view";
+import {
+    BaseView,
+    CommonViewOptions,
+    defaultParserFeatures,
+} from "../shared/view";
 import { createMenu } from "./commands";
 import { richTextInputRules } from "./inputrules";
 import { richTextKeymap, tableKeymap } from "./key-bindings";
@@ -47,62 +52,24 @@ export interface RichTextOptions extends CommonViewOptions {
 /*
  * Implements an WYSIWYG-style editor. Content will be rendered immediately by prosemirror but the in- and output will still be markdown
  */
-export class RichTextEditor implements View {
-    public editorView: EditorView;
-
+export class RichTextEditor extends BaseView {
     private options: RichTextOptions;
     private markdownSerializer: MarkdownSerializer;
+    private externalPlugins: ExternalEditorPlugin;
 
     constructor(target: Node, content: string, options: RichTextOptions = {}) {
+        super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
 
-        const externalPlugins = collapseExternalPlugins(
+        this.externalPlugins = collapseExternalPlugins(
             this.options.externalPlugins
         );
 
-        const alteredSchema = combineSchemas(
-            richTextSchema,
-            externalPlugins?.schema
-        );
-
-        const markdownParser = buildMarkdownParser(
-            this.options.parserFeatures,
-            alteredSchema,
-            externalPlugins
-        );
-
         this.markdownSerializer = stackOverflowMarkdownSerializer(
-            externalPlugins
+            this.externalPlugins
         );
 
-        let doc: ProseMirrorNode;
-
-        try {
-            doc = markdownParser.parse(content);
-        } catch (e) {
-            // there was a catastrophic error! Try not to lose the user's doc...
-            error(
-                "RichTextEditorConstructor markdownParser.parse",
-                "Catastrophic parse error!",
-                e
-            );
-
-            doc = CodeStringParser.fromSchema(alteredSchema).parseCode(content);
-
-            // manually add an h1 warning to the newly parsed doc
-            const tr = new Transform(doc).insert(
-                0,
-                alteredSchema.node(
-                    "heading",
-                    { level: 1 },
-                    alteredSchema.text(
-                        "WARNING! There was an error parsing the document"
-                    )
-                )
-            );
-
-            doc = tr.doc;
-        }
+        const doc = this.parseContent(content);
 
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
@@ -134,7 +101,7 @@ export class RichTextEditor implements View {
                         spoilerToggle,
                         tables,
                         codePasteHandler,
-                        ...externalPlugins.plugins,
+                        ...this.externalPlugins.plugins,
                     ],
                 }),
                 nodeViews: {
@@ -153,7 +120,7 @@ export class RichTextEditor implements View {
                     html_block_container: function (node) {
                         return new HtmlBlockContainer(node);
                     },
-                    ...externalPlugins.nodeViews,
+                    ...this.externalPlugins.nodeViews,
                 },
             }
         );
@@ -162,22 +129,6 @@ export class RichTextEditor implements View {
             "prosemirror rich-text document",
             this.editorView.state.doc.toJSON().content
         );
-    }
-
-    get content(): string {
-        return this.markdownSerializer.serialize(this.editorView.state.doc);
-    }
-
-    get document(): ProseMirrorNode {
-        return this.editorView.state.doc;
-    }
-
-    get dom(): Element {
-        return this.editorView.dom;
-    }
-
-    get readonly(): boolean {
-        return !this.editorView.editable;
     }
 
     static get defaultOptions(): RichTextOptions {
@@ -194,10 +145,51 @@ export class RichTextEditor implements View {
         };
     }
 
-    focus(): void {
-        this.editorView.focus();
+    parseContent(content: string): ProseMirrorNode {
+        const alteredSchema = combineSchemas(
+            richTextSchema,
+            this.externalPlugins?.schema
+        );
+
+        const markdownParser = buildMarkdownParser(
+            this.options.parserFeatures,
+            alteredSchema,
+            this.externalPlugins
+        );
+
+        let doc: ProseMirrorNode;
+
+        try {
+            doc = markdownParser.parse(content);
+        } catch (e) {
+            // there was a catastrophic error! Try not to lose the user's doc...
+            error(
+                "RichTextEditorConstructor markdownParser.parse",
+                "Catastrophic parse error!",
+                e
+            );
+
+            doc = CodeStringParser.fromSchema(alteredSchema).parseCode(content);
+
+            // manually add an h1 warning to the newly parsed doc
+            const tr = new Transform(doc).insert(
+                0,
+                alteredSchema.node(
+                    "heading",
+                    { level: 1 },
+                    alteredSchema.text(
+                        "WARNING! There was an error parsing the document"
+                    )
+                )
+            );
+
+            doc = tr.doc;
+        }
+
+        return doc;
     }
-    destroy(): void {
-        this.editorView.destroy();
+
+    serializeContent(): string {
+        return this.markdownSerializer.serialize(this.editorView.state.doc);
     }
 }

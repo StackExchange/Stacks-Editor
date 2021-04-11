@@ -127,6 +127,11 @@ const customMarkdownParserTokens: { [key: string]: TokenConfig } = {
         spoiler: {
             block: "spoiler",
         },
+
+        // support <code>foo</code> which parses differently from `bar`
+        code_inline_split: {
+            mark: "code",
+        },
     },
 };
 

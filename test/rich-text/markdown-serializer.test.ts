@@ -15,6 +15,8 @@ function nonMarkdownRichView(domstringInput: string) {
     const editor = richView("");
     const oldState = editor.editorView.state;
     const doc = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     doc.innerHTML = domstringInput;
     editor.editorView.updateState(
         EditorState.create({
@@ -186,7 +188,7 @@ describe("markdown-serializer", () => {
         [`<sup>test</sup>`, `<sup>test</sup>`],
         [`<sub>test</sub>`, `<sub>test</sub>`],
         ["`test`", "`test`"],
-        //[`<code>test</code>`, "<code>test</code>"],
+        [`<code>test</code>`, "<code>test</code>"],
         [
             `[test](https://www.example.com "title1")`,
             `[test](https://www.example.com "title1")`,
@@ -204,7 +206,12 @@ describe("markdown-serializer", () => {
         }
     );
 
-    const escapeData = [String.raw`¯\\\_(ツ)\_/¯`];
+    const escapeData = [
+        String.raw`¯\\\_(ツ)\_/¯`,
+        String.raw`\_not-emphasized\_`,
+        String.raw`_intra_text_underscores_are_not_emphasized_`,
+        String.raw`http://www.example.com/dont_emphasize_urls`,
+    ];
 
     it.each(escapeData)(
         "should escape plain-text containing markdown characters",

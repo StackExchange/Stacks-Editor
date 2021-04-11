@@ -132,7 +132,7 @@ describe("rich text editor view", () => {
             const richEditorView = richView(markdown);
 
             const preElement = richEditorView.dom.querySelector("pre");
-            const expectedCodeHtml = `<code class="content-dom"><span class="hljs-built_in">console</span>.log(<span class="hljs-string">'hello, world!'</span>)</code>`;
+            const expectedCodeHtml = `<code class="content-dom">console.<span class="hljs-built_in">log</span>(<span class="hljs-string">'hello, world!'</span>)</code>`;
             expect(preElement.innerHTML).toEqual(normalize(expectedCodeHtml));
         });
     });
@@ -150,12 +150,7 @@ describe("rich text editor view", () => {
             "<blockquote>quote here</blockquote>",
             `<blockquote><p>quote here</p></blockquote>`,
         ],
-        // TODO code behaves funky, even for html_inline
-        // [
-        //     "code",
-        //     "<code>rm -rf /</code>",
-        //     `<p><code>rm -rf /</code></p>`,
-        // ],
+        ["code", "<code>rm -rf /</code>", `<p><code>rm -rf /</code></p>`],
         ["del", "<del>deleted</del>", `<p><del>deleted</del></p>`],
         ["em", "<em>emphasis</em>", `<p><em>emphasis</em></p>`],
         ["h1", "<h1>text</h1>", `<h1>text</h1>`],
@@ -329,6 +324,22 @@ _world_.
     });
 
     describe("general", () => {
+        it.each(["", "# testing some *stuff*"])(
+            "should get and set content",
+            (content) => {
+                const baseContent = "# Here is _some_\n\n> **base** content";
+                const view = richView(baseContent);
+                // check the initial value
+                expect(view.content).toBe(baseContent);
+
+                // set it
+                view.content = content;
+
+                // check that the new value is correct
+                expect(view.content).toBe(content);
+            }
+        );
+
         it("should recover from catastrophic markdown parse crashes", () => {
             // update the mock of buildMarkdownParser to add in a faulty md plugin
             mockedMdp.buildMarkdownParser.mockImplementation((...args) => {

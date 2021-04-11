@@ -1,14 +1,14 @@
-const { defaults: tsjPreset } = require("ts-jest/presets");
-
 module.exports = {
-    preset: "jest-playwright-preset",
-    transform: {
-        ...tsjPreset.transform,
-    },
     globals: {
         "ts-jest": {
             tsconfig: "./test/tsconfig.json",
         },
+    },
+
+    serverOptions: {
+        command: "npm start -- --port 8081 --open false",
+        launchTimeout: 20000,
+        port: 8081,
     },
 
     // uncomment to see what playwright's doing

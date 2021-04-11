@@ -5,6 +5,7 @@ import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 import MarkdownIt from "markdown-it/lib";
 import Token from "markdown-it/lib/token";
+import { escapeHTML } from "../shared/utils";
 
 interface SnippetEditorState {
     language: string | null;
@@ -28,7 +29,7 @@ class StackSnippetsView implements NodeView {
         this.state = StackSnippetsView.getSnippetArgs(rawDataString);
 
         //TODO hack?
-        this.dom.innerHTML = `
+        this.dom.innerHTML = escapeHTML`
 <div class="s-link-preview" data-language="${this.state.language}"
      data-hide="${this.state.hide.toString()}"
      data-console="${this.state.console.toString()}"
@@ -53,7 +54,7 @@ class StackSnippetsView implements NodeView {
 
         //TODO launch snippet modal
         this.dom.querySelectorAll(".js-not-implemented").forEach((el) => {
-            el.addEventListener("click", (e) => {
+            el.addEventListener("click", (e: Event) => {
                 e.stopPropagation();
                 // eslint-disable-next-line no-alert
                 alert("Sorry, this doesn't work yet :)");

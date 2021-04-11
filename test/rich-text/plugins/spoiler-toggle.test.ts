@@ -6,6 +6,8 @@ import { DOMParser, Node } from "prosemirror-model";
 /** Creates a state from the given dom string */
 function createState(content: string) {
     const container = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
     container.innerHTML = content;
     const doc = DOMParser.fromSchema(richTextSchema).parse(container);
 
