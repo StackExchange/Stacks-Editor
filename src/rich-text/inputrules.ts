@@ -42,7 +42,11 @@ const boldRule = markInputRule(
     schema.marks.strong,
     {}
 );
-
+const emphasisRule = markInputRule(
+    /(?<!\*)\*([^*\s](?:|[^*]*?[^*\s]))\*$/,
+    schema.marks.em,
+    {}
+);
 const linkRule = markInputRule(
     /\[(.+)\]\((.+)\)$/,
     schema.marks.link,
@@ -124,6 +128,7 @@ export const richTextInputRules = inputRules({
         orderedListRule,
         inlineCodeRule,
         boldRule,
+        emphasisRule,
         linkRule,
     ],
 });
