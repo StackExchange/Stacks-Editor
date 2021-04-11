@@ -51,12 +51,19 @@ const linkRule = markInputRule(
     }
 );
 
+/**
+ * Create an input rule that applies a mark to the text matched by a regular expression.
+ * @param regexp The regular expression to match the text. The text to be wrapped in a mark needs to be marked by the first capturing group.
+ * @param markType The mark type to apply
+ * @param getAttrs A static object or a function returning the attributes to be applied to the noe
+ * @returns A mark input rule
+ */
 function markInputRule(
     regexp: RegExp,
     markType: MarkType,
     getAttrs:
         | { [key: string]: any }
-        | ((p: string[]) => { [key: string]: any } | null | undefined)
+        | ((match: string[]) => { [key: string]: any } | null | undefined)
 ) {
     return new InputRule(
         regexp,
@@ -69,15 +76,27 @@ function markInputRule(
             const attrs =
                 getAttrs instanceof Function ? getAttrs(match) : getAttrs;
             const tr = state.tr;
-            if (match[1]) {
-                const textStart = start + match[0].indexOf(match[1]);
-                const textEnd = textStart + match[1].length;
-                if (textEnd < end) tr.delete(textEnd, end);
-                if (textStart > start) tr.delete(start, textStart);
-                end = start + match[1].length;
+            const matchedString = match[0];
+            const capturedGroup = match[1];
+            if (capturedGroup) {
+                const textStart = start + matchedString.indexOf(capturedGroup);
+                const textEnd = textStart + capturedGroup.length;
+
+                if (textEnd < end) {
+                    tr.delete(textEnd, end);
+                }
+
+                if (textStart > start) {
+                    tr.delete(start, textStart);
+                }
+
+                end = start + capturedGroup.length;
             }
+            // add mark to matching text
             tr.addMark(start, end, markType.create(attrs));
-            tr.removeStoredMark(markType); // Do not continue with mark.
+
+            // don't use mark for new text that's gonna follow
+            tr.removeStoredMark(markType);
             return tr;
         }
     );
