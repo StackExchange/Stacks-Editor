@@ -1,4 +1,9 @@
-import { emphasisRegex, boldRegex } from "../../src/rich-text/inputrules";
+import {
+    emphasisRegex,
+    boldRegex,
+    inlineCodeRegex,
+    linkRegex,
+} from "../../src/rich-text/inputrules";
 
 describe("mark input rules", () => {
     const emphasisTests = [
@@ -6,7 +11,7 @@ describe("mark input rules", () => {
         ["*should match*", "*should match*", "should match"],
         ["this *should match*", "*should match*", "should match"],
         ["**no-match*", null, null],
-        // ["*no\nmatch*", null, null],
+        ["*no\nmatch*", null, null],
         ["**no-match**", null, null],
         ["**not a match*", null, null],
         ["this is **not a match*", null, null],
@@ -22,6 +27,33 @@ describe("mark input rules", () => {
         ["**no\nmatch**", null, null],
     ];
     test.each(boldTests)("bold", markInputRuleTest(boldRegex));
+
+    const inlineCodeTests = [
+        ["`match`", "`match`", "match"],
+        ["`should match`", "`should match`", "should match"],
+        ["this `should match`", "`should match`", "should match"],
+        ["``match`", "``match`", "`match"],
+        ["`no\nmatch`", null, null],
+    ];
+    test.each(inlineCodeTests)(
+        "inline code",
+        markInputRuleTest(inlineCodeRegex)
+    );
+
+    const linkTests = [
+        [
+            "[match](https://example.com)",
+            "[match](https://example.com)",
+            "match",
+        ],
+        ["[match](something)", "[match](something)", "match"],
+        ["[no-match(https://example.com)", null, null],
+        ["[no-match)(https://example.com", null, null],
+        ["no-match](https://example.com)", null, null],
+        ["[no-match]()", null, null],
+        ["[no-match]", null, null],
+    ];
+    test.each(linkTests)("links", markInputRuleTest(linkRegex));
 
     function markInputRuleTest(regex: RegExp) {
         return (
