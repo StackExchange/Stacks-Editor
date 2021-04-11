@@ -32,23 +32,16 @@ const orderedListRule = wrappingInputRule(
     (match, node) => node.childCount + <number>node.attrs.order == +match[1]
 );
 
-const inlineCodeRule = markInputRule(
-    /`(\S(?:|.*?\S))`$/,
-    schema.marks.code,
-    {}
-);
-const boldRule = markInputRule(
-    /\*\*(\S(?:|.*?\S))\*\*$/,
-    schema.marks.strong,
-    {}
-);
-const emphasisRule = markInputRule(
-    /(?<!\*)\*([^*\s](?:|[^*]*?[^*\s]))\*$/,
-    schema.marks.em,
-    {}
-);
+export const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
+export const boldRegex = /\*\*(\S(?:|.*?\S))\*\*$/;
+export const emphasisRegex = /(?<!\*)\*([^*\s](?:|[^*]*?[^*\s]))\*$/;
+export const linkRegex = /\[(.+)\]\((.+)\)$/;
+
+const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code, {});
+const boldRule = markInputRule(boldRegex, schema.marks.strong, {});
+const emphasisRule = markInputRule(emphasisRegex, schema.marks.em, {});
 const linkRule = markInputRule(
-    /\[(.+)\]\((.+)\)$/,
+    linkRegex,
     schema.marks.link,
     (match: RegExpMatchArray) => {
         return { href: match[2] };
