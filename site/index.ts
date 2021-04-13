@@ -1,4 +1,5 @@
 import type { StacksEditor } from "../src";
+import type { StacksEditorOptions } from "../src";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
@@ -113,6 +114,7 @@ domReady(() => {
 
     // create the editor
     const place = document.querySelector<HTMLElement>("#example-1");
+    const place2 = document.querySelector<HTMLElement>("#example-2");
     const content = document.querySelector<HTMLTextAreaElement>("#content");
     const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
@@ -133,7 +135,7 @@ domReady(() => {
 
     // asynchronously load the required bundles
     void import("../src/index").then(function ({ StacksEditor }) {
-        const editorInstance = new StacksEditor(place, content.value, {
+        const options: StacksEditorOptions = {
             defaultView: getDefaultEditor(),
             editorHelpLink: "#TODO",
             commonmarkOptions: {},
@@ -159,13 +161,33 @@ domReady(() => {
             },
             imageUpload: imageUploadOptions,
             externalPlugins: [StackSnippetsPlugin],
-        });
+        };
+
+        const editorInstance = new StacksEditor(place, content.value, options);
+
         // set the instance on the window for developers to poke around in
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
         (window as any)["editorInstance"] = editorInstance;
+
+        const secondEditorInstance = new StacksEditor(
+            place2,
+            content.value,
+            options
+        );
+
+        // set the instance on the window for developers to poke around in
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+        (window as any)["secondEditorInstance"] = secondEditorInstance;
     });
 
     place.addEventListener(
+        "StacksEditor:view-change",
+        (e: CustomEvent<{ editorType: number }>) => {
+            setDefaultEditor(e.detail.editorType);
+        }
+    );
+
+    place2.addEventListener(
         "StacksEditor:view-change",
         (e: CustomEvent<{ editorType: number }>) => {
             setDefaultEditor(e.detail.editorType);
