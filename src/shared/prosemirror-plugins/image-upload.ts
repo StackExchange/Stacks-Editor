@@ -359,6 +359,8 @@ export class ImageUploader implements PluginView {
     resetUploader(): void {
         this.resetImagePreview();
         this.hideValidationError();
+
+        this.uploadField.value = null;
     }
 
     handleUploadTrigger(event: Event, file: File, view: EditorView): void {
@@ -459,7 +461,6 @@ export class ImageUploader implements PluginView {
 
         this.isVisible = isVisible;
         this.image = state?.file || this.image;
-        this.uploadField.value = null;
 
         if (this.isVisible) {
             this.uploadContainer.classList.remove("d-none");
