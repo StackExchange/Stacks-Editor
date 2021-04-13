@@ -169,15 +169,14 @@ domReady(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
         (window as any)["editorInstance"] = editorInstance;
 
-        const secondEditorInstance = new StacksEditor(
-            place2,
-            content.value,
-            options
-        );
+        if ( place2 != null)
+        {
+            const secondEditorInstance = new StacksEditor(place2, content.value, options);
 
-        // set the instance on the window for developers to poke around in
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-        (window as any)["secondEditorInstance"] = secondEditorInstance;
+            // set the instance on the window for developers to poke around in
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+            (window as any)["secondEditorInstance"] = secondEditorInstance;
+        }
     });
 
     place.addEventListener(
@@ -187,7 +186,7 @@ domReady(() => {
         }
     );
 
-    place2.addEventListener(
+    place2?.addEventListener(
         "StacksEditor:view-change",
         (e: CustomEvent<{ editorType: number }>) => {
             setDefaultEditor(e.detail.editorType);
