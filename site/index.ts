@@ -169,7 +169,7 @@ domReady(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
         (window as any)["editorInstance"] = editorInstance;
 
-        if ( place2 != null)
+        if (place2)
         {
             const secondEditorInstance = new StacksEditor(place2, content.value, options);
 
