@@ -138,7 +138,9 @@ domReady(() => {
         const options: StacksEditorOptions = {
             defaultView: getDefaultEditor(),
             editorHelpLink: "#TODO",
-            commonmarkOptions: {},
+            commonmarkOptions: {
+                countCharacters: true,
+            },
             parserFeatures: {
                 tables: enableTables,
                 tagLinks: {
@@ -183,6 +185,15 @@ domReady(() => {
         "StacksEditor:view-change",
         (e: CustomEvent<{ editorType: number }>) => {
             setDefaultEditor(e.detail.editorType);
+        }
+    );
+
+    place.addEventListener(
+        "StacksEditor:char-count-updated",
+        (e: CustomEvent<{ count: number }>) => {
+            document.querySelector(
+                "#character-count"
+            ).textContent = `${e.detail.count} characters`;
         }
     );
 

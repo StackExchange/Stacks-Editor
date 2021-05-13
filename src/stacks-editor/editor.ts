@@ -291,6 +291,22 @@ export class StacksEditor implements View {
             },
         };
 
+        this.backingView.editorView.props.dispatchTransaction = (tr) => {
+            this.editorView.updateState(this.editorView.state.apply(tr));
+
+            if (this.options.commonmarkOptions.countCharacters) {
+                const event = new CustomEvent(
+                    this.prefixEventName("char-count-updated"),
+                    {
+                        detail: {
+                            count: this.content.length,
+                        },
+                    }
+                );
+                this.target.dispatchEvent(event);
+            }
+        };
+
         // re-sync the view readonly state / classes
         if (readonly) {
             this.disable();

@@ -29,6 +29,8 @@ export interface CommonViewOptions {
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
     externalPlugins?: ExternalEditorPlugin[];
+    /** Fire an event when the content length may have changed */
+    countCharacters?: boolean;
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
