@@ -1,5 +1,6 @@
 {
     "files.exclude": {
+        ".husky": true,
         ".vscode": true,
         "dist": true,
         "node_modules": true
@@ -9,5 +10,7 @@
     "eslint.lintTask.enable": true,
     "eslint.run": "onSave",
     "telemetry.enableTelemetry": false,
-    "typescript.tsserver.experimental.enableProjectDiagnostics": true
+    "typescript.tsserver.experimental.enableProjectDiagnostics": true,
+    "conventionalCommits.autoCommit": false,
+    "conventionalCommits.gitmoji": false
 }
