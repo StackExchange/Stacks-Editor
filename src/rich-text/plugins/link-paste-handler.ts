@@ -53,8 +53,8 @@ export const linkPasteHandler = new Plugin({
                                 return;
                             }
 
-                            const start = selection.from - position;
-                            const end = selection.to - position;
+                            const start = Math.max(0, selection.from - position);
+                            const end = Math.max(0, selection.to - position);
                             selectedText += node.textBetween(start, end);
                         }
                     );
