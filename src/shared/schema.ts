@@ -141,6 +141,7 @@ const spoilerNodeSpec: NodeSpec = {
             "blockquote",
             {
                 "class": "spoiler" + (node.attrs.revealed ? " is-visible" : ""),
+                // TODO localization
                 "data-spoiler": "Reveal spoiler",
             },
             0,
