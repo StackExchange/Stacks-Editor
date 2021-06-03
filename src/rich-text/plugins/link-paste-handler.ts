@@ -20,8 +20,14 @@ function isInlineCode(state: EditorState): boolean {
 export const linkPasteHandler = new Plugin({
     props: {
         handlePaste(view: EditorView, event: ClipboardEvent) {
-            const link = event.clipboardData.getData("text/plain");
+            const selectedNode = view.state.selection.$from.node();
+            if (selectedNode.type.name === "code_block") {
+                // We don't need to do anything special to handle pasting into code blocks
+                // except to avoid overriding that default behavior.
+                return false;
+            }
 
+            const link = event.clipboardData.getData("text/plain");
             if (!link || !validateLink(link)) {
                 return false;
             }
