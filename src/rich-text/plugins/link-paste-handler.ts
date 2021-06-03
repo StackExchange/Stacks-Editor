@@ -31,7 +31,31 @@ export const linkPasteHandler = new Plugin({
             } else {
                 const schema = view.state.schema as Schema;
                 const linkAttrs = { href: link, markup: "linkify" };
-                const node: Node = schema.text(link, [
+                let linkText = link;
+
+                if (!view.state.tr.selection.empty) {
+                    const selection = view.state.tr.selection;
+                    let selectedText = "";
+                    view.state.doc.nodesBetween(
+                        selection.from,
+                        selection.to,
+                        (node, position) => {
+                            if (!node.isText) {
+                                return;
+                            }
+
+                            const start = selection.from - position;
+                            const end = selection.to - position;
+                            selectedText += node.textBetween(start, end);
+                        }
+                    );
+
+                    if (selectedText) {
+                        linkText = selectedText;
+                    }
+                }
+
+                const node: Node = schema.text(linkText, [
                     schema.marks.link.create(linkAttrs),
                 ]);
 
