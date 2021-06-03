@@ -33,6 +33,9 @@ export const linkPasteHandler = new Plugin({
             }
 
             if (isInlineCode(view.state)) {
+                // TODO: Would be nice to support smarter pasting into inline code in general.
+                // This supports the bare minimum (not breaking the inline block if we're pasting a link in)
+                // But any other pasting into inline code ends up breaking its styling.
                 view.dispatch(view.state.tr.insertText(link));
             } else {
                 const schema = view.state.schema as Schema;
