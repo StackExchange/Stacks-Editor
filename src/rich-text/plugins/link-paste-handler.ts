@@ -38,8 +38,6 @@ export const linkPasteHandler = new Plugin({
                 // But any other pasting into inline code ends up breaking its styling.
                 view.dispatch(view.state.tr.insertText(link));
             } else {
-                const schema = view.state.schema as Schema;
-                const linkAttrs = { href: link, markup: "linkify" };
                 let linkText = link;
 
                 if (!view.state.tr.selection.empty) {
@@ -63,6 +61,9 @@ export const linkPasteHandler = new Plugin({
                         linkText = selectedText;
                     }
                 }
+
+                const schema = view.state.schema as Schema;
+                const linkAttrs = { href: link, markup: linkText === link ? "linkify" : null };
 
                 const node: Node = schema.text(linkText, [
                     schema.marks.link.create(linkAttrs),
