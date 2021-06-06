@@ -6,7 +6,7 @@ import { Slice, Node, Schema } from "prosemirror-model";
  * Detects if code was pasted into the document and returns the text if true
  * @param clipboardData The clipboardData from the ClipboardEvent
  */
-function getDetectedCode(clipboardData: DataTransfer): string | null {
+export function getDetectedCode(clipboardData: DataTransfer): string | null {
     // if we're loading a whole document, don't false positive if there's more than just code
     const htmlContent = clipboardData.getData("text/html");
     if (htmlContent && htmlContent.includes("<code>")) {
