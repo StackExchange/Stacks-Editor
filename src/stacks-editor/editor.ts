@@ -110,7 +110,7 @@ export class StacksEditor implements View {
 
     static get defaultOptions(): StacksEditorOptions {
         const commonClasses = [
-            "fl1",
+            "fl-grow1",
             "outline-none",
             "p12",
             "pt6",
