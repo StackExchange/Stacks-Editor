@@ -23,7 +23,6 @@ describe("linkPasteHandler plugin", () => {
     beforeAll(setupPasteSupport);
     afterAll(cleanupPasteSupport);
 
-    // FIXME: more tests for pasting into inline code or a code block
     it.each(nonURLTestData)(
         "should handle pasting non-URL text (%#)",
         (text) => {
