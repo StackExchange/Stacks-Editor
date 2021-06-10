@@ -15,8 +15,11 @@ const nonURLTestData = [
     "URL https://example.org in the middle",
 ];
 
-// TODO: more complex URLs
-const URLTestData = ["https://example.org"];
+const URLTestData = [
+    "https://example.org",
+    "https://example.org/wiki/BestSubjectEver",
+    "https://sub.complicated.domain:8080/path/to/whatever.png#hash?query=parameter%20test",
+];
 
 describe("linkPasteHandler plugin", () => {
     beforeAll(setupPasteSupport);
