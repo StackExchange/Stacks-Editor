@@ -162,8 +162,8 @@ export function startStickyObservers(container: Element): void {
 }
 
 // rudimentary link validation that's roughly in line with what Stack Overflow's backend uses for validation
-const validLinkRegex = /^((https?|ftp):\/\/|\/)[-a-z0-9+&@#/%?=~_|!:,.;()*[\]$]+/;
-const validMailtoRegex = /^mailto:[#-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+/;
+const validLinkRegex = /^((https?|ftp):\/\/|\/)[-a-z0-9+&@#/%?=~_|!:,.;()*[\]$]+$/;
+const validMailtoRegex = /^mailto:[#-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+$/;
 
 /**
  * Checks if a url is well-formed as passes validation checks

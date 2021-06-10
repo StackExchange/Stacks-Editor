@@ -11,8 +11,7 @@ import {
 
 const nonURLTestData = [
     "not a URL",
-    // FIXME: the text below shouldn't be parsed as a url
-    //"https://example.org but not by itself",
+    "https://example.org but not by itself",
     "URL https://example.org in the middle",
 ];
 
