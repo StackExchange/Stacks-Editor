@@ -23,7 +23,6 @@
         "print-stats": "webpack --config config/webpack.prod.js --profile --json > stats.json",
         "print-stats:stackoverflow": "webpack --config config/webpack.stackoverflow.js --profile --json > stats.json",
         "eslint": "eslint .",
-        "eslint:fix": "npm run eslint -- --fix",
         "release": "standard-version",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
         "prepare": "husky install"
