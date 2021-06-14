@@ -35,7 +35,7 @@ class StackSnippetsView implements NodeView {
      data-console="${this.state.console.toString()}"
      data-babel="${this.state.babel.toString()}">
     <div class="s-link-preview--header ai-center py4">
-        <div class="s-link-preview--title fs-body1 fl1">Code snippet</div>
+        <div class="s-link-preview--title fs-body1 fl-grow1">Code snippet</div>
         <div>
             <button class="s-btn s-btn__muted fc-success s-btn__icon s-btn__xs grid--cell js-not-implemented" title="Run code snippet">
                 <span class="icon-bg iconPlay"></span>
