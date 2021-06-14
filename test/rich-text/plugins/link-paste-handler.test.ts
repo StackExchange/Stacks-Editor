@@ -67,6 +67,9 @@ describe("linkPasteHandler plugin", () => {
         }
     );
 
+    // TODO: Add more complex test cases: pasting across new lines, pasting
+    // with multiple node types selected (e.g. h1 + p), selections with invalid marks
+    // or nodes in them, etc.
     it.each(URLTestData)(
         "should use existing selection as link text (%#)",
         (text) => {
