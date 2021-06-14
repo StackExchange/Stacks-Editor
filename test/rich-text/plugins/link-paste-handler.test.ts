@@ -132,17 +132,21 @@ Console.WriteLine(i);</pre>`,
             state = applySelection(state, 15);
             const view = createView(state);
 
+            // Verify we're testing the right thing
+            let selectedNode = view.state.selection.$from.node();
+            expect(selectedNode.type.name).toBe("code_block");
+
             dispatchPasteEvent(view.dom, {
                 "text/plain": text,
             });
 
-            const node = view.state.selection.$from.node();
-
-            expect(node.type.name).toBe("code_block");
-            expect(node.textContent).toBe(`int i = 5;
+            // Verify that the node is still a code block but with new contents
+            selectedNode = view.state.selection.$from.node();
+            expect(selectedNode.type.name).toBe("code_block");
+            expect(selectedNode.textContent).toBe(`int i = 5;
 i++;${text}
 Console.WriteLine(i);`);
-            expect(node.marks).toHaveLength(0);
+            expect(selectedNode.marks).toHaveLength(0);
         }
     );
 });
