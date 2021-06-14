@@ -10,10 +10,7 @@ function isInlineCode(state: EditorState): boolean {
         return state.doc.rangeHasMark(from, to, schema.marks.code);
     }
 
-    return (
-        schema.marks.code.isInSet(state.storedMarks || $from.marks()) !==
-        undefined
-    );
+    return !!schema.marks.code.isInSet(state.storedMarks || $from.marks());
 }
 
 /** Plugin that detects if a URL is being pasted in and automatically formats it as a link */
