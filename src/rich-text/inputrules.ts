@@ -33,11 +33,23 @@ const orderedListRule = wrappingInputRule(
 export const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
 export const boldRegex = /\*\*(\S(?:|.*?\S))\*\*$/;
 export const emphasisRegex = /(?<!\*)\*([^*\s](?:|.*?[^*\s]))\*$/;
+export const boldUnderlineRegex = /__(\S(?:|.*?\S))__$/;
+export const emphasisUnderlineRegex = /(?<!_)_([^_\s](?:|.*?[^*\s]))_$/;
 export const linkRegex = /\[(.+)\]\((.+)\)$/;
 
 const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code, {});
 const boldRule = markInputRule(boldRegex, schema.marks.strong, {});
 const emphasisRule = markInputRule(emphasisRegex, schema.marks.em, {});
+const boldUnderlineRule = markInputRule(
+    boldUnderlineRegex,
+    schema.marks.strong,
+    {}
+);
+const emphasisUnderlineRule = markInputRule(
+    emphasisUnderlineRegex,
+    schema.marks.em,
+    {}
+);
 const linkRule = markInputRule(
     linkRegex,
     schema.marks.link,
@@ -48,7 +60,7 @@ const linkRule = markInputRule(
 
 /**
  * Create an input rule that applies a mark to the text matched by a regular expression.
- * @param regexp The regular expression to match the text. The text to be wrapped in a mark needs to be marked by the first capturing group.
+ * @param regexp The regular expression to match the text. The text to be wrapped in a mark needs to be marked by the _first_ capturing group.
  * @param markType The mark type to apply
  * @param getAttrs A static object or a function returning the attributes to be applied to the noe
  * @returns A mark input rule
@@ -115,7 +127,9 @@ export const richTextInputRules = inputRules({
         orderedListRule,
         inlineCodeRule,
         boldRule,
+        boldUnderlineRule,
         emphasisRule,
+        emphasisUnderlineRule,
         linkRule,
     ],
 });

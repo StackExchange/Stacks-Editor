@@ -3,6 +3,8 @@ import {
     boldRegex,
     inlineCodeRegex,
     linkRegex,
+    emphasisUnderlineRegex,
+    boldUnderlineRegex,
 } from "../../src/rich-text/inputrules";
 
 describe("mark input rules", () => {
@@ -18,6 +20,21 @@ describe("mark input rules", () => {
     ];
     test.each(emphasisTests)("emphasis", markInputRuleTest(emphasisRegex));
 
+    const emphasisUnderlineTests = [
+        ["_match_", "_match_", "match"],
+        ["_should match_", "_should match_", "should match"],
+        ["this _should match_", "_should match_", "should match"],
+        ["__no-match_", null, null],
+        ["_no\nmatch_", null, null],
+        ["__no-match__", null, null],
+        ["__not a match_", null, null],
+        ["this is __not a match_", null, null],
+    ];
+    test.each(emphasisUnderlineTests)(
+        "emphasis with underlines",
+        markInputRuleTest(emphasisUnderlineRegex)
+    );
+
     const boldTests = [
         ["**match**", "**match**", "match"],
         ["**should match**", "**should match**", "should match"],
@@ -27,6 +44,19 @@ describe("mark input rules", () => {
         ["**no\nmatch**", null, null],
     ];
     test.each(boldTests)("bold", markInputRuleTest(boldRegex));
+
+    const boldUnderlineTests = [
+        ["__match__", "__match__", "match"],
+        ["__should match__", "__should match__", "should match"],
+        ["this __should match__", "__should match__", "should match"],
+        ["__no-match_", null, null],
+        ["this is __not a match_", null, null],
+        ["__no\nmatch__", null, null],
+    ];
+    test.each(boldUnderlineTests)(
+        "bold with underlines",
+        markInputRuleTest(boldUnderlineRegex)
+    );
 
     const inlineCodeTests = [
         ["`match`", "`match`", "match"],
