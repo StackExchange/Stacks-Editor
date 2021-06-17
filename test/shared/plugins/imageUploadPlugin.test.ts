@@ -35,9 +35,8 @@ describe("image upload plugin", () => {
 
         showImageUploader(view.editorView);
         uploader.update(view.editorView);
-        const updatedUploadContainer = pluginContainer.querySelector(
-            ".js-image-uploader"
-        );
+        const updatedUploadContainer =
+            pluginContainer.querySelector(".js-image-uploader");
 
         expect(updatedUploadContainer.classList).not.toContain("d-none");
     });
@@ -87,42 +86,36 @@ describe("image upload plugin", () => {
             });
     });
 
-    it("should show error when uploading wrong filetype", () => {
+    it("should show error when uploading wrong filetype", async () => {
         showImageUploader(view.editorView);
         uploader.update(view.editorView);
 
-        return uploader
-            .showImagePreview(mockFile("some html file", "text/html"))
-            .catch((error) => {
-                expect(error).toEqual("invalid filetype");
-                expect(findPreviewElement(uploader).classList).toContain(
-                    "d-none"
-                );
-                expect(findAddButton(uploader).disabled).toBe(true);
-                const validationMessage = findValidationMessage(uploader);
-                expect(validationMessage.textContent).toEqual(
-                    "Please select an image (jpeg, png, gif) to upload"
-                );
-                expect(validationMessage.classList).not.toContain("d-none");
-            });
+        await expect(
+            uploader.showImagePreview(mockFile("some html file", "text/html"))
+        ).rejects.toEqual("invalid filetype");
+        expect(findPreviewElement(uploader).classList).toContain("d-none");
+        expect(findAddButton(uploader).disabled).toBe(true);
+        const validationMessage = findValidationMessage(uploader);
+        expect(validationMessage.textContent).toEqual(
+            "Please select an image (jpeg, png, gif) to upload"
+        );
+        expect(validationMessage.classList).not.toContain("d-none");
     });
 
-    it("should hide error when hiding uploader", () => {
+    it("should hide error when hiding uploader", async () => {
         showImageUploader(view.editorView);
         uploader.update(view.editorView);
 
-        return uploader
-            .showImagePreview(mockFile("some html file", "text/html"))
-            .catch((error) => {
-                expect(error).toEqual("invalid filetype");
+        await expect(
+            uploader.showImagePreview(mockFile("some html file", "text/html"))
+        ).rejects.toEqual("invalid filetype");
 
-                // hide the uploader again
-                hideImageUploader(view.editorView);
-                uploader.update(view.editorView);
+        // hide the uploader again
+        hideImageUploader(view.editorView);
+        uploader.update(view.editorView);
 
-                const validationMessage = findValidationMessage(uploader);
-                expect(validationMessage.classList).toContain("d-none");
-            });
+        const validationMessage = findValidationMessage(uploader);
+        expect(validationMessage.classList).toContain("d-none");
     });
 
     describe("wrapImagesInLinks", () => {

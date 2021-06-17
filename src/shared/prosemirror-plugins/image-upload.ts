@@ -116,7 +116,7 @@ export class ImageUploader implements PluginView {
         this.uploadField.className = "d-none";
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
-        this.uploadField.id = "fileUpload";
+        this.uploadField.id = "fileUpload" + (Math.random() * 10000).toFixed(0);
 
         this.uploadContainer.innerHTML = escapeHTML`
             <div class="fs-body2 p12 pb0"><label class="s-link" for="${this.uploadField.id}">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
@@ -359,6 +359,8 @@ export class ImageUploader implements PluginView {
     resetUploader(): void {
         this.resetImagePreview();
         this.hideValidationError();
+
+        this.uploadField.value = null;
     }
 
     handleUploadTrigger(event: Event, file: File, view: EditorView): void {

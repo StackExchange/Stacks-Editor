@@ -211,6 +211,7 @@ describe("markdown-serializer", () => {
         String.raw`\_not-emphasized\_`,
         String.raw`_intra_text_underscores_are_not_emphasized_`,
         String.raw`http://www.example.com/dont_emphasize_urls`,
+        String.raw`\<Not html\>`,
     ];
 
     it.each(escapeData)(

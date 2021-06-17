@@ -31,7 +31,7 @@ class MenuView implements PluginView {
         );
 
         this.dom = document.createElement("div");
-        this.dom.className = "grid gs2 mln4 fl1 ai-center js-editor-menu";
+        this.dom.className = "grid gs2 mln4 fl-grow1 ai-center js-editor-menu";
         this.items.forEach(({ dom }) => this.dom.appendChild(dom));
 
         this.update(view, null);
