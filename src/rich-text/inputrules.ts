@@ -7,6 +7,7 @@ import {
 import { MarkType } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { richTextSchema as schema } from "../shared/schema";
+import { validateLink } from "../shared/utils";
 
 const blockquoteInputRule = wrappingInputRule(
     /^\s*>\s$/,
@@ -55,7 +56,8 @@ const linkRule = markInputRule(
     schema.marks.link,
     (match: RegExpMatchArray) => {
         return { href: match[2] };
-    }
+    },
+    (match) => validateLink(match[2]) // only apply link input rule, if the matched URL is valid
 );
 
 /**
@@ -63,6 +65,7 @@ const linkRule = markInputRule(
  * @param regexp The regular expression to match the text. The text to be wrapped in a mark needs to be marked by the _first_ capturing group.
  * @param markType The mark type to apply
  * @param getAttrs A static object or a function returning the attributes to be applied to the noe
+ * @param matchValidator An optional function that allows validating the match before applying the mark
  * @returns A mark input rule
  */
 function markInputRule(
@@ -70,7 +73,8 @@ function markInputRule(
     markType: MarkType,
     getAttrs:
         | { [key: string]: any }
-        | ((match: string[]) => { [key: string]: any } | null | undefined)
+        | ((match: string[]) => { [key: string]: any } | null | undefined),
+    matchValidator?: (match: RegExpMatchArray) => boolean
 ) {
     return new InputRule(
         regexp,
@@ -83,6 +87,13 @@ function markInputRule(
             const attrs =
                 getAttrs instanceof Function ? getAttrs(match) : getAttrs;
             const tr = state.tr;
+
+            // validate the match if a validator is given
+            // and skip applying the mark if the validation fails
+            if (matchValidator && !matchValidator(match)) {
+                return null;
+            }
+
             const matchedString = match[0];
             const capturedGroup = match[1];
             if (capturedGroup) {
