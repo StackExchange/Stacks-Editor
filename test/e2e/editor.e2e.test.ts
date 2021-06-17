@@ -173,10 +173,7 @@ describe("rich-text mode", () => {
             ["__bold__ ", "strong"],
             ["_emphasis_ ", "em"],
             ["`code` ", "code"],
-            ["[a link](https://example.com) ", "link"],
-
-            // invalid rules
-            ["[invalid link](example) ", undefined],
+            ["[a link](https://example.com)", "link"],
         ])(
             "should create a mark on input '%s'",
             async (input, expectedMarkType) => {
@@ -190,17 +187,26 @@ describe("rich-text mode", () => {
                     (<any>window).editorInstance.editorView.state.doc.toJSON()
                 );
 
-                if (expectedMarkType) {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    expect(doc.content[0].content[0].marks[0].type).toContain(
-                        expectedMarkType
-                    );
-                } else {
-                    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-                    expect(doc.content[0].content[0].marks).toBeUndefined();
-                }
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                expect(doc.content[0].content[0].marks[0].type).toContain(
+                    expectedMarkType
+                );
             }
         );
+
+        it("should validate links for link input rule", async () => {
+            await clearEditor();
+            const simulateTyping = true;
+            await typeText("[invalid link](example)", simulateTyping);
+            // TODO HACK don't use the debugging instance on window since it is unique to our specific view
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const doc = await page.evaluate(() =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
+                (<any>window).editorInstance.editorView.state.doc.toJSON()
+            );
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(doc.content[0].content[0].marks).toBeUndefined();
+        });
     });
 
     describe("editing images", () => {
