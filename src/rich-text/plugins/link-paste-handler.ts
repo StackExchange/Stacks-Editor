@@ -16,6 +16,50 @@ function isInlineCode(state: EditorState): boolean {
     );
 }
 
+export interface LinkPasteOptions {
+    domainTest: RegExp;
+    linkTextProvider: (url: string) => Promise<string | null>;
+}
+
+// TODO: cache results
+// const textFetchCache: { [link: string]: string } = {};
+
+function fetchLinkText(view: EditorView, link: string) {
+    // TODO: actually fetch something here
+    // Q: how can I pass options to a regular plugin?
+
+    const schema = view.state.schema as Schema;
+
+    setTimeout(function () {
+        // find the node
+        let linkNode: [Node, number];
+        view.state.doc.descendants((node, pos) => {
+            if (schema.marks.link.isInSet(node.marks)) {
+                // TODO: this isn't going to work if the same link is pasted multiple times quickly
+                if (node.marks[0].attrs.href === link && node.textContent === link) {
+                    linkNode = [node, pos];
+                    return false;
+                }
+            }
+        });
+
+        if (!linkNode) {
+            return;
+        }
+
+        const text = "My link title";
+
+        // TODO: if(text !== link)
+        const newNode = schema.text(text, [
+            schema.marks.link.create({ href: link, markup: null }),
+        ]);
+
+        view.dispatch(
+            view.state.tr.replaceWith(linkNode[1], linkNode[1] + linkNode[0].nodeSize, newNode)
+        );
+    }, 2000);
+}
+
 /** Plugin that detects if a URL is being pasted in and automatically formats it as a link */
 export const linkPasteHandler = new Plugin({
     props: {
@@ -65,9 +109,14 @@ export const linkPasteHandler = new Plugin({
                 const schema = view.state.schema as Schema;
                 const linkAttrs = { href: link, markup: linkText === link ? "linkify" : null };
 
-                const node: Node = schema.text(linkText, [
+                const node = schema.text(linkText, [
                     schema.marks.link.create(linkAttrs),
                 ]);
+
+                //if (options.domainTest && options.domainTest.test(link)) {
+                // TODO: options.linkTextProvider(link).then(...)
+                fetchLinkText(view, link);
+                //}
 
                 view.dispatch(view.state.tr.replaceSelectionWith(node, false));
             }
