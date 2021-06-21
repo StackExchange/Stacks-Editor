@@ -31,32 +31,39 @@ function fetchLinkText(view: EditorView, link: string) {
     const schema = view.state.schema as Schema;
 
     setTimeout(function () {
-        // find the node
-        let linkNode: [Node, number];
+        // find the nodes
+        const linkNodes: [Node, number][] = [];
         view.state.doc.descendants((node, pos) => {
             if (schema.marks.link.isInSet(node.marks)) {
-                // TODO: this isn't going to work if the same link is pasted multiple times quickly
-                if (node.marks[0].attrs.href === link && node.textContent === link) {
-                    linkNode = [node, pos];
+                if (
+                    node.marks[0].attrs.href === link &&
+                    node.textContent === link
+                ) {
+                    linkNodes.push([node, pos]);
                     return false;
                 }
             }
         });
 
-        if (!linkNode) {
+        if (!linkNodes.length) {
             return;
         }
 
         const text = "My link title";
 
-        // TODO: if(text !== link)
-        const newNode = schema.text(text, [
-            schema.marks.link.create({ href: link, markup: null }),
-        ]);
+        linkNodes.forEach((n) => {
+            const newNode = schema.text(text, [
+                schema.marks.link.create({ href: link, markup: null }),
+            ]);
 
-        view.dispatch(
-            view.state.tr.replaceWith(linkNode[1], linkNode[1] + linkNode[0].nodeSize, newNode)
-        );
+            const pos = n[1];
+            const nodeSize = n[0].nodeSize;
+            view.dispatch(
+                view.state.tr.replaceWith(pos, pos + nodeSize, newNode)
+            );
+        });
+
+        // TODO: if(text !== link)
     }, 2000);
 }
 
@@ -107,7 +114,10 @@ export const linkPasteHandler = new Plugin({
                 }
 
                 const schema = view.state.schema as Schema;
-                const linkAttrs = { href: link, markup: linkText === link ? "linkify" : null };
+                const linkAttrs = {
+                    href: link,
+                    markup: linkText === link ? "linkify" : null,
+                };
 
                 const node = schema.text(linkText, [
                     schema.marks.link.create(linkAttrs),
