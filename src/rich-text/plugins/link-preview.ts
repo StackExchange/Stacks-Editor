@@ -10,6 +10,11 @@ import {
 /** The cache of url -> content for link previews so we don't have to continually refetch */
 const previewResultCache: { [url: string]: Node } = {};
 
+// TODO document
+const textOnlyCache: {
+    [url: string]: { node: ProsemirrorNode; pos: number; text: string };
+} = {};
+
 /**
  * Interface to describe a link preview provider for registering/fetching previews from urls
  */
@@ -18,6 +23,8 @@ export interface LinkPreviewProvider {
     domainTest: RegExp;
     /** The async function to render the preview */
     renderer: (url: string) => Promise<Node | null>;
+    /** Whether to update the text content only or do a full rich html replacement */
+    displayTextOnly?: boolean;
 }
 
 /**
@@ -30,6 +37,7 @@ function getValidProvider(
     node: ProsemirrorNode
 ): { url: string; provider: LinkPreviewProvider } {
     // not a valid node, keep checking
+    // TODO: support text-only for any link, not just pasted on its own into a paragraph
     if (!isPreviewableLink(node)) {
         return null;
     }
@@ -116,8 +124,14 @@ function generatePreviewDecorations(
         linkPreviewDecorations.push(Decoration.widget(n.pos, placeholder));
 
         // if the url is in the cache, insert
-        if (n.provider.url in previewResultCache) {
+        if (
+            !n.provider.provider.displayTextOnly &&
+            n.provider.url in previewResultCache
+        ) {
             insertLinkPreview(placeholder, previewResultCache[n.provider.url]);
+        } else {
+            // TODO
+            placeholder.innerHTML = "";
         }
     });
 
@@ -168,7 +182,7 @@ function isPreviewableLink(node: ProsemirrorNode) {
 function fetchLinkPreviewContent(
     view: EditorView,
     providers: LinkPreviewProvider[]
-): Promise<Node[]> {
+): Promise<(Node | string)[]> {
     // TODO can we make this more efficient?
     // getValidNodes will run on every state update, so it'd be
     // nice to be able to check the last transaction / updated doc
@@ -192,10 +206,19 @@ function fetchLinkPreviewContent(
             n.provider.provider
                 .renderer(n.provider.url)
                 .then((content) => {
-                    // cache results so we don't call over and over...
-                    previewResultCache[n.provider.url] = content;
+                    const isTextOnly = n.provider.provider.displayTextOnly;
+                    if (isTextOnly) {
+                        textOnlyCache[n.provider.url] = {
+                            node: n.node,
+                            pos: n.pos,
+                            text: content.textContent,
+                        };
+                    } else {
+                        // cache results so we don't call over and over...
+                        previewResultCache[n.provider.url] = content;
+                    }
 
-                    return content;
+                    return isTextOnly ? content.textContent : content;
                 })
                 // don't let any errors crash our `.all` below
                 // "catch" and fake a resolution
@@ -213,42 +236,116 @@ function fetchLinkPreviewContent(
     return Promise.all(promises);
 }
 
-const LINK_PREVIEWS_KEY = new AsyncPluginKey<DecorationSet, Node[]>(
-    "linkPreviews"
-);
+interface LinkPreviewState {
+    decorations: DecorationSet;
+    handleTextOnly: boolean;
+}
+
+const LINK_PREVIEWS_KEY = new AsyncPluginKey<
+    LinkPreviewState,
+    (Node | string)[]
+>("linkPreviews");
+
+export function triggerLinkPreview(view: EditorView): void {
+    const state = LINK_PREVIEWS_KEY.getState(view.state);
+
+    if (!state) {
+        return;
+    }
+
+    const tr = view.state.tr;
+
+    LINK_PREVIEWS_KEY.setMeta(tr, {
+        decorations: generatePreviewDecorations(tr.doc, previewProviders),
+        handleTextOnly: previewProviders.some((p) => p.displayTextOnly),
+    });
+
+    const newState = view.state.apply(tr);
+    view.updateState(newState);
+}
 
 /**
  * Creates a plugin that searches the entire document for potentially previewable links
  * and creates a widget decoration to render the link preview in.
  */
+let previewProviders: LinkPreviewProvider[];
 export function linkPreviewPlugin(
     providers: LinkPreviewProvider[]
-): AsyncPlugin<DecorationSet, Node[]> {
-    providers = providers || [];
+): AsyncPlugin<LinkPreviewState, (Node | string)[]> {
+    previewProviders = providers || [];
 
-    return new AsyncPlugin<DecorationSet, Node[]>({
+    return new AsyncPlugin<LinkPreviewState, (Node | string)[]>({
         key: LINK_PREVIEWS_KEY,
         asyncCallback: (view) => {
-            return fetchLinkPreviewContent(view, providers);
+            return fetchLinkPreviewContent(view, previewProviders);
         },
         state: {
             init(_, { doc }) {
-                return generatePreviewDecorations(doc, providers);
+                return {
+                    decorations: generatePreviewDecorations(
+                        doc,
+                        previewProviders
+                    ),
+                    // TODO: check for provider options here?
+                    handleTextOnly: false,
+                };
             },
             apply(tr, value) {
                 // only update the decorations if they changed at all
-                if (this.getCallbackData(tr)) {
-                    return generatePreviewDecorations(tr.doc, providers);
+                const callbackData = this.getCallbackData(tr);
+                if (callbackData) {
+                    return {
+                        decorations: generatePreviewDecorations(
+                            tr.doc,
+                            previewProviders
+                        ),
+                        handleTextOnly: callbackData.some(
+                            (d) => typeof d === "string"
+                        ),
+                    };
                 }
 
                 // else update the mappings to their new positions in the doc
-                return value.map(tr.mapping, tr.doc);
+                return {
+                    decorations: value.decorations.map(tr.mapping, tr.doc),
+                    handleTextOnly: false,
+                };
             },
         },
         props: {
             decorations(state) {
-                return this.getState(state);
+                return this.getState(state).decorations;
             },
+        },
+        appendTransaction(trs, _, newState) {
+            const data = LINK_PREVIEWS_KEY.getState(newState);
+            if (!data.handleTextOnly) {
+                return null;
+            }
+
+            let tr = newState.tr;
+
+            Object.keys(textOnlyCache).forEach((key) => {
+                const entry = textOnlyCache[key];
+
+                // TODO easier way to do this? use newState?
+                let pos = entry.pos;
+                trs.forEach((t) => {
+                    pos = t.mapping.map(pos);
+                });
+
+                const schema = newState.schema;
+                const newNode = schema.text(entry.text, [
+                    schema.marks.link.create({ href: key, markup: null }),
+                ]);
+
+                const nodeSize = entry.node.nodeSize;
+
+                tr = tr.replaceWith(pos, pos + nodeSize, newNode);
+                // TODO delete from cache? mark as replaced?
+            });
+
+            return tr;
         },
     });
 }

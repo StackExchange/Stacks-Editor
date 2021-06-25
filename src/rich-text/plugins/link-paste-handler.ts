@@ -1,7 +1,8 @@
 import { Plugin, EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Node, Schema } from "prosemirror-model";
+import { Schema } from "prosemirror-model";
 import { validateLink } from "../../shared/utils";
+import { triggerLinkPreview } from "./link-preview";
 
 function isInlineCode(state: EditorState): boolean {
     const { from, $from, to, empty } = state.selection;
@@ -14,57 +15,6 @@ function isInlineCode(state: EditorState): boolean {
         schema.marks.code.isInSet(state.storedMarks || $from.marks()) !==
         undefined
     );
-}
-
-export interface LinkPasteOptions {
-    domainTest: RegExp;
-    linkTextProvider: (url: string) => Promise<string | null>;
-}
-
-// TODO: cache results
-// const textFetchCache: { [link: string]: string } = {};
-
-function fetchLinkText(view: EditorView, link: string) {
-    // TODO: actually fetch something here
-    // Q: how can I pass options to a regular plugin?
-
-    const schema = view.state.schema as Schema;
-
-    setTimeout(function () {
-        // find the nodes
-        const linkNodes: [Node, number][] = [];
-        view.state.doc.descendants((node, pos) => {
-            if (schema.marks.link.isInSet(node.marks)) {
-                if (
-                    node.marks[0].attrs.href === link &&
-                    node.textContent === link
-                ) {
-                    linkNodes.push([node, pos]);
-                    return false;
-                }
-            }
-        });
-
-        if (!linkNodes.length) {
-            return;
-        }
-
-        const text = "My link title";
-
-        linkNodes.forEach((n) => {
-            const newNode = schema.text(text, [
-                schema.marks.link.create({ href: link, markup: null }),
-            ]);
-
-            const pos = n[1];
-            const nodeSize = n[0].nodeSize;
-            view.dispatch(
-                view.state.tr.replaceWith(pos, pos + nodeSize, newNode)
-            );
-        });
-
-        // TODO: if(text !== link)
-    }, 2000);
 }
 
 /** Plugin that detects if a URL is being pasted in and automatically formats it as a link */
@@ -123,12 +73,9 @@ export const linkPasteHandler = new Plugin({
                     schema.marks.link.create(linkAttrs),
                 ]);
 
-                //if (options.domainTest && options.domainTest.test(link)) {
-                // TODO: options.linkTextProvider(link).then(...)
-                fetchLinkText(view, link);
-                //}
-
                 view.dispatch(view.state.tr.replaceSelectionWith(node, false));
+
+                triggerLinkPreview(view);
             }
 
             return true;

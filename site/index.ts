@@ -64,6 +64,15 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
     },
 };
 
+export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
+    domainTest: /^https?:\/\/(www\.)?google.com/i,
+    renderer: () =>
+        setTimeoutAsync(5000).then(() =>
+            document.createTextNode("TODO text only")
+        ),
+    displayTextOnly: true,
+};
+
 /**
  * Sample image handler that processes the uploaded image and returns a data url
  * rather than sending it to an external service
@@ -157,7 +166,10 @@ domReady(() => {
                 },
             },
             richTextOptions: {
-                linkPreviewProviders: [ExampleLinkPreviewProvider],
+                linkPreviewProviders: [
+                    ExampleTextOnlyLinkPreviewProvider,
+                    ExampleLinkPreviewProvider,
+                ],
             },
             imageUpload: imageUploadOptions,
             externalPlugins: [StackSnippetsPlugin],
