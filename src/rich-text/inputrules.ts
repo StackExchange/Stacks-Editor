@@ -1,8 +1,8 @@
 import {
+    InputRule,
     inputRules,
     textblockTypeInputRule,
     wrappingInputRule,
-    InputRule,
 } from "prosemirror-inputrules";
 import { MarkType } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
@@ -31,25 +31,23 @@ const orderedListRule = wrappingInputRule(
     (match, node) => node.childCount + <number>node.attrs.order == +match[1]
 );
 
-export const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
-export const boldRegex = /\*\*(\S(?:|.*?\S))\*\*$/;
-export const emphasisRegex = /(?<!\*)\*([^*\s](?:|.*?[^*\s]))\*$/;
-export const boldUnderlineRegex = /__(\S(?:|.*?\S))__$/;
-export const emphasisUnderlineRegex = /(?<!_)_([^_\s](?:|.*?[^*\s]))_$/;
-export const linkRegex = /\[(.+)\]\((.+)\)$/;
+const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
+const boldRegex = /\*\*(\S(?:|.*?\S))\*\*$/;
+const emphasisRegex = /(?<!\*)\*([^*\s](?:|.*?[^*\s]))\*$/;
+const boldUnderlineRegex = /__(\S(?:|.*?\S))__$/;
+const emphasisUnderlineRegex = /(?<!_)_([^_\s](?:|.*?[^*\s]))_$/;
+const linkRegex = /\[(.+)\]\((.+)\)$/;
 
-const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code, {});
-const boldRule = markInputRule(boldRegex, schema.marks.strong, {});
-const emphasisRule = markInputRule(emphasisRegex, schema.marks.em, {});
+const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code);
+const boldRule = markInputRule(boldRegex, schema.marks.strong);
+const emphasisRule = markInputRule(emphasisRegex, schema.marks.em);
 const boldUnderlineRule = markInputRule(
     boldUnderlineRegex,
-    schema.marks.strong,
-    {}
+    schema.marks.strong
 );
 const emphasisUnderlineRule = markInputRule(
     emphasisUnderlineRegex,
-    schema.marks.em,
-    {}
+    schema.marks.em
 );
 const linkRule = markInputRule(
     linkRegex,
@@ -64,16 +62,14 @@ const linkRule = markInputRule(
  * Create an input rule that applies a mark to the text matched by a regular expression.
  * @param regexp The regular expression to match the text. The text to be wrapped in a mark needs to be marked by the _first_ capturing group.
  * @param markType The mark type to apply
- * @param getAttrs A static object or a function returning the attributes to be applied to the noe
+ * @param getAttrs A function returning the attributes to be applied to the node
  * @param matchValidator An optional function that allows validating the match before applying the mark
  * @returns A mark input rule
  */
 function markInputRule(
     regexp: RegExp,
     markType: MarkType,
-    getAttrs:
-        | { [key: string]: unknown }
-        | ((match: string[]) => { [key: string]: unknown } | null | undefined),
+    getAttrs?: (p: string[]) => { [key: string]: unknown } | null | undefined,
     matchValidator?: (match: RegExpMatchArray) => boolean
 ) {
     return new InputRule(
@@ -84,8 +80,7 @@ function markInputRule(
             start: number,
             end: number
         ) => {
-            const attrs =
-                getAttrs instanceof Function ? getAttrs(match) : getAttrs;
+            const attrs = getAttrs ? getAttrs(match) : {};
             const tr = state.tr;
 
             // validate the match if a validator is given
