@@ -31,11 +31,17 @@ const orderedListRule = wrappingInputRule(
     (match, node) => node.childCount + <number>node.attrs.order == +match[1]
 );
 
+// matches: `some text`, but not ` text `
 const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
+// matches: **some text**, but not ** text **
 const boldRegex = /\*\*(\S(?:|.*?\S))\*\*$/;
+// matches: *some text*, but not **text* or * text *
 const emphasisRegex = /(?<!\*)\*([^*\s](?:|.*?[^*\s]))\*$/;
+// matches: __some text__, but not __ text __
 const boldUnderlineRegex = /__(\S(?:|.*?\S))__$/;
+// matches: _some text_, but not __text_ or _ text _
 const emphasisUnderlineRegex = /(?<!_)_([^_\s](?:|.*?[^*\s]))_$/;
+// matches: [ *any* thing ]( any thing )
 const linkRegex = /\[(.+)\]\((.+)\)$/;
 
 const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code);
