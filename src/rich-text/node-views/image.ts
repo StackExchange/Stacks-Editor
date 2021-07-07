@@ -94,19 +94,19 @@ export class ImageView implements NodeView {
 
     private createForm(): HTMLFormElement {
         const form = document.createElement("form");
-        form.className = "grid fd-column";
+        form.className = "d-flex fd-column";
         form.innerHTML = escapeHTML`
-            <label class="grid--cell s-label mb4" for="img-src-${this.id}">Image source</label>
-            <div class="grid ps-relative mb12">
-                <input class="grid--cell s-input" type="text" name="src" id="img-src-${this.id}" value="${this.img.src}" placeholder="https://example.com/image.png"/>
+            <label class="flex--cell s-label mb4" for="img-src-${this.id}">Image source</label>
+            <div class="d-flex ps-relative mb12">
+                <input class="flex--cell s-input" type="text" name="src" id="img-src-${this.id}" value="${this.img.src}" placeholder="https://example.com/image.png"/>
             </div>
-            <label class="grid--cell s-label mb4" for="img-alt-${this.id}">Image description</label>
-            <div class="grid ps-relative mb12">
-                <input class="grid--cell s-input" type="text" name="alt" id="img-alt-${this.id}" value="${this.img.alt}" placeholder="A description for the image"/>
+            <label class="flex--cell s-label mb4" for="img-alt-${this.id}">Image description</label>
+            <div class="d-flex ps-relative mb12">
+                <input class="flex--cell s-input" type="text" name="alt" id="img-alt-${this.id}" value="${this.img.alt}" placeholder="A description for the image"/>
             </div>
-            <label class="grid--cell s-label mb4" for="img-title-${this.id}">Title</label>
-            <div class="grid ps-relative mb12">
-                <input class="grid--cell s-input" type="text" name="title" id="img-title-${this.id}" value="${this.img.title}" placeholder="A title shown on hover"/>
+            <label class="flex--cell s-label mb4" for="img-title-${this.id}">Title</label>
+            <div class="d-flex ps-relative mb12">
+                <input class="flex--cell s-input" type="text" name="title" id="img-title-${this.id}" value="${this.img.title}" placeholder="A title shown on hover"/>
             </div>
 
             <button class="s-btn s-btn__primary" type="submit" aria-pressed="false">Apply</button>

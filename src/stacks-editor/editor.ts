@@ -206,7 +206,7 @@ export class StacksEditor implements View {
 
         // create specific area for the editor menu
         const menuTarget = document.createElement("div");
-        menuTarget.className = "grid overflow-x-auto ai-center px12 py4 pb0";
+        menuTarget.className = "d-flex overflow-x-auto ai-center px12 py4 pb0";
         this.pluginContainer.appendChild(menuTarget);
 
         // set the editors' menu containers to be the combo container
@@ -309,14 +309,14 @@ export class StacksEditor implements View {
             defaultItem === EditorType.Commonmark ? "checked" : "";
 
         const container = document.createElement("div");
-        container.className = "grid--cell grid ai-center ml24 fc-medium";
+        container.className = "flex--cell d-flex ai-center ml24 fc-medium";
 
         // TODO localization
-        container.innerHTML = escapeHTML`<label class="grid--cell fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
-            <label class="grid--cell mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
+        container.innerHTML = escapeHTML`<label class="flex--cell fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
+            <label class="flex--cell mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
                 <span class="icon-bg iconMarkdown"></span>
             </label>
-            <div class="grid--cell s-toggle-switch js-editor-mode-switcher">
+            <div class="flex--cell s-toggle-switch js-editor-mode-switcher">
                 <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
                 <div class="s-toggle-switch--indicator"></div>
             </div>`;

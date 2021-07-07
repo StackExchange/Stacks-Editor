@@ -37,10 +37,10 @@ class StackSnippetsView implements NodeView {
     <div class="s-link-preview--header ai-center py4">
         <div class="s-link-preview--title fs-body1 fl-grow1">Code snippet</div>
         <div>
-            <button class="s-btn s-btn__muted fc-success s-btn__icon s-btn__xs grid--cell js-not-implemented" title="Run code snippet">
+            <button class="s-btn s-btn__muted fc-success s-btn__icon s-btn__xs flex--cell js-not-implemented" title="Run code snippet">
                 <span class="icon-bg iconPlay"></span>
             </button>
-            <button class="s-btn s-btn__muted s-btn__icon s-btn__xs grid--cell js-not-implemented" title="Expand snippet">
+            <button class="s-btn s-btn__muted s-btn__icon s-btn__xs flex--cell js-not-implemented" title="Expand snippet">
                 <span class="icon-bg iconShare"></span>
             </button>
         </div>
@@ -71,9 +71,10 @@ class StackSnippetsView implements NodeView {
      * @param rawDataString the entire raw snippet data string that looks like `js hide: [boolean] console: [boolean] babel: [boolean]`
      */
     static getSnippetArgs(rawDataString: string): SnippetEditorState {
-        const matches = /(.+?) hide: (true|false) console: (true|false) babel: (true|false)/.exec(
-            rawDataString
-        );
+        const matches =
+            /(.+?) hide: (true|false) console: (true|false) babel: (true|false)/.exec(
+                rawDataString
+            );
 
         return {
             language: matches[1] || "js",
