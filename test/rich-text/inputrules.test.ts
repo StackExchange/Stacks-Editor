@@ -1,124 +1,172 @@
 import { MarkType } from "prosemirror-model";
+import { EditorView } from "prosemirror-view";
 import { richTextInputRules } from "../../src/rich-text/inputrules";
 import { richTextSchema } from "../../src/shared/schema";
 import "../matchers";
 import {
     applySelection,
+    cleanupPasteSupport,
     createState,
     createView,
+    setupPasteSupport,
     sleepAsync,
 } from "./test-helpers";
 
+function dispatchInputAsync(view: EditorView, inputStr: string) {
+    // insert all but the last character
+    const toInsert = inputStr.slice(0, -1);
+    view.dispatch(view.state.tr.insertText(toInsert));
+    applySelection(view.state, toInsert.length);
+
+    // fire the handleTextInput by appending to the final character dom directly
+    if (view.dom.children.length) {
+        view.dom.children[0].append(
+            document.createTextNode(inputStr.slice(-1))
+        );
+    }
+
+    // TODO HACK
+    // the above is triggered asyncronously via a dom observer,
+    // so defer execution so it can finish and update the state
+    return sleepAsync(0);
+}
+
+function markInputRuleTest(expectedMark: MarkType, charactersTrimmed: number) {
+    return async (testString: string, matches: boolean) => {
+        const state = createState("", [richTextInputRules]);
+        const view = createView(state);
+
+        await dispatchInputAsync(view, testString);
+
+        const matchedText: Record<string, unknown> = {
+            "isText": true,
+            "text": testString,
+            "marks.length": 0,
+        };
+
+        if (matches) {
+            matchedText.text = testString.slice(
+                charactersTrimmed,
+                charactersTrimmed * -1
+            );
+            matchedText["marks.length"] = 1;
+            matchedText["marks.0.type.name"] = expectedMark.name;
+        }
+
+        expect(view.state.doc).toMatchNodeTree({
+            content: [
+                {
+                    "type.name": "paragraph",
+                    "content": [
+                        {
+                            ...matchedText,
+                        },
+                    ],
+                },
+            ],
+        });
+    };
+}
+
 describe("mark input rules", () => {
+    // TODO rename?
+    // these are necessary due to potential dom interaction
+    beforeAll(setupPasteSupport);
+    afterAll(cleanupPasteSupport);
+
     const emphasisTests = [
-        ["*match*", "*match*", "match"],
-        ["*should match*", "*should match*", "should match"],
-        //["this *should match*", "*should match*", "should match"],
-        // ["**no-match*", null, null],
-        // ["*no\nmatch*", null, null],
-        // ["**no-match**", null, null],
-        // ["**not a match*", null, null],
-        // ["this is **not a match*", null, null],
+        ["*match*", true],
+        ["*should match*", true],
+        ["**no-match*", false],
+        ["**not a match*", false],
+        ["* no-match*", false],
+        ["*no-match *", false],
     ];
     test.each(emphasisTests)(
-        "emphasis",
+        "*emphasis* (%#)",
         markInputRuleTest(richTextSchema.marks.em, 1)
     );
 
-    // const emphasisUnderlineTests = [
-    //     ["_match_", "_match_", "match"],
-    //     ["_should match_", "_should match_", "should match"],
-    //     ["this _should match_", "_should match_", "should match"],
-    //     ["__no-match_", null, null],
-    //     ["_no\nmatch_", null, null],
-    //     ["__no-match__", null, null],
-    //     ["__not a match_", null, null],
-    //     ["this is __not a match_", null, null],
-    // ];
-    // test.each(emphasisUnderlineTests)(
-    //     "emphasis with underlines",
-    //     markInputRuleTest(emphasisUnderlineRegex)
-    // );
+    const emphasisUnderlineTests = [
+        ["_match_", true],
+        ["_should match_", true],
+        ["__no-match_", false],
+        ["__not a match_", false],
+        ["_ no-match_", false],
+        ["_no-match _", false],
+    ];
+    test.each(emphasisUnderlineTests)(
+        "_emphasis_ (%#)",
+        markInputRuleTest(richTextSchema.marks.em, 1)
+    );
 
-    // const boldTests = [
-    //     ["**match**", "**match**", "match"],
-    //     ["**should match**", "**should match**", "should match"],
-    //     ["this **should match**", "**should match**", "should match"],
-    //     ["**no-match*", null, null],
-    //     ["this is **not a match*", null, null],
-    //     ["**no\nmatch**", null, null],
-    // ];
-    // test.each(boldTests)("bold", markInputRuleTest(boldRegex));
+    const boldTests = [
+        ["**match**", true],
+        ["**should match**", true],
+        ["** no-match**", false],
+        ["**no-match **", false],
+    ];
+    test.each(boldTests)(
+        "**strong** (%#)",
+        markInputRuleTest(richTextSchema.marks.strong, 2)
+    );
 
-    // const boldUnderlineTests = [
-    //     ["__match__", "__match__", "match"],
-    //     ["__should match__", "__should match__", "should match"],
-    //     ["this __should match__", "__should match__", "should match"],
-    //     ["__no-match_", null, null],
-    //     ["this is __not a match_", null, null],
-    //     ["__no\nmatch__", null, null],
-    // ];
-    // test.each(boldUnderlineTests)(
-    //     "bold with underlines",
-    //     markInputRuleTest(boldUnderlineRegex)
-    // );
+    const boldUnderlineTests = [
+        ["__match__", true],
+        ["__should match__", true],
+        ["__ no-match__", false],
+        ["__no-match __", false],
+    ];
+    test.each(boldUnderlineTests)(
+        "__strong__ (%#)",
+        markInputRuleTest(richTextSchema.marks.strong, 2)
+    );
 
-    // const inlineCodeTests = [
-    //     ["`match`", "`match`", "match"],
-    //     ["`should match`", "`should match`", "should match"],
-    //     ["this `should match`", "`should match`", "should match"],
-    //     ["``match`", "``match`", "`match"],
-    //     ["`no\nmatch`", null, null],
-    // ];
-    // test.each(inlineCodeTests)(
-    //     "inline code",
-    //     markInputRuleTest(inlineCodeRegex)
-    // );
+    const codeTests = [
+        ["`match`", true],
+        ["`should match`", true],
+        ["` no-match`", false],
+        ["`no-match `", false],
+    ];
+    test.each(codeTests)(
+        "`code` (%#)",
+        markInputRuleTest(richTextSchema.marks.code, 1)
+    );
 
-    // const linkTests = [
-    //     [
-    //         "[match](https://example.com)",
-    //         "[match](https://example.com)",
-    //         "match",
-    //     ],
-    //     ["[match](something)", "[match](something)", "match"],
-    //     [
-    //         "[this is a match](something)",
-    //         "[this is a match](something)",
-    //         "this is a match",
-    //     ],
-    //     ["[no-match(https://example.com)", null, null],
-    //     ["[no-match)(https://example.com", null, null],
-    //     ["no-match](https://example.com)", null, null],
-    //     ["[no-match]()", null, null],
-    //     ["[no-match]", null, null],
-    // ];
-    // test.each(linkTests)("links", markInputRuleTest(linkRegex));
-
-    function markInputRuleTest(
-        expectedMark: MarkType,
-        charactersTrimmed: number
-    ) {
-        return async (testString: string) => {
+    const linkTests = [
+        ["[match](https://example.com)", true],
+        ["[ this *is* a __match__ ](https://example.com)", true],
+        ["[match](something)", false],
+        ["[this is not a match](badurl)", false],
+        ["[no-match(https://example.com)", false],
+        ["[no-match)(https://example.com", false],
+        ["no-match](https://example.com)", false],
+        ["[no-match]()", false],
+        ["[no-match]", false],
+    ];
+    test.each(linkTests)(
+        "links (%#)",
+        async (testString: string, matches: boolean) => {
             const state = createState("", [richTextInputRules]);
             const view = createView(state);
 
-            // insert all but the last character
-            const toInsert = testString.slice(0, -1);
-            view.dispatch(view.state.tr.insertText(toInsert));
-            applySelection(view.state, toInsert.length);
+            await dispatchInputAsync(view, testString);
 
-            // fire the handleTextInput by appending to the final character dom directly
-            if (view.dom.children.length) {
-                view.dom.children[0].append(
-                    document.createTextNode(testString.slice(-1))
-                );
+            const matchedText: Record<string, unknown> = {
+                "isText": true,
+                "text": testString,
+                "marks.length": 0,
+            };
+
+            if (matches) {
+                matchedText.text = /\[(.+?)\]/.exec(testString)[1];
+                matchedText["marks.length"] = 1;
+                matchedText["marks.0.type.name"] =
+                    richTextSchema.marks.link.name;
+                matchedText["marks.0.attrs.href"] = /\((.+?)\)/.exec(
+                    testString
+                )[1];
             }
-
-            // TODO HACK
-            // the above is triggered asyncronously via a dom observer,
-            // so defer execution so it can finish and update the state
-            await sleepAsync(0);
 
             expect(view.state.doc).toMatchNodeTree({
                 content: [
@@ -126,18 +174,12 @@ describe("mark input rules", () => {
                         "type.name": "paragraph",
                         "content": [
                             {
-                                "isText": true,
-                                "text": testString.slice(
-                                    charactersTrimmed,
-                                    charactersTrimmed * -1
-                                ),
-                                "marks.length": 1,
-                                "marks.0.type.name": expectedMark.name,
+                                ...matchedText,
                             },
                         ],
                     },
                 ],
             });
-        };
-    }
+        }
+    );
 });
