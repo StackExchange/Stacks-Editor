@@ -72,8 +72,8 @@ function markInputRule(
     regexp: RegExp,
     markType: MarkType,
     getAttrs:
-        | { [key: string]: any }
-        | ((match: string[]) => { [key: string]: any } | null | undefined),
+        | { [key: string]: unknown }
+        | ((match: string[]) => { [key: string]: unknown } | null | undefined),
     matchValidator?: (match: RegExpMatchArray) => boolean
 ) {
     return new InputRule(
