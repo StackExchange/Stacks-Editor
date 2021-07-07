@@ -83,6 +83,13 @@ function markInputRule(
             const attrs = getAttrs ? getAttrs(match) : {};
             const tr = state.tr;
 
+            // if the current node doesn't allow this mark, don't attempt to transform
+            if (
+                !state.doc.resolve(start).parent.type.allowsMarkType(markType)
+            ) {
+                return null;
+            }
+
             // validate the match if a validator is given
             // and skip applying the mark if the validation fails
             if (matchValidator && !matchValidator(match)) {
