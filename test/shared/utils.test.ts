@@ -67,11 +67,13 @@ describe("utils", () => {
                 "https://sub.complicated.domain:8080/path/to/whatever.png#hash?query=parameter%20test",
                 true,
             ],
+            ["https://example.org with other text after", false],
 
             // mailto:
             ["mailto:email@address.com", true],
             ["mailto:email@address", false],
             ["mailto://email@address.com", false],
+            ["mailto:email@address.com and then some other text", false],
         ])("should validate a subset of urls (%s)", (input, shouldValidate) => {
             expect(validateLink(input)).toBe(shouldValidate);
         });
