@@ -116,3 +116,10 @@ export function dispatchPasteEvent(
 
     el.dispatchEvent(event);
 }
+
+/** Returns a promise that is resolved delayMs from when it is called */
+export function sleepAsync(delayMs: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), delayMs);
+    });
+}
