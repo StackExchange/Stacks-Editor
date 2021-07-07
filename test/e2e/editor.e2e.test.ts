@@ -70,8 +70,15 @@ const getMarkdownContent = async () => {
     return text;
 };
 
-const typeText = async (text: string) => {
-    return await page.fill(editorSelector, text);
+/**
+ * Type text into the editor window
+ * @param text the text to type
+ * @param simulateTyping if `true` this will type characters one by one instead of entering the text all at once. That's slower but sometimes necessary
+ */
+const typeText = async (text: string, simulateTyping = false) => {
+    return simulateTyping
+        ? await page.type(editorSelector, text)
+        : await page.fill(editorSelector, text);
 };
 
 const enterTextAsMarkdown = async (text: string) => {
@@ -158,6 +165,48 @@ describe("rich-text mode", () => {
                 expect(doc.content[0].type).toBe(expectedNodeType);
             }
         );
+
+        it.each([
+            // valid inline mark rules
+            ["**bold** ", "strong"],
+            ["*emphasis* ", "em"],
+            ["__bold__ ", "strong"],
+            ["_emphasis_ ", "em"],
+            ["`code` ", "code"],
+            ["[a link](https://example.com)", "link"],
+        ])(
+            "should create a mark on input '%s'",
+            async (input, expectedMarkType) => {
+                await clearEditor();
+                const simulateTyping = true;
+                await typeText(input, simulateTyping);
+                // TODO HACK don't use the debugging instance on window since it is unique to our specific view
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const doc = await page.evaluate(() =>
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
+                    (<any>window).editorInstance.editorView.state.doc.toJSON()
+                );
+
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                expect(doc.content[0].content[0].marks[0].type).toContain(
+                    expectedMarkType
+                );
+            }
+        );
+
+        it("should validate links for link input rule", async () => {
+            await clearEditor();
+            const simulateTyping = true;
+            await typeText("[invalid link](example)", simulateTyping);
+            // TODO HACK don't use the debugging instance on window since it is unique to our specific view
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const doc = await page.evaluate(() =>
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
+                (<any>window).editorInstance.editorView.state.doc.toJSON()
+            );
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+            expect(doc.content[0].content[0].marks).toBeUndefined();
+        });
     });
 
     describe("editing images", () => {
