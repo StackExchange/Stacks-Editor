@@ -216,7 +216,7 @@ export function makeMenuIcon(
     cssClasses?: string[]
 ): HTMLButtonElement {
     const button = document.createElement("button");
-    button.className = `s-editor-btn flex--cell js-editor-btn js-${key}`;
+    button.className = `s-editor-btn flex--item js-editor-btn js-${key}`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
@@ -245,7 +245,7 @@ export function makeMenuSpacerEntry(
     cssClasses?: string[]
 ): MenuCommandEntry {
     const dom = document.createElement("div");
-    dom.className = "flex--cell w16";
+    dom.className = "flex--item w16";
 
     if (cssClasses) {
         dom.classList.add(...cssClasses);
@@ -326,7 +326,7 @@ export function dropdownItem(
 ): MenuCommandEntry {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `s-btn s-btn__unset flex--cell ta-left px12 py4 h:bg-black-050 c-pointer js-editor-btn`;
+    button.className = `s-btn s-btn__unset flex--item ta-left px12 py4 h:bg-black-050 c-pointer js-editor-btn`;
     button.dataset.key = key;
     button.textContent = title;
 
@@ -345,7 +345,7 @@ export function dropdownItem(
  */
 export function dropdownSection(title: string, key: string): MenuCommandEntry {
     const section = document.createElement("span");
-    section.className = `flex--cell ta-left fs-fine tt-uppercase mx12 mb6 mt12 fc-black-400`;
+    section.className = `flex--item ta-left fs-fine tt-uppercase mx12 mb6 mt12 fc-black-400`;
     section.dataset.key = key;
     section.textContent = title;
 
@@ -370,7 +370,7 @@ export function makeMenuLinkEntry(
     href: string
 ): MenuCommandEntry {
     const dom = document.createElement("a");
-    dom.className = `s-editor-btn js-editor-btn flex--cell`;
+    dom.className = `s-editor-btn js-editor-btn flex--item`;
     dom.href = href;
     dom.target = "_blank";
     dom.title = title;

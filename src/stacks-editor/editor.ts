@@ -309,14 +309,14 @@ export class StacksEditor implements View {
             defaultItem === EditorType.Commonmark ? "checked" : "";
 
         const container = document.createElement("div");
-        container.className = "flex--cell d-flex ai-center ml24 fc-medium";
+        container.className = "flex--item d-flex ai-center ml24 fc-medium";
 
         // TODO localization
-        container.innerHTML = escapeHTML`<label class="flex--cell fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
-            <label class="flex--cell mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
+        container.innerHTML = escapeHTML`<label class="flex--item fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
+            <label class="flex--item mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
                 <span class="icon-bg iconMarkdown"></span>
             </label>
-            <div class="flex--cell s-toggle-switch js-editor-mode-switcher">
+            <div class="flex--item s-toggle-switch js-editor-mode-switcher">
                 <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
                 <div class="s-toggle-switch--indicator"></div>
             </div>`;

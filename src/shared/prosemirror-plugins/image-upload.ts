@@ -537,8 +537,8 @@ function createPlaceholder(): HTMLDivElement {
     placeholder.innerHTML = `
 <div class="py6 px12 bg-black-050 bar-sm d-flex gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
     <span class="icon-bg iconImage"></span>
-    <div class="flex--cell">Uploading image</div>
-    <div class="s-spinner s-spinner__sm flex--cell">
+    <div class="flex--item">Uploading image</div>
+    <div class="s-spinner s-spinner__sm flex--item">
         <div class="v-visible-sr">Loading…</div>
     </div>
 </div>

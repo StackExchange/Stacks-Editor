@@ -54,10 +54,10 @@ class LinkTooltip {
             <div class="s-popover--arrow"></div>
             <div class="d-flex ai-center">
                 <a href="${this.href}"
-                    class="wmx3 flex--cell fs-body1 fw-normal d-inline-block truncate ml8 mr4"
+                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4"
                     target="_blank"
                     rel="nofollow noreferrer">${this.href}</a>
-                <div class="flex--cell d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
+                <div class="flex--item d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
                     <input type="text"
                             class="s-input s-input__sm js-link-tooltip-input"
                             autocomplete="off"
@@ -65,13 +65,13 @@ class LinkTooltip {
                             value="${this.href}" />
                 </div>
                 <button type="button"
-                        class="flex--cell s-btn mr4 js-link-tooltip-edit"
+                        class="flex--item s-btn mr4 js-link-tooltip-edit"
                         title="${"Edit link"}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
                 <button type="button"
-                        class="flex--cell s-btn d-none js-link-tooltip-apply"
+                        class="flex--item s-btn d-none js-link-tooltip-apply"
                         title="${"Apply new link"}">${"Apply"}</button>
                 <button type="button"
-                        class="flex--cell s-btn js-link-tooltip-remove"
+                        class="flex--item s-btn js-link-tooltip-remove"
                         title="${"Remove link"}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
             </div>
         </div>`;
