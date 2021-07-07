@@ -38,6 +38,7 @@ import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
 import { codePasteHandler } from "./plugins/code-paste-handler";
+import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
 import { linkTooltipPlugin } from "./plugins/link-tooltip";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
@@ -101,6 +102,7 @@ export class RichTextEditor extends BaseView {
                         spoilerToggle,
                         tables,
                         codePasteHandler,
+                        linkPasteHandler,
                         ...this.externalPlugins.plugins,
                     ],
                 }),

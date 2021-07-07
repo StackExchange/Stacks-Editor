@@ -1,6 +1,7 @@
 import { DOMParser } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { RichTextEditor } from "../../src/rich-text/editor";
+import { crazyTestUrl } from "./test-helpers";
 
 function richView(markdownInput: string) {
     return new RichTextEditor(document.createElement("div"), markdownInput, {});
@@ -142,8 +143,8 @@ describe("markdown-serializer", () => {
         ],
         /* Images */
         [
-            `![alt1](https://example.com "title1")`,
-            `![alt1](https://example.com "title1")`,
+            `![alt1](${crazyTestUrl} "title1")`,
+            `![alt1](${crazyTestUrl} "title1")`,
         ],
         // [
         //     `<img src="src1" alt="alt1" title="title1">`,
@@ -190,11 +191,11 @@ describe("markdown-serializer", () => {
         ["`test`", "`test`"],
         [`<code>test</code>`, "<code>test</code>"],
         [
-            `[test](https://www.example.com "title1")`,
-            `[test](https://www.example.com "title1")`,
+            `[test](${crazyTestUrl} "title1")`,
+            `[test](${crazyTestUrl} "title1")`,
         ],
-        [`<https://www.example.com>`, `<https://www.example.com>`],
-        [`https://www.example.com`, `https://www.example.com`],
+        [`<${crazyTestUrl}>`, `<${crazyTestUrl}>`],
+        [`${crazyTestUrl}`, `${crazyTestUrl}`],
         // TODO reference links
     ];
 
