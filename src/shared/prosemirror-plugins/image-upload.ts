@@ -535,12 +535,11 @@ function createPlaceholder(): HTMLDivElement {
     const placeholder = document.createElement("div");
     placeholder.className = "ws-normal d-block m8";
     placeholder.innerHTML = `
-<div class="py6 px12 bg-black-050 bar-sm d-flex gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
-    <span class="icon-bg iconImage"></span>
-    <div class="flex--item">Uploading image</div>
-    <div class="s-spinner s-spinner__sm flex--item">
-        <div class="v-visible-sr">Loading…</div>
-    </div>
+<div class="py6 px6 bg-black-050 bar-sm gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
+    <span class="s-spinner s-spinner__sm flex--item">
+        <span class="v-visible-sr">Loading…</span>
+    </span>
+    <span class="flex--item">Uploading image…</span>
 </div>
 `;
     return placeholder;
