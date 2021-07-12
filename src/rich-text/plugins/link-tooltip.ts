@@ -52,12 +52,12 @@ class LinkTooltip {
             id="link-tooltip-popover"
             role="menu">
             <div class="s-popover--arrow"></div>
-            <div class="grid ai-center">
+            <div class="d-flex ai-center">
                 <a href="${this.href}"
-                    class="wmx3 grid--cell fs-body1 fw-normal d-inline-block truncate ml8 mr4"
+                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4"
                     target="_blank"
                     rel="nofollow noreferrer">${this.href}</a>
-                <div class="grid--cell d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
+                <div class="flex--item d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
                     <input type="text"
                             class="s-input s-input__sm js-link-tooltip-input"
                             autocomplete="off"
@@ -65,13 +65,13 @@ class LinkTooltip {
                             value="${this.href}" />
                 </div>
                 <button type="button"
-                        class="grid--cell s-btn mr4 js-link-tooltip-edit"
+                        class="flex--item s-btn mr4 js-link-tooltip-edit"
                         title="${"Edit link"}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
                 <button type="button"
-                        class="grid--cell s-btn d-none js-link-tooltip-apply"
+                        class="flex--item s-btn d-none js-link-tooltip-apply"
                         title="${"Apply new link"}">${"Apply"}</button>
                 <button type="button"
-                        class="grid--cell s-btn js-link-tooltip-remove"
+                        class="flex--item s-btn js-link-tooltip-remove"
                         title="${"Remove link"}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
             </div>
         </div>`;
@@ -519,8 +519,9 @@ export const linkTooltipPlugin = new StatefulPlugin<LinkTooltipState>({
         handleDOMEvents: {
             /** Handle editor blur and close the tooltip if it isn't focused */
             blur(view, e: FocusEvent) {
-                const linkTooltip = LINK_TOOLTIP_KEY.getState(view.state)
-                    .linkTooltip;
+                const linkTooltip = LINK_TOOLTIP_KEY.getState(
+                    view.state
+                ).linkTooltip;
 
                 // if the editor blurs, but NOT because of the tooltip, hide the tooltip
                 if (!view.hasFocus() && !linkTooltip.hasFocus(e)) {

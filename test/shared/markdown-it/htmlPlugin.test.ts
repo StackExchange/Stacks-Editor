@@ -350,6 +350,8 @@ describe("html markdown-it plugin", () => {
                 ) {
                     const token = blockTokensOnly[i];
 
+                    // HACK it's easier to do this since the logic is in a for loop and can differ per item
+                    /* eslint-disable jest/no-conditional-expect */
                     if (token.type === "html_block") {
                         expect(token.content).toBe(expectedValues[j]);
                     } else if (token.type === "html_block_container_open") {
@@ -361,6 +363,7 @@ describe("html markdown-it plugin", () => {
                         );
                         j++;
                     }
+                    /* eslint-enable jest/no-conditional-expect */
                 }
             }
         );

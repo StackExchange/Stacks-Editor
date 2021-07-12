@@ -9,6 +9,18 @@ import { EditorView } from "prosemirror-view";
 import { mocked } from "ts-jest/utils";
 import { richTextSchema } from "../../src/shared/schema";
 
+/**
+ * Url to use when testing (de)serialization that contains special encodings/other pitfalls and
+ * also goes the extra mile to conform to the more strict RFC3986
+ * @see {@link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/encodeURIComponent}
+ * @see {@link https://datatracker.ietf.org/doc/html/rfc3986#section-2.2}
+ */
+export const crazyTestUrl =
+    `https://example.com/whatever?q=` +
+    encodeURIComponent(
+        `prefix:("+#some-zany_input.that,encodes~like*CRAZY?!_[don't@me&=send$$$]/);`
+    ).replace(/[-_.!~*'()]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
+
 /** Creates a bare rich-text state with only the passed plugins enabled */
 export function createState(
     htmlContent: string,
@@ -103,4 +115,11 @@ export function dispatchPasteEvent(
     event.clipboardData = new DataTransferMock(data);
 
     el.dispatchEvent(event);
+}
+
+/** Returns a promise that is resolved delayMs from when it is called */
+export function sleepAsync(delayMs: number): Promise<void> {
+    return new Promise((resolve) => {
+        setTimeout(() => resolve(), delayMs);
+    });
 }

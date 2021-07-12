@@ -124,12 +124,20 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             }
     },
     text(state, node) {
+        const linkMark = node.marks.find((m) => m.type.name === "link");
+        let text = node.text;
+
+        // if the text node is from a link, use the original href text if the original markup used it
+        if (["linkify", "autolink"].includes(linkMark?.attrs.markup)) {
+            text = linkMark.attrs.href as string;
+        }
+
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
         const startOfLine: boolean = state.atBlank() || state.closed;
         // escape the text using the built in escape code
-        let escapedText = state.esc(node.text, startOfLine);
+        let escapedText = state.esc(text, startOfLine);
 
         // built in escape doesn't get all the cases TODO upstream!
         escapedText = escapedText.replace(/\b_|_\b/g, "\\_");
@@ -369,12 +377,12 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
 
         // run the backing method to get where the markup should be placed
         // TODO the types are incorrect, the correct return type is "string", not "void"
-        let defaultResult = (defaultCodeMarkDeserializer.open(
+        let defaultResult = defaultCodeMarkDeserializer.open(
             state,
             mark,
             parent,
             index
-        ) as unknown) as string;
+        ) as unknown as string;
 
         if (mark.attrs.markup) {
             defaultResult = defaultResult.replace("`", mark.attrs.markup);
@@ -392,12 +400,12 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
 
         // run the backing method to get where the markup should be placed
         // TODO the types are incorrect, the correct return type is "string", not "void"
-        let defaultResult = (defaultCodeMarkDeserializer.close(
+        let defaultResult = defaultCodeMarkDeserializer.close(
             state,
             mark,
             parent,
             index
-        ) as unknown) as string;
+        ) as unknown as string;
 
         if (mark.attrs.markup) {
             // insert the `/` on html closing tags

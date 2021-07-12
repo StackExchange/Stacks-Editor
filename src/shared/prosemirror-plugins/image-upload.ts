@@ -124,10 +124,10 @@ export class ImageUploader implements PluginView {
             <div class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
 
-            <div class="grid ai-center p12">
+            <div class="d-flex ai-center p12">
                 <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
                 <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
-                <div class="ml64 grid fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
+                <div class="ml64 d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
                     <div class="js-branding-html"></div>
                     <div class="js-content-policy-html"></div>
                 </div>
@@ -139,9 +139,8 @@ export class ImageUploader implements PluginView {
 
         // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
         // eslint-disable-next-line no-unsanitized/property
-        this.uploadContainer.querySelector(
-            ".js-branding-html"
-        ).innerHTML = this.uploadOptions?.brandingHtml;
+        this.uploadContainer.querySelector(".js-branding-html").innerHTML =
+            this.uploadOptions?.brandingHtml;
 
         // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
         // eslint-disable-next-line no-unsanitized/property
@@ -302,13 +301,13 @@ export class ImageUploader implements PluginView {
         resolve: () => void,
         reject: (error: string) => void
     ) {
-        const previewElement = this.uploadContainer.querySelector(
-            ".js-image-preview"
-        );
+        const previewElement =
+            this.uploadContainer.querySelector(".js-image-preview");
 
-        const addImageButton = this.uploadContainer.querySelector<HTMLButtonElement>(
-            ".js-add-image"
-        );
+        const addImageButton =
+            this.uploadContainer.querySelector<HTMLButtonElement>(
+                ".js-add-image"
+            );
 
         this.hideValidationError();
         const validationResult = this.validateImage(file);
@@ -402,8 +401,9 @@ export class ImageUploader implements PluginView {
         return this.uploadOptions.handler(file).then(
             (url) => {
                 // find where we inserted our placeholder so the content insert knows where to go
-                const decos = IMAGE_UPLOADER_KEY.getState(view.state)
-                    .decorations;
+                const decos = IMAGE_UPLOADER_KEY.getState(
+                    view.state
+                ).decorations;
                 const found = decos.find(
                     null,
                     null,
@@ -535,12 +535,11 @@ function createPlaceholder(): HTMLDivElement {
     const placeholder = document.createElement("div");
     placeholder.className = "ws-normal d-block m8";
     placeholder.innerHTML = `
-<div class="py6 px12 bg-black-050 bar-sm grid gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
-    <span class="icon-bg iconImage"></span>
-    <div class="grid--cell">Uploading image</div>
-    <div class="s-spinner s-spinner__sm grid--cell">
-        <div class="v-visible-sr">Loading…</div>
-    </div>
+<div class="py6 px6 bg-black-050 bar-sm gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
+    <span class="s-spinner s-spinner__sm flex--item">
+        <span class="v-visible-sr">Loading…</span>
+    </span>
+    <span class="flex--item">Uploading image…</span>
 </div>
 `;
     return placeholder;

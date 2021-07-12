@@ -1,8 +1,8 @@
 import { Plugin, EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Schema } from "prosemirror-model";
-import { validateLink } from "../../shared/utils";
 import { triggerLinkPreview } from "./link-preview";
+import { Node, Schema } from "prosemirror-model";
+import { validateLink } from "../../shared/utils";
 
 function isInlineCode(state: EditorState): boolean {
     const { from, $from, to, empty } = state.selection;
@@ -11,10 +11,7 @@ function isInlineCode(state: EditorState): boolean {
         return state.doc.rangeHasMark(from, to, schema.marks.code);
     }
 
-    return (
-        schema.marks.code.isInSet(state.storedMarks || $from.marks()) !==
-        undefined
-    );
+    return !!schema.marks.code.isInSet(state.storedMarks || $from.marks());
 }
 
 /** Plugin that detects if a URL is being pasted in and automatically formats it as a link */
@@ -64,12 +61,9 @@ export const linkPasteHandler = new Plugin({
                 }
 
                 const schema = view.state.schema as Schema;
-                const linkAttrs = {
-                    href: link,
-                    markup: linkText === link ? "linkify" : null,
-                };
+                const linkAttrs = { href: link, markup: linkText === link ? "linkify" : null };
 
-                const node = schema.text(linkText, [
+                const node: Node = schema.text(linkText, [
                     schema.marks.link.create(linkAttrs),
                 ]);
 

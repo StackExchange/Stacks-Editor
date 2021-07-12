@@ -67,6 +67,9 @@ describe("linkPasteHandler plugin", () => {
         }
     );
 
+    // TODO: Add more complex test cases: pasting across new lines, pasting
+    // with multiple node types selected (e.g. h1 + p), selections with invalid marks
+    // or nodes in them, etc.
     it.each(URLTestData)(
         "should use existing selection as link text (%#)",
         (text) => {
@@ -129,6 +132,9 @@ Console.WriteLine(i);</pre>`,
             state = applySelection(state, 15);
             const view = createView(state);
 
+            // Verify we're testing the right thing
+            let selectedNode = view.state.selection.$from.node();
+            expect(selectedNode.type.name).toBe("code_block");
             dispatchPasteEvent(view.dom, {
                 "text/plain": text,
             });
@@ -140,6 +146,14 @@ Console.WriteLine(i);</pre>`,
 i++;${text}
 Console.WriteLine(i);`);
             expect(node.marks).toHaveLength(0);
+
+            // Verify that the node is still a code block but with new contents
+            selectedNode = view.state.selection.$from.node();
+            expect(selectedNode.type.name).toBe("code_block");
+            expect(selectedNode.textContent).toBe(`int i = 5;
+i++;${text}
+Console.WriteLine(i);`);
+            expect(selectedNode.marks).toHaveLength(0);
         }
     );
 });
