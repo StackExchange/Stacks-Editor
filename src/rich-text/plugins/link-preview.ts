@@ -286,8 +286,9 @@ export function linkPreviewPlugin(
                         doc,
                         previewProviders
                     ),
-                    // TODO: check for provider options here?
-                    handleTextOnly: false,
+                    handleTextOnly: previewProviders.some(
+                        (p) => p.displayTextOnly
+                    ),
                 };
             },
             apply(tr, value) {
