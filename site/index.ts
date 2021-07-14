@@ -91,8 +91,7 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
     });
 
 domReady(() => {
-    document.querySelector(".js-version-number").textContent =
-        version as string;
+    document.querySelector(".js-version-number").textContent = version;
 
     document
         .querySelector("#js-toggle-dark")
