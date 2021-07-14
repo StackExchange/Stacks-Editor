@@ -1,5 +1,6 @@
 import { Plugin, EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { triggerLinkPreview } from "./link-preview";
 import { Node, Schema } from "prosemirror-model";
 import { validateLink } from "../../shared/utils";
 
@@ -67,6 +68,8 @@ export const linkPasteHandler = new Plugin({
                 ]);
 
                 view.dispatch(view.state.tr.replaceSelectionWith(node, false));
+
+                triggerLinkPreview(view);
             }
 
             return true;
