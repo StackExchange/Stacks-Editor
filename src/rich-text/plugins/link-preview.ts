@@ -36,14 +36,8 @@ function getValidProvider(
     providers: LinkPreviewProvider[],
     node: ProsemirrorNode
 ): { url: string; provider: LinkPreviewProvider } {
-    // not a valid node, keep checking
-    // TODO: support text-only for any link, not just pasted on its own into a paragraph
-    if (!isPreviewableLink(node)) {
-        return null;
-    }
-
-    const child = node.content.firstChild;
-    const url = child.marks.find((m) => m.type.name === "link")?.attrs
+    const n = node.isText ? node : node.content.firstChild;
+    const url = n?.marks.find((m) => m.type.name === "link")?.attrs
         ?.href as string;
 
     // if there is no href, then nothing will match
@@ -53,6 +47,11 @@ function getValidProvider(
 
     // check all providers for this
     for (const provider of providers) {
+        // full preview providers require links to be in a paragraph by themselves
+        if (!provider.displayTextOnly && !isStandalonePreviewableLink(node)) {
+            continue;
+        }
+
         if (provider.domainTest && provider.domainTest.test(url)) {
             return { url, provider };
         }
@@ -161,7 +160,7 @@ function insertLinkPreview(placeholder: Element, content: Node | null) {
  *
  * @param {Node} node - The node that should be checked
  */
-function isPreviewableLink(node: ProsemirrorNode) {
+function isStandalonePreviewableLink(node: ProsemirrorNode) {
     const child = node.content.firstChild;
     if (!child) return false;
 
