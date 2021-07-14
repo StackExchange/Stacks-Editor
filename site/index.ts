@@ -32,7 +32,7 @@ function setTimeoutAsync(delay: number): Promise<void> {
  * a fetch by waiting five seconds from time of request to time of render
  */
 export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
-    domainTest: /^https?:\/\/(www\.)?(example\.com)|(example\.org)/i,
+    domainTest: /^https?:\/\/(www\.)?(example\.com)/i,
     renderer: (url: string) => {
         let returnValue: string = null;
 
@@ -65,7 +65,7 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
 };
 
 export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
-    domainTest: /^https?:\/\/(www\.)?google.com/i,
+    domainTest: /^https?:\/\/(www\.)?(example\.org)/i,
     renderer: () =>
         setTimeoutAsync(5000).then(() =>
             document.createTextNode("TODO text only")
