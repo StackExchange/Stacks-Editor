@@ -194,6 +194,42 @@ describe("rich-text mode", () => {
             }
         );
 
+        it.each([
+            // invalid followed by valid
+            ["__nope_ _match_", 1],
+            ["**nope* *match*", 1],
+            // invalid, folled by valid, but duplicate text
+            ["__test_ _test_", 1],
+            ["**test* *test*", 1],
+            // no match
+            ["**test*", -1],
+            ["__test_", -1],
+        ])(
+            "should handle strong vs weak emphasis marks (%s)",
+            async (input, matchIndex) => {
+                await clearEditor();
+                await typeText(input, true);
+
+                // TODO HACK don't use the debugging instance on window since it is unique to our specific view
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                const doc = await page.evaluate(() =>
+                    // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-explicit-any
+                    (<any>window).editorInstance.editorView.state.doc.toJSON()
+                );
+
+                // consider a matchIndex of -1 to mean "should not match"
+                let mark = "em";
+                if (matchIndex === -1) {
+                    mark = undefined;
+                }
+
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+                expect(doc.content[0].content[matchIndex]?.marks[0].type).toBe(
+                    mark
+                );
+            }
+        );
+
         it("should validate links for link input rule", async () => {
             await clearEditor();
             const simulateTyping = true;
