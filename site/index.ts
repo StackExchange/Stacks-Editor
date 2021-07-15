@@ -70,7 +70,7 @@ export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
         setTimeoutAsync(5000).then(() =>
             document.createTextNode("TODO text only")
         ),
-    displayTextOnly: true,
+    previewTextOnly: true,
 };
 
 /**

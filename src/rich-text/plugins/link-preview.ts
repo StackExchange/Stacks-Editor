@@ -8,10 +8,10 @@ import {
 // TODO naive cache, maybe we can improve?
 // TODO maybe we can prefill the cache if the consuming process already has the result
 /** The cache of url -> content for link previews so we don't have to continually refetch */
-const previewResultCache: { [url: string]: Node } = {};
+const fullPreviewResultCache: { [url: string]: Node } = {};
 
 // TODO document
-const textOnlyCache: {
+const textOnlyPreviewResultCache: {
     [url: string]: { node: ProsemirrorNode; pos: number; text: string };
 } = {};
 
@@ -24,7 +24,7 @@ export interface LinkPreviewProvider {
     /** The async function to render the preview */
     renderer: (url: string) => Promise<Node | null>;
     /** Whether to update the text content only or do a full rich html replacement */
-    displayTextOnly?: boolean;
+    previewTextOnly?: boolean;
 }
 
 /**
@@ -48,7 +48,7 @@ function getValidProvider(
     // check all providers for this
     for (const provider of providers) {
         // full preview providers require links to be in a paragraph by themselves
-        if (!provider.displayTextOnly && !isStandalonePreviewableLink(node)) {
+        if (!provider.previewTextOnly && !isStandalonePreviewableLink(node)) {
             continue;
         }
 
@@ -124,10 +124,13 @@ function generatePreviewDecorations(
 
         // if the url is in the cache, insert
         if (
-            !n.provider.provider.displayTextOnly &&
-            n.provider.url in previewResultCache
+            !n.provider.provider.previewTextOnly &&
+            n.provider.url in fullPreviewResultCache
         ) {
-            insertLinkPreview(placeholder, previewResultCache[n.provider.url]);
+            insertLinkPreview(
+                placeholder,
+                fullPreviewResultCache[n.provider.url]
+            );
         } else {
             // TODO
             placeholder.innerHTML = "";
@@ -192,8 +195,8 @@ function fetchLinkPreviewContent(
     // filter out all urls that are already in cache
     const unfetchedNodes = nodes.filter(
         (n) =>
-            !(n.provider.url in previewResultCache) &&
-            !(n.provider.url in textOnlyCache)
+            !(n.provider.url in fullPreviewResultCache) &&
+            !(n.provider.url in textOnlyPreviewResultCache)
     );
 
     // if there's no data to fetch, just reject (no need to update the state)
@@ -207,16 +210,16 @@ function fetchLinkPreviewContent(
             n.provider.provider
                 .renderer(n.provider.url)
                 .then((content) => {
-                    const isTextOnly = n.provider.provider.displayTextOnly;
+                    const isTextOnly = n.provider.provider.previewTextOnly;
                     if (isTextOnly) {
-                        textOnlyCache[n.provider.url] = {
+                        textOnlyPreviewResultCache[n.provider.url] = {
                             node: n.node,
                             pos: n.pos,
                             text: content.textContent,
                         };
                     } else {
                         // cache results so we don't call over and over...
-                        previewResultCache[n.provider.url] = content;
+                        fullPreviewResultCache[n.provider.url] = content;
                     }
 
                     return isTextOnly ? content.textContent : content;
@@ -229,7 +232,7 @@ function fetchLinkPreviewContent(
                     const errorPlaceholder = document.createElement("div");
                     errorPlaceholder.innerText = "Error fetching content.";
                     // set the cache here too, so we don't refetch errors every time...
-                    previewResultCache[n.provider.url] = errorPlaceholder;
+                    fullPreviewResultCache[n.provider.url] = errorPlaceholder;
                     return Promise.resolve(errorPlaceholder);
                 })
         );
@@ -259,7 +262,7 @@ export function triggerLinkPreview(view: EditorView): void {
 
     LINK_PREVIEWS_KEY.setMeta(tr, {
         decorations: generatePreviewDecorations(tr.doc, previewProviders),
-        handleTextOnly: previewProviders.some((p) => p.displayTextOnly),
+        handleTextOnly: previewProviders.some((p) => p.previewTextOnly),
     });
 
     const newState = view.state.apply(tr);
@@ -289,7 +292,7 @@ export function linkPreviewPlugin(
                         previewProviders
                     ),
                     handleTextOnly: previewProviders.some(
-                        (p) => p.displayTextOnly
+                        (p) => p.previewTextOnly
                     ),
                 };
             },
@@ -328,8 +331,8 @@ export function linkPreviewPlugin(
 
             let tr = newState.tr;
 
-            Object.keys(textOnlyCache).forEach((key) => {
-                const entry = textOnlyCache[key];
+            Object.keys(textOnlyPreviewResultCache).forEach((key) => {
+                const entry = textOnlyPreviewResultCache[key];
 
                 // TODO easier way to do this? use newState?
                 let pos = entry.pos;
