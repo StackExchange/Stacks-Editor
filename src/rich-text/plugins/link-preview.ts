@@ -191,7 +191,9 @@ function fetchLinkPreviewContent(
 
     // filter out all urls that are already in cache
     const unfetchedNodes = nodes.filter(
-        (n) => !(n.provider.url in previewResultCache)
+        (n) =>
+            !(n.provider.url in previewResultCache) &&
+            !(n.provider.url in textOnlyCache)
     );
 
     // if there's no data to fetch, just reject (no need to update the state)
@@ -223,6 +225,7 @@ function fetchLinkPreviewContent(
                 // "catch" and fake a resolution
                 .catch(() => {
                     // TODO make this look nice
+                    // TODO: error handling for text only previews
                     const errorPlaceholder = document.createElement("div");
                     errorPlaceholder.innerText = "Error fetching content.";
                     // set the cache here too, so we don't refetch errors every time...
