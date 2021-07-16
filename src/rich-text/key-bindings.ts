@@ -17,6 +17,7 @@ import {
     moveToNextCellCommand,
     moveToPreviousCellCommand,
     moveSelectionAfterTableCommand,
+    insertTableCommand,
 } from "./commands";
 
 export const richTextKeymap = keymap({
@@ -44,6 +45,7 @@ export const richTextKeymap = keymap({
 });
 
 export const tableKeymap = keymap({
+    "Mod-e": insertTableCommand,
     "Mod-Enter": moveSelectionAfterTableCommand,
     "Shift-Enter": moveSelectionAfterTableCommand,
     "Enter": moveToNextCellCommand,

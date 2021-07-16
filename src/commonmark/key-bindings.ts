@@ -13,6 +13,7 @@ import {
     headerCommand,
     insertHorizontalRuleCommand,
     insertCodeblockCommand,
+    insertTableCommand,
 } from "./commands";
 
 export const commonmarkKeymap = keymap({
@@ -33,4 +34,8 @@ export const commonmarkKeymap = keymap({
     "Mod-h": headerCommand,
     "Mod-r": insertHorizontalRuleCommand,
     "Mod-m": insertCodeblockCommand,
+});
+
+export const tableKeymap = keymap({
+    "Mod-e": insertTableCommand,
 });
