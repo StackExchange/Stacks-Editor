@@ -29,6 +29,8 @@ export interface CommonViewOptions {
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
     externalPlugins?: ExternalEditorPlugin[];
+    /** An optional HTML Element that will be used to show a rendered preview of the post in Markdown-mode */
+    previewTarget?: HTMLElement;
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
