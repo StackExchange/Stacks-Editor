@@ -33,6 +33,7 @@ jobs:
 
             - name: Install playwright
               run: npx playwright install-deps
+              run: npx playwright install
 
             - name: Run E2E tests
               run: npm run test:e2e
