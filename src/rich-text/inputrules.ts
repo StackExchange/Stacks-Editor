@@ -34,34 +34,39 @@ const orderedListRule = wrappingInputRule(
 // matches: `some text`, but not ` text `
 const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
 // matches: **some text**, but not ** text **
-const boldRegex = /\*\*(\S(?:|.*?\S))\*\*$/;
+const strongRegexAsterisks = /\*\*(\S(?:|.*?\S))\*\*$/;
 // matches: *some text*, but not **text* or * text *
-const emphasisRegex = /(?<!\*)\*([^*\s](?:|.*?[^*\s]))\*$/;
+export const emphasisRegexAsterisk = /\*([^*\s]([^*])*[^*\s]|[^*\s])\*$/;
 // matches: __some text__, but not __ text __
-const boldUnderlineRegex = /__(\S(?:|.*?\S))__$/;
+const strongRegexUnderscores = /__(\S(?:|.*?\S))__$/;
 // matches: _some text_, but not __text_ or _ text _
-const emphasisUnderlineRegex = /(?<!_)_([^_\s](?:|.*?[^*\s]))_$/;
+const emphasisRegexUnderscore = /_([^_\s]([^_])*[^_\s]|[^_\s])_$/;
 // matches: [ *any* thing ]( any thing )
 const linkRegex = /\[(.+)\]\((.+)\)$/;
 
 const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code);
-const boldRule = markInputRule(boldRegex, schema.marks.strong);
-const emphasisRule = markInputRule(emphasisRegex, schema.marks.em);
+const boldRule = markInputRule(strongRegexAsterisks, schema.marks.strong);
+const emphasisRule = markInputRule(
+    emphasisRegexAsterisk,
+    schema.marks.em,
+    (match) => match.input.charAt(match.input.lastIndexOf(match[0]) - 1) !== "*"
+);
 const boldUnderlineRule = markInputRule(
-    boldUnderlineRegex,
+    strongRegexUnderscores,
     schema.marks.strong
 );
 const emphasisUnderlineRule = markInputRule(
-    emphasisUnderlineRegex,
-    schema.marks.em
+    emphasisRegexUnderscore,
+    schema.marks.em,
+    (match) => match.input.charAt(match.input.lastIndexOf(match[0]) - 1) !== "_"
 );
 const linkRule = markInputRule(
     linkRegex,
     schema.marks.link,
+    (match) => validateLink(match[2]), // only apply link input rule, if the matched URL is valid,
     (match: RegExpMatchArray) => {
         return { href: match[2] };
-    },
-    (match) => validateLink(match[2]) // only apply link input rule, if the matched URL is valid
+    }
 );
 
 /**
@@ -75,8 +80,8 @@ const linkRule = markInputRule(
 function markInputRule(
     regexp: RegExp,
     markType: MarkType,
-    getAttrs?: (p: string[]) => { [key: string]: unknown } | null | undefined,
-    matchValidator?: (match: RegExpMatchArray) => boolean
+    matchValidator?: (match: RegExpMatchArray) => boolean,
+    getAttrs?: (p: string[]) => { [key: string]: unknown } | null | undefined
 ) {
     return new InputRule(
         regexp,

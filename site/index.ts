@@ -1,5 +1,5 @@
-import type { StacksEditor } from "../src";
-import type { StacksEditorOptions } from "../src";
+import { version } from "../package.json";
+import type { StacksEditor, StacksEditorOptions } from "../src";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
@@ -91,6 +91,8 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
     });
 
 domReady(() => {
+    document.querySelector(".js-version-number").textContent = version;
+
     document
         .querySelector("#js-toggle-dark")
         ?.addEventListener("change", (e: Event) => {
@@ -169,9 +171,12 @@ domReady(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
         (window as any)["editorInstance"] = editorInstance;
 
-        if (place2)
-        {
-            const secondEditorInstance = new StacksEditor(place2, content.value, options);
+        if (place2) {
+            const secondEditorInstance = new StacksEditor(
+                place2,
+                content.value,
+                options
+            );
 
             // set the instance on the window for developers to poke around in
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any

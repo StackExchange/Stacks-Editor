@@ -83,7 +83,7 @@ describe("mark input rules", () => {
         ["*no-match *", false],
     ];
     test.each(emphasisTests)(
-        "*emphasis* (%#)",
+        "*emphasis* (%s)",
         markInputRuleTest(richTextSchema.marks.em, 1)
     );
 
@@ -96,7 +96,7 @@ describe("mark input rules", () => {
         ["_no-match _", false],
     ];
     test.each(emphasisUnderlineTests)(
-        "_emphasis_ (%#)",
+        "_emphasis_ (%s)",
         markInputRuleTest(richTextSchema.marks.em, 1)
     );
 
@@ -107,7 +107,7 @@ describe("mark input rules", () => {
         ["**no-match **", false],
     ];
     test.each(boldTests)(
-        "**strong** (%#)",
+        "**strong** (%s)",
         markInputRuleTest(richTextSchema.marks.strong, 2)
     );
 
@@ -118,7 +118,7 @@ describe("mark input rules", () => {
         ["__no-match __", false],
     ];
     test.each(boldUnderlineTests)(
-        "__strong__ (%#)",
+        "__strong__ (%s)",
         markInputRuleTest(richTextSchema.marks.strong, 2)
     );
 
@@ -129,7 +129,7 @@ describe("mark input rules", () => {
         ["`no-match `", false],
     ];
     test.each(codeTests)(
-        "`code` (%#)",
+        "`code` (%s)",
         markInputRuleTest(richTextSchema.marks.code, 1)
     );
 
@@ -145,7 +145,7 @@ describe("mark input rules", () => {
         ["[no-match]", false],
     ];
     test.each(linkTests)(
-        "links (%#)",
+        "links (%s)",
         async (testString: string, matches: boolean) => {
             const state = createState("", [richTextInputRules]);
             const view = createView(state);
