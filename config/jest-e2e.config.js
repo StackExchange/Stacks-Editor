@@ -8,4 +8,5 @@ module.exports = {
         ...tsjPreset.transform,
     },
     rootDir: "../",
+    setupFilesAfterEnv: ["<rootDir>/test/e2e-setup.ts"],
 };

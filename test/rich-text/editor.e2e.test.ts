@@ -33,12 +33,6 @@ const enterTextAsMarkdown = async (text: string) => {
     await switchMode(false);
 };
 
-jest.setTimeout(35 * 1000);
-
-beforeAll(async () => {
-    await page.goto("http://localhost:8081");
-});
-
 describe("rich-text mode", () => {
     beforeAll(async () => {
         await switchMode(false);

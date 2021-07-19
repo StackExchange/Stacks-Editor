@@ -11,12 +11,6 @@ const addImageButtonSelector = ".js-add-image";
 
 const uploadImageMenuItemSelector = ".js-insert-image-btn";
 
-jest.setTimeout(35 * 1000);
-
-beforeAll(async () => {
-    await page.goto("http://localhost:8081");
-});
-
 describe("inserting images", () => {
     beforeAll(async () => {
         await switchMode(false);

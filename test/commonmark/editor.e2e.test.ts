@@ -8,12 +8,6 @@ import {
 
 const boldMenuButtonSelector = ".js-bold-btn";
 
-jest.setTimeout(35 * 1000);
-
-beforeAll(async () => {
-    await page.goto("http://localhost:8081");
-});
-
 describe("markdown mode", () => {
     beforeAll(async () => {
         await switchMode(true);
