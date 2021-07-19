@@ -70,7 +70,7 @@ Run all end-to-end tests (written in Playwright) using
 
     npm run test:e2e
 
-End-to-end tests need to follow the convention of using `someName.e2e.test.ts` as their filename and being saved in the `test/e2e` directory. They'll automatically get picked up by the test runner this way.
+End-to-end tests need to follow the convention of using `someName.e2e.test.ts` as their filename. They'll automatically get picked up by the test runner this way.
 
 ### Debug End-to-end tests
 

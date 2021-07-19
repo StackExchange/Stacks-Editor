@@ -13,8 +13,8 @@
         "dist/"
     ],
     "scripts": {
-        "test": "jest --testPathIgnorePatterns=test/e2e --config config/jest-unit.config.js",
-        "test:e2e": "jest e2e.test.ts --config config/jest-e2e.config.js --runInBand",
+        "test": "jest --config config/jest-unit.config.js",
+        "test:e2e": "jest --config config/jest-e2e.config.js --runInBand",
         "start": "webpack serve --config config/webpack.dev.js",
         "build": "webpack --config config/webpack.prod.js",
         "build:dev": "webpack --config config/webpack.dev.js",

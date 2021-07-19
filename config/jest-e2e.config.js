@@ -8,4 +8,6 @@ module.exports = {
         ...tsjPreset.transform,
     },
     rootDir: "../",
+    testRegex: String.raw`e2e\.test\.ts$`,
+    setupFilesAfterEnv: ["<rootDir>/test/e2e-setup.ts"],
 };
