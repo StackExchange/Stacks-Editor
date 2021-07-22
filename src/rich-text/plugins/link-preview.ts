@@ -52,6 +52,12 @@ function getValidProvider(
             continue;
         }
 
+        // Text-only provider could apply but this link already has a custom text,
+        // so skip it
+        if (provider.previewTextOnly && url !== n?.textContent) {
+            continue;
+        }
+
         if (provider.domainTest && provider.domainTest.test(url)) {
             return { url, provider };
         }
@@ -348,7 +354,14 @@ export function linkPreviewPlugin(
                 const nodeSize = entry.node.nodeSize;
 
                 tr = tr.replaceWith(pos, pos + nodeSize, newNode);
-                // TODO delete from cache? mark as replaced?
+
+                // Delete from the pending queue. This allows someone to paste multiples
+                // of the same link and have it be formatted correctly. The preview provider
+                // can handle any caching necessary.
+                // This still does not address pasting those in relatively quick succession to each other,
+                // so, a TODO: an alternative here could be to modify textOnlyPreviewResultCache to have
+                // a URL key map to an array of nodes, and then track which ones have already been replaced.
+                delete textOnlyPreviewResultCache[key];
             });
 
             return tr;
