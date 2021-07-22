@@ -66,10 +66,7 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
 
 export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
     domainTest: /^https?:\/\/(www\.)?(example\.org)/i,
-    renderer: () =>
-        setTimeoutAsync(5000).then(() =>
-            document.createTextNode("TODO text only")
-        ),
+    renderer: () => setTimeoutAsync(0).then(() => "Example domain"),
     previewTextOnly: true,
 };
 
@@ -181,9 +178,12 @@ domReady(() => {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
         (window as any)["editorInstance"] = editorInstance;
 
-        if (place2)
-        {
-            const secondEditorInstance = new StacksEditor(place2, content.value, options);
+        if (place2) {
+            const secondEditorInstance = new StacksEditor(
+                place2,
+                content.value,
+                options
+            );
 
             // set the instance on the window for developers to poke around in
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any

@@ -22,7 +22,7 @@ export interface LinkPreviewProvider {
     /** A regular expression to test against a url to see if this provider should handle it */
     domainTest: RegExp;
     /** The async function to render the preview */
-    renderer: (url: string) => Promise<Node | null>;
+    renderer: (url: string) => Promise<Node | string | null>;
     /** Whether to update the text content only or do a full rich html replacement */
     previewTextOnly?: boolean;
 }
@@ -215,14 +215,14 @@ function fetchLinkPreviewContent(
                         textOnlyPreviewResultCache[n.provider.url] = {
                             node: n.node,
                             pos: n.pos,
-                            text: content.textContent,
+                            text: <string>content,
                         };
                     } else {
                         // cache results so we don't call over and over...
-                        fullPreviewResultCache[n.provider.url] = content;
+                        fullPreviewResultCache[n.provider.url] = <Node>content;
                     }
 
-                    return isTextOnly ? content.textContent : content;
+                    return content;
                 })
                 // don't let any errors crash our `.all` below
                 // "catch" and fake a resolution
