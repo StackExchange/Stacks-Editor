@@ -10,7 +10,13 @@ import {
 /** The cache of url -> content for link previews so we don't have to continually refetch */
 const fullPreviewResultCache: { [url: string]: Node } = {};
 
-// TODO document
+/** The cache of URL -> the node information we need to be able to replace it when the link text
+ * Note that unlike `fullPreviewResultCache`, URLs are removed from this one after replacement takes place
+ * in order to support multiple replacements of the same URL.
+ *
+ * // TODO: Maybe this should be a mapping of URL to array of nodes? There are still a few quirks with
+ * pasting multiple copies of the same URL.
+ */
 const textOnlyPreviewResultCache: {
     [url: string]: { node: ProsemirrorNode; pos: number; text: string };
 } = {};
@@ -234,7 +240,8 @@ function fetchLinkPreviewContent(
                 // "catch" and fake a resolution
                 .catch(() => {
                     // TODO make this look nice
-                    // TODO: error handling for text only previews
+                    // TODO: error handling for text only previews? So far we just reject the promise
+                    // without sending any errors back, so this should be okay for the time being.
                     const errorPlaceholder = document.createElement("div");
                     errorPlaceholder.innerText = "Error fetching content.";
                     // set the cache here too, so we don't refetch errors every time...
@@ -362,6 +369,9 @@ export function linkPreviewPlugin(
                 // so, a TODO: an alternative here could be to modify textOnlyPreviewResultCache to have
                 // a URL key map to an array of nodes, and then track which ones have already been replaced.
                 delete textOnlyPreviewResultCache[key];
+
+                // TODO: How do we detect rejections here? Do we clean up the textonly cache in case of
+                // failed fetches and re-attempt later?
             });
 
             return tr;
