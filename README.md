@@ -17,7 +17,7 @@ Stacks-Editor is a combination rich text / markdown editor that powers Stack Ove
 ```js
 import { StacksEditor } from "@stackoverflow/stacks-editor";
 // don't forget to include the styles as well
-import "@stackoverflow/stacks-editor/styles.css";
+import "@stackoverflow/stacks-editor/dist/styles.css";
 
 new StacksEditor(
     document.querySelector("#editor-container"),
