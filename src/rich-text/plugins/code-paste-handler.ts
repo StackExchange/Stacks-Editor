@@ -72,13 +72,13 @@ export const codePasteHandler = new Plugin({
             // if we're pasting into a code_block, just paste the text
             // otherwise, create a code_block and paste into that instead
             if (selectedNode.type.name === "code_block") {
-                view.dispatch(view.state.tr.insertText(codeData));
+                view.dispatch(view.state.tr.insertText(codeData.replace(/\r\n?/g, "\n")));
             } else {
                 const schema = view.state.schema as Schema;
                 const node: Node = schema.node(
                     "code_block",
                     {},
-                    schema.text(codeData)
+                    schema.text(codeData.replace(/\r\n?/g, "\n"))
                 );
 
                 view.dispatch(view.state.tr.replaceSelectionWith(node));
