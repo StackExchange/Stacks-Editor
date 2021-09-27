@@ -256,8 +256,10 @@ export function buildMarkdownParser(
         defaultMarkdownItInstance.disable("strikethrough");
     }
 
-    // disable autolinking of anything that comes without protocol prefix (e.g. https://)
-    defaultMarkdownItInstance.linkify.set({ fuzzyLink: false });
+    defaultMarkdownItInstance.linkify.set({
+        fuzzyLink: false, // disable autolinking of anything that comes without protocol prefix (e.g. https://)
+        fuzzyEmail: false // disable email autolinking, see this MSE question: https://meta.stackexchange.com/q/370235
+    });
 
     // use a custom link validator that's closer to Stack Overflow's backend validation
     defaultMarkdownItInstance.validateLink = validateLink;
