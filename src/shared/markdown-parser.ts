@@ -259,9 +259,11 @@ export function buildMarkdownParser(
     // disable autolinking of anything that comes without protocol prefix (e.g. https://)
     defaultMarkdownItInstance.linkify.set({ fuzzyLink: false });
 
-    // use a custom link validator that's closer to Stack Overflow's backend validation
-    defaultMarkdownItInstance.validateLink = validateLink;
-
+    // use the default validate link if defaultValidateLink is set to false
+    if (!features.defaultValidateLink) {
+        // use a custom link validator that's closer to Stack Overflow's backend validation
+        defaultMarkdownItInstance.validateLink = validateLink;
+    }
     // start adding in the parser plugins, NOTE: order matters!
 
     // parse/sanitize html
