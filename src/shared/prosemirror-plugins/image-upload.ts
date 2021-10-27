@@ -72,6 +72,9 @@ enum ValidationResult {
     Ok,
     FileTooLarge,
     InvalidFileType,
+    InvalidFileName,
+    FileWidthTooLarge,
+    CursorPositionNotOnBlankLine,
 }
 
 /**
@@ -225,7 +228,7 @@ export class ImageUploader implements PluginView {
         this.resetImagePreview();
         const files = this.uploadField.files;
         if (view.state.selection.$from.parent.inlineContent && files.length) {
-            void this.showImagePreview(files[0]);
+            void this.showImagePreview(files[0], view);
         }
     }
 
@@ -233,7 +236,7 @@ export class ImageUploader implements PluginView {
         this.resetImagePreview();
         const files = event.dataTransfer.files;
         if (view.state.selection.$from.parent.inlineContent && files.length) {
-            void this.showImagePreview(files[0]);
+            void this.showImagePreview(files[0], view);
         }
     }
 
@@ -241,13 +244,20 @@ export class ImageUploader implements PluginView {
         this.resetImagePreview();
         const files = event.clipboardData.files;
         if (view.state.selection.$from.parent.inlineContent && files.length) {
-            void this.showImagePreview(files[0]);
+            void this.showImagePreview(files[0], view);
         }
     }
 
-    validateImage(image: File): ValidationResult {
-        const validTypes = ["image/jpeg", "image/png", "image/gif"];
+    validateImage(image: File, view: EditorView): ValidationResult {
+        const validTypes = [
+            "image/jpeg",
+            "image/jpg",
+            "image/png",
+            "image/gif",
+            "image/svg",
+        ];
         const sizeLimit = 0x200000; // 2 MiB
+        const fileNameValid = /[0-9A-Za-z-]+/;
 
         if (validTypes.indexOf(image.type) === -1) {
             return ValidationResult.InvalidFileType;
@@ -255,6 +265,21 @@ export class ImageUploader implements PluginView {
 
         if (image.size >= sizeLimit) {
             return ValidationResult.FileTooLarge;
+        }
+
+        if (!fileNameValid.test(image.name.replace(/\.[^/.]+$/, ""))) {
+            return ValidationResult.InvalidFileName;
+        }
+
+        void this.validateImageWidth(image).then((width) => {
+            if (width > 1200) {
+                return ValidationResult.FileWidthTooLarge;
+            }
+        });
+
+        const { head, empty } = view.state.selection;
+        if (empty && view.state.doc.resolve(head).parent.content.size == 0) {
+            return ValidationResult.CursorPositionNotOnBlankLine;
         }
 
         return ValidationResult.Ok;
@@ -288,16 +313,33 @@ export class ImageUploader implements PluginView {
         validationElement.innerHTML = "";
     }
 
-    showImagePreview(file: File): Promise<void> {
-        const promise = new Promise<void>((resolve, reject) =>
-            this.showImagePreviewAsync(file, resolve, reject)
-        );
+    showImagePreview(file: File, view: EditorView): Promise<void> {
+        const promise = new Promise<void>((resolve, reject) => {
+            this.showImagePreviewAsync(file, view, resolve, reject);
+        });
 
         return promise;
     }
 
+    private validateImageWidth(image: File): Promise<number> {
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.readAsDataURL(image);
+            reader.onload = () => {
+                const result = reader.result as string;
+                const image = new Image();
+                image.src = result;
+                image.onload = function () {
+                    const width = (this as HTMLImageElement).width;
+                    resolve(width);
+                };
+            };
+        });
+    }
+
     private showImagePreviewAsync(
         file: File,
+        view: EditorView,
         resolve: () => void,
         reject: (error: string) => void
     ) {
@@ -310,7 +352,8 @@ export class ImageUploader implements PluginView {
             );
 
         this.hideValidationError();
-        const validationResult = this.validateImage(file);
+
+        const validationResult = this.validateImage(file, view);
         switch (validationResult) {
             case ValidationResult.FileTooLarge:
                 this.showValidationError(
@@ -320,9 +363,27 @@ export class ImageUploader implements PluginView {
                 return;
             case ValidationResult.InvalidFileType:
                 this.showValidationError(
-                    "Please select an image (jpeg, png, gif) to upload"
+                    "Please select an image (jpeg, jpg, png, gif, svg) to upload"
                 );
                 reject("invalid filetype");
+                return;
+            case ValidationResult.InvalidFileName:
+                this.showValidationError(
+                    "Invalid characters in file or folder names. Only letters, numbers, and hyphens (-) are allowed"
+                );
+                reject("invalid filename");
+                return;
+            case ValidationResult.FileWidthTooLarge:
+                this.showValidationError(
+                    "Image too large. Resize to a max of 1200 pixels on each side."
+                );
+                reject("invalid file width");
+                return;
+            case ValidationResult.CursorPositionNotOnBlankLine:
+                this.showValidationError(
+                    "Inline images aren’t supported. Add your image on a new line."
+                );
+                reject("invalid image position");
                 return;
         }
 
@@ -467,7 +528,7 @@ export class ImageUploader implements PluginView {
             this.uploadContainer.querySelector("button").focus();
 
             if (this.image) {
-                void this.showImagePreview(this.image);
+                void this.showImagePreview(this.image, view);
             }
         } else {
             this.resetUploader();

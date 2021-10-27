@@ -6,6 +6,13 @@ import { escapeHTML } from "../../shared/utils";
 
 type getPosParam = boolean | (() => number);
 
+enum AltTextValidationResult {
+    Ok,
+    AltTextTooLong,
+    AltTextDoesntEndWithPeriod,
+    AltTextStartsWithLowerCase,
+}
+
 // keep track of all images so we can assign unique IDs for stacks popovers
 let imageId = 0;
 export class ImageView implements NodeView {
@@ -108,7 +115,7 @@ export class ImageView implements NodeView {
             <div class="d-flex ps-relative mb12">
                 <input class="flex--item s-input" type="text" name="title" id="img-title-${this.id}" value="${this.img.title}" placeholder="A title shown on hover"/>
             </div>
-
+            <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
             <button class="s-btn s-btn__primary" type="submit" aria-pressed="false">Apply</button>
         `;
         return form;
@@ -135,11 +142,29 @@ export class ImageView implements NodeView {
 
         if (typeof getPos !== "function") return;
 
+        this.hideValidationError();
+
         const findInput = (selector: string): HTMLInputElement =>
             this.form.querySelector(selector);
 
         const src = findInput(`#img-src-${this.id}`);
         const alt = findInput(`#img-alt-${this.id}`);
+        const validationResult = this.validateImageAltText(alt.value);
+        switch (validationResult) {
+            case AltTextValidationResult.AltTextDoesntEndWithPeriod:
+                this.showValidationError("Alt text should end with a period.");
+                return;
+            case AltTextValidationResult.AltTextStartsWithLowerCase:
+                this.showValidationError(
+                    "Alt text should start with an uppercase letter."
+                );
+                return;
+            case AltTextValidationResult.AltTextTooLong:
+                this.showValidationError(
+                    "Alt text too long. The max is 150 characters, including spaces."
+                );
+                return;
+        }
         const title = findInput(`#img-title-${this.id}`);
 
         view.dispatch(
@@ -151,6 +176,47 @@ export class ImageView implements NodeView {
         );
 
         view.focus();
+    }
+
+    showValidationError(errorMessage: string, level = "warning"): void {
+        const validationElement = (this.form as HTMLElement).querySelector(
+            ".js-validation-message"
+        );
+
+        if (level === "warning") {
+            validationElement.classList.remove("s-notice__danger");
+            validationElement.classList.add("s-notice__warning");
+        } else {
+            validationElement.classList.remove("s-notice__warning");
+            validationElement.classList.add("s-notice__danger");
+        }
+
+        validationElement.classList.remove("d-none");
+        validationElement.textContent = errorMessage;
+    }
+
+    hideValidationError(): void {
+        const validationElement = (this.form as HTMLElement).querySelector(
+            ".js-validation-message"
+        );
+        validationElement.classList.add("d-none");
+        validationElement.classList.remove("s-notice__warning");
+        validationElement.classList.remove("s-notice__danger");
+        validationElement.innerHTML = "";
+    }
+
+    private validateImageAltText(alt: string): AltTextValidationResult {
+        if (!alt.endsWith(".")) {
+            return AltTextValidationResult.AltTextDoesntEndWithPeriod;
+        }
+        if (alt.charAt(0) == alt.charAt(0).toLowerCase()) {
+            return AltTextValidationResult.AltTextStartsWithLowerCase;
+        }
+        if (alt.length > 150) {
+            return AltTextValidationResult.AltTextTooLong;
+        }
+
+        return AltTextValidationResult.Ok;
     }
 
     // don't let Stacks close the popover if the image

@@ -157,6 +157,7 @@ domReady(() => {
                         };
                     },
                 },
+                defaultValidateLink: true,
             },
             richTextOptions: {
                 linkPreviewProviders: [ExampleLinkPreviewProvider],
