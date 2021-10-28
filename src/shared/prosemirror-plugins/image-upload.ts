@@ -248,7 +248,10 @@ export class ImageUploader implements PluginView {
         }
     }
 
-    validateImage(image: File, view: EditorView): ValidationResult {
+    async validateImage(
+        image: File,
+        view: EditorView
+    ): Promise<ValidationResult> {
         const validTypes = [
             "image/jpeg",
             "image/jpg",
@@ -271,14 +274,11 @@ export class ImageUploader implements PluginView {
             return ValidationResult.InvalidFileName;
         }
 
-        void this.validateImageWidth(image).then((width) => {
-            if (width > 1200) {
-                return ValidationResult.FileWidthTooLarge;
-            }
-        });
+        if ((await this.validateImageWidth(image)) > 1200) {
+            return ValidationResult.FileWidthTooLarge;
+        }
 
-        const { head, empty } = view.state.selection;
-        if (empty && view.state.doc.resolve(head).parent.content.size == 0) {
+        if (await this.validateImagePosition(view)) {
             return ValidationResult.CursorPositionNotOnBlankLine;
         }
 
@@ -315,7 +315,7 @@ export class ImageUploader implements PluginView {
 
     showImagePreview(file: File, view: EditorView): Promise<void> {
         const promise = new Promise<void>((resolve, reject) => {
-            this.showImagePreviewAsync(file, view, resolve, reject);
+            void this.showImagePreviewAsync(file, view, resolve, reject);
         });
 
         return promise;
@@ -337,7 +337,34 @@ export class ImageUploader implements PluginView {
         });
     }
 
-    private showImagePreviewAsync(
+    private validateImagePosition(view: EditorView): Promise<boolean> {
+        return new Promise((resolve) => {
+            if (window.getSelection) {
+                const selection = window.getSelection();
+                const text = selection.focusNode.textContent;
+                if (!text) {
+                    resolve(false);
+                }
+                const lineSelection = selection.focusNode.textContent.substring(
+                    selection.focusOffset - 1,
+                    selection.focusOffset + 1
+                );
+                if (lineSelection == "\n\n") {
+                    resolve(false);
+                }
+            }
+            const { head, empty } = view.state.selection;
+            if (
+                empty &&
+                view.state.doc.resolve(head).parent.content.size == 0
+            ) {
+                resolve(false);
+            }
+            resolve(true);
+        });
+    }
+
+    private async showImagePreviewAsync(
         file: File,
         view: EditorView,
         resolve: () => void,
@@ -353,7 +380,7 @@ export class ImageUploader implements PluginView {
 
         this.hideValidationError();
 
-        const validationResult = this.validateImage(file, view);
+        const validationResult = await this.validateImage(file, view);
         switch (validationResult) {
             case ValidationResult.FileTooLarge:
                 this.showValidationError(
