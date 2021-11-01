@@ -28,9 +28,9 @@ export interface LinkPreviewProvider {
     /** A regular expression to test against a url to see if this provider should handle it */
     domainTest: RegExp;
     /** The async function to render the preview */
-    renderer: (url: string) => Promise<Node | string | null>;
-    /** Whether to update the text content only or do a full rich html replacement */
-    previewTextOnly?: boolean;
+    renderer: (url: string) => Promise<Node | null>;
+    /** Whether to update the link's text content only or do a full rich html decoration */
+    textOnly?: boolean;
 }
 
 /**
@@ -54,13 +54,13 @@ function getValidProvider(
     // check all providers for this
     for (const provider of providers) {
         // full preview providers require links to be in a paragraph by themselves
-        if (!provider.previewTextOnly && !isStandalonePreviewableLink(node)) {
+        if (!provider.textOnly && !isStandalonePreviewableLink(node)) {
             continue;
         }
 
         // Text-only provider could apply but this link already has a custom text,
         // so skip it
-        if (provider.previewTextOnly && url !== n?.textContent) {
+        if (provider.textOnly && url !== n?.textContent) {
             continue;
         }
 
@@ -136,16 +136,18 @@ function generatePreviewDecorations(
 
         // if the url is in the cache, insert
         if (
-            !n.provider.provider.previewTextOnly &&
+            !n.provider.provider.textOnly &&
             n.provider.url in fullPreviewResultCache
         ) {
             insertLinkPreview(
                 placeholder,
                 fullPreviewResultCache[n.provider.url]
             );
-        } else {
-            // TODO
-            placeholder.innerHTML = "";
+        } else if (
+            n.provider.provider.textOnly &&
+            n.provider.url in textOnlyPreviewResultCache
+        ) {
+            insertLinkPreview(placeholder, null);
         }
     });
 
@@ -196,7 +198,7 @@ function isStandalonePreviewableLink(node: ProsemirrorNode) {
 function fetchLinkPreviewContent(
     view: EditorView,
     providers: LinkPreviewProvider[]
-): Promise<(Node | string)[]> {
+): Promise<Node[]> {
     // TODO can we make this more efficient?
     // getValidNodes will run on every state update, so it'd be
     // nice to be able to check the last transaction / updated doc
@@ -222,16 +224,16 @@ function fetchLinkPreviewContent(
             n.provider.provider
                 .renderer(n.provider.url)
                 .then((content) => {
-                    const isTextOnly = n.provider.provider.previewTextOnly;
+                    const isTextOnly = n.provider.provider.textOnly;
                     if (isTextOnly) {
                         textOnlyPreviewResultCache[n.provider.url] = {
                             node: n.node,
                             pos: n.pos,
-                            text: <string>content,
+                            text: content.textContent,
                         };
                     } else {
                         // cache results so we don't call over and over...
-                        fullPreviewResultCache[n.provider.url] = <Node>content;
+                        fullPreviewResultCache[n.provider.url] = content;
                     }
 
                     return content;
@@ -259,10 +261,9 @@ interface LinkPreviewState {
     handleTextOnly: boolean;
 }
 
-const LINK_PREVIEWS_KEY = new AsyncPluginKey<
-    LinkPreviewState,
-    (Node | string)[]
->("linkPreviews");
+const LINK_PREVIEWS_KEY = new AsyncPluginKey<LinkPreviewState, Node[]>(
+    "linkPreviews"
+);
 
 let previewProviders: LinkPreviewProvider[];
 export function triggerLinkPreview(view: EditorView): void {
@@ -276,7 +277,7 @@ export function triggerLinkPreview(view: EditorView): void {
 
     LINK_PREVIEWS_KEY.setMeta(tr, {
         decorations: generatePreviewDecorations(tr.doc, previewProviders),
-        handleTextOnly: previewProviders.some((p) => p.previewTextOnly),
+        handleTextOnly: previewProviders.some((p) => p.textOnly),
     });
 
     const newState = view.state.apply(tr);
@@ -289,10 +290,10 @@ export function triggerLinkPreview(view: EditorView): void {
  */
 export function linkPreviewPlugin(
     providers: LinkPreviewProvider[]
-): AsyncPlugin<LinkPreviewState, (Node | string)[]> {
+): AsyncPlugin<LinkPreviewState, Node[]> {
     previewProviders = providers || [];
 
-    return new AsyncPlugin<LinkPreviewState, (Node | string)[]>({
+    return new AsyncPlugin<LinkPreviewState, Node[]>({
         key: LINK_PREVIEWS_KEY,
         asyncCallback: (view) => {
             return fetchLinkPreviewContent(view, previewProviders);
@@ -304,9 +305,7 @@ export function linkPreviewPlugin(
                         doc,
                         previewProviders
                     ),
-                    handleTextOnly: previewProviders.some(
-                        (p) => p.previewTextOnly
-                    ),
+                    handleTextOnly: previewProviders.some((p) => p.textOnly),
                 };
             },
             apply(tr, value) {

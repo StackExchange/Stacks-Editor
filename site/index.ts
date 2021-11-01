@@ -66,8 +66,11 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
 
 export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
     domainTest: /^https?:\/\/(www\.)?(example\.org)/i,
-    renderer: () => setTimeoutAsync(0).then(() => "Example domain"),
-    previewTextOnly: true,
+    renderer: (url) =>
+        setTimeoutAsync(0).then(() =>
+            document.createTextNode(`Example domain (${new URL(url).pathname})`)
+        ),
+    textOnly: true,
 };
 
 /**
