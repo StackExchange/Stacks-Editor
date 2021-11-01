@@ -18,7 +18,10 @@ const fullPreviewResultCache: { [url: string]: Node } = {};
  * pasting multiple copies of the same URL.
  */
 const textOnlyPreviewResultCache: {
-    [url: string]: { node: ProsemirrorNode; pos: number; text: string };
+    [url: string]: {
+        text: string;
+        unrendered: { node: ProsemirrorNode; pos: number }[];
+    };
 } = {};
 
 /**
@@ -212,10 +215,11 @@ function fetchLinkPreviewContent(
     const nodes = getValidNodes(view.state.doc, providers);
 
     // filter out all urls that are already in cache
+    // TODO text only nodes _always_ need to be rendered out of band, is there a better way to signal this?
     const unfetchedNodes = nodes.filter(
         (n) =>
-            !(n.provider.url in fullPreviewResultCache) &&
-            !(n.provider.url in textOnlyPreviewResultCache)
+            !(n.provider.url in fullPreviewResultCache) ||
+            n.provider.provider.textOnly
     );
 
     // if there's no data to fetch, just reject (no need to update the state)
@@ -223,21 +227,28 @@ function fetchLinkPreviewContent(
         return Promise.reject(null);
     }
 
+    // TODO don't refetch text only nodes that are already in the cache
     // start fetching all content
     const promises = unfetchedNodes.map((n) => {
         return (
             n.provider.provider
                 .renderer(n.provider.url)
                 .then((content) => {
+                    // cache results so we don't call over and over...
                     const isTextOnly = n.provider.provider.textOnly;
-                    if (isTextOnly) {
+                    if (
+                        isTextOnly &&
+                        !textOnlyPreviewResultCache[n.provider.url]
+                    ) {
                         textOnlyPreviewResultCache[n.provider.url] = {
-                            node: n.node,
-                            pos: n.pos,
                             text: content.textContent,
+                            unrendered: [{ node: n.node, pos: n.pos }],
                         };
+                    } else if (isTextOnly) {
+                        textOnlyPreviewResultCache[
+                            n.provider.url
+                        ].unrendered.push({ node: n.node, pos: n.pos });
                     } else {
-                        // cache results so we don't call over and over...
                         fullPreviewResultCache[n.provider.url] = content;
                     }
 
@@ -329,33 +340,40 @@ export function linkPreviewPlugin(
             let tr = newState.tr;
 
             Object.keys(textOnlyPreviewResultCache).forEach((key) => {
-                const entry = textOnlyPreviewResultCache[key];
+                const cacheEntry = textOnlyPreviewResultCache[key];
 
-                // TODO easier way to do this? use newState?
-                let pos = entry.pos;
-                trs.forEach((t) => {
-                    pos = t.mapping.map(pos);
+                cacheEntry.unrendered.forEach((entry, i) => {
+                    if (!entry) {
+                        return;
+                    }
+
+                    // TODO easier way to do this? use newState?
+                    let pos = entry.pos;
+                    trs.forEach((t) => {
+                        pos = t.mapping.map(pos);
+                    });
+
+                    const schema = newState.schema;
+                    const newNode = schema.text(cacheEntry.text, [
+                        schema.marks.link.create({ href: key, markup: null }),
+                    ]);
+
+                    const nodeSize = entry.node.nodeSize;
+
+                    tr = tr.replaceWith(pos, pos + nodeSize, newNode);
+
+                    // Delete from the pending queue. This allows someone to paste multiples
+                    // of the same link and have it be formatted correctly. The preview provider
+                    // can handle any caching necessary.
+                    // This still does not address pasting those in relatively quick succession to each other,
+                    // so, a TODO: an alternative here could be to modify textOnlyPreviewResultCache to have
+                    // a URL key map to an array of nodes, and then track which ones have already been replaced.
+                    //delete textOnlyPreviewResultCache[key];
+
+                    // TODO: How do we detect rejections here? Do we clean up the textonly cache in case of
+                    // failed fetches and re-attempt later?
+                    cacheEntry.unrendered[i] = null;
                 });
-
-                const schema = newState.schema;
-                const newNode = schema.text(entry.text, [
-                    schema.marks.link.create({ href: key, markup: null }),
-                ]);
-
-                const nodeSize = entry.node.nodeSize;
-
-                tr = tr.replaceWith(pos, pos + nodeSize, newNode);
-
-                // Delete from the pending queue. This allows someone to paste multiples
-                // of the same link and have it be formatted correctly. The preview provider
-                // can handle any caching necessary.
-                // This still does not address pasting those in relatively quick succession to each other,
-                // so, a TODO: an alternative here could be to modify textOnlyPreviewResultCache to have
-                // a URL key map to an array of nodes, and then track which ones have already been replaced.
-                delete textOnlyPreviewResultCache[key];
-
-                // TODO: How do we detect rejections here? Do we clean up the textonly cache in case of
-                // failed fetches and re-attempt later?
             });
 
             return tr;
