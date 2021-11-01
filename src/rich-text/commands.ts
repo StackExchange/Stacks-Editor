@@ -692,23 +692,22 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                     "horizontal-rule-btn"
                 ),
             },
-            makeMenuSpacerEntry(() => false, ["sm:d-inline-block"]),
-            {
-                key: "undo",
-                command: undo,
-                dom: makeMenuIcon("Undo", "Undo", "undo-btn", [
-                    "sm:d-inline-block",
-                ]),
-                visible: () => false,
-            },
-            {
-                key: "redo",
-                command: redo,
-                dom: makeMenuIcon("Refresh", "Redo", "redo-btn", [
-                    "sm:d-inline-block",
-                ]),
-                visible: () => false,
-            },
+            addIf(
+                {
+                    key: "undo",
+                    command: undo,
+                    dom: makeMenuIcon("Undo", "Undo", "undo-btn"),
+                },
+                options.parserFeatures.undo
+            ),
+            addIf(
+                {
+                    key: "redo",
+                    command: redo,
+                    dom: makeMenuIcon("Refresh", "Redo", "redo-btn"),
+                },
+                options.parserFeatures.redo
+            ),
             makeMenuSpacerEntry(),
             //TODO eventually this will mimic the "help" dropdown in the prod editor
             makeMenuLinkEntry("Help", "Help", options.editorHelpLink),

@@ -71,6 +71,8 @@ export interface CommonmarkParserFeatures {
     tagLinks?: TagLinkOptions;
     /** Enable the default link validator from Markdown-It. Else the Stackoverflow validate link function will be used */
     defaultValidateLink?: boolean;
+    undo?: boolean;
+    redo?: boolean;
 }
 
 export const defaultParserFeatures: CommonmarkParserFeatures = {
@@ -82,6 +84,8 @@ export const defaultParserFeatures: CommonmarkParserFeatures = {
         allowMetaTags: true,
         allowNonAscii: false,
     },
+    undo: false,
+    redo: false,
 };
 
 export interface View {
