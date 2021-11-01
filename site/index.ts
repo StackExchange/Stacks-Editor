@@ -32,7 +32,7 @@ function setTimeoutAsync(delay: number): Promise<void> {
  * a fetch by waiting five seconds from time of request to time of render
  */
 export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
-    domainTest: /^https?:\/\/(www\.)?(example\.com)|(example\.org)/i,
+    domainTest: /^https?:\/\/(www\.)?(example\.com)/i,
     renderer: (url: string) => {
         let returnValue: string = null;
 
@@ -62,6 +62,12 @@ export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
             return el;
         });
     },
+};
+
+export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
+    domainTest: /^https?:\/\/(www\.)?(example\.org)/i,
+    renderer: () => setTimeoutAsync(0).then(() => "Example domain"),
+    previewTextOnly: true,
 };
 
 /**
@@ -162,7 +168,10 @@ domReady(() => {
                 },
             },
             richTextOptions: {
-                linkPreviewProviders: [ExampleLinkPreviewProvider],
+                linkPreviewProviders: [
+                    ExampleTextOnlyLinkPreviewProvider,
+                    ExampleLinkPreviewProvider,
+                ],
             },
             imageUpload: imageUploadOptions,
             externalPlugins: [StackSnippetsPlugin],

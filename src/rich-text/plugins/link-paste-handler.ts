@@ -1,5 +1,6 @@
 import { Plugin, EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { triggerLinkPreview } from "./link-preview";
 import { Node, Schema } from "prosemirror-model";
 import { validateLink } from "../../shared/utils";
 
@@ -48,7 +49,10 @@ export const linkPasteHandler = new Plugin({
                                 return;
                             }
 
-                            const start = Math.max(0, selection.from - position);
+                            const start = Math.max(
+                                0,
+                                selection.from - position
+                            );
                             const end = Math.max(0, selection.to - position);
                             selectedText += node.textBetween(start, end);
                         }
@@ -60,13 +64,18 @@ export const linkPasteHandler = new Plugin({
                 }
 
                 const schema = view.state.schema as Schema;
-                const linkAttrs = { href: link, markup: linkText === link ? "linkify" : null };
+                const linkAttrs = {
+                    href: link,
+                    markup: linkText === link ? "linkify" : null,
+                };
 
                 const node: Node = schema.text(linkText, [
                     schema.marks.link.create(linkAttrs),
                 ]);
 
                 view.dispatch(view.state.tr.replaceSelectionWith(node, false));
+
+                triggerLinkPreview(view);
             }
 
             return true;
