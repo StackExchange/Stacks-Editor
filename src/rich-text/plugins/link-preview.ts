@@ -190,6 +190,11 @@ function isStandalonePreviewableLink(node: ProsemirrorNode) {
     return hasOnlyOneChild && childIsTextNode && childHasLinkMark;
 }
 
+interface FetchLinkPreviewResult {
+    content: Node | null;
+    isTextOnly: boolean;
+}
+
 /**
  * Fetches and caches all link preview content for every link node in the view
  * @param view The view to search for valid link nodes
@@ -198,7 +203,7 @@ function isStandalonePreviewableLink(node: ProsemirrorNode) {
 function fetchLinkPreviewContent(
     view: EditorView,
     providers: LinkPreviewProvider[]
-): Promise<Node[]> {
+): Promise<FetchLinkPreviewResult[]> {
     // TODO can we make this more efficient?
     // getValidNodes will run on every state update, so it'd be
     // nice to be able to check the last transaction / updated doc
@@ -236,7 +241,7 @@ function fetchLinkPreviewContent(
                         fullPreviewResultCache[n.provider.url] = content;
                     }
 
-                    return content;
+                    return { content, isTextOnly };
                 })
                 // don't let any errors crash our `.all` below
                 // "catch" and fake a resolution
@@ -248,7 +253,7 @@ function fetchLinkPreviewContent(
                     errorPlaceholder.innerText = "Error fetching content.";
                     // set the cache here too, so we don't refetch errors every time...
                     fullPreviewResultCache[n.provider.url] = errorPlaceholder;
-                    return Promise.resolve(errorPlaceholder);
+                    return Promise.resolve(<FetchLinkPreviewResult>{});
                 })
         );
     });
@@ -261,28 +266,10 @@ interface LinkPreviewState {
     handleTextOnly: boolean;
 }
 
-const LINK_PREVIEWS_KEY = new AsyncPluginKey<LinkPreviewState, Node[]>(
-    "linkPreviews"
-);
-
-let previewProviders: LinkPreviewProvider[];
-export function triggerLinkPreview(view: EditorView): void {
-    const state = LINK_PREVIEWS_KEY.getState(view.state);
-
-    if (!state) {
-        return;
-    }
-
-    const tr = view.state.tr;
-
-    LINK_PREVIEWS_KEY.setMeta(tr, {
-        decorations: generatePreviewDecorations(tr.doc, previewProviders),
-        handleTextOnly: previewProviders.some((p) => p.textOnly),
-    });
-
-    const newState = view.state.apply(tr);
-    view.updateState(newState);
-}
+const LINK_PREVIEWS_KEY = new AsyncPluginKey<
+    LinkPreviewState,
+    FetchLinkPreviewResult[]
+>("linkPreviews");
 
 /**
  * Creates a plugin that searches the entire document for potentially previewable links
@@ -290,10 +277,10 @@ export function triggerLinkPreview(view: EditorView): void {
  */
 export function linkPreviewPlugin(
     providers: LinkPreviewProvider[]
-): AsyncPlugin<LinkPreviewState, Node[]> {
-    previewProviders = providers || [];
+): AsyncPlugin<LinkPreviewState, FetchLinkPreviewResult[]> {
+    const previewProviders = providers || [];
 
-    return new AsyncPlugin<LinkPreviewState, Node[]>({
+    return new AsyncPlugin<LinkPreviewState, FetchLinkPreviewResult[]>({
         key: LINK_PREVIEWS_KEY,
         asyncCallback: (view) => {
             return fetchLinkPreviewContent(view, previewProviders);
@@ -317,9 +304,7 @@ export function linkPreviewPlugin(
                             tr.doc,
                             previewProviders
                         ),
-                        handleTextOnly: callbackData.some(
-                            (d) => typeof d === "string"
-                        ),
+                        handleTextOnly: callbackData.some((d) => d.isTextOnly),
                     };
                 }
 
