@@ -144,7 +144,7 @@ function generateRecentPreviewDecorations(
             // otherwise, add the loading styles
             linkPreviewDecorations.push(
                 Decoration.node(n.pos, n.pos + node.nodeSize, {
-                    class: "is-loading",
+                    class: "is-loading js-link-preview-loading",
                     title: "Loading...",
                 })
             );
