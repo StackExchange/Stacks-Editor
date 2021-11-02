@@ -87,12 +87,11 @@ function mergeObject(object1: unknown, object2: unknown): unknown {
  * Compares two states and returns true if the doc has changed between them.
  * The doc is considered changed if:
  *      * its content changed
- *      * the selection has changed
  *      * the stored marks have changed
  * @param prevState The "old" / previous editor state
  * @param newState The "new" / current editor state
  */
-export function docChanged(
+export function docNodeChanged(
     prevState: EditorState,
     newState: EditorState
 ): boolean {
@@ -102,9 +101,26 @@ export function docChanged(
     }
 
     return (
-        !prevState.selection.eq(newState.selection) ||
         !prevState.doc.eq(newState.doc) ||
         prevState.storedMarks !== newState.storedMarks
+    );
+}
+
+/**
+ * Compares two states and returns true if the doc has changed between them.
+ * The doc is considered changed if:
+ *      * the document node changed (@see docNodeChanged)
+ *      * the selection has changed
+ * @param prevState The "old" / previous editor state
+ * @param newState The "new" / current editor state
+ */
+export function docChanged(
+    prevState: EditorState,
+    newState: EditorState
+): boolean {
+    return (
+        docNodeChanged(prevState, newState) ||
+        !prevState.selection.eq(newState.selection)
     );
 }
 
@@ -162,7 +178,8 @@ export function startStickyObservers(container: Element): void {
 }
 
 // rudimentary link validation that's roughly in line with what Stack Overflow's backend uses for validation
-const validLinkRegex = /^((https?|ftp):\/\/|\/)[-a-z0-9+&@#/%?=~_|!:,.;()*[\]$]+$/;
+const validLinkRegex =
+    /^((https?|ftp):\/\/|\/)[-a-z0-9+&@#/%?=~_|!:,.;()*[\]$]+$/;
 const validMailtoRegex = /^mailto:[#-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+$/;
 
 /**
