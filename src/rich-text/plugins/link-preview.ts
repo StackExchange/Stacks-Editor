@@ -19,7 +19,7 @@ const fullPreviewResultCache: { [url: string]: Node } = {};
  */
 const textOnlyPreviewResultCache: {
     [url: string]: {
-        text: string;
+        content: Node;
         unrendered: { node: ProsemirrorNode; pos: number }[];
     };
 } = {};
@@ -76,22 +76,6 @@ function getValidProvider(
 }
 
 /**
- * Generates a placeholder to show while fetching preview content;
- * Generated placeholder is also used as the final container for the fetched content
- */
-function generatePlaceholder() {
-    // TODO make this look nice
-    const placeholder = document.createElement("div");
-
-    // give this a targetable class for external use / e2e testing
-    placeholder.className = "js-placeholder";
-
-    // everything inside the placeholder will be replaced on render
-    placeholder.innerHTML = `<div class="s-spinner s-spinner__xs"></div>`;
-    return placeholder;
-}
-
-/**
  * Gets nodes in the document that are able to be resolved by a preview provider
  * @param doc The document to search through
  * @param providers The list of registered providers
@@ -119,8 +103,6 @@ function getValidNodes(doc: ProsemirrorNode, providers: LinkPreviewProvider[]) {
 }
 
 /**
- * TODO: fire a transaction to update the view after the placeholder is insert
- *
  * Run over the entire document and find all previewable links and create a link preview decoration
  * for each.
  * @param {Document} doc - The document to find previewable link candidates in
@@ -134,23 +116,23 @@ function generatePreviewDecorations(
     const nodes = getValidNodes(doc, providers);
 
     nodes.forEach((n) => {
-        const placeholder = generatePlaceholder();
-        linkPreviewDecorations.push(Decoration.widget(n.pos, placeholder));
-
-        // if the url is in the cache, insert
         if (
             !n.provider.provider.textOnly &&
             n.provider.url in fullPreviewResultCache
         ) {
-            insertLinkPreview(
-                placeholder,
-                fullPreviewResultCache[n.provider.url]
+            // if the url is in the cache, insert the link preview
+            linkPreviewDecorations.push(
+                insertLinkPreview(n.pos, fullPreviewResultCache[n.provider.url])
             );
-        } else if (
-            n.provider.provider.textOnly &&
-            n.provider.url in textOnlyPreviewResultCache
-        ) {
-            insertLinkPreview(placeholder, null);
+        } else {
+            // otherwise, add the loading styles
+            // TODO make this look nice
+            linkPreviewDecorations.push(
+                Decoration.node(n.pos, n.pos + n.node.nodeSize, {
+                    class: "is-loading",
+                    title: "Loading...",
+                })
+            );
         }
     });
 
@@ -162,16 +144,18 @@ function generatePreviewDecorations(
  * @param placeholder The placeholder originally created to house this content
  * @param content The content returned from the link preview to insert
  */
-function insertLinkPreview(placeholder: Element, content: Node | null) {
-    // empty the placeholder content to remove the spinner / old content
-    placeholder.innerHTML = "";
+function insertLinkPreview(pos: number, content: Node | null) {
+    // TODO make this look nice
+    const placeholder = document.createElement("div");
 
-    // nothing to append, just return empty
-    if (!content) {
-        return;
+    // give this a targetable class for external use / e2e testing
+    placeholder.className = "js-link-preview-decoration";
+
+    if (content) {
+        placeholder.appendChild(content.cloneNode(true));
     }
 
-    placeholder.appendChild(content);
+    return Decoration.widget(pos, placeholder);
 }
 
 /**
@@ -194,8 +178,10 @@ function isStandalonePreviewableLink(node: ProsemirrorNode) {
 }
 
 interface FetchLinkPreviewResult {
+    previouslyCached: boolean;
     content: Node | null;
     isTextOnly: boolean;
+    pos?: number;
 }
 
 /**
@@ -214,62 +200,76 @@ function fetchLinkPreviewContent(
 
     const nodes = getValidNodes(view.state.doc, providers);
 
-    // filter out all urls that are already in cache
-    // TODO text only nodes _always_ need to be rendered out of band, is there a better way to signal this?
-    const unfetchedNodes = nodes.filter(
-        (n) =>
-            !(n.provider.url in fullPreviewResultCache) ||
-            n.provider.provider.textOnly
-    );
-
-    // if there's no data to fetch, just reject (no need to update the state)
-    if (!unfetchedNodes.length) {
+    // if there's new nodes to render, just reject (no need to update the state)
+    if (!nodes.length) {
         return Promise.reject(null);
     }
 
-    // TODO don't refetch text only nodes that are already in the cache
-    // start fetching all content
-    const promises = unfetchedNodes.map((n) => {
-        return (
-            n.provider.provider
-                .renderer(n.provider.url)
-                .then((content) => {
-                    // cache results so we don't call over and over...
-                    const isTextOnly = n.provider.provider.textOnly;
-                    if (
-                        isTextOnly &&
-                        !textOnlyPreviewResultCache[n.provider.url]
-                    ) {
-                        textOnlyPreviewResultCache[n.provider.url] = {
-                            text: content.textContent,
-                            unrendered: [{ node: n.node, pos: n.pos }],
-                        };
-                    } else if (isTextOnly) {
-                        textOnlyPreviewResultCache[
-                            n.provider.url
-                        ].unrendered.push({ node: n.node, pos: n.pos });
-                    } else {
-                        fullPreviewResultCache[n.provider.url] = content;
-                    }
+    // TODO DOCUMENT AND CLEANUP THIS MESS!
+    const promises = nodes.map((n) => {
+        const previouslyCached =
+            n.provider.url in fullPreviewResultCache ||
+            n.provider.url in textOnlyPreviewResultCache;
+        const cachedContent =
+            fullPreviewResultCache[n.provider.url] ||
+            textOnlyPreviewResultCache[n.provider.url]?.content ||
+            null;
+        const basePromise = previouslyCached
+            ? Promise.resolve(cachedContent)
+            : n.provider.provider.renderer(n.provider.url);
 
-                    return { content, isTextOnly };
-                })
-                // don't let any errors crash our `.all` below
-                // "catch" and fake a resolution
-                .catch(() => {
-                    // TODO make this look nice
-                    // TODO: error handling for text only previews? So far we just reject the promise
-                    // without sending any errors back, so this should be okay for the time being.
-                    const errorPlaceholder = document.createElement("div");
-                    errorPlaceholder.innerText = "Error fetching content.";
-                    // set the cache here too, so we don't refetch errors every time...
-                    fullPreviewResultCache[n.provider.url] = errorPlaceholder;
-                    return Promise.resolve(<FetchLinkPreviewResult>{});
-                })
-        );
+        const output: FetchLinkPreviewResult & {
+            promise?: Promise<FetchLinkPreviewResult>;
+        } = {
+            previouslyCached,
+            pos: n.pos,
+            content: cachedContent,
+            isTextOnly: n.provider.provider.textOnly,
+        };
+
+        const promise = basePromise
+            .then((content) => {
+                // cache results so we don't call over and over...
+                const isTextOnly = n.provider.provider.textOnly;
+                if (isTextOnly && !textOnlyPreviewResultCache[n.provider.url]) {
+                    textOnlyPreviewResultCache[n.provider.url] = {
+                        content,
+                        unrendered: [{ node: n.node, pos: n.pos }],
+                    };
+                } else if (isTextOnly) {
+                    textOnlyPreviewResultCache[n.provider.url].unrendered.push({
+                        node: n.node,
+                        pos: n.pos,
+                    });
+                } else {
+                    fullPreviewResultCache[n.provider.url] = content;
+                }
+
+                return { previouslyCached, content, isTextOnly };
+            })
+            // don't let any errors crash our `.all` below
+            // "catch" and fake a resolution
+            .catch(() => {
+                // TODO make this look nice
+                // TODO: error handling for text only previews? So far we just reject the promise
+                // without sending any errors back, so this should be okay for the time being.
+                const errorPlaceholder = document.createElement("div");
+                errorPlaceholder.innerText = "Error fetching content.";
+                // set the cache here too, so we don't refetch errors every time...
+                fullPreviewResultCache[n.provider.url] = errorPlaceholder;
+                return Promise.resolve(<FetchLinkPreviewResult>{});
+            });
+
+        output.promise = promise;
+
+        return output;
     });
 
-    return Promise.all(promises);
+    // trigger the rendering immediately
+    const tr = LINK_PREVIEWS_KEY.setCallbackData(view.state.tr, promises);
+    view.updateState(view.state.apply(tr));
+
+    return Promise.all(promises.map((p) => p.promise));
 }
 
 interface LinkPreviewState {
@@ -342,6 +342,10 @@ export function linkPreviewPlugin(
             Object.keys(textOnlyPreviewResultCache).forEach((key) => {
                 const cacheEntry = textOnlyPreviewResultCache[key];
 
+                if (!cacheEntry.content?.textContent) {
+                    return;
+                }
+
                 cacheEntry.unrendered.forEach((entry, i) => {
                     if (!entry) {
                         return;
@@ -354,9 +358,10 @@ export function linkPreviewPlugin(
                     });
 
                     const schema = newState.schema;
-                    const newNode = schema.text(cacheEntry.text, [
-                        schema.marks.link.create({ href: key, markup: null }),
-                    ]);
+                    const newNode = schema.text(
+                        cacheEntry.content.textContent,
+                        [schema.marks.link.create({ href: key, markup: null })]
+                    );
 
                     const nodeSize = entry.node.nodeSize;
 

@@ -118,6 +118,47 @@
     }
 }
 
+// TODO move this into Stacks!
+.is-loading {
+    // TODO should just be using this instead...
+    //&:extend(.s-btn.is-loading);
+    position: relative;
+    padding-left: 2.2em;
+
+    &:before {
+        content: "";
+        position: absolute;
+        opacity: 0.3;
+        left: 0.6em;
+        top: calc(50% - 0.6em);
+        width: 1.23076923em;
+        height: 1.23076923em;
+        border-width: 2px;
+        border-style: solid;
+        border-color: currentColor;
+        border-radius: @br-circle;
+    }
+
+    &:after {
+        content: "";
+        position: absolute;
+        left: 0.6em;
+        top: calc(50% - 0.6em);
+        width: 1.23076923em;
+        height: 1.23076923em;
+        border-width: 2px;
+        border-style: solid;
+        border-color: transparent;
+        border-left-color: currentColor;
+        border-radius: @br-circle;
+        animation: s-spinner-rotate 0.9s infinite
+            cubic-bezier(0.5, 0.1, 0.5, 0.9);
+        // see _stacks-spinner.less for an explanation of the following two
+        filter: invert(0); // (*)
+        transform-origin: 50% 50% 1px; // (*)
+    }
+}
+
 // EDITOR ONLY STYLE OVERRIDES
 
 .ProseMirror {
