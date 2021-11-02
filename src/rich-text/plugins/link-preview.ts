@@ -266,8 +266,7 @@ function fetchLinkPreviewContent(
     });
 
     // trigger the rendering immediately
-    const tr = LINK_PREVIEWS_KEY.setCallbackData(view.state.tr, promises);
-    view.updateState(view.state.apply(tr));
+    LINK_PREVIEWS_KEY.dispatchCallbackData(view, promises);
 
     return Promise.all(promises.map((p) => p.promise));
 }
