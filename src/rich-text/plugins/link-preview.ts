@@ -1,12 +1,12 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
+import { EditorState } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import {
     AsyncPlugin,
     AsyncPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
+import { docNodeChanged } from "../../shared/utils";
 
-// TODO naive cache, maybe we can improve?
-// TODO maybe we can prefill the cache if the consuming process already has the result
 /** The cache of url -> content for link previews so we don't have to continually refetch */
 const previewResultCache: { [url: string]: Node } = {};
 
@@ -30,7 +30,7 @@ export interface LinkPreviewProvider {
 function getValidProvider(
     providers: LinkPreviewProvider[],
     node: ProsemirrorNode
-): { url: string; provider: LinkPreviewProvider } {
+): { url: string; provider: LinkPreviewProvider } | null {
     const n = node.isText ? node : node.content.firstChild;
     const url = n?.marks.find((m) => m.type.name === "link")?.attrs
         ?.href as string;
@@ -44,6 +44,11 @@ function getValidProvider(
     for (const provider of providers) {
         // full preview providers require links to be in a paragraph by themselves
         if (!provider.textOnly && !isStandalonePreviewableLink(node)) {
+            continue;
+        }
+
+        // text only providers must be matched to text nodes
+        if (provider.textOnly && !node.isText) {
             continue;
         }
 
@@ -62,20 +67,29 @@ function getValidProvider(
 }
 
 /**
- * TODO this needs to be as fast as possible - can we do old vs new state comparison to restrict the nodes we search?
  * Gets nodes in the document that are able to be resolved by a preview provider
  * @param doc The document to search through
  * @param providers The list of registered providers
  */
-function getValidNodes(doc: ProsemirrorNode, providers: LinkPreviewProvider[]) {
+function getValidNodes(
+    currState: EditorState,
+    prevState: EditorState,
+    providers: LinkPreviewProvider[]
+) {
+    // if the document didn't change, then we don't need to do anything
+    // TODO can we do one step better and get only the added nodes?
+    if (!docNodeChanged(currState, prevState)) {
+        return;
+    }
+
     const validNodes: {
         provider: { url: string; provider: LinkPreviewProvider };
         pos: number;
         node: ProsemirrorNode;
     }[] = [];
 
-    // iterate over document structure
-    doc.descendants((node, pos) => {
+    // iterate over current document structure
+    currState.doc.descendants((node, pos) => {
         const provider = getValidProvider(providers, node);
 
         if (provider) {
@@ -95,10 +109,10 @@ function getValidNodes(doc: ProsemirrorNode, providers: LinkPreviewProvider[]) {
  * @param {Document} doc - The document to find previewable link candidates in
  */
 function generateAllPreviewDecorations(
-    doc: ProsemirrorNode,
+    state: EditorState,
     providers: LinkPreviewProvider[]
 ) {
-    const nodes = getValidNodes(doc, providers);
+    const nodes = getValidNodes(state, null, providers);
     const mapped: FetchLinkPreviewResult[] = nodes.map((n) => {
         return {
             content: previewResultCache[n.provider.url],
@@ -108,11 +122,12 @@ function generateAllPreviewDecorations(
         };
     });
 
-    return generateRecentPreviewDecorations(doc, mapped);
+    return generateRecentPreviewDecorations(state.doc, mapped);
 }
 
 /**
- * TODO DOCUMENT
+ * Create a link preview decorations for a set of specific link preview results.
+ * @param {Document} doc - The document to generate decorations against
  */
 function generateRecentPreviewDecorations(
     doc: ProsemirrorNode,
@@ -145,7 +160,6 @@ function generateRecentPreviewDecorations(
  * @param content The content returned from the link preview to insert
  */
 function insertLinkPreview(pos: number, content: Node | null) {
-    // TODO make this look nice
     const placeholder = document.createElement("div");
 
     // give this a targetable class for external use / e2e testing
@@ -193,14 +207,14 @@ interface FetchLinkPreviewResult {
  */
 function fetchLinkPreviewContent(
     view: EditorView,
+    prevState: EditorState,
     providers: LinkPreviewProvider[]
 ): Promise<FetchLinkPreviewResult[]> {
     // TODO can we make this more efficient?
     // getValidNodes will run on every state update, so it'd be
     // nice to be able to check the last transaction / updated doc
     // instead of the current snapshot
-
-    const nodes = getValidNodes(view.state.doc, providers);
+    const nodes = getValidNodes(view.state, prevState, providers);
 
     // if there's no new nodes to render, just reject (no need to update the state)
     if (!nodes.length) {
@@ -280,14 +294,14 @@ export function linkPreviewPlugin(
 
     return new AsyncPlugin<LinkPreviewState, FetchLinkPreviewResult[]>({
         key: LINK_PREVIEWS_KEY,
-        asyncCallback: (view) => {
-            return fetchLinkPreviewContent(view, previewProviders);
+        asyncCallback: (view, prevState) => {
+            return fetchLinkPreviewContent(view, prevState, previewProviders);
         },
         state: {
-            init(_, { doc }) {
+            init(_, state) {
                 return {
                     decorations: generateAllPreviewDecorations(
-                        doc,
+                        state,
                         previewProviders
                     ),
                 };
