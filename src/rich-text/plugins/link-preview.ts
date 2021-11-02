@@ -76,6 +76,7 @@ function getValidProvider(
 }
 
 /**
+ * TODO this needs to be as fast as possible - can we do old vs new state comparison to restrict the nodes we search?
  * Gets nodes in the document that are able to be resolved by a preview provider
  * @param doc The document to search through
  * @param providers The list of registered providers
@@ -126,7 +127,6 @@ function generatePreviewDecorations(
             );
         } else {
             // otherwise, add the loading styles
-            // TODO make this look nice
             linkPreviewDecorations.push(
                 Decoration.node(n.pos, n.pos + n.node.nodeSize, {
                     class: "is-loading",
@@ -181,7 +181,8 @@ interface FetchLinkPreviewResult {
     previouslyCached: boolean;
     content: Node | null;
     isTextOnly: boolean;
-    pos?: number;
+    pos: number;
+    href: string;
 }
 
 /**
@@ -225,6 +226,7 @@ function fetchLinkPreviewContent(
             pos: n.pos,
             content: cachedContent,
             isTextOnly: n.provider.provider.textOnly,
+            href: n.provider.url,
         };
 
         const promise = basePromise
@@ -245,7 +247,13 @@ function fetchLinkPreviewContent(
                     fullPreviewResultCache[n.provider.url] = content;
                 }
 
-                return { previouslyCached, content, isTextOnly };
+                return {
+                    previouslyCached,
+                    content,
+                    isTextOnly,
+                    href: n.provider.url,
+                    pos: n.pos,
+                };
             })
             // don't let any errors crash our `.all` below
             // "catch" and fake a resolution
@@ -273,7 +281,7 @@ function fetchLinkPreviewContent(
 
 interface LinkPreviewState {
     decorations: DecorationSet;
-    handleTextOnly: boolean;
+    recentlyUpdated?: FetchLinkPreviewResult[];
 }
 
 const LINK_PREVIEWS_KEY = new AsyncPluginKey<
@@ -302,7 +310,6 @@ export function linkPreviewPlugin(
                         doc,
                         previewProviders
                     ),
-                    handleTextOnly: previewProviders.some((p) => p.textOnly),
                 };
             },
             apply(tr, value) {
@@ -315,13 +322,13 @@ export function linkPreviewPlugin(
                             previewProviders
                         ),
                         handleTextOnly: callbackData.some((d) => d.isTextOnly),
+                        recentlyUpdated: callbackData,
                     };
                 }
 
                 // else update the mappings to their new positions in the doc
                 return {
                     decorations: value.decorations.map(tr.mapping, tr.doc),
-                    handleTextOnly: false,
                 };
             },
         },
@@ -332,52 +339,38 @@ export function linkPreviewPlugin(
         },
         appendTransaction(trs, _, newState) {
             const data = LINK_PREVIEWS_KEY.getState(newState);
-            if (!data.handleTextOnly) {
+
+            // if no nodes were added or if there aren't any textOnly nodes added, return
+            if (
+                !data.recentlyUpdated?.length ||
+                !data.recentlyUpdated.some((d) => d.isTextOnly)
+            ) {
                 return null;
             }
 
             let tr = newState.tr;
 
-            Object.keys(textOnlyPreviewResultCache).forEach((key) => {
-                const cacheEntry = textOnlyPreviewResultCache[key];
-
-                if (!cacheEntry.content?.textContent) {
+            data.recentlyUpdated.forEach((n) => {
+                if (!n.content?.textContent) {
                     return;
                 }
 
-                cacheEntry.unrendered.forEach((entry, i) => {
-                    if (!entry) {
-                        return;
-                    }
-
-                    // TODO easier way to do this? use newState?
-                    let pos = entry.pos;
-                    trs.forEach((t) => {
-                        pos = t.mapping.map(pos);
-                    });
-
-                    const schema = newState.schema;
-                    const newNode = schema.text(
-                        cacheEntry.content.textContent,
-                        [schema.marks.link.create({ href: key, markup: null })]
-                    );
-
-                    const nodeSize = entry.node.nodeSize;
-
-                    tr = tr.replaceWith(pos, pos + nodeSize, newNode);
-
-                    // Delete from the pending queue. This allows someone to paste multiples
-                    // of the same link and have it be formatted correctly. The preview provider
-                    // can handle any caching necessary.
-                    // This still does not address pasting those in relatively quick succession to each other,
-                    // so, a TODO: an alternative here could be to modify textOnlyPreviewResultCache to have
-                    // a URL key map to an array of nodes, and then track which ones have already been replaced.
-                    //delete textOnlyPreviewResultCache[key];
-
-                    // TODO: How do we detect rejections here? Do we clean up the textonly cache in case of
-                    // failed fetches and re-attempt later?
-                    cacheEntry.unrendered[i] = null;
+                // TODO easier way to do this? use newState?
+                let pos = n.pos;
+                trs.forEach((t) => {
+                    pos = t.mapping.map(pos);
                 });
+
+                const schema = newState.schema;
+                const newNode = schema.text(n.content.textContent, [
+                    schema.marks.link.create({ href: n.href, markup: null }),
+                ]);
+
+                const node = newState.doc.nodeAt(pos);
+
+                const nodeSize = node.nodeSize;
+
+                tr = tr.replaceWith(pos, pos + nodeSize, newNode);
             });
 
             return tr;
