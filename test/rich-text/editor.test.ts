@@ -23,18 +23,7 @@ function editorDom(editorView: RichTextEditor): string {
 }
 
 function richView(markdownInput: string) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {
-        linkPreviewProviders: [
-            {
-                domainTest: /example.com/,
-                renderer: (url) => {
-                    const el = document.createElement("div");
-                    el.innerText = url;
-                    return Promise.resolve(el);
-                },
-            },
-        ],
-    });
+    return new RichTextEditor(document.createElement("div"), markdownInput, {});
 }
 
 describe("rich text editor view", () => {
@@ -268,44 +257,6 @@ _world_.
 
             const expectedHtml = `<blockquote><p>**text**</p></blockquote>`;
             expect(editorDom(richEditorView)).toEqual(normalize(expectedHtml));
-        });
-    });
-
-    describe("decorations", () => {
-        it("should onebox links on a single line", () => {
-            const markdown = "[some link](https://example.com)\n";
-
-            const richEditorView = richView(markdown);
-
-            // check that the loading indicator is shown
-            const loadingIndicator = richEditorView.dom.querySelectorAll(
-                ".js-link-preview-loading"
-            );
-            expect(loadingIndicator).toHaveLength(1);
-
-            // wait for the promise to resolve (immediately) and check that the async content was pulled in
-            setTimeout(() => {
-                // check that the loading indicator is no longer showing
-                const loadingIndicator = richEditorView.dom.querySelectorAll(
-                    ".js-link-preview-loading"
-                );
-                expect(loadingIndicator).toHaveLength(1);
-
-                const oneboxDom = richEditorView.dom.querySelectorAll(
-                    ".js-link-preview-decoration"
-                );
-                expect(oneboxDom).toHaveLength(1);
-                expect(oneboxDom[0].textContent).toBe("https://example.com");
-            }, 0);
-        });
-
-        it("should not onebox links with additional text on the same line", () => {
-            const markdown = "here is [some link](https://example.com)\n";
-
-            const richEditorView = richView(markdown);
-
-            const oneboxDom = richEditorView.dom.querySelectorAll(".js-onebox");
-            expect(oneboxDom).toHaveLength(0);
         });
     });
 
