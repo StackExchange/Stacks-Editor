@@ -210,10 +210,6 @@ function fetchLinkPreviewContent(
     prevState: EditorState,
     providers: LinkPreviewProvider[]
 ): Promise<FetchLinkPreviewResult[]> {
-    // TODO can we make this more efficient?
-    // getValidNodes will run on every state update, so it'd be
-    // nice to be able to check the last transaction / updated doc
-    // instead of the current snapshot
     const nodes = getValidNodes(view.state, prevState, providers);
 
     // if there's no new nodes to render, just reject (no need to update the state)
