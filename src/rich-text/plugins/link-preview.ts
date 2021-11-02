@@ -8,21 +8,7 @@ import {
 // TODO naive cache, maybe we can improve?
 // TODO maybe we can prefill the cache if the consuming process already has the result
 /** The cache of url -> content for link previews so we don't have to continually refetch */
-const fullPreviewResultCache: { [url: string]: Node } = {};
-
-/** The cache of URL -> the node information we need to be able to replace it when the link text
- * Note that unlike `fullPreviewResultCache`, URLs are removed from this one after replacement takes place
- * in order to support multiple replacements of the same URL.
- *
- * // TODO: Maybe this should be a mapping of URL to array of nodes? There are still a few quirks with
- * pasting multiple copies of the same URL.
- */
-const textOnlyPreviewResultCache: {
-    [url: string]: {
-        content: Node;
-        unrendered: { node: ProsemirrorNode; pos: number }[];
-    };
-} = {};
+const previewResultCache: { [url: string]: Node } = {};
 
 /**
  * Interface to describe a link preview provider for registering/fetching previews from urls
@@ -119,11 +105,11 @@ function generatePreviewDecorations(
     nodes.forEach((n) => {
         if (
             !n.provider.provider.textOnly &&
-            n.provider.url in fullPreviewResultCache
+            n.provider.url in previewResultCache
         ) {
             // if the url is in the cache, insert the link preview
             linkPreviewDecorations.push(
-                insertLinkPreview(n.pos, fullPreviewResultCache[n.provider.url])
+                insertLinkPreview(n.pos, previewResultCache[n.provider.url])
             );
         } else {
             // otherwise, add the loading styles
@@ -208,13 +194,8 @@ function fetchLinkPreviewContent(
 
     // TODO DOCUMENT AND CLEANUP THIS MESS!
     const promises = nodes.map((n) => {
-        const previouslyCached =
-            n.provider.url in fullPreviewResultCache ||
-            n.provider.url in textOnlyPreviewResultCache;
-        const cachedContent =
-            fullPreviewResultCache[n.provider.url] ||
-            textOnlyPreviewResultCache[n.provider.url]?.content ||
-            null;
+        const previouslyCached = n.provider.url in previewResultCache;
+        const cachedContent = previewResultCache[n.provider.url] || null;
         const basePromise = previouslyCached
             ? Promise.resolve(cachedContent)
             : n.provider.provider.renderer(n.provider.url);
@@ -232,25 +213,12 @@ function fetchLinkPreviewContent(
         const promise = basePromise
             .then((content) => {
                 // cache results so we don't call over and over...
-                const isTextOnly = n.provider.provider.textOnly;
-                if (isTextOnly && !textOnlyPreviewResultCache[n.provider.url]) {
-                    textOnlyPreviewResultCache[n.provider.url] = {
-                        content,
-                        unrendered: [{ node: n.node, pos: n.pos }],
-                    };
-                } else if (isTextOnly) {
-                    textOnlyPreviewResultCache[n.provider.url].unrendered.push({
-                        node: n.node,
-                        pos: n.pos,
-                    });
-                } else {
-                    fullPreviewResultCache[n.provider.url] = content;
-                }
+                previewResultCache[n.provider.url] = content;
 
                 return {
                     previouslyCached,
                     content,
-                    isTextOnly,
+                    isTextOnly: n.provider.provider.textOnly,
                     href: n.provider.url,
                     pos: n.pos,
                 };
@@ -259,12 +227,10 @@ function fetchLinkPreviewContent(
             // "catch" and fake a resolution
             .catch(() => {
                 // TODO make this look nice
-                // TODO: error handling for text only previews? So far we just reject the promise
-                // without sending any errors back, so this should be okay for the time being.
                 const errorPlaceholder = document.createElement("div");
                 errorPlaceholder.innerText = "Error fetching content.";
                 // set the cache here too, so we don't refetch errors every time...
-                fullPreviewResultCache[n.provider.url] = errorPlaceholder;
+                previewResultCache[n.provider.url] = errorPlaceholder;
                 return Promise.resolve(<FetchLinkPreviewResult>{});
             });
 
@@ -355,7 +321,6 @@ export function linkPreviewPlugin(
                     return;
                 }
 
-                // TODO easier way to do this? use newState?
                 let pos = n.pos;
                 trs.forEach((t) => {
                     pos = t.mapping.map(pos);
