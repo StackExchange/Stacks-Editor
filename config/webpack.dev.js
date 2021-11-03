@@ -37,10 +37,11 @@ module.exports = (env, argv) => {
                 emulateProdServer && process.platform !== "win32"
                     ? "0.0.0.0 "
                     : "localhost",
-            watchOptions: {
-                ignored: ["test/**/*", "node_modules/**"],
+            static: {
+                watch: {
+                    ignored: ["test/**/*", "node_modules/**"],
+                },
             },
-            contentBase: "./dist",
             compress: emulateProdServer,
         },
         plugins: [
