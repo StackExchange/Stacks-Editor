@@ -110,6 +110,15 @@ domReady(() => {
         });
 
     document
+        .querySelector("#js-toggle-contrast")
+        ?.addEventListener("change", (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            document.body.classList.toggle("theme-highcontrast");
+        });
+
+    document
         .querySelector("#js-toggle-readonly")
         ?.addEventListener("change", (e: Event) => {
             e.preventDefault();
