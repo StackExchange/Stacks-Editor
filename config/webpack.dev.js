@@ -4,15 +4,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require("fs");
 
 module.exports = (env, argv) => {
-    // create an html page for every item in ./site/variants
-    const pageVariantPlugins = fs.readdirSync("./site/variants").map(
-        (f) =>
-            new HtmlWebpackPlugin({
-                template: "./site/variants/" + f,
-                filename: f,
-            })
-    );
-
     // add --mode=production to flip this into a pseudo-production server
     const emulateProdServer = argv.mode === "production";
     return merge(common(env, argv), {
@@ -22,6 +13,22 @@ module.exports = (env, argv) => {
         },
         mode: emulateProdServer ? "production" : "development",
         devtool: emulateProdServer ? false : "inline-source-map",
+        module: {
+            rules: [
+                {
+                    test: /\.html$/,
+                    use: [
+                        "html-loader",
+                        {
+                            loader: "liquidjs-loader",
+                            options: {
+                                root: "./site/",
+                            },
+                        },
+                    ],
+                },
+            ],
+        },
         devServer: {
             open: true,
             host:
@@ -37,10 +44,14 @@ module.exports = (env, argv) => {
             compress: emulateProdServer,
         },
         plugins: [
-            new HtmlWebpackPlugin({
-                template: "./site/index.html",
-            }),
-            ...pageVariantPlugins,
+            // create an html page for every item in ./site/views
+            ...fs.readdirSync("./site/views").map(
+                (f) =>
+                    new HtmlWebpackPlugin({
+                        template: "./site/views/" + f,
+                        filename: f,
+                    })
+            ),
         ],
         optimization: {
             splitChunks: {
