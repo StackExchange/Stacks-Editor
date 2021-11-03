@@ -97,6 +97,10 @@ domReady(() => {
     }
 
     document
+        .querySelector(".js-repo-link")
+        ?.setAttribute("href", packageJson.repository.url);
+
+    document
         .querySelector("#js-toggle-dark")
         ?.addEventListener("change", (e: Event) => {
             e.preventDefault();
