@@ -1,4 +1,4 @@
-import { version } from "../package.json";
+import packageJson from "../package.json";
 import type { StacksEditor, StacksEditorOptions } from "../src";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
@@ -93,7 +93,7 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
 domReady(() => {
     const versionNumber = document.querySelector(".js-version-number");
     if (versionNumber) {
-        versionNumber.textContent = version;
+        versionNumber.textContent = packageJson.version;
     }
 
     document
