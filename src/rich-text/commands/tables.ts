@@ -406,7 +406,7 @@ export function insertTableCommand(
         body(row(cell(), cell()), row(cell(), cell()))
     );
     let tr = state.tr.replaceSelectionWith(t);
-    tr = insertParagraphIfAtDocEnd(tr);
+    tr = insertParagraphIfAtDocEnd(tr, 2);
 
     dispatch(tr.scrollIntoView());
 
