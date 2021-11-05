@@ -17,7 +17,7 @@ import { EditorView } from "prosemirror-view";
 import {
     imageUploaderEnabled,
     showImageUploader,
-} from "../shared/prosemirror-plugins/image-upload";
+} from "../../shared/prosemirror-plugins/image-upload";
 import {
     createMenuPlugin,
     makeMenuIcon,
@@ -27,10 +27,10 @@ import {
     makeMenuDropdown,
     dropdownItem,
     dropdownSection,
-} from "../shared/menu";
-import { richTextSchema as schema, tableNodes } from "../shared/schema";
-import type { CommonViewOptions } from "../shared/view";
-import { LINK_TOOLTIP_KEY } from "./plugins/link-tooltip";
+} from "../../shared/menu";
+import { richTextSchema as schema, tableNodes } from "../../shared/schema";
+import type { CommonViewOptions } from "../../shared/view";
+import { LINK_TOOLTIP_KEY } from "../plugins/link-tooltip";
 import { undo, redo } from "prosemirror-history";
 
 //TODO
