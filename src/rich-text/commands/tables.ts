@@ -6,6 +6,7 @@ import {
 } from "prosemirror-model";
 import { EditorState, Transaction, Selection } from "prosemirror-state";
 import { richTextSchema as schema, tableNodes } from "../../shared/schema";
+import { insertParagraphIfAtDocEnd } from "./helpers";
 
 export function inTable(selection: Selection): boolean {
     return tableNodes.includes(selection.$head.parent.type);
@@ -399,23 +400,15 @@ export function insertTableCommand(
         schema.nodes.table_body.create(null, rows);
     const table = (head: ProsemirrorNode, body: ProsemirrorNode) =>
         schema.nodes.table.createChecked(null, [head, body]);
-    const paragraph = () => schema.nodes.paragraph.create(null);
 
     const t = table(
         head(row(header(), header())),
         body(row(cell(), cell()), row(cell(), cell()))
     );
     let tr = state.tr.replaceSelectionWith(t);
-    dispatch(tr.scrollIntoView());
+    tr = insertParagraphIfAtDocEnd(tr);
 
-    // if there's no selectable node after the inserted table, insert an empty paragraph
-    // because it makes selecting, navigating much more intuitive
-    const newState = state.apply(tr);
-    const nodeAfterTable = newState.doc.nodeAt(newState.tr.selection.to - 1);
-    if (nodeAfterTable && nodeAfterTable.type === schema.nodes.text) {
-        tr = newState.tr.insert(newState.tr.selection.to, paragraph());
-        dispatch(tr.scrollIntoView());
-    }
+    dispatch(tr.scrollIntoView());
 
     return true;
 }

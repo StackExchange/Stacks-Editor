@@ -21,6 +21,7 @@ import {
 import { richTextSchema as schema } from "../../shared/schema";
 import type { CommonViewOptions } from "../../shared/view";
 import { LINK_TOOLTIP_KEY } from "../plugins/link-tooltip";
+import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
     insertTableColumnAfterCommand,
     insertTableColumnBeforeCommand,
@@ -77,7 +78,13 @@ function toggleBlockType(
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
         // if the node is not set, go ahead and set it
         if (!nodeCheck(state)) {
-            return setBlockTypeCommand(state, dispatch);
+            return setBlockTypeCommand(state, (t) => {
+                if (dispatch) {
+                    // when adding a block node, make sure the user can navigate past it
+                    t = insertParagraphIfAtDocEnd(t);
+                    dispatch(t);
+                }
+            });
         }
 
         return setToTextCommand(state, dispatch);
