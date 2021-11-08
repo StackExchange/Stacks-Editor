@@ -12,5 +12,6 @@
     "telemetry.enableTelemetry": false,
     "typescript.tsserver.experimental.enableProjectDiagnostics": true,
     "conventionalCommits.autoCommit": false,
-    "conventionalCommits.gitmoji": false
+    "conventionalCommits.gitmoji": false,
+    "jestrunner.configPath": "config/jest-unit.config.js"
 }
