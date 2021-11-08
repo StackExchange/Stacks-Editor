@@ -1,18 +1,18 @@
 import {
-    moveSelectionAfterTableCommand,
-    moveSelectionBeforeTableCommand,
-    removeRowCommand,
-    removeColumnCommand,
-    insertTableRowAfterCommand,
-    insertTableRowBeforeCommand,
     insertTableColumnAfterCommand,
     insertTableColumnBeforeCommand,
     insertTableCommand,
+    insertTableRowAfterCommand,
+    insertTableRowBeforeCommand,
+    moveSelectionAfterTableCommand,
+    moveSelectionBeforeTableCommand,
     moveToNextCellCommand,
     moveToPreviousCellCommand,
+    removeColumnCommand,
+    removeRowCommand,
 } from "../../../src/rich-text/commands";
-import { runCommand } from "./index.test";
-import { applySelection, createState } from "../test-helpers";
+import "../../matchers";
+import { applySelection, createState, runCommand } from "../test-helpers";
 
 describe("table commands", () => {
     it("should create a table", () => {

@@ -1,22 +1,6 @@
-import { Schema } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
-import { MenuCommand } from "../../../src/shared/menu";
-import "../../matchers";
-
-/**
- * Applies a command to the state and expects it to apply correctly
- */
-export function runCommand(
-    state: EditorState<Schema>,
-    command: MenuCommand,
-    expectSuccess = true
-) {
-    let newState = state;
-
-    const isValid = command(state, (t) => {
-        newState = state.apply(t);
+describe("commands", () => {
+    describe("toggleBlockType", () => {
+        it.todo("should insert a paragraph at the end of the doc");
+        it.todo("should not insert a paragraph at the end of the doc");
     });
-
-    expect(isValid).toBe(expectSuccess);
-    return newState;
-}
+});
