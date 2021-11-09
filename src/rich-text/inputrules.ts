@@ -5,9 +5,10 @@ import {
     wrappingInputRule,
 } from "prosemirror-inputrules";
 import { MarkType } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { Plugin, EditorState } from "prosemirror-state";
 import { richTextSchema as schema } from "../shared/schema";
 import { validateLink } from "../shared/utils";
+import { CommonmarkParserFeatures } from "../shared/view";
 
 const blockquoteInputRule = wrappingInputRule(
     /^\s*>\s$/,
@@ -60,14 +61,19 @@ const emphasisUnderlineRule = markInputRule(
     schema.marks.em,
     (match) => match.input.charAt(match.input.lastIndexOf(match[0]) - 1) !== "_"
 );
-const linkRule = markInputRule(
-    linkRegex,
-    schema.marks.link,
-    (match) => validateLink(match[2]), // only apply link input rule, if the matched URL is valid,
-    (match: RegExpMatchArray) => {
-        return { href: match[2] };
-    }
-);
+function linkRule(options: CommonmarkParserFeatures) {
+    return markInputRule(
+        linkRegex,
+        schema.marks.link,
+        (match) =>
+            options.validateLink
+                ? options.validateLink(match[2]) // use validateLink option in parser options to define your own validateLink function
+                : validateLink(match[2]), // only apply link input rule, if the matched URL is valid,
+        (match: RegExpMatchArray) => {
+            return { href: match[2] };
+        }
+    );
+}
 
 /**
  * Create an input rule that applies a mark to the text matched by a regular expression.
@@ -141,19 +147,21 @@ function markInputRule(
  *      * starting a line with "# " will turn the line into a headline
  *      * starting a line with "> " will insert a new blockquote in place
  */
-export const richTextInputRules = inputRules({
-    rules: [
-        blockquoteInputRule,
-        spoilerInputRule,
-        headingInputRule,
-        codeBlockRule,
-        unorderedListRule,
-        orderedListRule,
-        inlineCodeRule,
-        boldRule,
-        boldUnderlineRule,
-        emphasisRule,
-        emphasisUnderlineRule,
-        linkRule,
-    ],
-});
+export function richTextInputRules(options: CommonmarkParserFeatures): Plugin {
+    return inputRules({
+        rules: [
+            blockquoteInputRule,
+            spoilerInputRule,
+            headingInputRule,
+            codeBlockRule,
+            unorderedListRule,
+            orderedListRule,
+            inlineCodeRule,
+            boldRule,
+            boldUnderlineRule,
+            emphasisRule,
+            emphasisUnderlineRule,
+            linkRule(options),
+        ],
+    });
+}

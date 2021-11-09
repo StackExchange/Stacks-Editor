@@ -10,6 +10,7 @@ import {
     createView,
     setupPasteSupport,
     sleepAsync,
+    validateLink,
 } from "./test-helpers";
 
 function dispatchInputAsync(view: EditorView, inputStr: string) {
@@ -33,7 +34,7 @@ function dispatchInputAsync(view: EditorView, inputStr: string) {
 
 function markInputRuleTest(expectedMark: MarkType, charactersTrimmed: number) {
     return async (testString: string, matches: boolean) => {
-        const state = createState("", [richTextInputRules]);
+        const state = createState("", [richTextInputRules({})]);
         const view = createView(state);
 
         await dispatchInputAsync(view, testString);
@@ -147,7 +148,63 @@ describe("mark input rules", () => {
     test.each(linkTests)(
         "links (%s)",
         async (testString: string, matches: boolean) => {
-            const state = createState("", [richTextInputRules]);
+            const state = createState("", [richTextInputRules({})]);
+            const view = createView(state);
+
+            await dispatchInputAsync(view, testString);
+
+            const matchedText: Record<string, unknown> = {
+                "isText": true,
+                "text": testString,
+                "marks.length": 0,
+            };
+
+            if (matches) {
+                matchedText.text = /\[(.+?)\]/.exec(testString)[1];
+                matchedText["marks.length"] = 1;
+                matchedText["marks.0.type.name"] =
+                    richTextSchema.marks.link.name;
+                matchedText["marks.0.attrs.href"] = /\((.+?)\)/.exec(
+                    testString
+                )[1];
+            }
+
+            expect(view.state.doc).toMatchNodeTree({
+                content: [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                ...matchedText,
+                            },
+                        ],
+                    },
+                ],
+            });
+        }
+    );
+    const customValidateLinkTests = [
+        ["[match](https://example.com)", true],
+        ["[ this *is* a __match__ ](https://example.com)", true],
+        ["[match](something)", true],
+        ["[no-match](vbscript:;alert('test'))", false],
+        ["[no-match](javascript:;alert('test'))", false],
+        ["[no-match](javascript:;alert('test'))", false],
+        ["[no-match](data://invalid)", false],
+        ["[no-match(https://example.com)", false],
+        ["[no-match)(https://example.com", false],
+        ["no-match](https://example.com)", false],
+        ["[no-match]()", false],
+        ["[no-match]", false],
+        ["[match](../path/to/file.md)", true],
+        ["[match](data:image/gif;)", true],
+    ];
+    test.each(customValidateLinkTests)(
+        "links with custom validatLink (%s)",
+        async (testString: string, matches: boolean) => {
+            const state = createState("", [
+                richTextInputRules({ validateLink }),
+            ]);
             const view = createView(state);
 
             await dispatchInputAsync(view, testString);

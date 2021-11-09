@@ -260,9 +260,11 @@ export function buildMarkdownParser(
     defaultMarkdownItInstance.linkify.set({ fuzzyLink: false });
 
     // use the default validate link if defaultValidateLink is set to false
-    if (!features.defaultValidateLink) {
+    if (!features.validateLink) {
         // use a custom link validator that's closer to Stack Overflow's backend validation
         defaultMarkdownItInstance.validateLink = validateLink;
+    } else {
+        defaultMarkdownItInstance.validateLink = features.validateLink;
     }
     // start adding in the parser plugins, NOTE: order matters!
 

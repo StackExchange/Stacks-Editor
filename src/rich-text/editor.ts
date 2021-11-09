@@ -88,12 +88,12 @@ export class RichTextEditor extends BaseView {
                         richTextKeymap,
                         keymap(baseKeymap),
                         createMenu(this.options),
-                        richTextInputRules,
+                        richTextInputRules(this.options.parserFeatures),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
                         CodeBlockHighlightPlugin(
                             this.options.codeblockOverrideLanguage
                         ),
-                        linkTooltipPlugin,
+                        linkTooltipPlugin(this.options.parserFeatures),
                         richTextImageUpload(
                             this.options.imageUpload,
                             this.options.pluginParentContainer
@@ -102,7 +102,7 @@ export class RichTextEditor extends BaseView {
                         spoilerToggle,
                         tables,
                         codePasteHandler,
-                        linkPasteHandler,
+                        linkPasteHandler(this.options.parserFeatures),
                         ...this.externalPlugins.plugins,
                     ],
                 }),

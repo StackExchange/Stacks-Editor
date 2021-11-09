@@ -39,7 +39,7 @@ describe("link-tooltip", () => {
     it("should not show with no cursor", () => {
         const state = createState(
             `<a href="https://www.example.com">test</a>`,
-            [linkTooltipPlugin]
+            [linkTooltipPlugin({})]
         );
         const decorations = getDecorations(state);
 
@@ -49,7 +49,7 @@ describe("link-tooltip", () => {
     it("should not show with cursor on non-links", () => {
         let state = createState(
             `<p>test<a href="https://www.example.com">link</a></p>`,
-            [linkTooltipPlugin]
+            [linkTooltipPlugin({})]
         );
         state = applySelection(state, 0);
 
@@ -67,7 +67,7 @@ describe("link-tooltip", () => {
     it("should show with cursor on links", () => {
         let state = createState(
             `<p>test<a href="https://www.example.com">link</a></p>`,
-            [linkTooltipPlugin]
+            [linkTooltipPlugin({})]
         );
 
         state = applySelection(state, 5);
@@ -86,7 +86,7 @@ describe("link-tooltip", () => {
     it("should show as non-edit on cursor", () => {
         let state = createState(
             `<p>test<a href="https://www.example.com">link</a></p>`,
-            [linkTooltipPlugin]
+            [linkTooltipPlugin({})]
         );
 
         state = applySelection(state, 5);
@@ -100,7 +100,7 @@ describe("link-tooltip", () => {
     });
 
     it("should show as edit on create", () => {
-        let state = createState(`<p>link-to-be</p>`, [linkTooltipPlugin]);
+        let state = createState(`<p>link-to-be</p>`, [linkTooltipPlugin({})]);
         const view = createView(state);
 
         state = applySelection(state, 0, 10);
@@ -124,7 +124,7 @@ describe("link-tooltip", () => {
     it.skip("should edit on button click", () => {
         let state = createState(
             `<p>test<a href="https://www.example.com">link</a></p>`,
-            [linkTooltipPlugin]
+            [linkTooltipPlugin({})]
         );
         const view = createView(state);
 
@@ -145,7 +145,7 @@ describe("link-tooltip", () => {
 
     // TODO failing/incomplete
     it.skip("should save on button click", () => {
-        let state = createState(`<p>link-to-be</p>`, [linkTooltipPlugin]);
+        let state = createState(`<p>link-to-be</p>`, [linkTooltipPlugin({})]);
         const view = createView(state);
 
         state = applySelection(state, 0, 10);

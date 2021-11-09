@@ -7,6 +7,7 @@ import {
     createView,
     dispatchPasteEvent,
     setupPasteSupport,
+    validateLink,
 } from "../test-helpers";
 
 const nonURLTestData = [
@@ -28,7 +29,28 @@ describe("linkPasteHandler plugin", () => {
     it.each(nonURLTestData)(
         "should handle pasting non-URL text (%#)",
         (text) => {
-            const view = createView(createState("", [linkPasteHandler]));
+            const view = createView(createState("", [linkPasteHandler({})]));
+
+            dispatchPasteEvent(view.dom, {
+                "text/plain": text,
+            });
+
+            const insertedNode = view.state.doc.nodeAt(
+                view.state.selection.from - 1
+            );
+
+            expect(insertedNode.isText).toBe(true);
+            expect(insertedNode.text).toBe(text);
+            expect(insertedNode.marks).toHaveLength(0); // not a link
+        }
+    );
+
+    it.each(nonURLTestData)(
+        "should handle pasting non-URL text with custom validateLink (%#)",
+        (text) => {
+            const view = createView(
+                createState("", [linkPasteHandler({ validateLink })])
+            );
 
             dispatchPasteEvent(view.dom, {
                 "text/plain": text,
@@ -47,7 +69,32 @@ describe("linkPasteHandler plugin", () => {
     it.each(URLTestData)(
         "should handle pasting URL text without existing selection (%#)",
         (text) => {
-            const view = createView(createState("", [linkPasteHandler]));
+            const view = createView(createState("", [linkPasteHandler({})]));
+
+            dispatchPasteEvent(view.dom, {
+                "text/plain": text,
+            });
+
+            const insertedNode = view.state.doc.nodeAt(
+                view.state.selection.from - 1
+            );
+
+            expect(insertedNode.isText).toBe(true);
+            expect(insertedNode.text).toBe(text);
+            expect(insertedNode.marks).toHaveLength(1);
+            expect(insertedNode.marks[0].type.name).toBe("link");
+            expect(insertedNode.marks[0].attrs.href).toBe(text);
+            expect(insertedNode.marks[0].attrs.markup).toBe("linkify");
+            expect(insertedNode.marks[0].attrs.title).toBeNull();
+        }
+    );
+
+    it.each(URLTestData)(
+        "should handle pasting URL text without existing selection using custom validateLink (%#)",
+        (text) => {
+            const view = createView(
+                createState("", [linkPasteHandler({ validateLink })])
+            );
 
             dispatchPasteEvent(view.dom, {
                 "text/plain": text,
@@ -74,7 +121,7 @@ describe("linkPasteHandler plugin", () => {
         "should use existing selection as link text (%#)",
         (text) => {
             let state = createState("<p>my example link</p>", [
-                linkPasteHandler,
+                linkPasteHandler({}),
             ]);
             state = applySelection(state, 0, 15);
             const view = createView(state);
@@ -101,7 +148,7 @@ describe("linkPasteHandler plugin", () => {
         "should gracefully paste into inline code (%#)",
         (text) => {
             let state = createState("<code>int i = 5;</code>", [
-                linkPasteHandler,
+                linkPasteHandler({}),
             ]);
             state = applySelection(state, 3);
             const view = createView(state);
@@ -127,7 +174,7 @@ describe("linkPasteHandler plugin", () => {
                 `<pre>int i = 5;
 i++;
 Console.WriteLine(i);</pre>`,
-                [linkPasteHandler]
+                [linkPasteHandler({})]
             );
             state = applySelection(state, 15);
             const view = createView(state);

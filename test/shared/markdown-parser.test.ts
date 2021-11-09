@@ -1,17 +1,20 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { richTextSchema } from "../../src/shared/schema";
+import { CommonmarkParserFeatures } from "../../src/shared/view";
 import "../matchers";
+import { validateLink } from "../rich-text/test-helpers";
 
-const markdownParser = buildMarkdownParser(
-    {
-        snippets: true,
-        html: true,
-        tagLinks: {
-            allowNonAscii: false,
-            allowMetaTags: false,
-        },
+const parserFeatures: CommonmarkParserFeatures = {
+    snippets: true,
+    html: true,
+    tagLinks: {
+        allowNonAscii: false,
+        allowMetaTags: false,
     },
+};
+const markdownParser = buildMarkdownParser(
+    parserFeatures,
     richTextSchema,
     null
 );
@@ -286,6 +289,40 @@ console.log("test");
         it.each(["file://invalid", "://inherit_scheme.com", "invalid.com"])(
             "should not autolink invalid links (%s)",
             (input) => {
+                const doc = markdownParser.parse(input).toJSON();
+                expect(doc.content[0].type).toBe("paragraph");
+                expect(doc.content[0].content).toHaveLength(1);
+                expect(doc.content[0].content[0].text).toBe(input);
+                expect(doc.content[0].content[0].marks).toBeUndefined();
+            }
+        );
+        it.each([
+            "https://www.test.com/?param=test",
+            "mailto:test@example.com",
+            "ftp://example.com/path/to/file",
+        ])(
+            "should autolink valid links with custom validateLinks option (%s)",
+            (input) => {
+                parserFeatures.validateLink = validateLink;
+                const doc = markdownParser.parse(input).toJSON();
+                expect(doc.content[0].type).toBe("paragraph");
+                expect(doc.content[0].content).toHaveLength(1);
+                expect(doc.content[0].content[0].text).toBe(input);
+                expect(doc.content[0].content[0].marks[0].type).toBe("link");
+            }
+        );
+        it.each([
+            "vbscript:;alert('test')",
+            "javascript:;alert('test')",
+            "file://invalid",
+            "data://invalid",
+            "://inherit_scheme.com",
+            "invalid.com",
+            "data:image/jpeg;base64,/9j/4AAQSkZ",
+        ])(
+            "should not autolink invalid links with custom validateLinks option (%s)",
+            (input) => {
+                parserFeatures.validateLink = validateLink;
                 const doc = markdownParser.parse(input).toJSON();
                 expect(doc.content[0].type).toBe("paragraph");
                 expect(doc.content[0].content).toHaveLength(1);

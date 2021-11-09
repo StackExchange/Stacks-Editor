@@ -69,8 +69,8 @@ export interface CommonmarkParserFeatures {
     /** Enable tables according to GitHub-flavored markdown */
     tables?: boolean;
     tagLinks?: TagLinkOptions;
-    /** Enable the default link validator from Markdown-It. Else the Stackoverflow validate link function will be used */
-    defaultValidateLink?: boolean;
+    /** Define a validateLink function. Else the Stackoverflow validate link function will be used */
+    validateLink?: (url: string) => boolean;
 }
 
 export const defaultParserFeatures: CommonmarkParserFeatures = {
