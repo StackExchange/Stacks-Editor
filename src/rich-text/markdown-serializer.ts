@@ -22,7 +22,8 @@ export type MarkdownSerializerNodes = {
 /** Renders a node as wrapped in html tags if the markup attribute is html */
 function renderHtmlTag(
     state: MarkdownSerializerState,
-    node: ProsemirrorNode
+    node: ProsemirrorNode,
+    selfClosing = false
 ): boolean {
     const markup = node.attrs.markup as string;
     if (!markup) {
@@ -34,9 +35,15 @@ function renderHtmlTag(
         return false;
     }
 
+    // TODO attributes
+    // if the tag is self closing, just render the markup itself and return
+    if (selfClosing) {
+        state.text(markup.trim(), false);
+        return true;
+    }
+
     const tag = markup.replace(/[<>]/g, "");
 
-    // TODO self closing?
     state.text(`<${tag}>`, false);
     // TODO will this always be inline content?
     state.renderInline(node);
@@ -124,7 +131,9 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         });
     },
     list_item(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node)) {
+            return;
+        }
         state.renderContent(node);
     },
     paragraph(state, node) {
@@ -147,6 +156,10 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         );
     },
     hard_break(state, node, parent, index) {
+        if (renderHtmlTag(state, node, true)) {
+            return;
+        }
+
         // TODO could be html, `[space][space][newline]` or `\[newline]`
         // TODO markdown-it's output doesn't differentiate in the later two cases, so assume spacespace since that is likely more common
         for (let i = index + 1; i < parent.childCount; i++)
@@ -191,8 +204,6 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
     // TODO
     html_block(state, node) {
         state.write(node.attrs.content);
-        state.ensureNewLine();
-        state.write("\n");
     },
 
     // TODO

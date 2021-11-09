@@ -123,17 +123,17 @@ describe("markdown-serializer", () => {
         [`- li1\n- li2\n- li3`, `- li1\n- li2\n- li3`],
         [`+ li1\n+ li2\n+ li3`, `+ li1\n+ li2\n+ li3`],
         [`* li1\n* li2\n* li3`, `* li1\n* li2\n* li3`],
-        // [
-        //     `<ul><li>li1</li><li>li2</li></ul>`,
-        //     `<ul><li>li1</li><li>li2</li></ul>`,
-        // ],
+        [
+            `<ul><li>li1</li><li>li2</li></ul>`,
+            `<ul><li>li1</li><li>li2</li></ul>`,
+        ],
         //[`1. li1\n1. li2\n1. li3`, `1. li1\n1. li2\n1. li3`],
         [`1. li1\n2. li2\n3. li3`, `1. li1\n2. li2\n3. li3`],
         [`1) li1\n2) li2\n3) li3`, `1) li1\n2) li2\n3) li3`],
-        // [
-        //     `<ol><li>li1</li><li>li2</li></ol>`,
-        //     `<ol><li>li1</li><li>li2</li></ol>`,
-        // ],
+        [
+            `<ol><li>li1</li><li>li2</li></ol>`,
+            `<ol><li>li1</li><li>li2</li></ol>`,
+        ],
         //loose lists
         [`- li1\n\n- li2\n\n- li3`, `- li1\n\n- li2\n\n- li3`],
         [`1. li1\n\n2. li2\n\n3. li3`, `1. li1\n\n2. li2\n\n3. li3`],
@@ -172,9 +172,9 @@ describe("markdown-serializer", () => {
         [`test\n\ntest`, `test\n\ntest`],
         //[`test\\\ntest`, `test\\\ntest`],
         [`test  \ntest`, `test  \ntest`],
-        // [`test<br>test`, `test<br>test`],
-        // [`test<br/>test`, `test<br/>test`],
-        // [`test<br />test`, `test<br />test`],
+        [`test<br>test`, `test<br>test`],
+        [`test<br/>test`, `test<br/>test`],
+        [`test<br />test`, `test<br />test`],
         // TODO html_inline, html_block, html_block_container
         // TODO stack_snippet, softbreak, table, taglink, spoiler
         /* Marks */
