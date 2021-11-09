@@ -8,6 +8,11 @@ import { richTextSchema } from "../shared/schema";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
 import { error } from "../shared/logger";
 import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
+import {
+    selfClosingElements,
+    supportedTagAttributes,
+    TagType,
+} from "../shared/html-helpers";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = {
@@ -23,7 +28,7 @@ export type MarkdownSerializerNodes = {
 function renderHtmlTag(
     state: MarkdownSerializerState,
     node: ProsemirrorNode,
-    selfClosing = false
+    tagType: TagType
 ): boolean {
     const markup = node.attrs.markup as string;
     if (!markup) {
@@ -35,16 +40,32 @@ function renderHtmlTag(
         return false;
     }
 
-    // TODO attributes
-    // if the tag is self closing, just render the markup itself and return
-    if (selfClosing) {
-        state.text(markup.trim(), false);
+    const tag = markup.replace(/[<>/\s]/g, "");
+    const openingTagStart = `<${tag}`;
+
+    // start writing the opening tag
+    state.text(openingTagStart, false);
+
+    // write the attributes if necessary
+    if (supportedTagAttributes[tagType]) {
+        // render the attributes in alpha order, since we cannot know what order they were originally written in
+        const attributes = supportedTagAttributes[tagType].sort();
+        for (const attr of attributes) {
+            const value = node.attrs[attr] as string;
+            if (value) {
+                state.text(` ${attr}="${value}"`);
+            }
+        }
+    }
+
+    // if the tag is self closing, just render the closing part of the original markup and return early
+    if (selfClosingElements.includes(tagType)) {
+        state.text(markup.replace(openingTagStart, ""), false);
         return true;
     }
 
-    const tag = markup.replace(/[<>]/g, "");
-
-    state.text(`<${tag}>`, false);
+    // close the opening tag
+    state.text(">", false);
     // TODO will this always be inline content?
     state.renderInline(node);
     // @ts-expect-error TODO when writing to a closed block, it injects newline chars...
@@ -60,7 +81,7 @@ function renderHtmlTag(
 const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     ...defaultMarkdownSerializer.nodes,
     blockquote(state, node) {
-        if (renderHtmlTag(state, node)) {
+        if (renderHtmlTag(state, node, TagType.blockquote)) {
             return;
         }
 
@@ -95,7 +116,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     heading(state, node) {
         const markup = (node.attrs.markup as string) || "";
 
-        if (renderHtmlTag(state, node)) {
+        if (renderHtmlTag(state, node, TagType.heading)) {
             return;
         } else if (markup && !markup.startsWith("#")) {
             // "underlined" heading (Setext heading)
@@ -131,13 +152,13 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         });
     },
     list_item(state, node) {
-        if (renderHtmlTag(state, node)) {
+        if (renderHtmlTag(state, node, TagType.list_item)) {
             return;
         }
         state.renderContent(node);
     },
     paragraph(state, node) {
-        if (renderHtmlTag(state, node)) {
+        if (renderHtmlTag(state, node, TagType.paragraph)) {
             return;
         }
         state.renderInline(node);
@@ -145,7 +166,10 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     },
 
     image(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.image)) {
+            return;
+        }
+
         state.write(
             "![" +
                 state.esc(node.attrs.alt || "") +
@@ -156,7 +180,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         );
     },
     hard_break(state, node, parent, index) {
-        if (renderHtmlTag(state, node, true)) {
+        if (renderHtmlTag(state, node, TagType.hardbreak)) {
             return;
         }
 

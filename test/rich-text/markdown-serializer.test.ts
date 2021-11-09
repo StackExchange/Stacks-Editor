@@ -102,7 +102,7 @@ describe("markdown-serializer", () => {
         [`<p>html paragraph</p>`, `<p>html paragraph</p>`],
         ["```js\ntest\n```", "```js\ntest\n```"],
         ["~~~\ntest\n~~~", "~~~\ntest\n~~~"],
-        //[`<pre><code>test</code></pre>`, `<pre><code>test</code></pre>`],
+        [`<pre><code>test</code></pre>`, `<pre><code>test</code></pre>`],
         [`# ATX heading`, `# ATX heading`],
         //[`Setext heading\n===`, `Setext heading\n===`],
         [`<h1>html heading</h1>`, `<h1>html heading</h1>`],
@@ -151,22 +151,24 @@ describe("markdown-serializer", () => {
             `![alt1](${crazyTestUrl} "title1")`,
             `![alt1](${crazyTestUrl} "title1")`,
         ],
-        // [
-        //     `<img src="src1" alt="alt1" title="title1">`,
-        //     `<img src="src1" alt="alt1" title="title1">`,
-        // ],
-        // [
-        //     `<img src="src1" alt="alt1" title="title1"/>`,
-        //     `<img src="src1" alt="alt1" title="title1"/>`,
-        // ],
-        // [
-        //     `<img src="src1" alt="alt1" title="title1" />`,
-        //     `<img src="src1" alt="alt1" title="title1" />`,
-        // ],
-        // [
-        //     `<img src="src1" height="10" width="10" />`,
-        //     `<img src="src1" height="10" width="10" />`,
-        // ],
+        [
+            `<img alt="alt1" src="src1" title="title1">`,
+            `<img alt="alt1" src="src1" title="title1">`,
+        ],
+        [
+            `<img alt="alt1" src="src1" title="title1"/>`,
+            `<img alt="alt1" src="src1" title="title1"/>`,
+        ],
+        [
+            `<img alt="alt1" src="src1" title="title1" />`,
+            `<img alt="alt1" src="src1" title="title1" />`,
+        ],
+        [
+            `<img height="10" src="src1" width="10" />`,
+            `<img height="10" src="src1" width="10" />`,
+        ],
+        // TODO attributes render in alpha order
+        //[`<img src="src1" width="10" height="10" />`, `<img src="src1" height="10" width="10" />`],
         /* Soft/Hard breaks */
         [`test\ntest`, `test\ntest`],
         [`test\n\ntest`, `test\n\ntest`],
