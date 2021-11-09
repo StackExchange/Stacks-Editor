@@ -19,12 +19,44 @@ export type MarkdownSerializerNodes = {
     ) => void;
 };
 
+/** Renders a node as wrapped in html tags if the markup attribute is html */
+function renderHtmlTag(
+    state: MarkdownSerializerState,
+    node: ProsemirrorNode
+): boolean {
+    const markup = node.attrs.markup as string;
+    if (!markup) {
+        return false;
+    }
+
+    // TODO naive check for now, but we should probably do something more robust
+    if (!markup.startsWith("<") || !markup.endsWith(">")) {
+        return false;
+    }
+
+    const tag = markup.replace(/[<>]/g, "");
+
+    // TODO self closing?
+    state.text(`<${tag}>`, false);
+    // TODO will this always be inline content?
+    state.renderInline(node);
+    // @ts-expect-error TODO when writing to a closed block, it injects newline chars...
+    state.closed = false;
+    state.text(`</${tag}>`, false);
+    state.closeBlock(node);
+
+    return true;
+}
+
 // TODO There's no way to sanely override these without completely rewriting them
 // TODO Should contribute this back upstream and remove
 const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     ...defaultMarkdownSerializer.nodes,
     blockquote(state, node) {
-        // TODO markup could be html
+        if (renderHtmlTag(state, node)) {
+            return;
+        }
+
         const markup = (node.attrs.markup as string) || ">";
         state.wrapBlock(markup + " ", null, node, () =>
             state.renderContent(node)
@@ -56,10 +88,8 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     heading(state, node) {
         const markup = (node.attrs.markup as string) || "";
 
-        if (markup.startsWith("<")) {
-            // TODO html
-            state.write("h1 tag TODO");
-            state.closeBlock(node);
+        if (renderHtmlTag(state, node)) {
+            return;
         } else if (markup && !markup.startsWith("#")) {
             // "underlined" heading (Setext heading)
             state.renderInline(node);
@@ -98,7 +128,9 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         state.renderContent(node);
     },
     paragraph(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node)) {
+            return;
+        }
         state.renderInline(node);
         state.closeBlock(node);
     },

@@ -6,7 +6,7 @@ module.exports = {
     },
 
     serverOptions: {
-        command: "npm start -- --port 8081 --open false",
+        command: "npm start -- --port 8081 --no-open",
         launchTimeout: 20000,
         port: 8081,
     },
