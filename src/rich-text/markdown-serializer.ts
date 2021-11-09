@@ -132,16 +132,26 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         }
     },
     horizontal_rule(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.horizontal_rule)) {
+            return;
+        }
+
         state.write(node.attrs.markup || "----------");
         state.closeBlock(node);
     },
     bullet_list(state, node) {
+        if (renderHtmlTag(state, node, TagType.unordered_list)) {
+            return;
+        }
+
         const markup = (node.attrs.markup as string) || "-";
         state.renderList(node, "  ", () => markup + " ");
     },
     ordered_list(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.ordered_list)) {
+            return;
+        }
+
         const start = (node.attrs.order as number) || 1;
         const maxW = String(start + node.childCount - 1).length;
         const space = state.repeat(" ", maxW + 2);
@@ -184,7 +194,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             return;
         }
 
-        // TODO could be html, `[space][space][newline]` or `\[newline]`
+        // TODO `[space][space][newline]` or `\[newline]`
         // TODO markdown-it's output doesn't differentiate in the later two cases, so assume spacespace since that is likely more common
         for (let i = index + 1; i < parent.childCount; i++)
             if (parent.child(i).type != node.type) {
