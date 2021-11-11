@@ -180,6 +180,53 @@ describe("markdown-serializer", () => {
         }
     );
 
+    it.todo("should serialize elements from complex html markup");
+
+    // TODO lots of complicated cases in the spec
+    // see https://spec.commonmark.org/0.30/#reference-link
+    // see https://spec.commonmark.org/0.30/#link-reference-definitions
+    const linkReferencesMarkupData = [
+        // full
+        [
+            `[foo][bar]\n\n[bar]: /url "title"`,
+            `[foo][bar]\n\n[BAR]: /url "title"`,
+        ],
+        // collapsed
+        [`[foo][]\n\n[foo]: /url "title"`, `[foo][]\n\n[FOO]: /url "title"`],
+        // shortcut
+        [`[foo]\n\n[foo]: /url "title"`, `[foo]\n\n[FOO]: /url "title"`],
+        // mixed content
+        [
+            `[ShortCut]: https://stackoverflow.com
+
+This is a test. I want to link to [foo][1] as a full reference link.
+
+I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
+
+[THIS]: https://google.com
+
+And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
+
+[1]: https://example.com`,
+            `This is a test. I want to link to [foo][1] as a full reference link.
+
+I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
+
+And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
+
+[1]: https://example.com
+[SHORTCUT]: https://stackoverflow.com
+[THIS]: https://google.com`,
+        ],
+    ];
+    it.each(linkReferencesMarkupData)(
+        "should serialize link references markup",
+        (input, output) => {
+            const view = richView(input);
+            expect(view.content).toBe(output);
+        }
+    );
+
     const escapeData = [
         String.raw`¯\\\_(ツ)\_/¯`,
         String.raw`\_not-emphasized\_`,

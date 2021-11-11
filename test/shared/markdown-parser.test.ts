@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import type { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { richTextSchema } from "../../src/shared/schema";
 import "../matchers";
@@ -306,5 +307,30 @@ console.log("test");
             expect(doc.content[0].type).toContain("_list");
             expect(doc.content[0].attrs.tight).toBe(isTight);
         });
+    });
+
+    describe("reference links", () => {
+        const referenceLinkData = [
+            // full
+            [`[foo][bar]\n\n[bar]: /url "title"`, "full", "bar"],
+            [`[foo][BaR]\n\n[bar]: /url "title"`, "full", "BaR"],
+            // collapsed
+            [`[foo][]\n\n[foo]: /url "title"`, "collapsed", "foo"],
+            // shortcut
+            [`[foo]\n\n[foo]: /url "title"`, "shortcut", "foo"],
+        ];
+        it.each(referenceLinkData)(
+            "should add reference attributes to reference links",
+            (input, type, label) => {
+                const doc = markdownParser.parse(input).toJSON();
+                expect(doc.content[0].type).toBe("paragraph");
+                expect(doc.content[0].content).toHaveLength(1);
+
+                const mark = doc.content[0].content[0].marks[0] as Mark;
+                expect(mark.type).toBe("link");
+                expect(mark.attrs.referenceType).toBe(type);
+                expect(mark.attrs.referenceLabel).toBe(label);
+            }
+        );
     });
 });

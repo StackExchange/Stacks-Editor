@@ -13,16 +13,90 @@ import {
     supportedTagAttributes,
     TagType,
 } from "../shared/html-helpers";
+import { normalizeReference } from "markdown-it/lib/common/utils";
 
 // helper type so the code is a tad less messy
-export type MarkdownSerializerNodes = {
-    [name: string]: (
-        state: MarkdownSerializerState,
-        node: ProsemirrorNode,
-        parent: ProsemirrorNode,
-        index: number
-    ) => void;
-};
+export type MarkdownSerializerNodes = ConstructorParameters<
+    typeof MarkdownSerializer
+>[0];
+
+type MarkdownSerializerMarks = ConstructorParameters<
+    typeof MarkdownSerializer
+>[1];
+
+class SOMarkdownSerializerState extends MarkdownSerializerState {
+    declare out: string;
+    private linkReferenceDefinitions: {
+        [key: string]: {
+            href: string;
+            title: string;
+        };
+    } = {};
+
+    constructor(
+        nodes: MarkdownSerializerNodes,
+        marks: MarkdownSerializerMarks,
+        options?: { [key: string]: unknown }
+    ) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error TODO constructor not exposed in types
+        super(nodes, marks, options);
+    }
+
+    /** Adds a link reference definition for rendering at the very end */
+    addLinkReferenceDefinition(
+        label: string,
+        href: string,
+        title?: string
+    ): void {
+        const normalizedLabel = normalizeReference(label);
+
+        if (this.linkReferenceDefinitions[normalizedLabel]) {
+            return;
+        }
+
+        this.linkReferenceDefinitions[normalizedLabel] = {
+            href,
+            title,
+        };
+    }
+
+    /** Writes all saved linked reference definitions to the state */
+    writeLinkReferenceDefinitions(): void {
+        const refs = Object.keys(this.linkReferenceDefinitions);
+
+        if (!refs.length) {
+            return;
+        }
+
+        refs.sort().forEach((r) => {
+            const def = this.linkReferenceDefinitions[r];
+            this.ensureNewLine();
+            this.write("[");
+            this.text(r);
+            this.write("]: ");
+            this.text(def.href);
+
+            if (def.title) {
+                this.text(` "${def.title}"`);
+            }
+        });
+    }
+}
+
+class SOMarkdownSerializer extends MarkdownSerializer {
+    serialize(content: ProsemirrorNode, options?: { [key: string]: unknown }) {
+        const state = new SOMarkdownSerializerState(
+            this.nodes,
+            this.marks,
+            options
+        );
+        state.renderContent(content);
+        state.writeLinkReferenceDefinitions();
+
+        return state.out;
+    }
+}
 
 /** Renders a node as wrapped in html tags if the markup attribute is html */
 function renderHtmlTag(
@@ -402,6 +476,15 @@ const extendedLinkMarkDeserializer: MarkSerializerConfig = {
                 : defaultLinkMarkDeserializer.open(state, mark, parent, index);
         }
 
+        if (mark.attrs.markup === "reference") {
+            (state as SOMarkdownSerializerState).addLinkReferenceDefinition(
+                mark.attrs.referenceLabel,
+                mark.attrs.href,
+                mark.attrs.title
+            );
+            return "[";
+        }
+
         // linkify detected links are left bare
         if (mark.attrs.markup === "linkify") {
             return "";
@@ -425,6 +508,18 @@ const extendedLinkMarkDeserializer: MarkSerializerConfig = {
             return typeof defaultLinkMarkDeserializer.close === "string"
                 ? defaultLinkMarkDeserializer.close
                 : defaultLinkMarkDeserializer.close(state, mark, parent, index);
+        }
+
+        if (mark.attrs.markup === "reference") {
+            switch (mark.attrs.referenceType) {
+                case "full":
+                    return `][${mark.attrs.referenceLabel as string}]`;
+                case "collapsed":
+                    return "][]";
+                case "shortcut":
+                default:
+                    return "]";
+            }
         }
 
         // linkify detected links are left bare
@@ -496,7 +591,7 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
 };
 
 // extend the default markdown serializer's marks and add our own
-const customMarkdownSerializerMarks: { [key: string]: MarkSerializerConfig } = {
+const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
     ...defaultMarkdownSerializer.marks,
     ...{
         em: genMarkupAwareMarkConfig(defaultMarkdownSerializer.marks.em),
@@ -536,7 +631,7 @@ const customMarkdownSerializerMarks: { [key: string]: MarkSerializerConfig } = {
 export const stackOverflowMarkdownSerializer = (
     externalPlugin: ExternalEditorPlugin
 ): MarkdownSerializer =>
-    new MarkdownSerializer(
+    new SOMarkdownSerializer(
         {
             ...defaultMarkdownSerializerNodes,
             ...customMarkdownSerializerNodes,
