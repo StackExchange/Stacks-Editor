@@ -2,20 +2,24 @@
 import type { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { richTextSchema } from "../../src/shared/schema";
+import { stackOverflowValidateLink } from "../../src/shared/utils";
+import { CommonmarkParserFeatures } from "../../src/shared/view";
 import "../matchers";
 
-const markdownParser = buildMarkdownParser(
-    {
-        snippets: true,
-        html: true,
-        tagLinks: {
-            allowNonAscii: false,
-            allowMetaTags: false,
-        },
+// mark features as required to ensure our tests have all the features set
+const features: Required<CommonmarkParserFeatures> = {
+    snippets: true,
+    html: true,
+    extraEmphasis: true,
+    tables: true,
+    tagLinks: {
+        allowNonAscii: false,
+        allowMetaTags: false,
     },
-    richTextSchema,
-    null
-);
+    validateLink: stackOverflowValidateLink,
+};
+
+const markdownParser = buildMarkdownParser(features, richTextSchema, null);
 
 describe("SOMarkdownParser", () => {
     describe("html support", () => {
@@ -326,5 +330,31 @@ console.log("test");
                 expect(mark.attrs.referenceLabel).toBe(label);
             }
         );
+    });
+
+    describe("parserFeatures", () => {
+        it("should allow a custom validateLink", () => {
+            const mdParser = buildMarkdownParser(
+                {
+                    ...features,
+                    // only allow links from www.example.com
+                    validateLink: (url) => /www.example.com/.test(url),
+                },
+                richTextSchema,
+                null
+            );
+            const doc = mdParser
+                .parse(
+                    "[foo](www.example.com/test1) [bar](www.notexample.com/test2)"
+                )
+                .toJSON();
+            expect(doc.content[0].content).toHaveLength(2);
+            expect(doc.content[0].content[0].text).toBe("foo");
+            expect(doc.content[0].content[0].marks[0].type).toBe("link");
+            expect(doc.content[0].content[1].text).toBe(
+                " [bar](www.notexample.com/test2)"
+            );
+            expect(doc.content[0].content[1].marks).toBeUndefined();
+        });
     });
 });

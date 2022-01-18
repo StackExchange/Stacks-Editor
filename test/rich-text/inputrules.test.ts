@@ -2,6 +2,7 @@ import { MarkType } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { richTextInputRules } from "../../src/rich-text/inputrules";
 import { richTextSchema } from "../../src/shared/schema";
+import { stackOverflowValidateLink } from "../../src/shared/utils";
 import "../matchers";
 import {
     applySelection,
@@ -33,7 +34,11 @@ function dispatchInputAsync(view: EditorView, inputStr: string) {
 
 function markInputRuleTest(expectedMark: MarkType, charactersTrimmed: number) {
     return async (testString: string, matches: boolean) => {
-        const state = createState("", [richTextInputRules]);
+        const state = createState("", [
+            richTextInputRules({
+                validateLink: stackOverflowValidateLink,
+            }),
+        ]);
         const view = createView(state);
 
         await dispatchInputAsync(view, testString);
@@ -138,21 +143,33 @@ describe("mark input rules", () => {
         markInputRuleTest(richTextSchema.marks.code, 1)
     );
 
+    const customValidateLink = (link: string) => /www.example.com/.test(link);
+
     const linkTests = [
-        ["[match](https://example.com)", true],
-        ["[ this *is* a __match__ ](https://example.com)", true],
-        ["[match](something)", false],
-        ["[this is not a match](badurl)", false],
-        ["[no-match(https://example.com)", false],
-        ["[no-match)(https://example.com", false],
-        ["no-match](https://example.com)", false],
-        ["[no-match]()", false],
-        ["[no-match]", false],
+        ["[match](https://example.com)", true, null],
+        ["[ this *is* a __match__ ](https://example.com)", true, null],
+        ["[match](something)", false, null],
+        ["[this is not a match](badurl)", false, null],
+        ["[no-match(https://example.com)", false, null],
+        ["[no-match)(https://example.com", false, null],
+        ["no-match](https://example.com)", false, null],
+        ["[no-match]()", false, null],
+        ["[no-match]", false, null],
+        ["[custom pass](www.example.com)", true, customValidateLink],
+        ["[custom fail](www.notexample.com)", false, customValidateLink],
     ];
     test.each(linkTests)(
         "links (%s)",
-        async (testString: string, matches: boolean) => {
-            const state = createState("", [richTextInputRules]);
+        async (
+            testString: string,
+            matches: boolean,
+            validateLink: typeof stackOverflowValidateLink
+        ) => {
+            const state = createState("", [
+                richTextInputRules({
+                    validateLink: validateLink ?? stackOverflowValidateLink,
+                }),
+            ]);
             const view = createView(state);
 
             await dispatchInputAsync(view, testString);

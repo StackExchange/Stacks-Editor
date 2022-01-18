@@ -1,4 +1,5 @@
 import { linkPasteHandler } from "../../../src/rich-text/plugins/link-paste-handler";
+import { stackOverflowValidateLink } from "../../../src/shared/utils";
 import "../../matchers";
 import {
     applySelection,
@@ -13,6 +14,7 @@ const nonURLTestData = [
     "not a URL",
     "https://example.org but not by itself",
     "URL https://example.org in the middle",
+    "file://doesntvalidate.local",
 ];
 
 const URLTestData = [
@@ -21,6 +23,10 @@ const URLTestData = [
     "https://sub.complicated.domain:8080/path/to/whatever.png#hash?query=parameter%20test",
 ];
 
+const handlerInstance = linkPasteHandler({
+    validateLink: stackOverflowValidateLink,
+});
+
 describe("linkPasteHandler plugin", () => {
     beforeAll(setupPasteSupport);
     afterAll(cleanupPasteSupport);
@@ -28,7 +34,7 @@ describe("linkPasteHandler plugin", () => {
     it.each(nonURLTestData)(
         "should handle pasting non-URL text (%#)",
         (text) => {
-            const view = createView(createState("", [linkPasteHandler]));
+            const view = createView(createState("", [handlerInstance]));
 
             dispatchPasteEvent(view.dom, {
                 "text/plain": text,
@@ -47,7 +53,7 @@ describe("linkPasteHandler plugin", () => {
     it.each(URLTestData)(
         "should handle pasting URL text without existing selection (%#)",
         (text) => {
-            const view = createView(createState("", [linkPasteHandler]));
+            const view = createView(createState("", [handlerInstance]));
 
             dispatchPasteEvent(view.dom, {
                 "text/plain": text,
@@ -74,7 +80,7 @@ describe("linkPasteHandler plugin", () => {
         "should use existing selection as link text (%#)",
         (text) => {
             let state = createState("<p>my example link</p>", [
-                linkPasteHandler,
+                handlerInstance,
             ]);
             state = applySelection(state, 0, 15);
             const view = createView(state);
@@ -101,7 +107,7 @@ describe("linkPasteHandler plugin", () => {
         "should gracefully paste into inline code (%#)",
         (text) => {
             let state = createState("<code>int i = 5;</code>", [
-                linkPasteHandler,
+                handlerInstance,
             ]);
             state = applySelection(state, 3);
             const view = createView(state);
@@ -127,7 +133,7 @@ describe("linkPasteHandler plugin", () => {
                 `<pre>int i = 5;
 i++;
 Console.WriteLine(i);</pre>`,
-                [linkPasteHandler]
+                [handlerInstance]
             );
             state = applySelection(state, 15);
             const view = createView(state);
@@ -149,4 +155,33 @@ Console.WriteLine(i);`);
             expect(selectedNode.marks).toHaveLength(0);
         }
     );
+
+    it.each([
+        ["passes validation, but not a uri", false],
+        ["https://failsvalidation.local", false],
+        ["https://passesvalidation.local", true],
+    ])("should support custom validateLink", (text, passes) => {
+        const view = createView(
+            createState("", [
+                linkPasteHandler({
+                    validateLink: (url) => /passes/.test(url),
+                }),
+            ])
+        );
+
+        dispatchPasteEvent(view.dom, {
+            "text/plain": text,
+        });
+
+        const insertedNode = view.state.doc.nodeAt(
+            view.state.selection.from - 1
+        );
+
+        expect(insertedNode.isText).toBe(true);
+        expect(insertedNode.text).toBe(text);
+        expect(insertedNode.marks).toHaveLength(passes ? 1 : 0);
+        expect(insertedNode.marks?.[0]?.type?.name).toBe(
+            passes ? "link" : undefined
+        );
+    });
 });

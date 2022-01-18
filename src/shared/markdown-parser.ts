@@ -14,7 +14,6 @@ import { spoiler } from "./markdown-it/spoiler";
 import { stackLanguageComments } from "./markdown-it/stack-language-comments";
 import { tagLinks } from "./markdown-it/tag-link";
 import { tight_list } from "./markdown-it/tight-list";
-import { validateLink } from "./utils";
 import type { CommonmarkParserFeatures } from "./view";
 
 // extend the default markdown parser's tokens and add our own
@@ -280,7 +279,7 @@ export function buildMarkdownParser(
     defaultMarkdownItInstance.linkify.set({ fuzzyLink: false });
 
     // use a custom link validator that's closer to Stack Overflow's backend validation
-    defaultMarkdownItInstance.validateLink = validateLink;
+    defaultMarkdownItInstance.validateLink = features.validateLink;
 
     // start adding in the parser plugins, NOTE: order matters!
 

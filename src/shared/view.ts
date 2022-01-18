@@ -6,6 +6,7 @@ import type { EditorState } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { ExternalEditorPlugin } from "./external-editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
+import { stackOverflowValidateLink } from "./utils";
 
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
@@ -69,9 +70,11 @@ export interface CommonmarkParserFeatures {
     /** Enable tables according to GitHub-flavored markdown */
     tables?: boolean;
     tagLinks?: TagLinkOptions;
+    /** The method used to validate links; defaults to Stack Overflow's link validation */
+    validateLink?: (url: string) => boolean | false;
 }
 
-export const defaultParserFeatures: CommonmarkParserFeatures = {
+export const defaultParserFeatures: Required<CommonmarkParserFeatures> = {
     snippets: true,
     html: true,
     extraEmphasis: true,
@@ -80,6 +83,7 @@ export const defaultParserFeatures: CommonmarkParserFeatures = {
         allowMetaTags: true,
         allowNonAscii: false,
     },
+    validateLink: stackOverflowValidateLink,
 };
 
 export interface View {
