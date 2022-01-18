@@ -18,7 +18,7 @@ describe("commonmark editor view", () => {
 
         const view = commonmarkView(markdown);
 
-        expect(view.content).toEqual("**bold**");
+        expect(view.content).toBe("**bold**");
     });
 
     it.each(markdownRoundTripData)("should not change markdown", (markdown) => {

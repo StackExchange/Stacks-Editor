@@ -121,9 +121,9 @@ describe("rich text editor view", () => {
             const richEditorView = richView(markdown);
             const img = richEditorView.dom.querySelector("img");
 
-            expect(img.alt).toEqual("some image");
-            expect(img.src).toEqual("https://example.com/some.png");
-            expect(img.title).toEqual("image title here");
+            expect(img.alt).toBe("some image");
+            expect(img.src).toBe("https://example.com/some.png");
+            expect(img.title).toBe("image title here");
         });
 
         it("should render code blocks as node view", () => {
@@ -312,7 +312,7 @@ _world_.
             expect(table.querySelectorAll("th")).toHaveLength(3);
             expect(table.querySelectorAll("td")).toHaveLength(6);
 
-            expect(table.querySelectorAll("td")[1].style.textAlign).toEqual(
+            expect(table.querySelectorAll("td")[1].style.textAlign).toBe(
                 "center"
             );
 

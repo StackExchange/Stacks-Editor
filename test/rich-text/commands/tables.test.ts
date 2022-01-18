@@ -25,7 +25,7 @@ describe("table commands", () => {
         );
 
         const resolvedNode = state.selection.$from;
-        expect(resolvedNode.node().type.name).toEqual("table_header");
+        expect(resolvedNode.node().type.name).toBe("table_header");
 
         expect(state.doc).toMatchNodeTree({
             "type.name": "doc",
@@ -101,13 +101,11 @@ describe("table commands", () => {
                 3
             );
 
-            expect(state.selection.$from.node().type.name).toEqual(
-                "table_header"
-            );
+            expect(state.selection.$from.node().type.name).toBe("table_header");
 
             state = runCommand(state, moveSelectionAfterTableCommand);
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
         });
 
         it("should exit the block, before table", () => {
@@ -146,11 +144,11 @@ describe("table commands", () => {
                 3
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("asdf");
+            expect(state.selection.$from.node().textContent).toBe("asdf");
 
             state = runCommand(state, moveSelectionBeforeTableCommand);
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
         });
     });
 
@@ -172,7 +170,7 @@ describe("table commands", () => {
                 13
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("cell 1");
+            expect(state.selection.$from.node().textContent).toBe("cell 1");
 
             state = runCommand(state, insertTableRowAfterCommand);
             expect(state.doc).toMatchNodeTree({
@@ -232,7 +230,7 @@ describe("table commands", () => {
                 ),
                 12
             );
-            expect(state.selection.$from.node().textContent).toEqual(
+            expect(state.selection.$from.node().textContent).toBe(
                 "original cell"
             );
 
@@ -280,7 +278,7 @@ describe("table commands", () => {
                 1
             );
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
 
             state = runCommand(state, insertTableRowBeforeCommand, false);
         });
@@ -302,7 +300,7 @@ describe("table commands", () => {
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, insertTableColumnAfterCommand);
 
@@ -375,7 +373,7 @@ describe("table commands", () => {
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, insertTableColumnBeforeCommand);
 
@@ -441,7 +439,7 @@ describe("table commands", () => {
                 1
             );
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
 
             state = runCommand(state, insertTableColumnAfterCommand, false);
         });
@@ -463,7 +461,7 @@ describe("table commands", () => {
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, removeRowCommand);
 
@@ -517,7 +515,7 @@ describe("table commands", () => {
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, removeRowCommand);
 
@@ -544,7 +542,7 @@ describe("table commands", () => {
                 13
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, removeColumnCommand);
 
@@ -619,7 +617,7 @@ describe("table commands", () => {
     describe("insertTable command", () => {
         it("should insert table at current position", () => {
             let state = applySelection(createState(`some text`, []), 2);
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
 
             state = runCommand(state, insertTableCommand);
 
@@ -648,9 +646,7 @@ describe("table commands", () => {
                 4
             );
 
-            expect(state.selection.$from.node().type.name).toEqual(
-                "table_header"
-            );
+            expect(state.selection.$from.node().type.name).toBe("table_header");
 
             const before = state.doc;
             state = runCommand(state, insertTableCommand, false);
@@ -677,11 +673,11 @@ describe("table commands", () => {
                 ),
                 4
             );
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, moveToNextCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
         });
 
         it("should move selection into next table row if at last cell of row", () => {
@@ -710,11 +706,11 @@ describe("table commands", () => {
                 ),
                 16
             );
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
 
             state = runCommand(state, moveToNextCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("C");
+            expect(state.selection.$from.node().textContent).toBe("C");
         });
 
         it("should move selection into previous table cell", () => {
@@ -733,11 +729,11 @@ describe("table commands", () => {
                 ),
                 7
             );
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
 
             state = runCommand(state, moveToPreviousCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
         });
 
         it("should move selection into previous table row if at first cell of row", () => {
@@ -762,11 +758,11 @@ describe("table commands", () => {
                 ),
                 13
             );
-            expect(state.selection.$from.node().textContent).toEqual("C");
+            expect(state.selection.$from.node().textContent).toBe("C");
 
             state = runCommand(state, moveToPreviousCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
         });
 
         it("should do nothing when inside a table", () => {
@@ -778,13 +774,13 @@ describe("table commands", () => {
                 4
             );
 
-            expect(state.selection.$from.node().textContent).toEqual(
+            expect(state.selection.$from.node().textContent).toBe(
                 "some paragraph"
             );
 
             state = runCommand(state, moveToNextCellCommand, false);
 
-            expect(state.selection.$from.node().textContent).toEqual(
+            expect(state.selection.$from.node().textContent).toBe(
                 "some paragraph"
             );
         });

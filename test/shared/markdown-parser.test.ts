@@ -73,21 +73,21 @@ describe("SOMarkdownParser", () => {
             });
         });
 
-        it.skip("should support block html with inline nesting", () => {
+        it.todo("should support block html with inline nesting", () => {
             //const doc = markdownParser.parse("<h1><em>test</em></h1>");
         });
 
-        it.skip("should support block html with block nesting", () => {
+        it.todo("should support block html with block nesting", () => {
             //const doc = markdownParser.parse("<ul><li>test</li></ul>");
         });
 
-        it.skip("should support block html with mixed nesting", () => {
+        it.todo("should support block html with mixed nesting", () => {
             // const doc = markdownParser.parse(
             //     "<h1><strong>str</strong><p>test</p></h1>"
             // );
         });
 
-        it.skip("should support block html with deep nesting", () => {
+        it.todo("should support block html with deep nesting", () => {
             //const doc = markdownParser.parse("<ul><li><em>test</em></li></ul>");
         });
     });

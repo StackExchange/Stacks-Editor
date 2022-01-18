@@ -251,7 +251,7 @@ describe("rich-text mode", () => {
             await page.press(editorSelector, "ArrowRight");
 
             expect(await isElementVisible(linkViewTooltipSelector)).toBe(true);
-            expect(await page.innerText(linkViewTooltipSelector)).toEqual(
+            expect(await page.innerText(linkViewTooltipSelector)).toBe(
                 "https://example.com/a-link"
             );
         });
@@ -267,14 +267,14 @@ describe("rich-text mode", () => {
 
         it("should remove link mark when clicking popover action", async () => {
             await enterTextAsMarkdown("[a link](https://example.com/a-link)");
-            expect(await getMarkdownContent()).toEqual(
+            expect(await getMarkdownContent()).toBe(
                 "[a link](https://example.com/a-link)"
             );
 
             await page.press(editorSelector, "ArrowRight"); // select link
             await page.click(removeLinkSelector);
 
-            expect(await getMarkdownContent()).toEqual("a link");
+            expect(await getMarkdownContent()).toBe("a link");
         });
     });
 });

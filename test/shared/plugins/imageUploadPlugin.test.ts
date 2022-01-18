@@ -78,7 +78,7 @@ describe("image upload plugin", () => {
             .then(() => {
                 const previewImage = previewElement.querySelector("img");
                 expect(previewElement.classList).not.toContain("d-none");
-                expect(previewImage.title).toEqual("some image");
+                expect(previewImage.title).toBe("some image");
                 expect(findAddButton(uploader).disabled).toBe(false);
                 expect(findValidationMessage(uploader).classList).toContain(
                     "d-none"
@@ -92,11 +92,11 @@ describe("image upload plugin", () => {
 
         await expect(
             uploader.showImagePreview(mockFile("some html file", "text/html"))
-        ).rejects.toEqual("invalid filetype");
+        ).rejects.toBe("invalid filetype");
         expect(findPreviewElement(uploader).classList).toContain("d-none");
         expect(findAddButton(uploader).disabled).toBe(true);
         const validationMessage = findValidationMessage(uploader);
-        expect(validationMessage.textContent).toEqual(
+        expect(validationMessage.textContent).toBe(
             "Please select an image (jpeg, png, gif) to upload"
         );
         expect(validationMessage.classList).not.toContain("d-none");
@@ -108,7 +108,7 @@ describe("image upload plugin", () => {
 
         await expect(
             uploader.showImagePreview(mockFile("some html file", "text/html"))
-        ).rejects.toEqual("invalid filetype");
+        ).rejects.toBe("invalid filetype");
 
         // hide the uploader again
         hideImageUploader(view.editorView);

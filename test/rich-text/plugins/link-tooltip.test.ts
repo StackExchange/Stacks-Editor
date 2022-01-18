@@ -118,7 +118,7 @@ describe("link-tooltip", () => {
         const input = renderedDeco.querySelector(".js-link-tooltip-input");
 
         expect(inputWrapper.classList).not.toContain("d-none");
-        expect((input as HTMLInputElement).value).toEqual("https://");
+        expect((input as HTMLInputElement).value).toBe("https://");
     });
 
     it.skip("should edit on button click", () => {

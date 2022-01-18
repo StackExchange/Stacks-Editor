@@ -82,6 +82,7 @@ describe("mark input rules", () => {
         ["* no-match*", false],
         ["*no-match *", false],
     ];
+    // eslint-disable-next-line jest/expect-expect
     test.each(emphasisTests)(
         "*emphasis* (%s)",
         markInputRuleTest(richTextSchema.marks.em, 1)
@@ -95,6 +96,7 @@ describe("mark input rules", () => {
         ["_ no-match_", false],
         ["_no-match _", false],
     ];
+    // eslint-disable-next-line jest/expect-expect
     test.each(emphasisUnderlineTests)(
         "_emphasis_ (%s)",
         markInputRuleTest(richTextSchema.marks.em, 1)
@@ -106,6 +108,7 @@ describe("mark input rules", () => {
         ["** no-match**", false],
         ["**no-match **", false],
     ];
+    // eslint-disable-next-line jest/expect-expect
     test.each(boldTests)(
         "**strong** (%s)",
         markInputRuleTest(richTextSchema.marks.strong, 2)
@@ -117,6 +120,7 @@ describe("mark input rules", () => {
         ["__ no-match__", false],
         ["__no-match __", false],
     ];
+    // eslint-disable-next-line jest/expect-expect
     test.each(boldUnderlineTests)(
         "__strong__ (%s)",
         markInputRuleTest(richTextSchema.marks.strong, 2)
@@ -128,6 +132,7 @@ describe("mark input rules", () => {
         ["` no-match`", false],
         ["`no-match `", false],
     ];
+    // eslint-disable-next-line jest/expect-expect
     test.each(codeTests)(
         "`code` (%s)",
         markInputRuleTest(richTextSchema.marks.code, 1)
