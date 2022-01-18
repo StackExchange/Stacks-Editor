@@ -1,4 +1,3 @@
-import { mocked } from "ts-jest/utils";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
 import "../matchers";
@@ -8,7 +7,7 @@ import { normalize } from "../test-helpers";
 jest.mock("../../src/shared/markdown-parser");
 
 // set the typings for easy function mocking
-const mockedMdp = mocked(mdp, true);
+const mockedMdp = jest.mocked(mdp, true);
 
 // import the "actual" buildMarkdownParser function to use in our mock implementations
 const { buildMarkdownParser } = jest.requireActual<typeof mdp>(

@@ -6,7 +6,6 @@ import {
     Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { mocked } from "ts-jest/utils";
 import { MenuCommand } from "../../src/shared/menu";
 import { richTextSchema } from "../../src/shared/schema";
 
@@ -96,7 +95,8 @@ export function setupPasteSupport(): void {
         [Symbol.iterator]: jest.fn(),
     });
 
-    Range.prototype.getBoundingClientRect = () => mocked<DOMRect>({} as never);
+    Range.prototype.getBoundingClientRect = () =>
+        jest.mocked<DOMRect>({} as never);
 }
 
 /** Tears down ProseMirror paste support globally for jsdom */
