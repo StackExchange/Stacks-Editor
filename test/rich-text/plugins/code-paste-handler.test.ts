@@ -118,7 +118,7 @@ describe("code-paste-handler", () => {
                         "content": [
                             {
                                 "type.name": "text",
-                                "text": text,
+                                "text": t,
                             },
                         ],
                     };
