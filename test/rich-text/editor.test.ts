@@ -1,4 +1,3 @@
-import { mocked } from "ts-jest/utils";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
 import "../matchers";
@@ -8,7 +7,7 @@ import { normalize } from "../test-helpers";
 jest.mock("../../src/shared/markdown-parser");
 
 // set the typings for easy function mocking
-const mockedMdp = mocked(mdp, true);
+const mockedMdp = jest.mocked(mdp, true);
 
 // import the "actual" buildMarkdownParser function to use in our mock implementations
 const { buildMarkdownParser } = jest.requireActual<typeof mdp>(
@@ -121,9 +120,9 @@ describe("rich text editor view", () => {
             const richEditorView = richView(markdown);
             const img = richEditorView.dom.querySelector("img");
 
-            expect(img.alt).toEqual("some image");
-            expect(img.src).toEqual("https://example.com/some.png");
-            expect(img.title).toEqual("image title here");
+            expect(img.alt).toBe("some image");
+            expect(img.src).toBe("https://example.com/some.png");
+            expect(img.title).toBe("image title here");
         });
 
         it("should render code blocks as node view", () => {
@@ -186,7 +185,7 @@ describe("rich text editor view", () => {
         ["sup", "<sup>superscript</sup>", `<p><sup>superscript</sup></p>`],
         ["strong", "<strong>strong</strong>", `<p><strong>strong</strong></p>`],
         ["strike", "<strike>text</strike>", `<p><del>text</del></p>`],
-        ["br", "<br>", `<p><br><br></p>`],
+        ["br", "<br>", `<p><br><br class="ProseMirror-trailingBreak"></p>`],
         ["hr", "<hr>", `<div><hr></div>`],
     ];
 
@@ -241,7 +240,7 @@ _world_.
             const richEditorView = richView(markdown);
 
             const expectedHtml = normalize(
-                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span><br></p></div></pre></blockquote></div>`
+                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span><br class="ProseMirror-trailingBreak"></p></div></pre></blockquote></div>`
             );
             expect(normalize(editorDom(richEditorView))).toEqual(expectedHtml);
         });
@@ -277,9 +276,8 @@ _world_.
 
             const richEditorView = richView(markdown);
 
-            const oneboxDom = richEditorView.dom.querySelectorAll(
-                ".js-placeholder"
-            );
+            const oneboxDom =
+                richEditorView.dom.querySelectorAll(".js-placeholder");
             expect(oneboxDom).toHaveLength(1);
             // wait for the promise to resolve (immediately) and check that the async content was pulled in
             setTimeout(() => {
@@ -313,7 +311,7 @@ _world_.
             expect(table.querySelectorAll("th")).toHaveLength(3);
             expect(table.querySelectorAll("td")).toHaveLength(6);
 
-            expect(table.querySelectorAll("td")[1].style.textAlign).toEqual(
+            expect(table.querySelectorAll("td")[1].style.textAlign).toBe(
                 "center"
             );
 
@@ -375,8 +373,7 @@ _world_.
                         "content": [
                             {
                                 "type.isText": true,
-                                "text":
-                                    "WARNING! There was an error parsing the document",
+                                "text": "WARNING! There was an error parsing the document",
                             },
                         ],
                     },

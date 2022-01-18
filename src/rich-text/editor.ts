@@ -88,12 +88,12 @@ export class RichTextEditor extends BaseView {
                         richTextKeymap,
                         keymap(baseKeymap),
                         createMenu(this.options),
-                        richTextInputRules,
+                        richTextInputRules(this.options.parserFeatures),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
                         CodeBlockHighlightPlugin(
                             this.options.codeblockOverrideLanguage
                         ),
-                        linkTooltipPlugin,
+                        linkTooltipPlugin(this.options.parserFeatures),
                         richTextImageUpload(
                             this.options.imageUpload,
                             this.options.pluginParentContainer
@@ -102,24 +102,28 @@ export class RichTextEditor extends BaseView {
                         spoilerToggle,
                         tables,
                         codePasteHandler,
-                        linkPasteHandler,
+                        linkPasteHandler(this.options.parserFeatures),
                         ...this.externalPlugins.plugins,
                     ],
                 }),
                 nodeViews: {
-                    code_block(node) {
+                    code_block(node: ProseMirrorNode) {
                         return new CodeBlockView(node);
                     },
-                    image(node, view, getPos) {
+                    image(
+                        node: ProseMirrorNode,
+                        view: EditorView,
+                        getPos: () => number
+                    ) {
                         return new ImageView(node, view, getPos);
                     },
-                    tagLink(node) {
+                    tagLink(node: ProseMirrorNode) {
                         return new TagLink(node, tagLinkOptions);
                     },
-                    html_block: function (node) {
+                    html_block: function (node: ProseMirrorNode) {
                         return new HtmlBlock(node);
                     },
-                    html_block_container: function (node) {
+                    html_block_container: function (node: ProseMirrorNode) {
                         return new HtmlBlockContainer(node);
                     },
                     ...this.externalPlugins.nodeViews,
