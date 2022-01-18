@@ -286,17 +286,15 @@ console.log("test");
             "file://invalid",
             "://inherit_scheme.com",
             "invalid.com",
-            "test@example.com"
-        ])(
-            "should not autolink invalid links (%s)",
-            (input) => {
-                const doc = markdownParser.parse(input).toJSON();
-                expect(doc.content[0].type).toBe("paragraph");
-                expect(doc.content[0].content).toHaveLength(1);
-                expect(doc.content[0].content[0].text).toBe(input);
-                expect(doc.content[0].content[0].marks).toBeUndefined();
-            }
-        );
+            "test@example.com",
+            "127.0.0.1",
+        ])("should not autolink invalid links (%s)", (input) => {
+            const doc = markdownParser.parse(input).toJSON();
+            expect(doc.content[0].type).toBe("paragraph");
+            expect(doc.content[0].content).toHaveLength(1);
+            expect(doc.content[0].content[0].text).toBe(input);
+            expect(doc.content[0].content[0].marks).toBeUndefined();
+        });
     });
 
     describe("lists", () => {

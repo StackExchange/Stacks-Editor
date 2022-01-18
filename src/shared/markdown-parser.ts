@@ -277,7 +277,7 @@ export function buildMarkdownParser(
 
     defaultMarkdownItInstance.linkify.set({
         fuzzyLink: false, // disable autolinking of anything that comes without protocol prefix (e.g. https://)
-        fuzzyEmail: false // disable email autolinking, see this MSE question: https://meta.stackexchange.com/q/370235
+        fuzzyEmail: false, // disable email address (without mailto:) autolinking
     });
 
     // use a custom link validator that's closer to Stack Overflow's backend validation
