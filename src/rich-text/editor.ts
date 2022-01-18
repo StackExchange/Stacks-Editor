@@ -107,19 +107,23 @@ export class RichTextEditor extends BaseView {
                     ],
                 }),
                 nodeViews: {
-                    code_block(node) {
+                    code_block(node: ProseMirrorNode) {
                         return new CodeBlockView(node);
                     },
-                    image(node, view, getPos) {
+                    image(
+                        node: ProseMirrorNode,
+                        view: EditorView,
+                        getPos: () => number
+                    ) {
                         return new ImageView(node, view, getPos);
                     },
-                    tagLink(node) {
+                    tagLink(node: ProseMirrorNode) {
                         return new TagLink(node, tagLinkOptions);
                     },
-                    html_block: function (node) {
+                    html_block: function (node: ProseMirrorNode) {
                         return new HtmlBlock(node);
                     },
-                    html_block_container: function (node) {
+                    html_block_container: function (node: ProseMirrorNode) {
                         return new HtmlBlockContainer(node);
                     },
                     ...this.externalPlugins.nodeViews,
