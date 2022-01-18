@@ -186,7 +186,7 @@ describe("rich text editor view", () => {
         ["sup", "<sup>superscript</sup>", `<p><sup>superscript</sup></p>`],
         ["strong", "<strong>strong</strong>", `<p><strong>strong</strong></p>`],
         ["strike", "<strike>text</strike>", `<p><del>text</del></p>`],
-        ["br", "<br>", `<p><br><br></p>`],
+        ["br", "<br>", `<p><br><br class="ProseMirror-trailingBreak"></p>`],
         ["hr", "<hr>", `<div><hr></div>`],
     ];
 
@@ -241,7 +241,7 @@ _world_.
             const richEditorView = richView(markdown);
 
             const expectedHtml = normalize(
-                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span><br></p></div></pre></blockquote></div>`
+                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span><br class="ProseMirror-trailingBreak"></p></div></pre></blockquote></div>`
             );
             expect(normalize(editorDom(richEditorView))).toEqual(expectedHtml);
         });
@@ -277,9 +277,8 @@ _world_.
 
             const richEditorView = richView(markdown);
 
-            const oneboxDom = richEditorView.dom.querySelectorAll(
-                ".js-placeholder"
-            );
+            const oneboxDom =
+                richEditorView.dom.querySelectorAll(".js-placeholder");
             expect(oneboxDom).toHaveLength(1);
             // wait for the promise to resolve (immediately) and check that the async content was pulled in
             setTimeout(() => {
@@ -375,8 +374,7 @@ _world_.
                         "content": [
                             {
                                 "type.isText": true,
-                                "text":
-                                    "WARNING! There was an error parsing the document",
+                                "text": "WARNING! There was an error parsing the document",
                             },
                         ],
                     },

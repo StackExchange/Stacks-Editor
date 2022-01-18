@@ -3,6 +3,7 @@ import {
     getDetectedCode,
 } from "../../../src/rich-text/plugins/code-paste-handler";
 import "../../matchers";
+import "../../matchers";
 import {
     applySelection,
     cleanupPasteSupport,
@@ -103,20 +104,29 @@ describe("code-paste-handler", () => {
                     "text/plain": text,
                 });
 
+                // newlines get parsed as hard breaks, so we need to count the extra children
+                const split = text.split(/(?:\n+?)\n/);
+                const content = split.map((t) => {
+                    if (!t) {
+                        return {
+                            "type.name": "paragraph",
+                        };
+                    }
+
+                    return {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                "type.name": "text",
+                                "text": text,
+                            },
+                        ],
+                    };
+                });
+
                 expect(view.state.doc).toMatchNodeTree({
                     "type.name": "doc",
-                    "childCount": 1,
-                    "content": [
-                        {
-                            "type.name": "paragraph",
-                            "content": [
-                                {
-                                    "type.name": "text",
-                                    "text": text.trim(),
-                                },
-                            ],
-                        },
-                    ],
+                    "content": content,
                 });
             }
         );
