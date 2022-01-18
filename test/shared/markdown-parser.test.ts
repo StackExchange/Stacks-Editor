@@ -282,7 +282,12 @@ console.log("test");
             expect(doc.content[0].content[0].marks[0].type).toBe("link");
         });
 
-        it.each(["file://invalid", "://inherit_scheme.com", "invalid.com"])(
+        it.each([
+            "file://invalid",
+            "://inherit_scheme.com",
+            "invalid.com",
+            "test@example.com"
+        ])(
             "should not autolink invalid links (%s)",
             (input) => {
                 const doc = markdownParser.parse(input).toJSON();
