@@ -4,7 +4,7 @@ import * as path from "path";
 // Reference: https://playwright.dev/docs/test-configuration
 const config: PlaywrightTestConfig = {
     testDir: path.join(__dirname, "..", "test"),
-    testMatch: /.*e2e\.test\.ts/,
+    testMatch: "*.e2e.test.ts",
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
 
@@ -14,7 +14,7 @@ const config: PlaywrightTestConfig = {
     },
 
     use: {
-        trace: "on-first-retry",
+        trace: "on",
     },
 
     projects: [
@@ -28,9 +28,6 @@ const config: PlaywrightTestConfig = {
             name: "firefox",
             use: {
                 ...devices["Desktop Firefox"],
-                // TODO: remove after https://github.com/microsoft/playwright/pull/10492 was released
-                userAgent:
-                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:94.0.1) Gecko/20100101 Firefox/94.0.1",
             },
         },
         {
