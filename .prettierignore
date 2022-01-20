@@ -1,0 +1,5 @@
+*.md
+.vscode/
+stats.json
+dist/
+test-results/

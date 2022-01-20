@@ -22,7 +22,8 @@
         "build:gh-pages": "webpack --config config/webpack.dev.js --mode=production --",
         "print-stats": "webpack --config config/webpack.prod.js --profile --json > stats.json",
         "print-stats:stackoverflow": "webpack --config config/webpack.stackoverflow.js --profile --json > stats.json",
-        "eslint": "eslint .",
+        "lint:eslint": "eslint .",
+        "lint:prettier": "prettier --check . --end-of-line auto",
         "release": "standard-version",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
         "prepare": "husky install"
