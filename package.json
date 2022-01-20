@@ -43,7 +43,7 @@
         "@babel/preset-env": "^7.16.8",
         "@commitlint/cli": "^16.0.2",
         "@commitlint/config-conventional": "^16.0.0",
-        "@playwright/test": "^1.17.2",
+        "@playwright/test": "^1.18.0",
         "@types/jest": "^27.4.0",
         "@typescript-eslint/eslint-plugin": "^5.10.0",
         "@typescript-eslint/parser": "^5.10.0",
