@@ -31,9 +31,8 @@ export class CodeBlockView implements NodeView {
         const rawLanguage = this.getLanguageFromBlock(node);
 
         if (this.language !== rawLanguage) {
-            this.dom.querySelector(
-                ".js-language-indicator"
-            ).textContent = rawLanguage;
+            this.dom.querySelector(".js-language-indicator").textContent =
+                rawLanguage;
             this.language = rawLanguage;
         }
 
