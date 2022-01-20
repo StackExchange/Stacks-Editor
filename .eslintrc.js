@@ -29,5 +29,11 @@ module.exports = {
                 "jest/no-disabled-tests": "off",
             },
         },
+        {
+            // enable a subset of jest rules in e2e test files, since the syntax is similar-ish
+            files: ["**/*.e2e.test.ts"],
+            extends: ["plugin:jest/recommended"],
+            rules: {},
+        },
     ],
 };
