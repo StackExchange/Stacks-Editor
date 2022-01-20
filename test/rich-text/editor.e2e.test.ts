@@ -1,13 +1,12 @@
+/* eslint-disable jest/no-done-callback */
+import { test, expect, Page } from "@playwright/test";
 import {
     switchMode,
     getIsMarkdown,
-    getMenu,
     clearEditor,
-    hasClass,
     editorSelector,
-    isElementVisible,
-    elementExists,
     typeText,
+    menuSelector,
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
@@ -16,62 +15,68 @@ const insertLinkMenuItemSelector = ".js-insert-link-btn";
 const linkViewTooltipSelector = ".js-link-tooltip";
 const removeLinkSelector = ".js-link-tooltip-remove";
 
-const getMarkdownContent = async () => {
-    const wasMarkdownModeActive = await getIsMarkdown();
-    await switchMode(true);
+const getMarkdownContent = async (page: Page) => {
+    const wasMarkdownModeActive = await getIsMarkdown(page);
+    await switchMode(page, true);
     const text = await page.innerText(editorSelector);
     if (!wasMarkdownModeActive) {
-        await switchMode(false);
+        await switchMode(page, false);
     }
     return text;
 };
 
-const enterTextAsMarkdown = async (text: string) => {
-    await clearEditor();
-    await switchMode(true);
-    await typeText(text);
-    await switchMode(false);
+const enterTextAsMarkdown = async (page: Page, text: string) => {
+    await clearEditor(page);
+    await switchMode(page, true);
+    await typeText(page, text);
+    await switchMode(page, false);
 };
 
-describe("rich-text mode", () => {
-    beforeAll(async () => {
-        await switchMode(false);
+test.describe.serial("rich-text mode", () => {
+    let page: Page;
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+        await page.goto("/");
+        await switchMode(page, false);
+    });
+    test.afterAll(async () => {
+        await page.close();
     });
 
-    it("should show toggle switch", async () => {
-        const isMarkdown = await getIsMarkdown();
+    test("should show toggle switch", async () => {
+        const isMarkdown = await getIsMarkdown(page);
         expect(isMarkdown).toBeFalsy();
     });
 
-    it("should render menu bar", async () => {
-        const menu = await getMenu();
-        expect(menu).not.toBeNull();
+    test("should render menu bar", async () => {
+        await expect(page.locator(menuSelector)).toBeVisible();
     });
 
-    it("should highlight bold menu button after click", async () => {
-        await clearEditor();
+    test("should highlight bold menu button after click", async () => {
+        await clearEditor(page);
 
-        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-            false
+        await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(
+            /is-selected/,
+            { timeout: 1000 }
         );
         await page.click(boldMenuButtonSelector);
 
-        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-            true
+        await expect(page.locator(boldMenuButtonSelector)).toHaveClass(
+            /is-selected/,
+            { timeout: 1000 }
         );
     });
 
-    describe("input rules", () => {
-        it.each([`"`, "...", "--"])(
-            "should not transform special characters",
-            async (input) => {
-                await typeText(input);
+    test.describe("input rules", () => {
+        for (const input of [`"`, "...", "--"] as const) {
+            test(`should not transform special characters: ${input}`, async () => {
+                await typeText(page, input);
                 const text = await page.innerText(editorSelector);
                 expect(text).toBe(input);
-            }
-        );
+            });
+        }
 
-        it.each([
+        for (const [input, expectedNodeType] of [
             // valid rules
             ["1. ", "ordered_list"],
             ["2) ", "ordered_list"],
@@ -88,11 +93,10 @@ describe("rich-text mode", () => {
             // invalid rules
             ["10. ", "paragraph"],
             ["#### ", "paragraph"],
-        ])(
-            "should create a node on input '%s'",
-            async (input, expectedNodeType) => {
-                await clearEditor();
-                await typeText(input);
+        ] as const) {
+            test(`should create a node on input '${input}'`, async () => {
+                await clearEditor(page);
+                await typeText(page, input);
                 // TODO HACK don't use the debugging instance on window since it is unique to our specific view
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const doc = await page.evaluate(() =>
@@ -102,10 +106,10 @@ describe("rich-text mode", () => {
 
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
                 expect(doc.content[0].type).toBe(expectedNodeType);
-            }
-        );
+            });
+        }
 
-        it.each([
+        for (const [input, expectedMarkType] of [
             // valid inline mark rules
             ["**bold** ", "strong"],
             ["*emphasis* ", "em"],
@@ -113,12 +117,11 @@ describe("rich-text mode", () => {
             ["_emphasis_ ", "em"],
             ["`code` ", "code"],
             ["[a link](https://example.com)", "link"],
-        ])(
-            "should create a mark on input '%s'",
-            async (input, expectedMarkType) => {
-                await clearEditor();
+        ] as const) {
+            test(`should create a mark on input '${input}'`, async () => {
+                await clearEditor(page);
                 const simulateTyping = true;
-                await typeText(input, simulateTyping);
+                await typeText(page, input, simulateTyping);
                 // TODO HACK don't use the debugging instance on window since it is unique to our specific view
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const doc = await page.evaluate(() =>
@@ -130,10 +133,10 @@ describe("rich-text mode", () => {
                 expect(doc.content[0].content[0].marks[0].type).toContain(
                     expectedMarkType
                 );
-            }
-        );
+            });
+        }
 
-        it.each([
+        for (const [input, matchIndex] of [
             // invalid followed by valid
             ["__nope_ _match_", 1],
             ["**nope* *match*", 1],
@@ -143,11 +146,10 @@ describe("rich-text mode", () => {
             // no match
             ["**test*", -1],
             ["__test_", -1],
-        ])(
-            "should handle strong vs weak emphasis marks (%s)",
-            async (input, matchIndex) => {
-                await clearEditor();
-                await typeText(input, true);
+        ] as const) {
+            test(`should handle strong vs weak emphasis marks (${input})`, async () => {
+                await clearEditor(page);
+                await typeText(page, input, true);
 
                 // TODO HACK don't use the debugging instance on window since it is unique to our specific view
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -166,13 +168,13 @@ describe("rich-text mode", () => {
                 expect(doc.content[0].content[matchIndex]?.marks[0].type).toBe(
                     mark
                 );
-            }
-        );
+            });
+        }
 
-        it("should validate links for link input rule", async () => {
-            await clearEditor();
+        test("should validate links for link input rule", async () => {
+            await clearEditor(page);
             const simulateTyping = true;
-            await typeText("[invalid link](example)", simulateTyping);
+            await typeText(page, "[invalid link](example)", simulateTyping);
             // TODO HACK don't use the debugging instance on window since it is unique to our specific view
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = await page.evaluate(() =>
@@ -184,11 +186,12 @@ describe("rich-text mode", () => {
         });
     });
 
-    describe("editing images", () => {
+    test.describe("editing images", () => {
         const imagePopoverSelector = ".js-img-popover";
 
-        it("should show image popover when selecting an image", async () => {
+        test("should show image popover when selecting an image", async () => {
             await enterTextAsMarkdown(
+                page,
                 "![an image](https://localhost/some-image)"
             );
 
@@ -207,8 +210,9 @@ describe("rich-text mode", () => {
             ).toBe(true);
         });
 
-        it("should hide image popover when deselecting an image", async () => {
+        test("should hide image popover when deselecting an image", async () => {
             await enterTextAsMarkdown(
+                page,
                 "![an image](https://localhost/some-image)"
             );
 
@@ -223,12 +227,14 @@ describe("rich-text mode", () => {
         });
     });
 
-    describe("editing links", () => {
-        it("should insert a link for selected text when clicking menu item", async () => {
-            await clearEditor();
-            expect(await elementExists(linkViewTooltipSelector)).toBe(false);
+    test.describe("editing links", () => {
+        test("should insert a link for selected text when clicking menu item", async () => {
+            await clearEditor(page);
+            await expect(page.locator(linkViewTooltipSelector)).toBeHidden({
+                timeout: 5000,
+            });
 
-            await typeText("some link here");
+            await typeText(page, "some link here");
 
             // select some text
             await page.keyboard.down("Shift");
@@ -239,42 +245,60 @@ describe("rich-text mode", () => {
 
             await page.click(insertLinkMenuItemSelector);
 
-            expect(await isElementVisible(linkViewTooltipSelector)).toBe(true);
+            await expect(page.locator(linkViewTooltipSelector)).toBeVisible();
         });
 
-        it("should show link popover when selecting a link", async () => {
+        test("should show link popover when selecting a link", async () => {
             // enter a link in markdown mode and switch back to rich text mode
-            await enterTextAsMarkdown("[a link](https://example.com/a-link)");
+            await enterTextAsMarkdown(
+                page,
+                "[a link](https://example.com/a-link)"
+            );
 
-            expect(await elementExists(linkViewTooltipSelector)).toBe(false);
+            await expect(page.locator(linkViewTooltipSelector)).toBeHidden({
+                timeout: 5000,
+            });
 
             await page.press(editorSelector, "ArrowRight");
 
-            expect(await isElementVisible(linkViewTooltipSelector)).toBe(true);
-            expect(await page.innerText(linkViewTooltipSelector)).toBe(
+            await expect(page.locator(linkViewTooltipSelector)).toBeVisible();
+            await expect(page.locator(linkViewTooltipSelector)).toContainText(
                 "https://example.com/a-link"
             );
         });
 
-        it("should hide link popover when deselecting a link", async () => {
-            await enterTextAsMarkdown("[a link](https://example.com/a-link)");
+        test("should hide link popover when deselecting a link", async ({
+            browserName,
+        }) => {
+            test.fixme(
+                browserName === "firefox",
+                "ArrowLeft does not work for some reason"
+            );
+            await enterTextAsMarkdown(
+                page,
+                "[a link](https://example.com/a-link)"
+            );
 
             await page.press(editorSelector, "ArrowRight"); // select link
             await page.press(editorSelector, "ArrowLeft"); // and deselect again
-
-            expect(await elementExists(linkViewTooltipSelector)).toBe(false);
+            await expect(page.locator(linkViewTooltipSelector)).toBeHidden({
+                timeout: 5000,
+            });
         });
 
-        it("should remove link mark when clicking popover action", async () => {
-            await enterTextAsMarkdown("[a link](https://example.com/a-link)");
-            expect(await getMarkdownContent()).toBe(
+        test("should remove link mark when clicking popover action", async () => {
+            await enterTextAsMarkdown(
+                page,
+                "[a link](https://example.com/a-link)"
+            );
+            expect(await getMarkdownContent(page)).toEqual(
                 "[a link](https://example.com/a-link)"
             );
 
             await page.press(editorSelector, "ArrowRight"); // select link
             await page.click(removeLinkSelector);
 
-            expect(await getMarkdownContent()).toBe("a link");
+            expect(await getMarkdownContent(page)).toEqual("a link");
         });
     });
 });
