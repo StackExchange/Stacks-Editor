@@ -1,4 +1,4 @@
-import { test, expect, Page } from '@playwright/test';
+import { test, expect, Page } from "@playwright/test";
 import {
     clearEditor,
     getIsMarkdown,
@@ -12,7 +12,7 @@ test.describe.serial("markdown mode", () => {
     let page: Page;
     test.beforeAll(async ({ browser }) => {
         page = await browser.newPage();
-        await page.goto('/')
+        await page.goto("/");
         await switchMode(page, true);
     });
     test.afterAll(async () => {
@@ -26,14 +26,20 @@ test.describe.serial("markdown mode", () => {
     });
 
     test("should render menu bar", async () => {
-        await expect(page.locator(menuSelector)).toBeVisible()
+        await expect(page.locator(menuSelector)).toBeVisible();
     });
 
     test("should not highlight bold menu button after click", async () => {
         await clearEditor(page);
 
-        await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(/is-selected/, { timeout: 1000 });
+        await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(
+            /is-selected/,
+            { timeout: 1000 }
+        );
         await page.click(boldMenuButtonSelector);
-        await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(/is-selected/, { timeout: 1000 });
+        await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(
+            /is-selected/,
+            { timeout: 1000 }
+        );
     });
 });

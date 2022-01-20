@@ -12,7 +12,10 @@ export async function getIsMarkdown(page: Page): Promise<boolean> {
     );
 }
 
-export async function switchMode(page: Page, switchToMarkdown: boolean): Promise<void> {
+export async function switchMode(
+    page: Page,
+    switchToMarkdown: boolean
+): Promise<void> {
     if ((await getIsMarkdown(page)) !== switchToMarkdown) {
         return await page.click(editorModeSwitcherSelector);
     }
