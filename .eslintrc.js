@@ -27,6 +27,7 @@ module.exports = {
             extends: ["plugin:jest/recommended", "plugin:jest/style"],
             rules: {
                 "jest/no-disabled-tests": "off",
+                "jest/consistent-test-it": ["error", { fn: "it" }],
             },
         },
         {
