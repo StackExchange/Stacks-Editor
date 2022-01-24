@@ -136,6 +136,7 @@ domReady(() => {
     const content = document.querySelector<HTMLTextAreaElement>("#content");
     const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
+    const disableEditor = place.classList.contains("js-editor-disabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -182,6 +183,10 @@ domReady(() => {
         };
 
         const editorInstance = new StacksEditor(place, content.value, options);
+
+        if (disableEditor) {
+            editorInstance.disable();
+        }
 
         // set the instance on the window for developers to poke around in
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
