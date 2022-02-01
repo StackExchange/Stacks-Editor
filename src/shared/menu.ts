@@ -223,6 +223,7 @@ export function makeMenuIcon(
     }
 
     button.title = title;
+    button.setAttribute("aria-label", title);
     button.dataset.controller = "s-tooltip";
     button.dataset.sTooltipPlacement = "top";
     button.dataset.key = key;
@@ -374,6 +375,7 @@ export function makeMenuLinkEntry(
     dom.href = href;
     dom.target = "_blank";
     dom.title = title;
+    dom.setAttribute("aria-label", title);
     dom.dataset.controller = "s-tooltip";
     dom.dataset.sTooltipPlacement = "top";
 
