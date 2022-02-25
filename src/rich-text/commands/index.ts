@@ -181,38 +181,39 @@ function markActive(mark: MarkType) {
     };
 }
 
-const tableDropdown = makeMenuDropdown(
-    "Table",
-    "Edit table",
-    "table-dropdown",
-    (state: EditorState) => inTable(state.selection),
+const tableDropdown = () =>
+    makeMenuDropdown(
+        "Table",
+        "Edit table",
+        "table-dropdown",
+        (state: EditorState) => inTable(state.selection),
 
-    dropdownSection("Column", "columnSection"),
-    dropdownItem("Remove column", removeColumnCommand, "remove-column-btn"),
-    dropdownItem(
-        "Insert column before",
-        insertTableColumnBeforeCommand,
-        "insert-column-before-btn"
-    ),
-    dropdownItem(
-        "Insert column after",
-        insertTableColumnAfterCommand,
-        "insert-column-after-btn"
-    ),
+        dropdownSection("Column", "columnSection"),
+        dropdownItem("Remove column", removeColumnCommand, "remove-column-btn"),
+        dropdownItem(
+            "Insert column before",
+            insertTableColumnBeforeCommand,
+            "insert-column-before-btn"
+        ),
+        dropdownItem(
+            "Insert column after",
+            insertTableColumnAfterCommand,
+            "insert-column-after-btn"
+        ),
 
-    dropdownSection("Row", "rowSection"),
-    dropdownItem("Remove row", removeRowCommand, "remove-row-btn"),
-    dropdownItem(
-        "Insert row before",
-        insertTableRowBeforeCommand,
-        "insert-row-before-btn"
-    ),
-    dropdownItem(
-        "Insert row after",
-        insertTableRowAfterCommand,
-        "insert-row-after-btn"
-    )
-);
+        dropdownSection("Row", "rowSection"),
+        dropdownItem("Remove row", removeRowCommand, "remove-row-btn"),
+        dropdownItem(
+            "Insert row before",
+            insertTableRowBeforeCommand,
+            "insert-row-before-btn"
+        ),
+        dropdownItem(
+            "Insert row after",
+            insertTableRowAfterCommand,
+            "insert-row-after-btn"
+        )
+    );
 
 export const createMenu = (options: CommonViewOptions): Plugin =>
     createMenuPlugin(
@@ -289,7 +290,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 },
                 options.parserFeatures.tables
             ),
-            addIf(tableDropdown, options.parserFeatures.tables),
+            addIf(tableDropdown(), options.parserFeatures.tables),
             makeMenuSpacerEntry(),
             {
                 key: "toggleOrderedList",
