@@ -9,7 +9,7 @@ import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { richTextSchema } from "../schema";
 import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
-import { escapeHTML } from "../utils";
+import { dispatchEditorEvent, escapeHTML } from "../utils";
 
 /**
  * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
@@ -506,6 +506,12 @@ export function showImageUploader(view: EditorView, file?: File): void {
 
     // already visible, don't dispatch the event
     if (!state || state.visible) {
+        return;
+    }
+
+    // TODO find a way to add this event to StacksEditor TSDocs
+    // dispatch a browser event and return early if it is cancelled
+    if (!dispatchEditorEvent(view.dom, "image-uploader-show", { file })) {
         return;
     }
 

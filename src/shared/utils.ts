@@ -194,3 +194,32 @@ export function escapeHTML(
 
     return output;
 }
+
+/**
+ * Prefixes an event name to scope it to the editor
+ * e.g. `view-change` becomes `StacksEditor:view-change`
+ * @param eventName The event name to prefix
+ */
+function prefixEventName(eventName: string) {
+    return `StacksEditor:${eventName}`;
+}
+
+/**
+ * Prefixes and dispatches a custom event on the target
+ * @param target The target to dispatch the event on
+ * @param eventName The unprefixed event name
+ * @param detail Any custom data to pass on the event
+ * @returns true if either event's cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise
+ */
+export function dispatchEditorEvent(
+    target: Element,
+    eventName: string,
+    detail?: unknown
+): boolean {
+    const event = new CustomEvent(prefixEventName(eventName), {
+        bubbles: true,
+        cancelable: true,
+        detail: detail,
+    });
+    return target.dispatchEvent(event);
+}
