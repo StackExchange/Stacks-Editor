@@ -6,6 +6,7 @@ import {
     STICKY_OBSERVER_CLASS,
     StickyChangeDetails,
     escapeHTML,
+    dispatchEditorEvent,
 } from "../shared/utils";
 import { View, CommonViewOptions, BaseView } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
@@ -334,15 +335,6 @@ export class StacksEditor implements View {
     }
 
     /**
-     * Prefixes an event name to scope it to the editor
-     * e.g. `view-change` becomes `StacksEditor:view-change`
-     * @param eventName The event name to prefix
-     */
-    private prefixEventName(eventName: string) {
-        return `StacksEditor:${eventName}`;
-    }
-
-    /**
      * Handles toggling the editor when the switcher is clicked
      * and fires a change event from the target element for consumers to listen for
      * @param e The click event
@@ -367,12 +359,9 @@ export class StacksEditor implements View {
 
         // TODO better event name?
         // trigger an event on the target for consumers to listen for
-        const event = new CustomEvent(this.prefixEventName("view-change"), {
-            detail: {
-                editorType: type,
-            },
+        dispatchEditorEvent(this.target, "view-change", {
+            editorType: type,
         });
-        this.target.dispatchEvent(event);
 
         // TODO do we always want to focus the editor?
         this.focus();

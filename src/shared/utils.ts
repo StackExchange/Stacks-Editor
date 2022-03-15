@@ -183,10 +183,10 @@ const validLinkRegex =
 const validMailtoRegex = /^mailto:[#-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+$/;
 
 /**
- * Checks if a url is well-formed as passes validation checks
+ * Checks if a url is well-formed and passes Stack Overflow's validation checks
  * @param url The url to validate
  */
-export function validateLink(url: string): boolean {
+export function stackOverflowValidateLink(url: string): boolean {
     const normalizedUrl = url?.trim().toLowerCase();
     return (
         validLinkRegex.test(normalizedUrl) ||
@@ -209,4 +209,33 @@ export function escapeHTML(
     }
 
     return output;
+}
+
+/**
+ * Prefixes an event name to scope it to the editor
+ * e.g. `view-change` becomes `StacksEditor:view-change`
+ * @param eventName The event name to prefix
+ */
+function prefixEventName(eventName: string) {
+    return `StacksEditor:${eventName}`;
+}
+
+/**
+ * Prefixes and dispatches a custom event on the target
+ * @param target The target to dispatch the event on
+ * @param eventName The unprefixed event name
+ * @param detail Any custom data to pass on the event
+ * @returns true if either event's cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise
+ */
+export function dispatchEditorEvent(
+    target: Element,
+    eventName: string,
+    detail?: unknown
+): boolean {
+    const event = new CustomEvent(prefixEventName(eventName), {
+        bubbles: true,
+        cancelable: true,
+        detail: detail,
+    });
+    return target.dispatchEvent(event);
 }

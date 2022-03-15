@@ -1,4 +1,8 @@
-import { deepMerge, escapeHTML, validateLink } from "../../src/shared/utils";
+import {
+    deepMerge,
+    escapeHTML,
+    stackOverflowValidateLink,
+} from "../../src/shared/utils";
 
 describe("utils", () => {
     describe("deepmerge", () => {
@@ -75,7 +79,7 @@ describe("utils", () => {
             ["mailto://email@address.com", false],
             ["mailto:email@address.com and then some other text", false],
         ])("should validate a subset of urls (%s)", (input, shouldValidate) => {
-            expect(validateLink(input)).toBe(shouldValidate);
+            expect(stackOverflowValidateLink(input)).toBe(shouldValidate);
         });
     });
 

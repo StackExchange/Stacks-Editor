@@ -6,7 +6,7 @@ import {
     Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { mocked } from "ts-jest/utils";
+import { MenuCommand } from "../../src/shared/menu";
 import { richTextSchema } from "../../src/shared/schema";
 
 /**
@@ -52,15 +52,39 @@ export function applySelection(
     from: number,
     to?: number
 ): EditorState<Schema> {
+    const tr = setSelection(state.tr, from, to);
+    return state.apply(tr);
+}
+
+/** Creates a text selection transaction based on the given from/to */
+export function setSelection(
+    tr: Transaction,
+    from: number,
+    to?: number
+): Transaction {
     if (typeof to === "undefined") {
         to = from;
     }
 
-    let tr = state.tr;
-    tr = tr.setSelection(
-        TextSelection.create(state.doc, from + 1, to + 1)
-    ) as Transaction<Schema>;
-    return state.apply(tr);
+    tr = tr.setSelection(TextSelection.create(tr.doc, from + 1, to + 1));
+
+    return tr;
+}
+
+/** Applies a command to the state and expects it to apply correctly */
+export function runCommand(
+    state: EditorState<Schema>,
+    command: MenuCommand,
+    expectSuccess = true
+) {
+    let newState = state;
+
+    const isValid = command(state, (t) => {
+        newState = state.apply(t);
+    });
+
+    expect(isValid).toBe(expectSuccess);
+    return newState;
 }
 
 /** Sets up ProseMirror paste support globally for jsdom */
@@ -71,7 +95,8 @@ export function setupPasteSupport(): void {
         [Symbol.iterator]: jest.fn(),
     });
 
-    Range.prototype.getBoundingClientRect = () => mocked<DOMRect>({} as never);
+    Range.prototype.getBoundingClientRect = () =>
+        jest.mocked<DOMRect>({} as never);
 }
 
 /** Tears down ProseMirror paste support globally for jsdom */

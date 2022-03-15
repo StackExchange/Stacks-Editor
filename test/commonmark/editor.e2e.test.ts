@@ -1,39 +1,45 @@
+import { test, expect, Page } from "@playwright/test";
 import {
     clearEditor,
     getIsMarkdown,
-    getMenu,
-    hasClass,
+    menuSelector,
     switchMode,
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
 
-describe("markdown mode", () => {
-    beforeAll(async () => {
-        await switchMode(true);
+test.describe.serial("markdown mode", () => {
+    let page: Page;
+    test.beforeAll(async ({ browser }) => {
+        page = await browser.newPage();
+        await page.goto("/");
+        await switchMode(page, true);
+    });
+    test.afterAll(async () => {
+        await page.close();
     });
 
-    it("should show toggle switch", async () => {
-        const isMarkdown = await getIsMarkdown();
+    test("should show toggle switch", async () => {
+        const isMarkdown = await getIsMarkdown(page);
 
         expect(isMarkdown).toBeTruthy();
     });
 
-    it("should render menu bar", async () => {
-        const menu = await getMenu();
-        expect(menu).not.toBeNull();
+    test("should render menu bar", async () => {
+        await expect(page.locator(menuSelector)).toBeVisible();
     });
 
-    it("should not highlight bold menu button after click", async () => {
-        await clearEditor();
+    test("should not highlight bold menu button after click", async () => {
+        await clearEditor(page);
 
-        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-            false
+        await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(
+            /is-selected/,
+            { timeout: 1000 }
         );
         await page.click(boldMenuButtonSelector);
-
-        expect(await hasClass(boldMenuButtonSelector, "is-selected")).toBe(
-            false
+        await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(
+            /is-selected/,
+            { timeout: 1000 }
         );
     });
 });

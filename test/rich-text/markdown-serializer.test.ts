@@ -85,122 +85,142 @@ describe("markdown-serializer", () => {
     );
 
     /**
-     * Represents different types of data that were rendered differently in markup
-     * [markupInput, markupOutput]
+     * Represents different types of data that were rendered differently in markup.
+     * All entries should render exactly the same before and after rich-text conversion.
      */
     const markupSerializeData = [
-        // NOTE: all commented items are test fails...
         /* Nodes */
-        [`plain text`, `plain text`],
-        [`> blockquote`, `> blockquote`],
-        // [
-        //     `<blockquote>html blockquote</blockquote>`,
-        //     `<blockquote>html blockquote</blockquote>`,
-        // ],
-        ["    test", "    test"],
-        ["    test\n    test2", "    test\n    test2"],
-        ["```\ntest\n```", "```\ntest\n```"],
-        ["```js\ntest\n```", "```js\ntest\n```"],
-        ["~~~\ntest\n~~~", "~~~\ntest\n~~~"],
-        //[`<pre><code>test</code></pre>`, `<pre><code>test</code></pre>`],
-        [`# ATX heading`, `# ATX heading`],
-        //[`Setext heading\n===`, `Setext heading\n===`],
-        //[`<h1>html heading</h1>`, `<h1>html heading</h1>`],
-        [`***`, `***`],
-        [`---`, `---`],
-        [`___`, `___`],
-        [`******`, `******`],
-        [`<hr>`, `<hr>`],
-        [`<hr/>`, `<hr/>`],
-        [`<hr />`, `<hr />`],
+        `plain text`,
+        `> blockquote`,
+        `<blockquote>html blockquote</blockquote>`,
+        "    test",
+        "    test\n    test2",
+        `<p>html paragraph</p>`,
+        "```js\ntest\n```",
+        "~~~\ntest\n~~~",
+        `<pre><code>test</code></pre>`,
+        `# ATX heading`,
+        //`Setext heading\n===`,
+        `<h1>html heading</h1>`,
+        `<h2>html heading</h2>`,
+        `<h3>html heading</h3>`,
+        `<h4>html heading</h4>`,
+        `<h5>html heading</h5>`,
+        `<h6>html heading</h6>`,
+        `***`,
+        `---`,
+        `___`,
+        `******`,
+        `<hr>`,
+        `<hr/>`,
+        `<hr />`,
         /* Lists */
         // tight lists
-        [`- li1\n- li2\n- li3`, `- li1\n- li2\n- li3`],
-        [`+ li1\n+ li2\n+ li3`, `+ li1\n+ li2\n+ li3`],
-        [`* li1\n* li2\n* li3`, `* li1\n* li2\n* li3`],
-        // [
-        //     `<ul><li>li1</li><li>li2</li></ul>`,
-        //     `<ul><li>li1</li><li>li2</li></ul>`,
-        // ],
-        //[`1. li1\n1. li2\n1. li3`, `1. li1\n1. li2\n1. li3`],
-        [`1. li1\n2. li2\n3. li3`, `1. li1\n2. li2\n3. li3`],
-        [`1) li1\n2) li2\n3) li3`, `1) li1\n2) li2\n3) li3`],
-        // [
-        //     `<ol><li>li1</li><li>li2</li></ol>`,
-        //     `<ol><li>li1</li><li>li2</li></ol>`,
-        // ],
+        `- li1\n- li2\n- li3`,
+        `+ li1\n+ li2\n+ li3`,
+        `* li1\n* li2\n* li3`,
+        `<ul><li>li1</li><li>li2</li></ul>`,
+        //`1. li1\n1. li2\n1. li3`,
+        `1. li1\n2. li2\n3. li3`,
+        `1) li1\n2) li2\n3) li3`,
+        `<ol><li>li1</li><li>li2</li></ol>`,
         //loose lists
-        [`- li1\n\n- li2\n\n- li3`, `- li1\n\n- li2\n\n- li3`],
-        [`1. li1\n\n2. li2\n\n3. li3`, `1. li1\n\n2. li2\n\n3. li3`],
+        `- li1\n\n- li2\n\n- li3`,
+        `1. li1\n\n2. li2\n\n3. li3`,
         // nested lists
-        [
-            `- li1\n- li2\n  - nl1\n  - nl2\n- li3`,
-            `- li1\n- li2\n  - nl1\n  - nl2\n- li3`,
-        ],
-        [
-            `- li1\n- li2\n  - nl1\n\n  - nl2\n- li3`,
-            `- li1\n- li2\n  - nl1\n\n  - nl2\n- li3`,
-        ],
+        `- li1\n- li2\n  - nl1\n  - nl2\n- li3`,
+        `- li1\n- li2\n  - nl1\n\n  - nl2\n- li3`,
         /* Images */
-        [
-            `![alt1](${crazyTestUrl} "title1")`,
-            `![alt1](${crazyTestUrl} "title1")`,
-        ],
-        // [
-        //     `<img src="src1" alt="alt1" title="title1">`,
-        //     `<img src="src1" alt="alt1" title="title1">`,
-        // ],
-        // [
-        //     `<img src="src1" alt="alt1" title="title1"/>`,
-        //     `<img src="src1" alt="alt1" title="title1"/>`,
-        // ],
-        // [
-        //     `<img src="src1" alt="alt1" title="title1" />`,
-        //     `<img src="src1" alt="alt1" title="title1" />`,
-        // ],
-        // [
-        //     `<img src="src1" height="10" width="10" />`,
-        //     `<img src="src1" height="10" width="10" />`,
-        // ],
+        `![alt1](${crazyTestUrl} "title1")`,
+        `<img alt="alt1" src="src1" title="title1">`,
+        `<img alt="alt1" src="src1" title="title1"/>`,
+        `<img alt="alt1" src="src1" title="title1" />`,
+        `<img height="10" src="src1" width="10" />`,
+        // TODO attributes render in alpha order
+        //[`<img src="src1" width="10" height="10" />`, `<img src="src1" height="10" width="10" />`],
         /* Soft/Hard breaks */
-        [`test\ntest`, `test\ntest`],
-        [`test\n\ntest`, `test\n\ntest`],
-        //[`test\\\ntest`, `test\\\ntest`],
-        [`test  \ntest`, `test  \ntest`],
-        // [`test<br>test`, `test<br>test`],
-        // [`test<br/>test`, `test<br/>test`],
-        // [`test<br />test`, `test<br />test`],
+        `test\ntest`,
+        `test\n\ntest`,
+        //`test\\\ntest`,
+        `test  \ntest`,
+        `test<br>test`,
+        `test<br/>test`,
+        `test<br />test`,
         // TODO html_inline, html_block, html_block_container
         // TODO stack_snippet, softbreak, table, taglink, spoiler
         /* Marks */
-        [`*test*`, `*test*`],
-        [`_test_`, `_test_`],
-        [`<em>test</em>`, `<em>test</em>`],
-        [`<i>test</i>`, `<i>test</i>`],
-        [`**test**`, `**test**`],
-        [`__test__`, `__test__`],
-        [`<b>test</b>`, `<b>test</b>`],
-        [`<strong>test</strong>`, `<strong>test</strong>`],
-        [`~~test~~`, `~~test~~`],
-        [`<s>test</s>`, `<s>test</s>`],
-        [`<del>test</del>`, `<del>test</del>`],
-        [`<strike>test</strike>`, `<strike>test</strike>`],
-        [`<kbd>test</kbd>`, `<kbd>test</kbd>`],
-        [`<sup>test</sup>`, `<sup>test</sup>`],
-        [`<sub>test</sub>`, `<sub>test</sub>`],
-        ["`test`", "`test`"],
-        [`<code>test</code>`, "<code>test</code>"],
-        [
-            `[test](${crazyTestUrl} "title1")`,
-            `[test](${crazyTestUrl} "title1")`,
-        ],
-        [`<${crazyTestUrl}>`, `<${crazyTestUrl}>`],
-        [`${crazyTestUrl}`, `${crazyTestUrl}`],
+        `*test*`,
+        `_test_`,
+        `<em>test</em>`,
+        `<i>test</i>`,
+        `**test**`,
+        `__test__`,
+        `<b>test</b>`,
+        `<strong>test</strong>`,
+        `~~test~~`,
+        `<s>test</s>`,
+        `<del>test</del>`,
+        `<strike>test</strike>`,
+        `<kbd>test</kbd>`,
+        `<sup>test</sup>`,
+        `<sub>test</sub>`,
+        "`test`",
+        "<code>test</code>",
+        `[test](${crazyTestUrl} "title1")`,
+        `<${crazyTestUrl}>`,
+        `${crazyTestUrl}`,
         // TODO reference links
     ];
 
     it.each(markupSerializeData)(
         "should serialize elements with different source markup correctly (test #%#)",
+        (input) => {
+            const view = richView(input);
+            expect(view.content).toBe(input);
+        }
+    );
+
+    it.todo("should serialize elements from complex html markup");
+
+    // TODO lots of complicated cases in the spec
+    // see https://spec.commonmark.org/0.30/#reference-link
+    // see https://spec.commonmark.org/0.30/#link-reference-definitions
+    const linkReferencesMarkupData = [
+        // full
+        [
+            `[foo][bar]\n\n[bar]: /url "title"`,
+            `[foo][bar]\n\n[BAR]: /url "title"`,
+        ],
+        // collapsed
+        [`[foo][]\n\n[foo]: /url "title"`, `[foo][]\n\n[FOO]: /url "title"`],
+        // shortcut
+        [`[foo]\n\n[foo]: /url "title"`, `[foo]\n\n[FOO]: /url "title"`],
+        // mixed content
+        [
+            `[ShortCut]: https://stackoverflow.com
+
+This is a test. I want to link to [foo][1] as a full reference link.
+
+I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
+
+[THIS]: https://google.com
+
+And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
+
+[1]: https://example.com`,
+            `This is a test. I want to link to [foo][1] as a full reference link.
+
+I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
+
+And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
+
+[1]: https://example.com
+[SHORTCUT]: https://stackoverflow.com
+[THIS]: https://google.com`,
+        ],
+    ];
+    it.each(linkReferencesMarkupData)(
+        "should serialize link references markup",
         (input, output) => {
             const view = richView(input);
             expect(view.content).toBe(output);

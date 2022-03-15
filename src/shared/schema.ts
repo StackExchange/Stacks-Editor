@@ -341,9 +341,15 @@ function genHtmlInlineMarkSpec(...tags: string[]): MarkSpec {
 
 const defaultMarks = schema.spec.marks as OrderedMap<MarkSpec>;
 
+const defaultLinkMark = defaultMarks.get("link");
 const extendedLinkMark: MarkSpec = {
-    ...defaultMarks.get("link"),
+    ...defaultLinkMark,
     ...{
+        attrs: {
+            ...defaultLinkMark.attrs,
+            referenceType: { default: "" },
+            referenceLabel: { default: "" },
+        },
         toDOM(node) {
             return [
                 "a",

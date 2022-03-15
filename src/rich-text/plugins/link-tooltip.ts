@@ -7,13 +7,15 @@ import {
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
 import { richTextSchema as schema } from "../../shared/schema";
-import { escapeHTML, validateLink } from "../../shared/utils";
+import { escapeHTML } from "../../shared/utils";
+import { CommonmarkParserFeatures } from "../../shared/view";
 
 class LinkTooltip {
     private content: HTMLElement;
     private href: string;
     private removeListener: () => void;
     private applyListener: () => void;
+    private validateLink: CommonmarkParserFeatures["validateLink"];
 
     editing: boolean;
 
@@ -40,7 +42,11 @@ class LinkTooltip {
         );
     }
 
-    constructor(state: EditorState<Schema>) {
+    constructor(
+        state: EditorState<Schema>,
+        linkValidator: CommonmarkParserFeatures["validateLink"]
+    ) {
+        this.validateLink = linkValidator;
         this.content = document.createElement("span");
         this.content.className = "w0";
         this.content.setAttribute("aria-controls", "link-tooltip-popover");
@@ -391,7 +397,7 @@ class LinkTooltip {
             this.hideValidationError();
 
             // validate link
-            if (!validateLink(input.value)) {
+            if (!this.validateLink(input.value)) {
                 this.showValidationError();
                 return;
             }
@@ -477,63 +483,67 @@ export const LINK_TOOLTIP_KEY = new LinkTooltipPluginKey();
  * Note: This is not a _NodeView_ because when dealing with links, we're dealing with
  * _marks_, not _nodes_.
  */
-export const linkTooltipPlugin = new StatefulPlugin<LinkTooltipState>({
-    key: LINK_TOOLTIP_KEY,
-    state: {
-        init(_, instance) {
-            return {
-                linkTooltip: new LinkTooltip(instance),
-                decorations: DecorationSet.empty,
-            };
-        },
-        apply(tr, value, oldState, newState): LinkTooltipState {
-            // check if force hide was set and add to value for getDecorations to use
-            const meta = this.getMeta(tr) || value;
-            if ("forceHide" in meta) {
-                value.forceHide = meta.forceHide;
-            }
-
-            // check for editing as well
-            value.linkTooltip.editing =
-                "editing" in meta ? meta.editing : false;
-
-            // update the linkTooltip and get the decorations
-            const decorations = value.linkTooltip.getDecorations(
-                tr,
-                value,
-                oldState,
-                newState
-            );
-
-            // always return a "fresh" state with just the required items set
-            return {
-                linkTooltip: value.linkTooltip,
-                decorations: decorations,
-            };
-        },
-    },
-    props: {
-        decorations(state: EditorState) {
-            return this.getState(state).decorations;
-        },
-        handleDOMEvents: {
-            /** Handle editor blur and close the tooltip if it isn't focused */
-            blur(view, e: FocusEvent) {
-                const linkTooltip = LINK_TOOLTIP_KEY.getState(
-                    view.state
-                ).linkTooltip;
-
-                // if the editor blurs, but NOT because of the tooltip, hide the tooltip
-                if (!view.hasFocus() && !linkTooltip.hasFocus(e)) {
-                    LINK_TOOLTIP_KEY.forceHide(
-                        view.state,
-                        view.dispatch.bind(view)
-                    );
+export const linkTooltipPlugin = (features: CommonmarkParserFeatures) =>
+    new StatefulPlugin<LinkTooltipState>({
+        key: LINK_TOOLTIP_KEY,
+        state: {
+            init(_, instance) {
+                return {
+                    linkTooltip: new LinkTooltip(
+                        instance,
+                        features.validateLink
+                    ),
+                    decorations: DecorationSet.empty,
+                };
+            },
+            apply(tr, value, oldState, newState): LinkTooltipState {
+                // check if force hide was set and add to value for getDecorations to use
+                const meta = this.getMeta(tr) || value;
+                if ("forceHide" in meta) {
+                    value.forceHide = meta.forceHide;
                 }
 
-                // always return false since we're not cancelling/handling the blur
-                return false;
+                // check for editing as well
+                value.linkTooltip.editing =
+                    "editing" in meta ? meta.editing : false;
+
+                // update the linkTooltip and get the decorations
+                const decorations = value.linkTooltip.getDecorations(
+                    tr,
+                    value,
+                    oldState,
+                    newState
+                );
+
+                // always return a "fresh" state with just the required items set
+                return {
+                    linkTooltip: value.linkTooltip,
+                    decorations: decorations,
+                };
             },
         },
-    },
-});
+        props: {
+            decorations(state: EditorState) {
+                return this.getState(state).decorations;
+            },
+            handleDOMEvents: {
+                /** Handle editor blur and close the tooltip if it isn't focused */
+                blur(view, e: FocusEvent) {
+                    const linkTooltip = LINK_TOOLTIP_KEY.getState(
+                        view.state
+                    ).linkTooltip;
+
+                    // if the editor blurs, but NOT because of the tooltip, hide the tooltip
+                    if (!view.hasFocus() && !linkTooltip.hasFocus(e)) {
+                        LINK_TOOLTIP_KEY.forceHide(
+                            view.state,
+                            view.dispatch.bind(view)
+                        );
+                    }
+
+                    // always return false since we're not cancelling/handling the blur
+                    return false;
+                },
+            },
+        },
+    });

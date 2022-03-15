@@ -1,86 +1,31 @@
-import { EditorState, TextSelection } from "prosemirror-state";
-import { richTextSchema } from "../../src/shared/schema";
-import { DOMParser } from "prosemirror-model";
-import "../matchers";
-import { MenuCommand } from "../../src/shared/menu";
 import {
-    moveSelectionAfterTableCommand,
-    moveSelectionBeforeTableCommand,
-    removeRowCommand,
-    removeColumnCommand,
-    insertTableRowAfterCommand,
-    insertTableRowBeforeCommand,
     insertTableColumnAfterCommand,
     insertTableColumnBeforeCommand,
     insertTableCommand,
+    insertTableRowAfterCommand,
+    insertTableRowBeforeCommand,
+    moveSelectionAfterTableCommand,
+    moveSelectionBeforeTableCommand,
     moveToNextCellCommand,
     moveToPreviousCellCommand,
-} from "../../src/rich-text/commands";
-
-/**
- * Creates a state with the content optionally selected if selectFrom/To are passed
- * @param content the document content
- * @param selectFrom string index to select from
- * @param selectTo string index to select to
- */
-function createState(
-    content: string,
-    selectFrom?: number,
-    selectTo?: number
-): EditorState {
-    const container = document.createElement("div");
-    // NOTE: tests only, no XSS danger
-    // eslint-disable-next-line no-unsanitized/property
-    container.innerHTML = content;
-    const doc = DOMParser.fromSchema(richTextSchema).parse(container);
-    let selection: TextSelection = undefined;
-
-    if (typeof selectFrom !== "undefined") {
-        // if selectTo not set, then this is not a selection, but a cursor position
-        if (typeof selectTo === "undefined") {
-            selectTo = selectFrom;
-        }
-
-        // document vs string offset is different, adjust
-        selectFrom = selectFrom + 1;
-        selectTo = selectTo + 1;
-        selection = TextSelection.create(doc, selectFrom, selectTo);
-    }
-
-    return EditorState.create({
-        doc: doc,
-        schema: richTextSchema,
-        selection: selection,
-    });
-}
-
-/**
- * Applies a command to the state and expects it to apply correctly
- */
-function runCommand(
-    state: EditorState,
-    command: MenuCommand,
-    expectSuccess = true
-) {
-    let newState = state;
-
-    const isValid = command(state, (t) => {
-        newState = state.apply(t);
-    });
-
-    expect(isValid).toBe(expectSuccess);
-    return newState;
-}
+    removeColumnCommand,
+    removeRowCommand,
+} from "../../../src/rich-text/commands";
+import "../../matchers";
+import { applySelection, createState, runCommand } from "../test-helpers";
 
 describe("table commands", () => {
     it("should create a table", () => {
-        const state = createState(
-            "<table><thead><tr><th>asdf</th></tr></thead></table>",
+        const state = applySelection(
+            createState(
+                "<table><thead><tr><th>asdf</th></tr></thead></table>",
+                []
+            ),
             3
         );
 
         const resolvedNode = state.selection.$from;
-        expect(resolvedNode.node().type.name).toEqual("table_header");
+        expect(resolvedNode.node().type.name).toBe("table_header");
 
         expect(state.doc).toMatchNodeTree({
             "type.name": "doc",
@@ -121,8 +66,11 @@ describe("table commands", () => {
 
     describe("exitTableCommand", () => {
         it("should exit the block, after table", () => {
-            let state = createState(
-                "<table><thead><tr><th>asdf</th></tr></thead></table>",
+            let state = applySelection(
+                createState(
+                    "<table><thead><tr><th>asdf</th></tr></thead></table>",
+                    []
+                ),
                 3
             );
 
@@ -145,23 +93,27 @@ describe("table commands", () => {
         });
 
         it("should select newly inserted paragraph. afer table", () => {
-            let state = createState(
-                "<table><thead><tr><th>asdf</td></th></thead></table>",
+            let state = applySelection(
+                createState(
+                    "<table><thead><tr><th>asdf</td></th></thead></table>",
+                    []
+                ),
                 3
             );
 
-            expect(state.selection.$from.node().type.name).toEqual(
-                "table_header"
-            );
+            expect(state.selection.$from.node().type.name).toBe("table_header");
 
             state = runCommand(state, moveSelectionAfterTableCommand);
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
         });
 
         it("should exit the block, before table", () => {
-            let state = createState(
-                "<table><thead><tr><th>asdf</th></tr></thead></table>",
+            let state = applySelection(
+                createState(
+                    "<table><thead><tr><th>asdf</th></tr></thead></table>",
+                    []
+                ),
                 3
             );
 
@@ -184,23 +136,27 @@ describe("table commands", () => {
         });
 
         it("should select newly inserted paragraph, before table", () => {
-            let state = createState(
-                "<table><thead><tr><th>asdf</th></tr></thead></table>",
+            let state = applySelection(
+                createState(
+                    "<table><thead><tr><th>asdf</th></tr></thead></table>",
+                    []
+                ),
                 3
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("asdf");
+            expect(state.selection.$from.node().textContent).toBe("asdf");
 
             state = runCommand(state, moveSelectionBeforeTableCommand);
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
         });
     });
 
     describe("insertTableRow command", () => {
         it("should insert a row after the currently selected one", () => {
-            let state = createState(
-                `<table>
+            let state = applySelection(
+                createState(
+                    `<table>
                     <thead><tr><th>X</th></tr></thead>
                     <tbody>
                         <tr>
@@ -209,10 +165,12 @@ describe("table commands", () => {
                         </tr>
                     </tbody>
                 </table>`,
+                    []
+                ),
                 13
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("cell 1");
+            expect(state.selection.$from.node().textContent).toBe("cell 1");
 
             state = runCommand(state, insertTableRowAfterCommand);
             expect(state.doc).toMatchNodeTree({
@@ -265,11 +223,14 @@ describe("table commands", () => {
         });
 
         it("should insert a row before the currently selected one", () => {
-            let state = createState(
-                "<table><thead><tr><th>X</th></tr></thead><tbody><tr><td>original cell</td></tr></tbody></table>",
+            let state = applySelection(
+                createState(
+                    "<table><thead><tr><th>X</th></tr></thead><tbody><tr><td>original cell</td></tr></tbody></table>",
+                    []
+                ),
                 12
             );
-            expect(state.selection.$from.node().textContent).toEqual(
+            expect(state.selection.$from.node().textContent).toBe(
                 "original cell"
             );
 
@@ -309,12 +270,15 @@ describe("table commands", () => {
         });
 
         it("should do nothing when outside of a table", () => {
-            let state = createState(
-                "<p>some paragraph</p><table><thead><tr><th>original cell</th></tr></thead></table>",
+            let state = applySelection(
+                createState(
+                    "<p>some paragraph</p><table><thead><tr><th>original cell</th></tr></thead></table>",
+                    []
+                ),
                 1
             );
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
 
             state = runCommand(state, insertTableRowBeforeCommand, false);
         });
@@ -322,18 +286,21 @@ describe("table commands", () => {
 
     describe("insertTableColumn command", () => {
         it("should insert a column after the currently selected one", () => {
-            let state = createState(
-                `<table>
+            let state = applySelection(
+                createState(
+                    `<table>
                     <thead><tr><th>X</th></tr></thead>
                     <tbody>
                         <tr><td>A</td></tr>
                         <tr><td>B</td></tr>
                     </tbody>
                 </table>`,
+                    []
+                ),
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, insertTableColumnAfterCommand);
 
@@ -392,18 +359,21 @@ describe("table commands", () => {
         });
 
         it("should insert a column before the currently selected one", () => {
-            let state = createState(
-                `<table>
+            let state = applySelection(
+                createState(
+                    `<table>
                     <thead><tr><th>X</th></tr></thead>
                     <tbody>
                         <tr><td>A</td></tr>
                         <tr><td>B</td></tr>
                     </tbody>
                 </table>`,
+                    []
+                ),
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, insertTableColumnBeforeCommand);
 
@@ -461,12 +431,15 @@ describe("table commands", () => {
         });
 
         it("should do nothing when outside of a table", () => {
-            let state = createState(
-                "<p>some paragraph</p><table><thead><tr><th>original cell</th></tr></thead></table>",
+            let state = applySelection(
+                createState(
+                    "<p>some paragraph</p><table><thead><tr><th>original cell</th></tr></thead></table>",
+                    []
+                ),
                 1
             );
 
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
 
             state = runCommand(state, insertTableColumnAfterCommand, false);
         });
@@ -474,18 +447,21 @@ describe("table commands", () => {
 
     describe("removeRow command", () => {
         it("should remove currently selected row", () => {
-            let state = createState(
-                `<table>
+            let state = applySelection(
+                createState(
+                    `<table>
                     <thead><tr><th>X</th></tr></thead>
                     <tbody>
                         <tr><td>A</td></tr>
                         <tr><td>B</td></tr>
                     </tbody>
                 </table>`,
+                    []
+                ),
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, removeRowCommand);
 
@@ -531,12 +507,15 @@ describe("table commands", () => {
         });
 
         it("should drop entire table when removing the last body row", () => {
-            let state = createState(
-                `<table><thead><tr><th>X</th></tr></thead><tbody><tr><td>A</td></tr></tbody></table>`,
+            let state = applySelection(
+                createState(
+                    `<table><thead><tr><th>X</th></tr></thead><tbody><tr><td>A</td></tr></tbody></table>`,
+                    []
+                ),
                 11
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, removeRowCommand);
 
@@ -549,18 +528,21 @@ describe("table commands", () => {
 
     describe("removeColumn command", () => {
         it("should remove currently selected column", () => {
-            let state = createState(
-                `<table>
+            let state = applySelection(
+                createState(
+                    `<table>
                     <thead><tr><th>X</th><th>Y</th></tr></thead>
                     <tbody>
                         <tr><td>A</td><td>B</td></tr>
                         <tr><td>C</td><td>D</td></tr>
                     </tbody>
                 </table>`,
+                    []
+                ),
                 13
             );
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, removeColumnCommand);
 
@@ -615,8 +597,11 @@ describe("table commands", () => {
         });
 
         it("should drop entire table when removing the last column", () => {
-            let state = createState(
-                `<table><thead><tr><th>A</th></tr></thead></table>`,
+            let state = applySelection(
+                createState(
+                    `<table><thead><tr><th>A</th></tr></thead></table>`,
+                    []
+                ),
                 4
             );
 
@@ -631,8 +616,8 @@ describe("table commands", () => {
 
     describe("insertTable command", () => {
         it("should insert table at current position", () => {
-            let state = createState(`some text`, 2);
-            expect(state.selection.$from.node().type.name).toEqual("paragraph");
+            let state = applySelection(createState(`some text`, []), 2);
+            expect(state.selection.$from.node().type.name).toBe("paragraph");
 
             state = runCommand(state, insertTableCommand);
 
@@ -653,14 +638,15 @@ describe("table commands", () => {
         });
 
         it("should do nothing when inside a table", () => {
-            let state = createState(
-                `<table><thead><tr><th>A</th></tr></thead></table>`,
+            let state = applySelection(
+                createState(
+                    `<table><thead><tr><th>A</th></tr></thead></table>`,
+                    []
+                ),
                 4
             );
 
-            expect(state.selection.$from.node().type.name).toEqual(
-                "table_header"
-            );
+            expect(state.selection.$from.node().type.name).toBe("table_header");
 
             const before = state.doc;
             state = runCommand(state, insertTableCommand, false);
@@ -672,8 +658,9 @@ describe("table commands", () => {
 
     describe("table movement commands", () => {
         it("should move selection into next table cell", () => {
-            let state = createState(
-                `
+            let state = applySelection(
+                createState(
+                    `
             <table>
                 <thead>
                     <tr>
@@ -682,18 +669,21 @@ describe("table commands", () => {
                     </tr>
                 </thead>
             </table>`,
+                    []
+                ),
                 4
             );
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
 
             state = runCommand(state, moveToNextCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
         });
 
         it("should move selection into next table row if at last cell of row", () => {
-            let state = createState(
-                `
+            let state = applySelection(
+                createState(
+                    `
             <table>
                 <thead>
                     <tr>
@@ -712,18 +702,21 @@ describe("table commands", () => {
                     </tr>
                 </tbody>
             </table>`,
+                    []
+                ),
                 16
             );
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
 
             state = runCommand(state, moveToNextCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("C");
+            expect(state.selection.$from.node().textContent).toBe("C");
         });
 
         it("should move selection into previous table cell", () => {
-            let state = createState(
-                `
+            let state = applySelection(
+                createState(
+                    `
             <table>
                 <thead>
                     <tr>
@@ -732,18 +725,21 @@ describe("table commands", () => {
                     </tr>
                 </thead>
             </table>`,
+                    []
+                ),
                 7
             );
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
 
             state = runCommand(state, moveToPreviousCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("A");
+            expect(state.selection.$from.node().textContent).toBe("A");
         });
 
         it("should move selection into previous table row if at first cell of row", () => {
-            let state = createState(
-                `
+            let state = applySelection(
+                createState(
+                    `
             <table>
                 <thead>
                     <tr>
@@ -758,28 +754,33 @@ describe("table commands", () => {
                     </tr>
                 </tbody>
             </table>`,
+                    []
+                ),
                 13
             );
-            expect(state.selection.$from.node().textContent).toEqual("C");
+            expect(state.selection.$from.node().textContent).toBe("C");
 
             state = runCommand(state, moveToPreviousCellCommand);
 
-            expect(state.selection.$from.node().textContent).toEqual("B");
+            expect(state.selection.$from.node().textContent).toBe("B");
         });
 
         it("should do nothing when inside a table", () => {
-            let state = createState(
-                `<p>some paragraph</p><table><thead><tr><th>A</td></th></thead></table>`,
+            let state = applySelection(
+                createState(
+                    `<p>some paragraph</p><table><thead><tr><th>A</td></th></thead></table>`,
+                    []
+                ),
                 4
             );
 
-            expect(state.selection.$from.node().textContent).toEqual(
+            expect(state.selection.$from.node().textContent).toBe(
                 "some paragraph"
             );
 
             state = runCommand(state, moveToNextCellCommand, false);
 
-            expect(state.selection.$from.node().textContent).toEqual(
+            expect(state.selection.$from.node().textContent).toBe(
                 "some paragraph"
             );
         });

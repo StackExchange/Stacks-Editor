@@ -8,23 +8,157 @@ import { richTextSchema } from "../shared/schema";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
 import { error } from "../shared/logger";
 import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
+import {
+    selfClosingElements,
+    supportedTagAttributes,
+    TagType,
+} from "../shared/html-helpers";
+import { normalizeReference } from "markdown-it/lib/common/utils";
 
 // helper type so the code is a tad less messy
-export type MarkdownSerializerNodes = {
-    [name: string]: (
-        state: MarkdownSerializerState,
-        node: ProsemirrorNode,
-        parent: ProsemirrorNode,
-        index: number
-    ) => void;
-};
+export type MarkdownSerializerNodes = ConstructorParameters<
+    typeof MarkdownSerializer
+>[0];
+
+type MarkdownSerializerMarks = ConstructorParameters<
+    typeof MarkdownSerializer
+>[1];
+
+class SOMarkdownSerializerState extends MarkdownSerializerState {
+    declare out: string;
+    private linkReferenceDefinitions: {
+        [key: string]: {
+            href: string;
+            title: string;
+        };
+    } = {};
+
+    constructor(
+        nodes: MarkdownSerializerNodes,
+        marks: MarkdownSerializerMarks,
+        options?: { [key: string]: unknown }
+    ) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error TODO constructor not exposed in types
+        super(nodes, marks, options);
+    }
+
+    /** Adds a link reference definition for rendering at the very end */
+    addLinkReferenceDefinition(
+        label: string,
+        href: string,
+        title?: string
+    ): void {
+        const normalizedLabel = normalizeReference(label);
+
+        if (this.linkReferenceDefinitions[normalizedLabel]) {
+            return;
+        }
+
+        this.linkReferenceDefinitions[normalizedLabel] = {
+            href,
+            title,
+        };
+    }
+
+    /** Writes all saved linked reference definitions to the state */
+    writeLinkReferenceDefinitions(): void {
+        const refs = Object.keys(this.linkReferenceDefinitions);
+
+        if (!refs.length) {
+            return;
+        }
+
+        refs.sort().forEach((r) => {
+            const def = this.linkReferenceDefinitions[r];
+            this.ensureNewLine();
+            this.write("[");
+            this.text(r);
+            this.write("]: ");
+            this.text(def.href);
+
+            if (def.title) {
+                this.text(` "${def.title}"`);
+            }
+        });
+    }
+}
+
+class SOMarkdownSerializer extends MarkdownSerializer {
+    serialize(content: ProsemirrorNode, options?: { [key: string]: unknown }) {
+        const state = new SOMarkdownSerializerState(
+            this.nodes,
+            this.marks,
+            options
+        );
+        state.renderContent(content);
+        state.writeLinkReferenceDefinitions();
+
+        return state.out;
+    }
+}
+
+/** Renders a node as wrapped in html tags if the markup attribute is html */
+function renderHtmlTag(
+    state: MarkdownSerializerState,
+    node: ProsemirrorNode,
+    tagType: TagType
+): boolean {
+    const markup = node.attrs.markup as string;
+    if (!markup) {
+        return false;
+    }
+
+    // TODO naive check for now, but we should probably do something more robust
+    if (!markup.startsWith("<") || !markup.endsWith(">")) {
+        return false;
+    }
+
+    const tag = markup.replace(/[<>/\s]/g, "");
+    const openingTagStart = `<${tag}`;
+
+    // start writing the opening tag
+    state.text(openingTagStart, false);
+
+    // write the attributes if necessary
+    if (supportedTagAttributes[tagType]) {
+        // render the attributes in alpha order, since we cannot know what order they were originally written in
+        const attributes = supportedTagAttributes[tagType].sort();
+        for (const attr of attributes) {
+            const value = node.attrs[attr] as string;
+            if (value) {
+                state.text(` ${attr}="${value}"`);
+            }
+        }
+    }
+
+    // if the tag is self closing, just render the closing part of the original markup and return early
+    if (selfClosingElements.includes(tagType)) {
+        state.text(markup.replace(openingTagStart, ""), false);
+        return true;
+    }
+
+    // close the opening tag
+    state.text(">", false);
+    // TODO will this always be inline content?
+    state.renderInline(node);
+    // @ts-expect-error TODO when writing to a closed block, it injects newline chars...
+    state.closed = false;
+    state.text(`</${tag}>`, false);
+    state.closeBlock(node);
+
+    return true;
+}
 
 // TODO There's no way to sanely override these without completely rewriting them
 // TODO Should contribute this back upstream and remove
 const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     ...defaultMarkdownSerializer.nodes,
     blockquote(state, node) {
-        // TODO markup could be html
+        if (renderHtmlTag(state, node, TagType.blockquote)) {
+            return;
+        }
+
         const markup = (node.attrs.markup as string) || ">";
         state.wrapBlock(markup + " ", null, node, () =>
             state.renderContent(node)
@@ -56,10 +190,8 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     heading(state, node) {
         const markup = (node.attrs.markup as string) || "";
 
-        if (markup.startsWith("<")) {
-            // TODO html
-            state.write("h1 tag TODO");
-            state.closeBlock(node);
+        if (renderHtmlTag(state, node, TagType.heading)) {
+            return;
         } else if (markup && !markup.startsWith("#")) {
             // "underlined" heading (Setext heading)
             state.renderInline(node);
@@ -74,16 +206,26 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         }
     },
     horizontal_rule(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.horizontal_rule)) {
+            return;
+        }
+
         state.write(node.attrs.markup || "----------");
         state.closeBlock(node);
     },
     bullet_list(state, node) {
+        if (renderHtmlTag(state, node, TagType.unordered_list)) {
+            return;
+        }
+
         const markup = (node.attrs.markup as string) || "-";
         state.renderList(node, "  ", () => markup + " ");
     },
     ordered_list(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.ordered_list)) {
+            return;
+        }
+
         const start = (node.attrs.order as number) || 1;
         const maxW = String(start + node.childCount - 1).length;
         const space = state.repeat(" ", maxW + 2);
@@ -94,17 +236,24 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         });
     },
     list_item(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.list_item)) {
+            return;
+        }
         state.renderContent(node);
     },
     paragraph(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.paragraph)) {
+            return;
+        }
         state.renderInline(node);
         state.closeBlock(node);
     },
 
     image(state, node) {
-        // TODO could be html
+        if (renderHtmlTag(state, node, TagType.image)) {
+            return;
+        }
+
         state.write(
             "![" +
                 state.esc(node.attrs.alt || "") +
@@ -115,7 +264,11 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         );
     },
     hard_break(state, node, parent, index) {
-        // TODO could be html, `[space][space][newline]` or `\[newline]`
+        if (renderHtmlTag(state, node, TagType.hardbreak)) {
+            return;
+        }
+
+        // TODO `[space][space][newline]` or `\[newline]`
         // TODO markdown-it's output doesn't differentiate in the later two cases, so assume spacespace since that is likely more common
         for (let i = index + 1; i < parent.childCount; i++)
             if (parent.child(i).type != node.type) {
@@ -140,7 +293,9 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         let escapedText = state.esc(text, startOfLine);
 
         // built in escape doesn't get all the cases TODO upstream!
-        escapedText = escapedText.replace(/\b_|_\b/g, "\\_");
+        escapedText = escapedText
+            .replace(/\\_/g, "_")
+            .replace(/\b_|_\b/g, "\\_");
         escapedText = escapedText.replace(/([<>])/g, "\\$1");
 
         state.text(escapedText, false);
@@ -159,8 +314,6 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
     // TODO
     html_block(state, node) {
         state.write(node.attrs.content);
-        state.ensureNewLine();
-        state.write("\n");
     },
 
     // TODO
@@ -325,6 +478,15 @@ const extendedLinkMarkDeserializer: MarkSerializerConfig = {
                 : defaultLinkMarkDeserializer.open(state, mark, parent, index);
         }
 
+        if (mark.attrs.markup === "reference") {
+            (state as SOMarkdownSerializerState).addLinkReferenceDefinition(
+                mark.attrs.referenceLabel,
+                mark.attrs.href,
+                mark.attrs.title
+            );
+            return "[";
+        }
+
         // linkify detected links are left bare
         if (mark.attrs.markup === "linkify") {
             return "";
@@ -348,6 +510,18 @@ const extendedLinkMarkDeserializer: MarkSerializerConfig = {
             return typeof defaultLinkMarkDeserializer.close === "string"
                 ? defaultLinkMarkDeserializer.close
                 : defaultLinkMarkDeserializer.close(state, mark, parent, index);
+        }
+
+        if (mark.attrs.markup === "reference") {
+            switch (mark.attrs.referenceType) {
+                case "full":
+                    return `][${mark.attrs.referenceLabel as string}]`;
+                case "collapsed":
+                    return "][]";
+                case "shortcut":
+                default:
+                    return "]";
+            }
         }
 
         // linkify detected links are left bare
@@ -419,7 +593,7 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
 };
 
 // extend the default markdown serializer's marks and add our own
-const customMarkdownSerializerMarks: { [key: string]: MarkSerializerConfig } = {
+const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
     ...defaultMarkdownSerializer.marks,
     ...{
         em: genMarkupAwareMarkConfig(defaultMarkdownSerializer.marks.em),
@@ -459,7 +633,7 @@ const customMarkdownSerializerMarks: { [key: string]: MarkSerializerConfig } = {
 export const stackOverflowMarkdownSerializer = (
     externalPlugin: ExternalEditorPlugin
 ): MarkdownSerializer =>
-    new MarkdownSerializer(
+    new SOMarkdownSerializer(
         {
             ...defaultMarkdownSerializerNodes,
             ...customMarkdownSerializerNodes,

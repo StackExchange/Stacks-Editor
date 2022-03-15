@@ -1,20 +1,25 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+import type { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { richTextSchema } from "../../src/shared/schema";
+import { stackOverflowValidateLink } from "../../src/shared/utils";
+import { CommonmarkParserFeatures } from "../../src/shared/view";
 import "../matchers";
 
-const markdownParser = buildMarkdownParser(
-    {
-        snippets: true,
-        html: true,
-        tagLinks: {
-            allowNonAscii: false,
-            allowMetaTags: false,
-        },
+// mark features as required to ensure our tests have all the features set
+const features: Required<CommonmarkParserFeatures> = {
+    snippets: true,
+    html: true,
+    extraEmphasis: true,
+    tables: true,
+    tagLinks: {
+        allowNonAscii: false,
+        allowMetaTags: false,
     },
-    richTextSchema,
-    null
-);
+    validateLink: stackOverflowValidateLink,
+};
+
+const markdownParser = buildMarkdownParser(features, richTextSchema, null);
 
 describe("SOMarkdownParser", () => {
     describe("html support", () => {
@@ -72,23 +77,17 @@ describe("SOMarkdownParser", () => {
             });
         });
 
-        it.skip("should support block html with inline nesting", () => {
-            //const doc = markdownParser.parse("<h1><em>test</em></h1>");
-        });
+        //const doc = markdownParser.parse("<h1><em>test</em></h1>");
+        it.todo("should support block html with inline nesting");
 
-        it.skip("should support block html with block nesting", () => {
-            //const doc = markdownParser.parse("<ul><li>test</li></ul>");
-        });
+        //const doc = markdownParser.parse("<ul><li>test</li></ul>");
+        it.todo("should support block html with block nesting");
 
-        it.skip("should support block html with mixed nesting", () => {
-            // const doc = markdownParser.parse(
-            //     "<h1><strong>str</strong><p>test</p></h1>"
-            // );
-        });
+        // const doc = markdownParser.parse("<h1><strong>str</strong><p>test</p></h1>");
+        it.todo("should support block html with mixed nesting");
 
-        it.skip("should support block html with deep nesting", () => {
-            //const doc = markdownParser.parse("<ul><li><em>test</em></li></ul>");
-        });
+        //const doc = markdownParser.parse("<ul><li><em>test</em></li></ul>");
+        it.todo("should support block html with deep nesting");
     });
 
     // NOTE: detailed / edge case testing is done in the plugin specific tests,
@@ -283,16 +282,19 @@ console.log("test");
             expect(doc.content[0].content[0].marks[0].type).toBe("link");
         });
 
-        it.each(["file://invalid", "://inherit_scheme.com", "invalid.com"])(
-            "should not autolink invalid links (%s)",
-            (input) => {
-                const doc = markdownParser.parse(input).toJSON();
-                expect(doc.content[0].type).toBe("paragraph");
-                expect(doc.content[0].content).toHaveLength(1);
-                expect(doc.content[0].content[0].text).toBe(input);
-                expect(doc.content[0].content[0].marks).toBeUndefined();
-            }
-        );
+        it.each([
+            "file://invalid",
+            "://inherit_scheme.com",
+            "invalid.com",
+            "test@example.com",
+            "127.0.0.1",
+        ])("should not autolink invalid links (%s)", (input) => {
+            const doc = markdownParser.parse(input).toJSON();
+            expect(doc.content[0].type).toBe("paragraph");
+            expect(doc.content[0].content).toHaveLength(1);
+            expect(doc.content[0].content[0].text).toBe(input);
+            expect(doc.content[0].content[0].marks).toBeUndefined();
+        });
     });
 
     describe("lists", () => {
@@ -305,6 +307,57 @@ console.log("test");
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toContain("_list");
             expect(doc.content[0].attrs.tight).toBe(isTight);
+        });
+    });
+
+    describe("reference links", () => {
+        const referenceLinkData = [
+            // full
+            [`[foo][bar]\n\n[bar]: /url "title"`, "full", "bar"],
+            [`[foo][BaR]\n\n[bar]: /url "title"`, "full", "BaR"],
+            // collapsed
+            [`[foo][]\n\n[foo]: /url "title"`, "collapsed", "foo"],
+            // shortcut
+            [`[foo]\n\n[foo]: /url "title"`, "shortcut", "foo"],
+        ];
+        it.each(referenceLinkData)(
+            "should add reference attributes to reference links",
+            (input, type, label) => {
+                const doc = markdownParser.parse(input).toJSON();
+                expect(doc.content[0].type).toBe("paragraph");
+                expect(doc.content[0].content).toHaveLength(1);
+
+                const mark = doc.content[0].content[0].marks[0] as Mark;
+                expect(mark.type).toBe("link");
+                expect(mark.attrs.referenceType).toBe(type);
+                expect(mark.attrs.referenceLabel).toBe(label);
+            }
+        );
+    });
+
+    describe("parserFeatures", () => {
+        it("should allow a custom validateLink", () => {
+            const mdParser = buildMarkdownParser(
+                {
+                    ...features,
+                    // only allow links from www.example.com
+                    validateLink: (url) => /www.example.com/.test(url),
+                },
+                richTextSchema,
+                null
+            );
+            const doc = mdParser
+                .parse(
+                    "[foo](www.example.com/test1) [bar](www.notexample.com/test2)"
+                )
+                .toJSON();
+            expect(doc.content[0].content).toHaveLength(2);
+            expect(doc.content[0].content[0].text).toBe("foo");
+            expect(doc.content[0].content[0].marks[0].type).toBe("link");
+            expect(doc.content[0].content[1].text).toBe(
+                " [bar](www.notexample.com/test2)"
+            );
+            expect(doc.content[0].content[1].marks).toBeUndefined();
         });
     });
 });

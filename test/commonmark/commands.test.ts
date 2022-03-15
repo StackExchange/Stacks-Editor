@@ -16,9 +16,8 @@ function createState(
     selectFrom?: number,
     selectTo?: number
 ): EditorState {
-    const doc = CodeStringParser.fromSchema(commonmarkSchema).parseCode(
-        content
-    );
+    const doc =
+        CodeStringParser.fromSchema(commonmarkSchema).parseCode(content);
     let selection: TextSelection = undefined;
 
     if (typeof selectFrom !== "undefined") {

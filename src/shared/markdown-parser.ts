@@ -9,11 +9,11 @@ import { NodeType, Schema } from "prosemirror-model";
 import { ExternalEditorPlugin } from "./external-editor-plugin";
 import { log } from "./logger";
 import { html } from "./markdown-it/html";
+import { reference_link } from "./markdown-it/reference-link";
 import { spoiler } from "./markdown-it/spoiler";
 import { stackLanguageComments } from "./markdown-it/stack-language-comments";
 import { tagLinks } from "./markdown-it/tag-link";
 import { tight_list } from "./markdown-it/tight-list";
-import { validateLink } from "./utils";
 import type { CommonmarkParserFeatures } from "./view";
 
 // extend the default markdown parser's tokens and add our own
@@ -145,11 +145,30 @@ Object.keys(customMarkdownParserTokens).forEach((k) => {
         const origGetAttrs = token.getAttrs.bind(
             token
         ) as typeof token.getAttrs;
-        token.getAttrs = (tok) => {
-            const attrs = origGetAttrs(tok);
-            attrs.markup = tok.markup;
-            return attrs;
-        };
+
+        // reference links require special handling
+        if (k === "link") {
+            token.getAttrs = (tok) => {
+                const attrs = origGetAttrs(tok);
+                attrs.markup = tok.markup;
+
+                if (tok.markup === "reference") {
+                    const meta = tok.meta as {
+                        reference?: { type: string; label: string };
+                    };
+                    attrs.referenceType = meta?.reference?.type;
+                    attrs.referenceLabel = meta?.reference?.label;
+                }
+
+                return attrs;
+            };
+        } else {
+            token.getAttrs = (tok) => {
+                const attrs = origGetAttrs(tok);
+                attrs.markup = tok.markup;
+                return attrs;
+            };
+        }
 
         return;
     }
@@ -256,11 +275,13 @@ export function buildMarkdownParser(
         defaultMarkdownItInstance.disable("strikethrough");
     }
 
-    // disable autolinking of anything that comes without protocol prefix (e.g. https://)
-    defaultMarkdownItInstance.linkify.set({ fuzzyLink: false });
+    defaultMarkdownItInstance.linkify.set({
+        fuzzyLink: false, // disable autolinking of anything that comes without protocol prefix (e.g. https://)
+        fuzzyEmail: false, // disable email address (without mailto:) autolinking
+    });
 
     // use a custom link validator that's closer to Stack Overflow's backend validation
-    defaultMarkdownItInstance.validateLink = validateLink;
+    defaultMarkdownItInstance.validateLink = features.validateLink;
 
     // start adding in the parser plugins, NOTE: order matters!
 
@@ -282,6 +303,9 @@ export function buildMarkdownParser(
 
     // ensure lists are tighted up for parsing into the doc
     defaultMarkdownItInstance.use(tight_list);
+
+    // ensure links are have their references properly referenced
+    defaultMarkdownItInstance.use(reference_link);
 
     if (externalPlugins?.markdownParser) {
         externalPlugins.markdownParser.plugins.forEach((p) => {

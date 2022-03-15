@@ -2,6 +2,7 @@ import { MarkType } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { richTextInputRules } from "../../src/rich-text/inputrules";
 import { richTextSchema } from "../../src/shared/schema";
+import { stackOverflowValidateLink } from "../../src/shared/utils";
 import "../matchers";
 import {
     applySelection,
@@ -33,7 +34,11 @@ function dispatchInputAsync(view: EditorView, inputStr: string) {
 
 function markInputRuleTest(expectedMark: MarkType, charactersTrimmed: number) {
     return async (testString: string, matches: boolean) => {
-        const state = createState("", [richTextInputRules]);
+        const state = createState("", [
+            richTextInputRules({
+                validateLink: stackOverflowValidateLink,
+            }),
+        ]);
         const view = createView(state);
 
         await dispatchInputAsync(view, testString);
@@ -82,7 +87,8 @@ describe("mark input rules", () => {
         ["* no-match*", false],
         ["*no-match *", false],
     ];
-    test.each(emphasisTests)(
+    // eslint-disable-next-line jest/expect-expect
+    it.each(emphasisTests)(
         "*emphasis* (%s)",
         markInputRuleTest(richTextSchema.marks.em, 1)
     );
@@ -95,7 +101,8 @@ describe("mark input rules", () => {
         ["_ no-match_", false],
         ["_no-match _", false],
     ];
-    test.each(emphasisUnderlineTests)(
+    // eslint-disable-next-line jest/expect-expect
+    it.each(emphasisUnderlineTests)(
         "_emphasis_ (%s)",
         markInputRuleTest(richTextSchema.marks.em, 1)
     );
@@ -106,7 +113,8 @@ describe("mark input rules", () => {
         ["** no-match**", false],
         ["**no-match **", false],
     ];
-    test.each(boldTests)(
+    // eslint-disable-next-line jest/expect-expect
+    it.each(boldTests)(
         "**strong** (%s)",
         markInputRuleTest(richTextSchema.marks.strong, 2)
     );
@@ -117,7 +125,8 @@ describe("mark input rules", () => {
         ["__ no-match__", false],
         ["__no-match __", false],
     ];
-    test.each(boldUnderlineTests)(
+    // eslint-disable-next-line jest/expect-expect
+    it.each(boldUnderlineTests)(
         "__strong__ (%s)",
         markInputRuleTest(richTextSchema.marks.strong, 2)
     );
@@ -128,26 +137,39 @@ describe("mark input rules", () => {
         ["` no-match`", false],
         ["`no-match `", false],
     ];
-    test.each(codeTests)(
+    // eslint-disable-next-line jest/expect-expect
+    it.each(codeTests)(
         "`code` (%s)",
         markInputRuleTest(richTextSchema.marks.code, 1)
     );
 
+    const customValidateLink = (link: string) => /www.example.com/.test(link);
+
     const linkTests = [
-        ["[match](https://example.com)", true],
-        ["[ this *is* a __match__ ](https://example.com)", true],
-        ["[match](something)", false],
-        ["[this is not a match](badurl)", false],
-        ["[no-match(https://example.com)", false],
-        ["[no-match)(https://example.com", false],
-        ["no-match](https://example.com)", false],
-        ["[no-match]()", false],
-        ["[no-match]", false],
+        ["[match](https://example.com)", true, null],
+        ["[ this *is* a __match__ ](https://example.com)", true, null],
+        ["[match](something)", false, null],
+        ["[this is not a match](badurl)", false, null],
+        ["[no-match(https://example.com)", false, null],
+        ["[no-match)(https://example.com", false, null],
+        ["no-match](https://example.com)", false, null],
+        ["[no-match]()", false, null],
+        ["[no-match]", false, null],
+        ["[custom pass](www.example.com)", true, customValidateLink],
+        ["[custom fail](www.notexample.com)", false, customValidateLink],
     ];
-    test.each(linkTests)(
+    it.each(linkTests)(
         "links (%s)",
-        async (testString: string, matches: boolean) => {
-            const state = createState("", [richTextInputRules]);
+        async (
+            testString: string,
+            matches: boolean,
+            validateLink: typeof stackOverflowValidateLink
+        ) => {
+            const state = createState("", [
+                richTextInputRules({
+                    validateLink: validateLink ?? stackOverflowValidateLink,
+                }),
+            ]);
             const view = createView(state);
 
             await dispatchInputAsync(view, testString);
