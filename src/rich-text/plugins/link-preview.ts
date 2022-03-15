@@ -1,5 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { EditorState, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import {
     AsyncPlugin,
@@ -320,7 +320,6 @@ export function linkPreviewPlugin(
                             tr.doc,
                             updatedData
                         ),
-                        handleTextOnly: updatedData.some((d) => d.isTextOnly),
                         recentlyUpdated: updatedData,
                     };
                 }
@@ -347,7 +346,7 @@ export function linkPreviewPlugin(
                 return null;
             }
 
-            let tr = newState.tr;
+            let tr: Transaction = null;
 
             data.recentlyUpdated.forEach((n) => {
                 if (!n.content?.textContent || !n.isTextOnly) {
@@ -368,7 +367,11 @@ export function linkPreviewPlugin(
 
                 const nodeSize = node.nodeSize;
 
-                tr = tr.replaceWith(pos, pos + nodeSize, newNode);
+                tr = (tr || newState.tr).replaceWith(
+                    pos,
+                    pos + nodeSize,
+                    newNode
+                );
             });
 
             return tr;
