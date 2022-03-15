@@ -42,6 +42,10 @@ function getValidProvider(
 
     // check all providers for this
     for (const provider of providers) {
+        if (!provider) {
+            continue;
+        }
+
         // full preview providers require links to be in a paragraph by themselves
         if (!provider.textOnly && !isStandalonePreviewableLink(node)) {
             continue;
