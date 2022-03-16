@@ -72,9 +72,11 @@ export class RichTextEditor extends BaseView {
 
         const doc = this.parseContent(content);
 
-        const keymaps = this.options.parserFeatures.tables
-            ? [tableKeymap, richTextKeymap, keymap(baseKeymap)]
-            : [richTextKeymap, keymap(baseKeymap)];
+        const keymaps = [richTextKeymap, keymap(baseKeymap)];
+
+        if (this.options.parserFeatures.tables) {
+            keymaps.unshift(tableKeymap);
+        }
 
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(

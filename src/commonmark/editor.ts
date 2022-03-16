@@ -37,9 +37,11 @@ export class CommonmarkEditor extends BaseView {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
-        const keymaps = this.options.parserFeatures.tables
-            ? [tableKeymap, commonmarkKeymap, keymap(baseKeymap)]
-            : [commonmarkKeymap, keymap(baseKeymap)];
+        const keymaps = [commonmarkKeymap, keymap(baseKeymap)];
+
+        if (this.options.parserFeatures.tables) {
+            keymaps.unshift(tableKeymap);
+        }
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
