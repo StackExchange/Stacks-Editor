@@ -110,6 +110,12 @@ export class AsyncPluginKey<T, TCallback> extends StatefulPluginKey<T> {
         };
         return tr.setMeta(this, wrappedData);
     }
+
+    dispatchCallbackData(view: EditorView, data: TCallback): Transaction {
+        const tr = this.setCallbackData(view.state.tr, data);
+        view.updateState(view.state.apply(tr));
+        return tr;
+    }
 }
 
 export interface AsyncPluginSpec<T, TCallback>
@@ -176,9 +182,7 @@ class AsyncViewHandler<T, TCallback> implements PluginView {
                 this.inProgressPromise = null;
 
                 // let the document know this callback has finished
-                const trans = view.state.tr;
-                this.transactionKey.setCallbackData(trans, data);
-                view.updateState(view.state.apply(trans));
+                this.transactionKey.dispatchCallbackData(view, data);
             })
             // on error, don't dispatch, just clear
             .catch(() => {
