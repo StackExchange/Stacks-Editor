@@ -1,12 +1,12 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
+import { EditorState, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import {
     AsyncPlugin,
     AsyncPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
+import { docNodeChanged } from "../../shared/utils";
 
-// TODO naive cache, maybe we can improve?
-// TODO maybe we can prefill the cache if the consuming process already has the result
 /** The cache of url -> content for link previews so we don't have to continually refetch */
 const previewResultCache: { [url: string]: Node } = {};
 
@@ -18,6 +18,8 @@ export interface LinkPreviewProvider {
     domainTest: RegExp;
     /** The async function to render the preview */
     renderer: (url: string) => Promise<Node | null>;
+    /** Whether to update the link's text content only or do a full rich html decoration */
+    textOnly?: boolean;
 }
 
 /**
@@ -28,14 +30,9 @@ export interface LinkPreviewProvider {
 function getValidProvider(
     providers: LinkPreviewProvider[],
     node: ProsemirrorNode
-): { url: string; provider: LinkPreviewProvider } {
-    // not a valid node, keep checking
-    if (!isPreviewableLink(node)) {
-        return null;
-    }
-
-    const child = node.content.firstChild;
-    const url = child.marks.find((m) => m.type.name === "link")?.attrs
+): { url: string; provider: LinkPreviewProvider } | null {
+    const n = node.isText ? node : node.content.firstChild;
+    const url = n?.marks.find((m) => m.type.name === "link")?.attrs
         ?.href as string;
 
     // if there is no href, then nothing will match
@@ -45,6 +42,26 @@ function getValidProvider(
 
     // check all providers for this
     for (const provider of providers) {
+        if (!provider) {
+            continue;
+        }
+
+        // full preview providers require links to be in a paragraph by themselves
+        if (!provider.textOnly && !isStandalonePreviewableLink(node)) {
+            continue;
+        }
+
+        // text only providers must be matched to text nodes
+        if (provider.textOnly && !node.isText) {
+            continue;
+        }
+
+        // Text-only provider could apply but this link already has a custom text,
+        // so skip it
+        if (provider.textOnly && url !== n?.textContent) {
+            continue;
+        }
+
         if (provider.domainTest && provider.domainTest.test(url)) {
             return { url, provider };
         }
@@ -54,35 +71,29 @@ function getValidProvider(
 }
 
 /**
- * Generates a placeholder to show while fetching preview content;
- * Generated placeholder is also used as the final container for the fetched content
- */
-function generatePlaceholder() {
-    // TODO make this look nice
-    const placeholder = document.createElement("div");
-
-    // give this a targetable class for external use / e2e testing
-    placeholder.className = "js-placeholder";
-
-    // everything inside the placeholder will be replaced on render
-    placeholder.innerHTML = `<div class="s-spinner s-spinner__xs"></div>`;
-    return placeholder;
-}
-
-/**
  * Gets nodes in the document that are able to be resolved by a preview provider
  * @param doc The document to search through
  * @param providers The list of registered providers
  */
-function getValidNodes(doc: ProsemirrorNode, providers: LinkPreviewProvider[]) {
+function getValidNodes(
+    currState: EditorState,
+    prevState: EditorState,
+    providers: LinkPreviewProvider[]
+) {
+    // if the document didn't change, then we don't need to do anything
+    // TODO can we do one step better and get only the added nodes?
+    if (!docNodeChanged(currState, prevState)) {
+        return;
+    }
+
     const validNodes: {
         provider: { url: string; provider: LinkPreviewProvider };
         pos: number;
         node: ProsemirrorNode;
     }[] = [];
 
-    // iterate over document structure
-    doc.descendants((node, pos) => {
+    // iterate over current document structure
+    currState.doc.descendants((node, pos) => {
         const provider = getValidProvider(providers, node);
 
         if (provider) {
@@ -97,27 +108,50 @@ function getValidNodes(doc: ProsemirrorNode, providers: LinkPreviewProvider[]) {
 }
 
 /**
- * TODO: fire a transaction to update the view after the placeholder is insert
- *
  * Run over the entire document and find all previewable links and create a link preview decoration
  * for each.
  * @param {Document} doc - The document to find previewable link candidates in
  */
-function generatePreviewDecorations(
-    doc: ProsemirrorNode,
+function generateAllPreviewDecorations(
+    state: EditorState,
     providers: LinkPreviewProvider[]
+) {
+    const nodes = getValidNodes(state, null, providers);
+    const mapped: FetchLinkPreviewResult[] = nodes.map((n) => {
+        return {
+            content: previewResultCache[n.provider.url],
+            href: n.provider.url,
+            isTextOnly: n.provider.provider.textOnly,
+            pos: n.pos,
+        };
+    });
+
+    return generateRecentPreviewDecorations(state.doc, mapped);
+}
+
+/**
+ * Create a link preview decorations for a set of specific link preview results.
+ * @param {Document} doc - The document to generate decorations against
+ */
+function generateRecentPreviewDecorations(
+    doc: ProsemirrorNode,
+    recentlyUpdated: FetchLinkPreviewResult[]
 ) {
     const linkPreviewDecorations: Decoration[] = [];
 
-    const nodes = getValidNodes(doc, providers);
-
-    nodes.forEach((n) => {
-        const placeholder = generatePlaceholder();
-        linkPreviewDecorations.push(Decoration.widget(n.pos, placeholder));
-
-        // if the url is in the cache, insert
-        if (n.provider.url in previewResultCache) {
-            insertLinkPreview(placeholder, previewResultCache[n.provider.url]);
+    recentlyUpdated.forEach((n) => {
+        if (!n.isTextOnly && n.content) {
+            // if the url is in the cache, insert the link preview
+            linkPreviewDecorations.push(insertLinkPreview(n.pos, n.content));
+        } else {
+            const node = doc.nodeAt(n.pos);
+            // otherwise, add the loading styles
+            linkPreviewDecorations.push(
+                Decoration.node(n.pos, n.pos + node.nodeSize, {
+                    class: "is-loading js-link-preview-loading",
+                    title: "Loading...",
+                })
+            );
         }
     });
 
@@ -129,16 +163,17 @@ function generatePreviewDecorations(
  * @param placeholder The placeholder originally created to house this content
  * @param content The content returned from the link preview to insert
  */
-function insertLinkPreview(placeholder: Element, content: Node | null) {
-    // empty the placeholder content to remove the spinner / old content
-    placeholder.innerHTML = "";
+function insertLinkPreview(pos: number, content: Node | null) {
+    const placeholder = document.createElement("div");
 
-    // nothing to append, just return empty
-    if (!content) {
-        return;
+    // give this a targetable class for external use / e2e testing
+    placeholder.className = "js-link-preview-decoration";
+
+    if (content) {
+        placeholder.appendChild(content.cloneNode(true));
     }
 
-    placeholder.appendChild(content);
+    return Decoration.widget(pos, placeholder);
 }
 
 /**
@@ -147,7 +182,7 @@ function insertLinkPreview(placeholder: Element, content: Node | null) {
  *
  * @param {Node} node - The node that should be checked
  */
-function isPreviewableLink(node: ProsemirrorNode) {
+function isStandalonePreviewableLink(node: ProsemirrorNode) {
     const child = node.content.firstChild;
     if (!child) return false;
 
@@ -157,7 +192,16 @@ function isPreviewableLink(node: ProsemirrorNode) {
         (mark) => mark.type.name === "link"
     );
 
+    // TODO don't return true if the preview has already rendered
+
     return hasOnlyOneChild && childIsTextNode && childHasLinkMark;
+}
+
+interface FetchLinkPreviewResult {
+    content: Node | null;
+    isTextOnly: boolean;
+    pos: number;
+    href: string;
 }
 
 /**
@@ -167,55 +211,77 @@ function isPreviewableLink(node: ProsemirrorNode) {
  */
 function fetchLinkPreviewContent(
     view: EditorView,
+    prevState: EditorState,
     providers: LinkPreviewProvider[]
-): Promise<Node[]> {
-    // TODO can we make this more efficient?
-    // getValidNodes will run on every state update, so it'd be
-    // nice to be able to check the last transaction / updated doc
-    // instead of the current snapshot
+): Promise<FetchLinkPreviewResult[]> {
+    const nodes = getValidNodes(view.state, prevState, providers);
 
-    const nodes = getValidNodes(view.state.doc, providers);
-
-    // filter out all urls that are already in cache
-    const unfetchedNodes = nodes.filter(
-        (n) => !(n.provider.url in previewResultCache)
-    );
-
-    // if there's no data to fetch, just reject (no need to update the state)
-    if (!unfetchedNodes.length) {
+    // if there's no new nodes to render, just reject (no need to update the state)
+    if (!nodes.length) {
         return Promise.reject(null);
     }
 
-    // start fetching all content
-    const promises = unfetchedNodes.map((n) => {
-        return (
-            n.provider.provider
-                .renderer(n.provider.url)
-                .then((content) => {
-                    // cache results so we don't call over and over...
-                    previewResultCache[n.provider.url] = content;
+    const results = nodes.map((n) => {
+        const previouslyCached = n.provider.url in previewResultCache;
+        const cachedContent = previewResultCache[n.provider.url] || null;
 
-                    return content;
-                })
-                // don't let any errors crash our `.all` below
-                // "catch" and fake a resolution
-                .catch(() => {
-                    // TODO make this look nice
-                    const errorPlaceholder = document.createElement("div");
-                    errorPlaceholder.innerText = "Error fetching content.";
-                    // set the cache here too, so we don't refetch errors every time...
-                    previewResultCache[n.provider.url] = errorPlaceholder;
-                    return Promise.resolve(errorPlaceholder);
-                })
-        );
+        // if the content is already cached, don't call the renderer again
+        const basePromise = previouslyCached
+            ? Promise.resolve(cachedContent)
+            : n.provider.provider.renderer(n.provider.url);
+
+        const output: FetchLinkPreviewResult & {
+            promise?: Promise<FetchLinkPreviewResult>;
+        } = {
+            pos: n.pos,
+            content: cachedContent,
+            isTextOnly: n.provider.provider.textOnly,
+            href: n.provider.url,
+        };
+
+        const promise = basePromise
+            .then((content) => {
+                // cache results so we don't call over and over...
+                previewResultCache[n.provider.url] = content;
+
+                return {
+                    content,
+                    isTextOnly: n.provider.provider.textOnly,
+                    href: n.provider.url,
+                    pos: n.pos,
+                };
+            })
+            // don't let any errors crash our `.all` below
+            // "catch" and fake a resolution
+            .catch(() => {
+                // TODO make this look nice
+                const errorPlaceholder = document.createElement("div");
+                errorPlaceholder.innerText = "Error fetching content.";
+                // set the cache here too, so we don't refetch errors every time...
+                previewResultCache[n.provider.url] = errorPlaceholder;
+                return Promise.resolve(<FetchLinkPreviewResult>{});
+            });
+
+        output.promise = promise;
+
+        return output;
     });
 
-    return Promise.all(promises);
+    // trigger the rendering immediately
+    LINK_PREVIEWS_KEY.dispatchCallbackData(view, results);
+
+    return Promise.all(results.map((p) => p.promise));
 }
 
-const LINK_PREVIEWS_KEY = new AsyncPluginKey<DecorationSet, Node[]>(
-    "linkPreviews"
-);
+interface LinkPreviewState {
+    decorations: DecorationSet;
+    recentlyUpdated?: FetchLinkPreviewResult[];
+}
+
+const LINK_PREVIEWS_KEY = new AsyncPluginKey<
+    LinkPreviewState,
+    FetchLinkPreviewResult[]
+>("linkPreviews");
 
 /**
  * Creates a plugin that searches the entire document for potentially previewable links
@@ -223,32 +289,92 @@ const LINK_PREVIEWS_KEY = new AsyncPluginKey<DecorationSet, Node[]>(
  */
 export function linkPreviewPlugin(
     providers: LinkPreviewProvider[]
-): AsyncPlugin<DecorationSet, Node[]> {
-    providers = providers || [];
+): AsyncPlugin<LinkPreviewState, FetchLinkPreviewResult[]> {
+    const previewProviders = providers || [];
 
-    return new AsyncPlugin<DecorationSet, Node[]>({
+    return new AsyncPlugin<LinkPreviewState, FetchLinkPreviewResult[]>({
         key: LINK_PREVIEWS_KEY,
-        asyncCallback: (view) => {
-            return fetchLinkPreviewContent(view, providers);
+        asyncCallback: (view, prevState) => {
+            return fetchLinkPreviewContent(view, prevState, previewProviders);
         },
         state: {
-            init(_, { doc }) {
-                return generatePreviewDecorations(doc, providers);
+            init(_, state) {
+                return {
+                    decorations: generateAllPreviewDecorations(
+                        state,
+                        previewProviders
+                    ),
+                };
             },
             apply(tr, value) {
                 // only update the decorations if they changed at all
-                if (this.getCallbackData(tr)) {
-                    return generatePreviewDecorations(tr.doc, providers);
+                const callbackData = this.getCallbackData(tr);
+                if (callbackData) {
+                    // make sure the positions are up to date with any changes
+                    const updatedData = callbackData.map((d) => ({
+                        ...d,
+                        pos: tr.mapping.map(d.pos),
+                    }));
+                    return {
+                        decorations: generateRecentPreviewDecorations(
+                            tr.doc,
+                            updatedData
+                        ),
+                        recentlyUpdated: updatedData,
+                    };
                 }
 
                 // else update the mappings to their new positions in the doc
-                return value.map(tr.mapping, tr.doc);
+                return {
+                    decorations: value.decorations.map(tr.mapping, tr.doc),
+                };
             },
         },
         props: {
             decorations(state) {
-                return this.getState(state);
+                return this.getState(state).decorations;
             },
+        },
+        appendTransaction(trs, _, newState) {
+            const data = LINK_PREVIEWS_KEY.getState(newState);
+
+            // if no nodes were added or if there aren't any textOnly nodes added, return
+            if (
+                !data.recentlyUpdated?.length ||
+                !data.recentlyUpdated.some((d) => d.isTextOnly)
+            ) {
+                return null;
+            }
+
+            let tr: Transaction = null;
+
+            data.recentlyUpdated.forEach((n) => {
+                if (!n.content?.textContent || !n.isTextOnly) {
+                    return;
+                }
+
+                let pos = n.pos;
+                trs.forEach((t) => {
+                    pos = t.mapping.map(pos);
+                });
+
+                const schema = newState.schema;
+                const newNode = schema.text(n.content.textContent, [
+                    schema.marks.link.create({ href: n.href, markup: null }),
+                ]);
+
+                const node = newState.doc.nodeAt(pos);
+
+                const nodeSize = node.nodeSize;
+
+                tr = (tr || newState.tr).replaceWith(
+                    pos,
+                    pos + nodeSize,
+                    newNode
+                );
+            });
+
+            return tr;
         },
     });
 }

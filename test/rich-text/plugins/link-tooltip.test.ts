@@ -1,46 +1,20 @@
-import { richTextSchema } from "../../../src/shared/schema";
-import { EditorState, TextSelection, Transaction } from "prosemirror-state";
-import { DOMParser, Schema } from "prosemirror-model";
-import { linkTooltipPlugin } from "../../../src/rich-text/plugins/link-tooltip";
+import { Schema } from "prosemirror-model";
+import { EditorState } from "prosemirror-state";
 import { DecorationSet, EditorView } from "prosemirror-view";
 import { insertLinkCommand } from "../../../src/rich-text/commands";
+import { linkTooltipPlugin } from "../../../src/rich-text/plugins/link-tooltip";
+import { stackOverflowValidateLink } from "../../../src/shared/utils";
+import { applySelection, createState, createView } from "../test-helpers";
 
-// TODO move to helpers?
-function createState(content: string) {
-    const container = document.createElement("div");
-    container.innerHTML = content;
-    const doc = DOMParser.fromSchema(richTextSchema).parse(container);
-
-    return EditorState.create({
-        doc: doc,
-        schema: richTextSchema,
-        plugins: [linkTooltipPlugin],
-    });
-}
-
-function createView(state: EditorState<Schema>) {
-    return new EditorView(document.createElement("div"), {
-        state: state,
-    });
-}
+const tooltipPlugin = linkTooltipPlugin({
+    validateLink: stackOverflowValidateLink,
+});
 
 function getDecorations(state: EditorState<Schema>) {
     const pState = state.plugins[0].getState(state) as {
         decorations: DecorationSet;
     };
     return pState.decorations;
-}
-
-function applySelection(state: EditorState<Schema>, from: number, to?: number) {
-    if (typeof to === "undefined") {
-        to = from;
-    }
-
-    let tr = state.tr;
-    tr = tr.setSelection(
-        TextSelection.create(state.doc, from + 1, to + 1)
-    ) as Transaction<Schema>;
-    return state.apply(tr);
 }
 
 function getRenderedDecoration(
@@ -68,7 +42,10 @@ function getRenderedDecoration(
 
 describe("link-tooltip", () => {
     it("should not show with no cursor", () => {
-        const state = createState(`<a href="https://www.example.com">test</a>`);
+        const state = createState(
+            `<a href="https://www.example.com">test</a>`,
+            [tooltipPlugin]
+        );
         const decorations = getDecorations(state);
 
         expect(decorations).toEqual(DecorationSet.empty);
@@ -76,7 +53,8 @@ describe("link-tooltip", () => {
 
     it("should not show with cursor on non-links", () => {
         let state = createState(
-            `<p>test<a href="https://www.example.com">link</a></p>`
+            `<p>test<a href="https://www.example.com">link</a></p>`,
+            [tooltipPlugin]
         );
         state = applySelection(state, 0);
 
@@ -93,7 +71,8 @@ describe("link-tooltip", () => {
 
     it("should show with cursor on links", () => {
         let state = createState(
-            `<p>test<a href="https://www.example.com">link</a></p>`
+            `<p>test<a href="https://www.example.com">link</a></p>`,
+            [tooltipPlugin]
         );
 
         state = applySelection(state, 5);
@@ -111,7 +90,8 @@ describe("link-tooltip", () => {
 
     it("should show as non-edit on cursor", () => {
         let state = createState(
-            `<p>test<a href="https://www.example.com">link</a></p>`
+            `<p>test<a href="https://www.example.com">link</a></p>`,
+            [tooltipPlugin]
         );
 
         state = applySelection(state, 5);
@@ -125,7 +105,7 @@ describe("link-tooltip", () => {
     });
 
     it("should show as edit on create", () => {
-        let state = createState(`<p>link-to-be</p>`);
+        let state = createState(`<p>link-to-be</p>`, [tooltipPlugin]);
         const view = createView(state);
 
         state = applySelection(state, 0, 10);
@@ -143,12 +123,13 @@ describe("link-tooltip", () => {
         const input = renderedDeco.querySelector(".js-link-tooltip-input");
 
         expect(inputWrapper.classList).not.toContain("d-none");
-        expect((input as HTMLInputElement).value).toEqual("https://");
+        expect((input as HTMLInputElement).value).toBe("https://");
     });
 
     it.skip("should edit on button click", () => {
         let state = createState(
-            `<p>test<a href="https://www.example.com">link</a></p>`
+            `<p>test<a href="https://www.example.com">link</a></p>`,
+            [tooltipPlugin]
         );
         const view = createView(state);
 
@@ -168,8 +149,9 @@ describe("link-tooltip", () => {
     });
 
     // TODO failing/incomplete
+    // TODO test for custom validateLink support
     it.skip("should save on button click", () => {
-        let state = createState(`<p>link-to-be</p>`);
+        let state = createState(`<p>link-to-be</p>`, [tooltipPlugin]);
         const view = createView(state);
 
         state = applySelection(state, 0, 10);

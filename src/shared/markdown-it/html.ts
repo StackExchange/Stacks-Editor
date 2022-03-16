@@ -1,61 +1,12 @@
 import MarkdownIt from "markdown-it";
 import State from "markdown-it/lib/rules_core/state_core";
 import Token from "markdown-it/lib/token";
-
-/**
- * Describes the supported html tags
- * @see {@link https://meta.stackexchange.com/questions/1777/what-html-tags-are-allowed-on-stack-exchange-sites|Supported tags}
- */
-enum TagType {
-    // Uncategorized
-    unknown,
-    comment,
-
-    // Inline items
-    strike, //<del>, <s>, <strike>
-    strong, //<b>, <strong>
-    emphasis, //<i>, <em>
-    hardbreak, //<br>, <br/> (space agnostic)
-    code,
-    link, // <a> [href] [title]
-    image, // <img /> [src] [width] [height] [alt] [title]
-    keyboard,
-    pre,
-    sup,
-    sub,
-
-    // Block items
-    heading, // <h1>, <h2>, <h3>, <h4>, <h5>, <h6> (support full set of valid h tags)
-    paragraph,
-    horizontal_rule,
-    blockquote,
-    list_item,
-    ordered_list,
-    unordered_list,
-
-    //TODO not yet implemented (needs added to schema in prosemirror)
-    dd,
-    dl,
-    dt,
-}
-
-/**
- * Collection of elements that are counted as "block" level elements
- * TODO change to a map for fast lookup?
- */
-const blockElements = [
-    TagType.blockquote,
-    TagType.heading,
-    TagType.list_item,
-    TagType.ordered_list,
-    TagType.unordered_list,
-    TagType.dd,
-    TagType.dl,
-    TagType.dt,
-    TagType.paragraph,
-    TagType.horizontal_rule,
-    TagType.pre,
-];
+import {
+    blockElements,
+    selfClosingElements,
+    supportedTagAttributes,
+    TagType,
+} from "../html-helpers";
 
 interface TagInfo {
     type: TagType;
@@ -92,9 +43,6 @@ function getTagInfo(tag: string): TagInfo {
     // strip away all html characters and potential attibutes
     const tagName = tag.replace(/[<>/]/g, "").trim().split(/\s/)[0];
 
-    let isSelfClosing = false;
-    const attributes: { [name: string]: string } = {};
-
     if (["del", "strike", "s"].includes(tagName)) {
         tagType = TagType.strike;
     } else if (["b", "strong"].includes(tagName)) {
@@ -105,21 +53,12 @@ function getTagInfo(tag: string): TagInfo {
         tagType = TagType.code;
     } else if (tagName === "br") {
         tagType = TagType.hardbreak;
-        isSelfClosing = true;
     } else if (tagName === "blockquote") {
         tagType = TagType.blockquote;
     } else if (tagName === "a") {
         tagType = TagType.link;
-        attributes["href"] = /href=["'](.+?)["']/.exec(tag)?.[1] || "";
-        attributes["title"] = /title=["'](.+?)["']/.exec(tag)?.[1] || "";
     } else if (tagName === "img") {
         tagType = TagType.image;
-        attributes["src"] = /src=["'](.+?)["']/.exec(tag)?.[1] || "";
-        attributes["width"] = /width=["'](.+?)["']/.exec(tag)?.[1] || "";
-        attributes["height"] = /height=["'](.+?)["']/.exec(tag)?.[1] || "";
-        attributes["alt"] = /alt=["'](.+?)["']/.exec(tag)?.[1] || "";
-        attributes["title"] = /title=["'](.+?)["']/.exec(tag)?.[1] || "";
-        isSelfClosing = true;
     } else if (/h[1,2,3,4,5,6]/.test(tagName)) {
         // NOTE: no need to set the level, the default `heading` generates this from the `tag` property
         tagType = TagType.heading;
@@ -141,17 +80,26 @@ function getTagInfo(tag: string): TagInfo {
         tagType = TagType.paragraph;
     } else if (tagName === "hr") {
         tagType = TagType.horizontal_rule;
-        isSelfClosing = true;
     } else {
         tagType = TagType.unknown;
     }
 
     let markup = tagName ? `<${isClosingTag ? "/" : ""}${tagName}>` : "";
 
+    const isSelfClosing = selfClosingElements.includes(tagType);
     if (isSelfClosing) {
         // sanitize the original markup for output
         // <img title="asdfas" src="asdfasdf" /> becomes <img />
         markup = tag.replace(/^(<[a-z]+).*?(\s?\/?>)$/i, "$1$2");
+    }
+
+    const attributes: { [name: string]: string } = {};
+    const supportedAttrs = supportedTagAttributes[tagType];
+    if (supportedAttrs?.length) {
+        for (const attr of supportedAttrs) {
+            attributes[attr] =
+                new RegExp(`${attr}=["'](.+?)["']`).exec(tag)?.[1] || "";
+        }
     }
 
     return {
@@ -193,7 +141,7 @@ function tagInfoToToken(tagInfo: TagInfo, existing?: Token): Token {
             tokenType = "em" + postfix;
             break;
         case TagType.code:
-            tokenType = "code_inline";
+            tokenType = "code_inline_split" + postfix;
             break;
         case TagType.horizontal_rule:
             tokenType = "hr";
@@ -247,9 +195,10 @@ type parsedBlockTokenInfo = {
 function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
     const content = token.content;
     // checks if a token matches `<open>content</close>` OR `<br />`
-    const matches = /^(?:(<[a-z0-9]+.*?>)([^<>]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
-        content
-    );
+    const matches =
+        /^(?:(<[a-z0-9]+.*?>)([^<>]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
+            content
+        );
 
     if (!matches) {
         return null;

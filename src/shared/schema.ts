@@ -1,7 +1,4 @@
-import { escapeHtml } from "markdown-it/lib/common/utils";
 import OrderedMap from "orderedmap";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-expect-error for some reason, schema is not in the types...
 import { schema } from "prosemirror-markdown";
 import {
     DOMParser,
@@ -12,11 +9,9 @@ import {
     ParseRule,
     Schema,
 } from "prosemirror-model";
+import { escapeHTML } from "./utils";
 
 //TODO this relies on Stacks classes, should we abstract?
-
-// TODO this is to cast schema above to a type since it isn't exposed by @types
-const defaultSchema: Schema = schema as Schema;
 
 /**
  * Defines an uneditable html_block node; Only appears when a user has written a "complicated" html_block
@@ -139,7 +134,11 @@ const spoilerNodeSpec: NodeSpec = {
     toDOM(node) {
         return [
             "blockquote",
-            { class: "spoiler" + (node.attrs.revealed ? " is-visible" : "") },
+            {
+                "class": "spoiler" + (node.attrs.revealed ? " is-visible" : ""),
+                // TODO localization
+                "data-spoiler": "Reveal spoiler",
+            },
             0,
         ];
     },
@@ -163,7 +162,7 @@ function genHtmlBlockNodeSpec(tag: string): NodeSpec {
     };
 }
 
-const defaultNodes = defaultSchema.spec.nodes as OrderedMap<NodeSpec>;
+const defaultNodes = schema.spec.nodes as OrderedMap<NodeSpec>;
 
 const extendedImageSpec: NodeSpec = {
     ...defaultNodes.get("image"),
@@ -340,11 +339,17 @@ function genHtmlInlineMarkSpec(...tags: string[]): MarkSpec {
     };
 }
 
-const defaultMarks = defaultSchema.spec.marks as OrderedMap<MarkSpec>;
+const defaultMarks = schema.spec.marks as OrderedMap<MarkSpec>;
 
+const defaultLinkMark = defaultMarks.get("link");
 const extendedLinkMark: MarkSpec = {
-    ...defaultMarks.get("link"),
+    ...defaultLinkMark,
     ...{
+        attrs: {
+            ...defaultLinkMark.attrs,
+            referenceType: { default: "" },
+            referenceLabel: { default: "" },
+        },
         toDOM(node) {
             return [
                 "a",
@@ -384,7 +389,7 @@ nodes.forEach((k: string, node: NodeSpec) => {
     node.attrs = attrs;
 });
 
-// create our new, final schema using the extended nodes/marks taken from `defaultSchema`
+// create our new, final schema using the extended nodes/marks taken from `schema`
 export const richTextSchema = new Schema({
     nodes: nodes,
     marks: marks,
@@ -439,9 +444,8 @@ export class CodeStringParser extends DOMParser {
     declare static schemaRules: (schema: Schema) => ParseRule[];
 
     public parseCode(content: string, options?: ParseOptions): ProseMirrorNode {
-        const htmlContent = "<pre>" + escapeHtml(content) + "</pre>";
         const node = document.createElement("div");
-        node.innerHTML = htmlContent;
+        node.innerHTML = escapeHTML`<pre>${content}</pre>`;
 
         return super.parse(node, options);
     }

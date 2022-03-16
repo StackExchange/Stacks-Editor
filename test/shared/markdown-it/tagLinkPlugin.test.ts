@@ -22,16 +22,16 @@ describe("tagLinks markdown-it plugin", () => {
         const tokens = instance.parseInline("[tag:python]", {});
 
         expect(tokens).toHaveLength(1);
-        expect(tokens[0].type).toEqual("inline");
-        expect(tokens[0].content).toEqual("[tag:python]");
+        expect(tokens[0].type).toBe("inline");
+        expect(tokens[0].content).toBe("[tag:python]");
         // text wrapped in tag_link_open/close
         expect(tokens[0].children).toHaveLength(3);
-        expect(tokens[0].children[0].type).toEqual("tag_link_open");
-        expect(tokens[0].children[0].attrGet("tagName")).toEqual("python");
-        expect(tokens[0].children[0].attrGet("tagType")).toEqual("tag");
-        expect(tokens[0].children[1].type).toEqual("text");
-        expect(tokens[0].children[1].content).toEqual("python");
-        expect(tokens[0].children[2].type).toEqual("tag_link_close");
+        expect(tokens[0].children[0].type).toBe("tag_link_open");
+        expect(tokens[0].children[0].attrGet("tagName")).toBe("python");
+        expect(tokens[0].children[0].attrGet("tagType")).toBe("tag");
+        expect(tokens[0].children[1].type).toBe("text");
+        expect(tokens[0].children[1].content).toBe("python");
+        expect(tokens[0].children[2].type).toBe("tag_link_close");
     });
 
     it("should parse meta-tag links on meta sites", () => {
@@ -39,16 +39,16 @@ describe("tagLinks markdown-it plugin", () => {
         const tokens = instance.parseInline("[meta-tag:discussion]", {});
 
         expect(tokens).toHaveLength(1);
-        expect(tokens[0].type).toEqual("inline");
-        expect(tokens[0].content).toEqual("[meta-tag:discussion]");
+        expect(tokens[0].type).toBe("inline");
+        expect(tokens[0].content).toBe("[meta-tag:discussion]");
         // text wrapped in tag_link_open/close
         expect(tokens[0].children).toHaveLength(3);
-        expect(tokens[0].children[0].type).toEqual("tag_link_open");
-        expect(tokens[0].children[0].attrGet("tagName")).toEqual("discussion");
-        expect(tokens[0].children[0].attrGet("tagType")).toEqual("meta-tag");
-        expect(tokens[0].children[1].type).toEqual("text");
-        expect(tokens[0].children[1].content).toEqual("discussion");
-        expect(tokens[0].children[2].type).toEqual("tag_link_close");
+        expect(tokens[0].children[0].type).toBe("tag_link_open");
+        expect(tokens[0].children[0].attrGet("tagName")).toBe("discussion");
+        expect(tokens[0].children[0].attrGet("tagType")).toBe("meta-tag");
+        expect(tokens[0].children[1].type).toBe("text");
+        expect(tokens[0].children[1].content).toBe("discussion");
+        expect(tokens[0].children[2].type).toBe("tag_link_close");
     });
 
     it("should not parse meta-tag links on non-meta sites", () => {
@@ -56,11 +56,11 @@ describe("tagLinks markdown-it plugin", () => {
         const tokens = instance.parseInline("[meta-tag:discussion]", {});
 
         expect(tokens).toHaveLength(1);
-        expect(tokens[0].type).toEqual("inline");
-        expect(tokens[0].content).toEqual("[meta-tag:discussion]");
+        expect(tokens[0].type).toBe("inline");
+        expect(tokens[0].content).toBe("[meta-tag:discussion]");
         expect(tokens[0].children).toHaveLength(1);
-        expect(tokens[0].children[0].type).toEqual("text");
-        expect(tokens[0].children[0].content).toEqual("[meta-tag:discussion]");
+        expect(tokens[0].children[0].type).toBe("text");
+        expect(tokens[0].children[0].content).toBe("[meta-tag:discussion]");
         expect(tokens[0].children[0].attrGet("tagName")).toBeNull();
         expect(tokens[0].children[0].attrGet("tagType")).toBeNull();
     });
@@ -69,11 +69,11 @@ describe("tagLinks markdown-it plugin", () => {
         const instance = createParser();
         const tokens = instance.parseInline("[tag:обсуждение]", {});
         expect(tokens).toHaveLength(1);
-        expect(tokens[0].type).toEqual("inline");
-        expect(tokens[0].content).toEqual("[tag:обсуждение]");
+        expect(tokens[0].type).toBe("inline");
+        expect(tokens[0].content).toBe("[tag:обсуждение]");
         expect(tokens[0].children).toHaveLength(1);
-        expect(tokens[0].children[0].type).toEqual("text");
-        expect(tokens[0].children[0].content).toEqual("[tag:обсуждение]");
+        expect(tokens[0].children[0].type).toBe("text");
+        expect(tokens[0].children[0].content).toBe("[tag:обсуждение]");
         expect(tokens[0].children[0].attrGet("tagName")).toBeNull();
         expect(tokens[0].children[0].attrGet("tagType")).toBeNull();
     });
@@ -82,15 +82,15 @@ describe("tagLinks markdown-it plugin", () => {
         const instance = createParser(true);
         const tokens = instance.parseInline("[tag:обсуждение]", {});
         expect(tokens).toHaveLength(1);
-        expect(tokens[0].type).toEqual("inline");
-        expect(tokens[0].content).toEqual("[tag:обсуждение]");
+        expect(tokens[0].type).toBe("inline");
+        expect(tokens[0].content).toBe("[tag:обсуждение]");
         // text wrapped in tag_link_open/close
         expect(tokens[0].children).toHaveLength(3);
-        expect(tokens[0].children[0].type).toEqual("tag_link_open");
-        expect(tokens[0].children[0].attrGet("tagName")).toEqual("обсуждение");
-        expect(tokens[0].children[0].attrGet("tagType")).toEqual("tag");
-        expect(tokens[0].children[1].type).toEqual("text");
-        expect(tokens[0].children[1].content).toEqual("обсуждение");
-        expect(tokens[0].children[2].type).toEqual("tag_link_close");
+        expect(tokens[0].children[0].type).toBe("tag_link_open");
+        expect(tokens[0].children[0].attrGet("tagName")).toBe("обсуждение");
+        expect(tokens[0].children[0].attrGet("tagType")).toBe("tag");
+        expect(tokens[0].children[1].type).toBe("text");
+        expect(tokens[0].children[1].content).toBe("обсуждение");
+        expect(tokens[0].children[2].type).toBe("tag_link_close");
     });
 });

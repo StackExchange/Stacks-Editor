@@ -1,3 +1,5 @@
+import type { HLJSApi } from "highlight.js";
+
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/ban-ts-comment */
 /*
  * NOTE: This file is only for local development / generic bundles

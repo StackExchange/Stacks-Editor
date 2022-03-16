@@ -1,5 +1,7 @@
 # Stacks-Editor
 
+Stacks-Editor is a combination rich text / markdown editor that powers Stack Overflow's post editing experience.
+
 ## Usage
 
 ### Installation
@@ -15,7 +17,7 @@
 ```js
 import { StacksEditor } from "@stackoverflow/stacks-editor";
 // don't forget to include the styles as well
-import "@stackoverflow/stacks-editor/styles.css";
+import "@stackoverflow/stacks-editor/dist/styles.css";
 
 new StacksEditor(
     document.querySelector("#editor-container"),
@@ -66,10 +68,19 @@ Run all unit tests (no end-to-end tests) using
 
 Run all end-to-end tests (written in Playwright) using
 
-    npm run start
     npm run test:e2e
 
-End-to-end tests need to follow the convention of using `someName.e2e.test.ts` as their filename and being saved in the `test/e2e` directory. They'll automatically get picket up by the test runner this way.
+End-to-end tests need to follow the convention of using `someName.e2e.test.ts` as their filename. They'll automatically get picked up by the test runner this way.
+
+### Debug End-to-end tests
+
+Understanding why end-to-end tests fail can be tricky business. There are a few ways to get a glimpse of playwright's internals:
+
+1. Activate debug logging
+   With debug logging enabled, Playwright will log whatever it's currently trying to do or waiting for to the console. Activate it by running `DEBUG=pw:api npm run test:e2e`
+
+2. Show the browser window
+   By default, playwright starts a headless browser to make things fast. If you want to follow along, you can tell playwright to show you the browser window. Go to `jest-playwright.config.js` and uncomment the block containing the `headless: false` setting.
 
 ## Browser Bundle analysis
 

@@ -1,4 +1,8 @@
-import { deepMerge, validateLink } from "../../src/shared/utils";
+import {
+    deepMerge,
+    escapeHTML,
+    stackOverflowValidateLink,
+} from "../../src/shared/utils";
 
 describe("utils", () => {
     describe("deepmerge", () => {
@@ -67,13 +71,56 @@ describe("utils", () => {
                 "https://sub.complicated.domain:8080/path/to/whatever.png#hash?query=parameter%20test",
                 true,
             ],
+            ["https://example.org with other text after", false],
 
             // mailto:
             ["mailto:email@address.com", true],
             ["mailto:email@address", false],
             ["mailto://email@address.com", false],
+            ["mailto:email@address.com and then some other text", false],
         ])("should validate a subset of urls (%s)", (input, shouldValidate) => {
-            expect(validateLink(input)).toBe(shouldValidate);
+            expect(stackOverflowValidateLink(input)).toBe(shouldValidate);
+        });
+    });
+
+    describe("escapeHTML", () => {
+        it("should work on template literals", () => {
+            const result = escapeHTML`This is ${"a"} test. ${"Does it work?"}`;
+            expect(result).toBe("This is a test. Does it work?");
+        });
+
+        it.each([0, false, null, { test: 42 }, "test"])(
+            "should work with many substitution types (%#)",
+            (sub: unknown) => {
+                const result = escapeHTML`${sub}`;
+                expect(result).toBe(sub?.toString() || "");
+            }
+        );
+
+        it("should escape only substitutions", () => {
+            const result = escapeHTML`<p>It should escape ${"<span>this</span>"} ${"&"} nothing else</p>`;
+            expect(result).toBe(
+                "<p>It should escape &lt;span&gt;this&lt;/span&gt; &amp; nothing else</p>"
+            );
+        });
+
+        // example cases taken from https://owasp.org/www-community/xss-filter-evasion-cheatsheet
+        it.each([
+            ["", ""],
+            [
+                "<SCRIPT SRC=http://xss.rocks/xss.js></SCRIPT>",
+                "&lt;SCRIPT SRC=http://xss.rocks/xss.js&gt;&lt;/SCRIPT&gt;",
+            ],
+            [
+                `javascript:/*--></title></style></textarea></script></xmp><svg/onload='+/"/+/onmouseover=1/+/[*/[]/+alert(1)//'>`,
+                `javascript:/*--&gt;&lt;/title&gt;&lt;/style&gt;&lt;/textarea&gt;&lt;/script&gt;&lt;/xmp&gt;&lt;svg/onload='+/&quot;/+/onmouseover=1/+/[*/[]/+alert(1)//'&gt;`,
+            ],
+            [
+                `<IMG SRC=javascript:alert(&quot;XSS&quot;)>`,
+                `&lt;IMG SRC=javascript:alert(&amp;quot;XSS&amp;quot;)&gt;`,
+            ],
+        ])("should escape html", (input, output) => {
+            expect(escapeHTML`${input}`).toBe(output);
         });
     });
 });

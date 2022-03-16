@@ -5,6 +5,8 @@ import {
     startStickyObservers,
     STICKY_OBSERVER_CLASS,
     StickyChangeDetails,
+    escapeHTML,
+    dispatchEditorEvent,
 } from "../shared/utils";
 import { View, CommonViewOptions, BaseView } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
@@ -109,7 +111,7 @@ export class StacksEditor implements View {
 
     static get defaultOptions(): StacksEditorOptions {
         const commonClasses = [
-            "fl1",
+            "fl-grow1",
             "outline-none",
             "p12",
             "pt6",
@@ -205,7 +207,7 @@ export class StacksEditor implements View {
 
         // create specific area for the editor menu
         const menuTarget = document.createElement("div");
-        menuTarget.className = "grid overflow-x-auto ai-center px12 py4 pb0";
+        menuTarget.className = "d-flex overflow-x-auto ai-center px12 py4 pb0";
         this.pluginContainer.appendChild(menuTarget);
 
         // set the editors' menu containers to be the combo container
@@ -306,19 +308,20 @@ export class StacksEditor implements View {
     private createEditorSwitcher(defaultItem: EditorType, menuTarget: Element) {
         const checkedProp =
             defaultItem === EditorType.Commonmark ? "checked" : "";
-        // TODO localization
-        const html = `<label class="grid--cell fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
-<label class="grid--cell mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
-    <span class="icon-bg iconMarkdown"></span>
-</label>
-<div class="grid--cell s-editor-toggle">
-    <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
-    <label class="js-editor-toggle-label" for="js-editor-toggle-${this.internalId}"></label>
-</div>`;
 
         const container = document.createElement("div");
-        container.className = "grid--cell grid ai-center ml24 fc-medium";
-        container.innerHTML = html;
+        container.className = "flex--item d-flex ai-center ml24 fc-medium";
+
+        // TODO localization
+        container.innerHTML = escapeHTML`<label class="flex--item fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
+            <label class="flex--item mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
+                <span class="icon-bg iconMarkdown"></span>
+            </label>
+            <div class="flex--item s-toggle-switch js-editor-mode-switcher">
+                <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
+                <div class="s-toggle-switch--indicator"></div>
+            </div>`;
+
         container.title = "Toggle Markdown editing";
 
         container
@@ -329,15 +332,6 @@ export class StacksEditor implements View {
             );
 
         menuTarget.appendChild(container);
-    }
-
-    /**
-     * Prefixes an event name to scope it to the editor
-     * e.g. `view-change` becomes `StacksEditor:view-change`
-     * @param eventName The event name to prefix
-     */
-    private prefixEventName(eventName: string) {
-        return `StacksEditor:${eventName}`;
     }
 
     /**
@@ -365,12 +359,9 @@ export class StacksEditor implements View {
 
         // TODO better event name?
         // trigger an event on the target for consumers to listen for
-        const event = new CustomEvent(this.prefixEventName("view-change"), {
-            detail: {
-                editorType: type,
-            },
+        dispatchEditorEvent(this.target, "view-change", {
+            editorType: type,
         });
-        this.target.dispatchEvent(event);
 
         // TODO do we always want to focus the editor?
         this.focus();

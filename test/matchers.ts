@@ -81,7 +81,11 @@ function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
         const propValue = deepProp(doc, k);
 
         // check that the value on our tree matches the value on the object
-        expect(propValue).toEqual(tree[k]);
+        try {
+            expect(propValue).toEqual(tree[k]);
+        } catch (e: unknown) {
+            throw `Mismatch on property \`${k}\`\n${e?.toString()}`;
+        }
     });
 
     // only check the content/count if either childCount or content is specified

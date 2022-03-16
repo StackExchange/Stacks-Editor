@@ -1,11 +1,6 @@
 import { CommonmarkEditor } from "../../src/commonmark/editor";
 import { RichTextEditor } from "../../src/rich-text/editor";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore for some reason, schema is not in the types...
-import { schema as s } from "prosemirror-markdown";
-import { Schema } from "prosemirror-model";
-
-const schema: Schema = s as Schema;
+import { schema } from "prosemirror-markdown";
 
 const target = document.createElement("div");
 const markdownRoundTripData = [
@@ -23,7 +18,7 @@ describe("commonmark editor view", () => {
 
         const view = commonmarkView(markdown);
 
-        expect(view.content).toEqual("**bold**");
+        expect(view.content).toBe("**bold**");
     });
 
     it.each(markdownRoundTripData)("should not change markdown", (markdown) => {

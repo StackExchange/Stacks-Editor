@@ -1,4 +1,3 @@
-import { mocked } from "ts-jest/utils";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
 import "../matchers";
@@ -8,7 +7,7 @@ import { normalize } from "../test-helpers";
 jest.mock("../../src/shared/markdown-parser");
 
 // set the typings for easy function mocking
-const mockedMdp = mocked(mdp, true);
+const mockedMdp = jest.mocked(mdp, true);
 
 // import the "actual" buildMarkdownParser function to use in our mock implementations
 const { buildMarkdownParser } = jest.requireActual<typeof mdp>(
@@ -23,18 +22,7 @@ function editorDom(editorView: RichTextEditor): string {
 }
 
 function richView(markdownInput: string) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {
-        linkPreviewProviders: [
-            {
-                domainTest: /example.com/,
-                renderer: (url) => {
-                    const el = document.createElement("div");
-                    el.innerText = url;
-                    return Promise.resolve(el);
-                },
-            },
-        ],
-    });
+    return new RichTextEditor(document.createElement("div"), markdownInput, {});
 }
 
 describe("rich text editor view", () => {
@@ -121,18 +109,18 @@ describe("rich text editor view", () => {
             const richEditorView = richView(markdown);
             const img = richEditorView.dom.querySelector("img");
 
-            expect(img.alt).toEqual("some image");
-            expect(img.src).toEqual("https://example.com/some.png");
-            expect(img.title).toEqual("image title here");
+            expect(img.alt).toBe("some image");
+            expect(img.src).toBe("https://example.com/some.png");
+            expect(img.title).toBe("image title here");
         });
 
         it("should render code blocks as node view", () => {
-            const markdown = "```\nconsole.log('hello, world!')\n```";
+            const markdown = '```\nconsole.log("hello, world!")\n```';
 
             const richEditorView = richView(markdown);
 
             const preElement = richEditorView.dom.querySelector("pre");
-            const expectedCodeHtml = `<code class="content-dom">console.<span class="hljs-built_in">log</span>(<span class="hljs-string">'hello, world!'</span>)</code>`;
+            const expectedCodeHtml = `<code class="content-dom">console.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
             expect(preElement.innerHTML).toEqual(normalize(expectedCodeHtml));
         });
     });
@@ -150,12 +138,7 @@ describe("rich text editor view", () => {
             "<blockquote>quote here</blockquote>",
             `<blockquote><p>quote here</p></blockquote>`,
         ],
-        // TODO code behaves funky, even for html_inline
-        // [
-        //     "code",
-        //     "<code>rm -rf /</code>",
-        //     `<p><code>rm -rf /</code></p>`,
-        // ],
+        ["code", "<code>rm -rf /</code>", `<p><code>rm -rf /</code></p>`],
         ["del", "<del>deleted</del>", `<p><del>deleted</del></p>`],
         ["em", "<em>emphasis</em>", `<p><em>emphasis</em></p>`],
         ["h1", "<h1>text</h1>", `<h1>text</h1>`],
@@ -191,7 +174,7 @@ describe("rich text editor view", () => {
         ["sup", "<sup>superscript</sup>", `<p><sup>superscript</sup></p>`],
         ["strong", "<strong>strong</strong>", `<p><strong>strong</strong></p>`],
         ["strike", "<strike>text</strike>", `<p><del>text</del></p>`],
-        ["br", "<br>", `<p><br><br></p>`],
+        ["br", "<br>", `<p><br><br class="ProseMirror-trailingBreak"></p>`],
         ["hr", "<hr>", `<div><hr></div>`],
     ];
 
@@ -246,7 +229,7 @@ _world_.
             const richEditorView = richView(markdown);
 
             const expectedHtml = normalize(
-                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span><br></p></div></pre></blockquote></div>`
+                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span><br class="ProseMirror-trailingBreak"></p></div></pre></blockquote></div>`
             );
             expect(normalize(editorDom(richEditorView))).toEqual(expectedHtml);
         });
@@ -276,32 +259,6 @@ _world_.
         });
     });
 
-    describe("decorations", () => {
-        it("should onebox links on a single line", () => {
-            const markdown = "[some link](https://example.com)\n";
-
-            const richEditorView = richView(markdown);
-
-            const oneboxDom = richEditorView.dom.querySelectorAll(
-                ".js-placeholder"
-            );
-            expect(oneboxDom).toHaveLength(1);
-            // wait for the promise to resolve (immediately) and check that the async content was pulled in
-            setTimeout(() => {
-                expect(oneboxDom[0].textContent).toBe("https://example.com");
-            }, 0);
-        });
-
-        it("should not onebox links with additional text one the same line", () => {
-            const markdown = "here is [some link](https://example.com)\n";
-
-            const richEditorView = richView(markdown);
-
-            const oneboxDom = richEditorView.dom.querySelectorAll(".js-onebox");
-            expect(oneboxDom).toHaveLength(0);
-        });
-    });
-
     describe("tables", () => {
         it("should render tables", () => {
             const markdown = `
@@ -318,7 +275,7 @@ _world_.
             expect(table.querySelectorAll("th")).toHaveLength(3);
             expect(table.querySelectorAll("td")).toHaveLength(6);
 
-            expect(table.querySelectorAll("td")[1].style.textAlign).toEqual(
+            expect(table.querySelectorAll("td")[1].style.textAlign).toBe(
                 "center"
             );
 
@@ -380,8 +337,7 @@ _world_.
                         "content": [
                             {
                                 "type.isText": true,
-                                "text":
-                                    "WARNING! There was an error parsing the document",
+                                "text": "WARNING! There was an error parsing the document",
                             },
                         ],
                     },

@@ -5,6 +5,7 @@ import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
 import StateBlock from "markdown-it/lib/rules_block/state_block";
 import MarkdownIt from "markdown-it/lib";
 import Token from "markdown-it/lib/token";
+import { escapeHTML } from "../shared/utils";
 
 interface SnippetEditorState {
     language: string | null;
@@ -28,18 +29,18 @@ class StackSnippetsView implements NodeView {
         this.state = StackSnippetsView.getSnippetArgs(rawDataString);
 
         //TODO hack?
-        this.dom.innerHTML = `
+        this.dom.innerHTML = escapeHTML`
 <div class="s-link-preview" data-language="${this.state.language}"
      data-hide="${this.state.hide.toString()}"
      data-console="${this.state.console.toString()}"
      data-babel="${this.state.babel.toString()}">
     <div class="s-link-preview--header ai-center py4">
-        <div class="s-link-preview--title fs-body1 fl1">Code snippet</div>
+        <div class="s-link-preview--title fs-body1 fl-grow1">Code snippet</div>
         <div>
-            <button class="s-btn s-btn__muted fc-success s-btn__icon s-btn__xs grid--cell js-not-implemented" title="Run code snippet">
+            <button class="s-btn s-btn__muted fc-success s-btn__icon s-btn__xs flex--item js-not-implemented" title="Run code snippet">
                 <span class="icon-bg iconPlay"></span>
             </button>
-            <button class="s-btn s-btn__muted s-btn__icon s-btn__xs grid--cell js-not-implemented" title="Expand snippet">
+            <button class="s-btn s-btn__muted s-btn__icon s-btn__xs flex--item js-not-implemented" title="Expand snippet">
                 <span class="icon-bg iconShare"></span>
             </button>
         </div>
@@ -53,7 +54,7 @@ class StackSnippetsView implements NodeView {
 
         //TODO launch snippet modal
         this.dom.querySelectorAll(".js-not-implemented").forEach((el) => {
-            el.addEventListener("click", (e) => {
+            el.addEventListener("click", (e: Event) => {
                 e.stopPropagation();
                 // eslint-disable-next-line no-alert
                 alert("Sorry, this doesn't work yet :)");
@@ -70,9 +71,10 @@ class StackSnippetsView implements NodeView {
      * @param rawDataString the entire raw snippet data string that looks like `js hide: [boolean] console: [boolean] babel: [boolean]`
      */
     static getSnippetArgs(rawDataString: string): SnippetEditorState {
-        const matches = /(.+?) hide: (true|false) console: (true|false) babel: (true|false)/.exec(
-            rawDataString
-        );
+        const matches =
+            /(.+?) hide: (true|false) console: (true|false) babel: (true|false)/.exec(
+                rawDataString
+            );
 
         return {
             language: matches[1] || "js",

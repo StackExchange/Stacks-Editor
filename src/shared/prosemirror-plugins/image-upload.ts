@@ -9,6 +9,7 @@ import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { richTextSchema } from "../schema";
 import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
+import { dispatchEditorEvent, escapeHTML } from "../utils";
 
 /**
  * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
@@ -36,6 +37,10 @@ export interface ImageUploadOptions {
      * NOTE: this is injected as-is and can potentially be a XSS hazard!
      */
     contentPolicyHtml?: string;
+    /**
+     * If true, wraps all images in links that point to the uploaded image url
+     */
+    wrapImagesInLinks?: boolean;
 }
 
 /**
@@ -111,30 +116,37 @@ export class ImageUploader implements PluginView {
         this.uploadField.className = "d-none";
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
-        this.uploadField.id = "fileUpload";
+        this.uploadField.id = "fileUpload" + (Math.random() * 10000).toFixed(0);
 
-        this.uploadContainer.innerHTML = `
-            <div class="fs-body2 p12 pb0"><label class="s-link" for="${
-                this.uploadField.id
-            }">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
-            ${this.uploadField.outerHTML}
+        this.uploadContainer.innerHTML = escapeHTML`
+            <div class="fs-body2 p12 pb0"><label class="s-link" for="${this.uploadField.id}">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
 
             <div class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
 
-            <div class="grid ai-center p12">
+            <div class="d-flex ai-center p12">
                 <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
                 <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
-                <div class="ml64 grid fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
-                    <div>${this.uploadOptions?.brandingHtml || ""}</div>
-                    <div>${this.uploadOptions?.contentPolicyHtml || ""}</div>
+                <div class="ml64 d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
+                    <div class="js-branding-html"></div>
+                    <div class="js-content-policy-html"></div>
                 </div>
             </div>
         `;
 
-        // we need to re-fetch the uploadField instance after it's been added to the DOM
-        // to be able to properly register event handlers
-        this.uploadField = this.uploadContainer.querySelector("#fileUpload");
+        // add in the uploadField right after the first child element
+        this.uploadContainer.children[0].after(this.uploadField);
+
+        // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
+        // eslint-disable-next-line no-unsanitized/property
+        this.uploadContainer.querySelector(".js-branding-html").innerHTML =
+            this.uploadOptions?.brandingHtml;
+
+        // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
+        // eslint-disable-next-line no-unsanitized/property
+        this.uploadContainer.querySelector(
+            ".js-content-policy-html"
+        ).innerHTML = this.uploadOptions?.contentPolicyHtml;
 
         this.uploadField.addEventListener("change", () => {
             this.handleFileSelection(view);
@@ -190,7 +202,7 @@ export class ImageUploader implements PluginView {
 
         this.uploadContainer
             .querySelector(".js-add-image")
-            .addEventListener("click", (e) =>
+            .addEventListener("click", (e: Event) =>
                 this.handleUploadTrigger(e, this.image, view)
             );
     }
@@ -263,7 +275,7 @@ export class ImageUploader implements PluginView {
         }
 
         validationElement.classList.remove("d-none");
-        validationElement.innerHTML = errorMessage;
+        validationElement.textContent = errorMessage;
     }
 
     hideValidationError(): void {
@@ -289,13 +301,13 @@ export class ImageUploader implements PluginView {
         resolve: () => void,
         reject: (error: string) => void
     ) {
-        const previewElement = this.uploadContainer.querySelector(
-            ".js-image-preview"
-        );
+        const previewElement =
+            this.uploadContainer.querySelector(".js-image-preview");
 
-        const addImageButton = this.uploadContainer.querySelector<
-            HTMLButtonElement
-        >(".js-add-image");
+        const addImageButton =
+            this.uploadContainer.querySelector<HTMLButtonElement>(
+                ".js-add-image"
+            );
 
         this.hideValidationError();
         const validationResult = this.validateImage(file);
@@ -346,6 +358,8 @@ export class ImageUploader implements PluginView {
     resetUploader(): void {
         this.resetImagePreview();
         this.hideValidationError();
+
+        this.uploadField.value = null;
     }
 
     handleUploadTrigger(event: Event, file: File, view: EditorView): void {
@@ -353,13 +367,13 @@ export class ImageUploader implements PluginView {
             return;
         }
 
-        this.startImageUpload(view, file);
+        void this.startImageUpload(view, file);
         this.resetUploader();
         hideImageUploader(view);
         view.focus();
     }
 
-    startImageUpload(view: EditorView, file: File): void {
+    startImageUpload(view: EditorView, file: File): Promise<void> {
         // A fresh object to act as the ID for this upload
         const id = {};
 
@@ -384,11 +398,12 @@ export class ImageUploader implements PluginView {
             return;
         }
 
-        this.uploadOptions.handler(file).then(
+        return this.uploadOptions.handler(file).then(
             (url) => {
                 // find where we inserted our placeholder so the content insert knows where to go
-                const decos = IMAGE_UPLOADER_KEY.getState(view.state)
-                    .decorations;
+                const decos = IMAGE_UPLOADER_KEY.getState(
+                    view.state
+                ).decorations;
                 const found = decos.find(
                     null,
                     null,
@@ -494,6 +509,12 @@ export function showImageUploader(view: EditorView, file?: File): void {
         return;
     }
 
+    // TODO find a way to add this event to StacksEditor TSDocs
+    // dispatch a browser event and return early if it is cancelled
+    if (!dispatchEditorEvent(view.dom, "image-uploader-show", { file })) {
+        return;
+    }
+
     const tr = view.state.tr;
 
     IMAGE_UPLOADER_KEY.setMeta(tr, {
@@ -520,12 +541,11 @@ function createPlaceholder(): HTMLDivElement {
     const placeholder = document.createElement("div");
     placeholder.className = "ws-normal d-block m8";
     placeholder.innerHTML = `
-<div class="py6 px12 bg-black-050 bar-sm grid gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
-    <span class="icon-bg iconImage"></span>
-    <div class="grid--cell">Uploading image</div>
-    <div class="s-spinner s-spinner__sm grid--cell">
-        <div class="v-visible-sr">Loading…</div>
-    </div>
+<div class="py6 px6 bg-black-050 bar-sm gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
+    <span class="s-spinner s-spinner__sm flex--item">
+        <span class="v-visible-sr">Loading…</span>
+    </span>
+    <span class="flex--item">Uploading image…</span>
 </div>
 `;
     return placeholder;
@@ -578,7 +598,6 @@ function imageUploaderPlaceholderPlugin(
                     file: null,
                 };
             },
-            //TODO any
             apply(tr: Transaction, state: ImageUploadState) {
                 let set = state.decorations || DecorationSet.empty;
 
@@ -711,11 +730,17 @@ export function richTextImageUpload(
         uploadOptions,
         containerFn,
         (state, url, pos) => {
-            return state.tr.replaceWith(
-                pos,
-                pos,
-                richTextSchema.nodes.image.create({ src: url })
+            const marks = uploadOptions.wrapImagesInLinks
+                ? [richTextSchema.marks.link.create({ href: url })]
+                : null;
+
+            const imgNode = richTextSchema.nodes.image.create(
+                { src: url },
+                null,
+                marks
             );
+
+            return state.tr.replaceWith(pos, pos, imgNode);
         }
     );
 }
@@ -743,7 +768,15 @@ export function commonmarkImageUpload(
         (state, url, pos) => {
             // construct the raw markdown
             const defaultAltText = "enter image description here";
-            const mdString = `![${defaultAltText}](${url})`;
+            let mdString = `![${defaultAltText}](${url})`;
+            let selectionStart = pos + 2;
+            let selectionEnd = selectionStart + defaultAltText.length;
+
+            if (uploadOptions.wrapImagesInLinks) {
+                mdString = `[${mdString}](${url})`;
+                selectionStart += 1;
+                selectionEnd += 1;
+            }
 
             // insert into the document
             const tr = state.tr.insertText(mdString, pos);
@@ -753,8 +786,8 @@ export function commonmarkImageUpload(
             tr.setSelection(
                 TextSelection.create(
                     state.apply(tr).doc,
-                    pos + 2,
-                    pos + defaultAltText.length + 2
+                    selectionStart,
+                    selectionEnd
                 )
             );
 

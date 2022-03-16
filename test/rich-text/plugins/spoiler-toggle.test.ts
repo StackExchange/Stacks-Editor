@@ -1,31 +1,7 @@
+import { Node } from "prosemirror-model";
+import { EditorState } from "prosemirror-state";
 import { spoilerToggle } from "../../../src/rich-text/plugins/spoiler-toggle";
-import { richTextSchema } from "../../../src/shared/schema";
-import { EditorState, TextSelection } from "prosemirror-state";
-import { DOMParser, Node } from "prosemirror-model";
-
-/** Creates a state from the given dom string */
-function createState(content: string) {
-    const container = document.createElement("div");
-    container.innerHTML = content;
-    const doc = DOMParser.fromSchema(richTextSchema).parse(container);
-
-    return EditorState.create({
-        doc: doc,
-        schema: richTextSchema,
-        plugins: [spoilerToggle],
-    });
-}
-
-/** Apply a specific selection to a state via a transaction */
-function applySelection(state: EditorState, from: number, to?: number) {
-    if (typeof to === "undefined") {
-        to = from;
-    }
-
-    let tr = state.tr;
-    tr = tr.setSelection(TextSelection.create(state.doc, from + 1, to + 1));
-    return state.apply(tr);
-}
+import { applySelection, createState } from "../test-helpers";
 
 /** Get the top-level spoiler node directly from the doc's children */
 function getSpoilerNode(state: EditorState) {
@@ -43,7 +19,8 @@ function getSpoilerNode(state: EditorState) {
 describe("spoiler-toggle plugin", () => {
     it.skip("should toggle reveal on cursor entry/exit", () => {
         let state = createState(
-            "<p>test</p><blockquote class='spoiler'>this is a spoiler</blockquote><p>test</p>"
+            "<p>test</p><blockquote class='spoiler'>this is a spoiler</blockquote><p>test</p>",
+            [spoilerToggle]
         );
 
         // set the selection to be outside the spoiler (base state)
@@ -67,7 +44,8 @@ describe("spoiler-toggle plugin", () => {
 
     it.skip("should toggle reveal when contained in/excluded from text selection", () => {
         let state = createState(
-            "<p>test</p><blockquote class='spoiler'>this is a spoiler</blockquote><p>test</p>"
+            "<p>test</p><blockquote class='spoiler'>this is a spoiler</blockquote><p>test</p>",
+            [spoilerToggle]
         );
 
         // set the selection to be outside the spoiler (base state)
@@ -97,7 +75,8 @@ describe("spoiler-toggle plugin", () => {
 
     it("should intelligently handle toggling when the doc has changed", () => {
         let state = createState(
-            "<p>test</p><blockquote class='spoiler'>this is a spoiler</blockquote><p>test</p>"
+            "<p>test</p><blockquote class='spoiler'>this is a spoiler</blockquote><p>test</p>",
+            [spoilerToggle]
         );
 
         // go ahead and toggle the spoiler on (not testing this; tested above)

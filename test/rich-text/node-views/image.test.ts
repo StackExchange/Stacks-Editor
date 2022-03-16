@@ -61,7 +61,7 @@ describe("image node views", () => {
         form.submit();
         jest.runAllTimers();
 
-        expect(richView.content).toEqual(
+        expect(richView.content).toBe(
             `![changed alt text](https://example.com/changed.png "changed title")`
         );
     });

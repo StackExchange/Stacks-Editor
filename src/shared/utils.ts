@@ -1,3 +1,4 @@
+import { escapeHtml } from "markdown-it/lib/common/utils";
 import { EditorState } from "prosemirror-state";
 
 /**
@@ -86,12 +87,11 @@ function mergeObject(object1: unknown, object2: unknown): unknown {
  * Compares two states and returns true if the doc has changed between them.
  * The doc is considered changed if:
  *      * its content changed
- *      * the selection has changed
  *      * the stored marks have changed
  * @param prevState The "old" / previous editor state
  * @param newState The "new" / current editor state
  */
-export function docChanged(
+export function docNodeChanged(
     prevState: EditorState,
     newState: EditorState
 ): boolean {
@@ -101,9 +101,26 @@ export function docChanged(
     }
 
     return (
-        !prevState.selection.eq(newState.selection) ||
         !prevState.doc.eq(newState.doc) ||
         prevState.storedMarks !== newState.storedMarks
+    );
+}
+
+/**
+ * Compares two states and returns true if the doc has changed between them.
+ * The doc is considered changed if:
+ *      * the document node changed (@see docNodeChanged)
+ *      * the selection has changed
+ * @param prevState The "old" / previous editor state
+ * @param newState The "new" / current editor state
+ */
+export function docChanged(
+    prevState: EditorState,
+    newState: EditorState
+): boolean {
+    return (
+        docNodeChanged(prevState, newState) ||
+        !prevState.selection.eq(newState.selection)
     );
 }
 
@@ -161,17 +178,64 @@ export function startStickyObservers(container: Element): void {
 }
 
 // rudimentary link validation that's roughly in line with what Stack Overflow's backend uses for validation
-const validLinkRegex = /^((https?|ftp):\/\/|\/)[-a-z0-9+&@#/%?=~_|!:,.;()*[\]$]+/;
-const validMailtoRegex = /^mailto:[#-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+/;
+const validLinkRegex =
+    /^((https?|ftp):\/\/|\/)[-a-z0-9+&@#/%?=~_|!:,.;()*[\]$]+$/;
+const validMailtoRegex = /^mailto:[#-.\w]+@[-a-z0-9]+(\.[-a-z0-9]+)*\.[a-z]+$/;
 
 /**
- * Checks if a url is well-formed as passes validation checks
+ * Checks if a url is well-formed and passes Stack Overflow's validation checks
  * @param url The url to validate
  */
-export function validateLink(url: string): boolean {
+export function stackOverflowValidateLink(url: string): boolean {
     const normalizedUrl = url?.trim().toLowerCase();
     return (
         validLinkRegex.test(normalizedUrl) ||
         validMailtoRegex.test(normalizedUrl)
     );
+}
+
+/**
+ * Template function to escape all html in substitions, but not the rest of the template.
+ * For instance, escapeHTML`<p>${"<span>user input</span>"}</p>` will escape the inner span, but not the outer p tags.
+ * Uses markdown-it's @see escapeHtml in the background
+ */
+export function escapeHTML(
+    strings: TemplateStringsArray,
+    ...subs: unknown[]
+): string {
+    let output = strings[0];
+    for (let i = 0, len = subs.length; i < len; i++) {
+        output += escapeHtml(subs[i]?.toString() || "") + strings[i + 1];
+    }
+
+    return output;
+}
+
+/**
+ * Prefixes an event name to scope it to the editor
+ * e.g. `view-change` becomes `StacksEditor:view-change`
+ * @param eventName The event name to prefix
+ */
+function prefixEventName(eventName: string) {
+    return `StacksEditor:${eventName}`;
+}
+
+/**
+ * Prefixes and dispatches a custom event on the target
+ * @param target The target to dispatch the event on
+ * @param eventName The unprefixed event name
+ * @param detail Any custom data to pass on the event
+ * @returns true if either event's cancelable attribute value is false or its preventDefault() method was not invoked, and false otherwise
+ */
+export function dispatchEditorEvent(
+    target: Element,
+    eventName: string,
+    detail?: unknown
+): boolean {
+    const event = new CustomEvent(prefixEventName(eventName), {
+        bubbles: true,
+        cancelable: true,
+        detail: detail,
+    });
+    return target.dispatchEvent(event);
 }
