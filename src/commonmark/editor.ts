@@ -22,7 +22,7 @@ import {
     defaultParserFeatures,
 } from "../shared/view";
 import { createMenu } from "./commands";
-import { commonmarkKeymap } from "./key-bindings";
+import { commonmarkKeymap, tableKeymap } from "./key-bindings";
 
 export type CommonmarkOptions = CommonViewOptions;
 
@@ -37,6 +37,12 @@ export class CommonmarkEditor extends BaseView {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
+        const keymaps = [commonmarkKeymap, keymap(baseKeymap)];
+
+        if (this.options.parserFeatures.tables) {
+            keymaps.unshift(tableKeymap);
+        }
+
         this.editorView = new EditorView(
             (node: HTMLElement) => {
                 node.classList.add(...this.options.classList);
@@ -48,8 +54,7 @@ export class CommonmarkEditor extends BaseView {
                     doc: this.parseContent(content),
                     plugins: [
                         history(),
-                        commonmarkKeymap,
-                        keymap(baseKeymap),
+                        ...keymaps,
                         createMenu(this.options),
                         CodeBlockHighlightPlugin(null),
                         commonmarkImageUpload(

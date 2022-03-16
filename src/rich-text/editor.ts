@@ -72,6 +72,12 @@ export class RichTextEditor extends BaseView {
 
         const doc = this.parseContent(content);
 
+        const keymaps = [richTextKeymap, keymap(baseKeymap)];
+
+        if (this.options.parserFeatures.tables) {
+            keymaps.unshift(tableKeymap);
+        }
+
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
             (node: HTMLElement) => {
@@ -84,9 +90,7 @@ export class RichTextEditor extends BaseView {
                     doc: doc,
                     plugins: [
                         history(),
-                        tableKeymap,
-                        richTextKeymap,
-                        keymap(baseKeymap),
+                        ...keymaps,
                         createMenu(this.options),
                         richTextInputRules(this.options.parserFeatures),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
