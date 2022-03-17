@@ -133,6 +133,8 @@ export class StacksEditor implements View {
                 "hmn2",
                 "w100",
                 "p0",
+                "d-flex",
+                "fd-column",
                 "s-editor-resizable",
             ],
             parserFeatures: RichTextEditor.defaultOptions.parserFeatures,
