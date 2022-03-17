@@ -1,6 +1,4 @@
-import { baseKeymap } from "prosemirror-commands";
 import { history } from "prosemirror-history";
-import { keymap } from "prosemirror-keymap";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -22,7 +20,7 @@ import {
     defaultParserFeatures,
 } from "../shared/view";
 import { createMenu } from "./commands";
-import { commonmarkKeymap, tableKeymap } from "./key-bindings";
+import { allKeymaps } from "./key-bindings";
 
 export type CommonmarkOptions = CommonViewOptions;
 
@@ -37,12 +35,6 @@ export class CommonmarkEditor extends BaseView {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
-        const keymaps = [commonmarkKeymap, keymap(baseKeymap)];
-
-        if (this.options.parserFeatures.tables) {
-            keymaps.unshift(tableKeymap);
-        }
-
         this.editorView = new EditorView(
             (node: HTMLElement) => {
                 node.classList.add(...this.options.classList);
@@ -54,7 +46,7 @@ export class CommonmarkEditor extends BaseView {
                     doc: this.parseContent(content),
                     plugins: [
                         history(),
-                        ...keymaps,
+                        ...allKeymaps(this.options.parserFeatures),
                         createMenu(this.options),
                         CodeBlockHighlightPlugin(null),
                         commonmarkImageUpload(

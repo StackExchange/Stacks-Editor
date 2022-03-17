@@ -1,6 +1,4 @@
-import { baseKeymap } from "prosemirror-commands";
 import { history } from "prosemirror-history";
-import { keymap } from "prosemirror-keymap";
 import { MarkdownSerializer } from "prosemirror-markdown";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
@@ -31,7 +29,7 @@ import {
 } from "../shared/view";
 import { createMenu } from "./commands";
 import { richTextInputRules } from "./inputrules";
-import { richTextKeymap, tableKeymap } from "./key-bindings";
+import { allKeymaps } from "./key-bindings";
 import { stackOverflowMarkdownSerializer } from "./markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
@@ -72,12 +70,6 @@ export class RichTextEditor extends BaseView {
 
         const doc = this.parseContent(content);
 
-        const keymaps = [richTextKeymap, keymap(baseKeymap)];
-
-        if (this.options.parserFeatures.tables) {
-            keymaps.unshift(tableKeymap);
-        }
-
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
             (node: HTMLElement) => {
@@ -90,7 +82,7 @@ export class RichTextEditor extends BaseView {
                     doc: doc,
                     plugins: [
                         history(),
-                        ...keymaps,
+                        ...allKeymaps(this.options.parserFeatures),
                         createMenu(this.options),
                         richTextInputRules(this.options.parserFeatures),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
