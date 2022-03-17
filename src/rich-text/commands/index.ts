@@ -81,18 +81,18 @@ function toggleBlockType(
     const setBlockTypeCommand = setBlockType(nodeType, attrs);
 
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
-        // if the node is not set, go ahead and set it
-        if (!nodeCheck(state)) {
-            return setBlockTypeCommand(state, (t) => {
-                if (dispatch) {
-                    // when adding a block node, make sure the user can navigate past it
-                    t = insertParagraphIfAtDocEnd(t);
-                    dispatch(t);
-                }
-            });
+        // if the node is set, toggle it off
+        if (nodeCheck(state)) {
+            return setToTextCommand(state, dispatch);
         }
 
-        return setToTextCommand(state, dispatch);
+        return setBlockTypeCommand(state, (t) => {
+            if (dispatch) {
+                // when adding a block node, make sure the user can navigate past it
+                t = insertParagraphIfAtDocEnd(t);
+                dispatch(t);
+            }
+        });
     };
 }
 
@@ -126,28 +126,35 @@ export function insertImageCommand(
     return true;
 }
 
+/**
+ * Inserts a link into the document and opens the link edit tooltip at the cursor
+ */
 export function insertLinkCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void,
     view: EditorView
 ): boolean {
     if (state.selection.empty) return false;
+
+    let linkUrl = null;
+
     if (dispatch) {
         const selectedText =
             state.selection.content().content.firstChild?.textContent ?? null;
         const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
-        const linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
-        const isInserting = toggleMark(schema.marks.link, { href: linkUrl })(
-            state,
-            dispatch
-        );
+        linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
 
-        if (isInserting) {
-            const tr = LINK_TOOLTIP_KEY.setEditMode(true, state, view.state.tr);
-            view.dispatch(tr);
-        }
+        // wrap the dispatch function so that we can add additional transactions after toggleMark
+        const oldDispatch = dispatch;
+        dispatch = (tr) => {
+            oldDispatch(tr);
+            view.dispatch(
+                LINK_TOOLTIP_KEY.setEditMode(true, state, view.state.tr)
+            );
+        };
     }
-    return true;
+
+    return toggleMark(schema.marks.link, { href: linkUrl })(state, dispatch);
 }
 
 /**

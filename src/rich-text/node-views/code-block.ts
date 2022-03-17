@@ -28,6 +28,11 @@ export class CodeBlockView implements NodeView {
     }
 
     update(node: ProsemirrorNode): boolean {
+        // don't allow the node to be changed into anything other than a code_block
+        if (node.type.name !== "code_block") {
+            return false;
+        }
+
         const rawLanguage = this.getLanguageFromBlock(node);
 
         if (this.language !== rawLanguage) {
