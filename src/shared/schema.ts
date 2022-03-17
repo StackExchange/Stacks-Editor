@@ -330,8 +330,12 @@ const nodes = defaultNodes
  * Creates a generic html MarkSpec for an inline html tag
  * @param tag The name of the tag to use in the Prosemirror dom
  */
-function genHtmlInlineMarkSpec(...tags: string[]): MarkSpec {
+function genHtmlInlineMarkSpec(
+    attributes: Record<string, unknown>,
+    ...tags: string[]
+): MarkSpec {
     return {
+        ...attributes,
         toDOM() {
             return [tags[0], 0];
         },
@@ -362,12 +366,28 @@ const extendedLinkMark: MarkSpec = {
     },
 };
 
+const defaultCodeMark = defaultMarks.get("code");
+const extendedCodeMark: MarkSpec = {
+    ...defaultCodeMark,
+    exitable: true,
+    inclusive: true,
+};
+
 const marks = defaultMarks
-    .addBefore("strong", "strike", genHtmlInlineMarkSpec("del", "s", "strike"))
-    .addBefore("strong", "kbd", genHtmlInlineMarkSpec("kbd"))
-    .addBefore("strong", "sup", genHtmlInlineMarkSpec("sup"))
-    .addBefore("strong", "sub", genHtmlInlineMarkSpec("sub"))
-    .update("link", extendedLinkMark);
+    .addBefore(
+        "strong",
+        "strike",
+        genHtmlInlineMarkSpec({}, "del", "s", "strike")
+    )
+    .addBefore(
+        "strong",
+        "kbd",
+        genHtmlInlineMarkSpec({ exitable: true, inclusive: true }, "kbd")
+    )
+    .addBefore("strong", "sup", genHtmlInlineMarkSpec({}, "sup"))
+    .addBefore("strong", "sub", genHtmlInlineMarkSpec({}, "sub"))
+    .update("link", extendedLinkMark)
+    .update("code", extendedCodeMark);
 
 // for *every* mark, add in support for the `markup` attribute
 // we use this to save the "original" html tag used to create the mark when converting from html markdown

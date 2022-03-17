@@ -1,7 +1,12 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
-import { MarkType, NodeType } from "prosemirror-model";
-import { EditorState, Plugin, Transaction } from "prosemirror-state";
+import { Mark, MarkType, NodeType } from "prosemirror-model";
+import {
+    EditorState,
+    Plugin,
+    TextSelection,
+    Transaction,
+} from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
@@ -179,6 +184,65 @@ function markActive(mark: MarkType) {
             return state.doc.rangeHasMark(from, to, mark);
         }
     };
+}
+
+/**
+ * Exits an inclusive mark that has been marked as exitable by toggling the mark type
+ * and optionally adding a trailing space if the mark is at the end of the document
+ */
+export function exitInclusiveMarkCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    const $cursor = (<TextSelection>state.selection).$cursor;
+    const marks = state.storedMarks || $cursor.marks();
+
+    if (!marks?.length) {
+        return false;
+    }
+
+    // check if the current mark is exitable
+    const exitables = marks.filter((mark) => mark.type.spec.exitable);
+
+    if (!exitables?.length) {
+        return false;
+    }
+
+    // check if we're at the end of the exitable mark
+    const nextNode = $cursor.nodeAfter;
+    let endExitables: Mark[];
+
+    let tr = state.tr;
+
+    if (nextNode && nextNode.marks?.length) {
+        // marks might be nested, so check each mark
+        endExitables = exitables.filter(
+            (mark) => !mark.type.isInSet(nextNode.marks)
+        );
+    } else {
+        // no next node, so *all* marks are exitable
+        endExitables = exitables;
+    }
+
+    if (!endExitables.length) {
+        return false;
+    }
+
+    if (dispatch) {
+        // remove the exitable marks from the cursor
+        endExitables.forEach((e) => {
+            tr = tr.removeStoredMark(e);
+        });
+
+        // if there's no characters to the right of the cursor, add a space
+        if (!nextNode) {
+            tr = tr.insertText(" ");
+        }
+
+        dispatch(tr);
+    }
+
+    return true;
 }
 
 const tableDropdown = () =>

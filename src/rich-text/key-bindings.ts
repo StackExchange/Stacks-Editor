@@ -1,4 +1,9 @@
-import { toggleMark, wrapIn, setBlockType } from "prosemirror-commands";
+import {
+    toggleMark,
+    wrapIn,
+    setBlockType,
+    exitCode,
+} from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
@@ -18,6 +23,7 @@ import {
     moveToPreviousCellCommand,
     moveSelectionAfterTableCommand,
     insertTableCommand,
+    exitInclusiveMarkCommand,
 } from "./commands";
 
 export const richTextKeymap = keymap({
@@ -42,6 +48,9 @@ export const richTextKeymap = keymap({
     "Mod-h": setBlockType(schema.nodes.heading),
     "Mod-r": insertHorizontalRuleCommand,
     "Mod-m": setBlockType(schema.nodes.code_block),
+    // users expect to be able to leave certain blocks/marks using the arrow keys
+    "ArrowRight": exitInclusiveMarkCommand,
+    "ArrowDown": exitCode,
 });
 
 export const tableKeymap = keymap({
