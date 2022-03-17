@@ -94,7 +94,7 @@
         "@types/prosemirror-state": "^1.2.8",
         "@types/prosemirror-view": "^1.23.1",
         "markdown-it": "^12.3.2",
-        "prosemirror-commands": "^1.2.1",
+        "prosemirror-commands": "^1.2.2",
         "prosemirror-highlightjs": "^0.7.2",
         "prosemirror-history": "^1.2.0",
         "prosemirror-inputrules": "^1.1.3",
