@@ -642,6 +642,42 @@ function unIndentBlockCommand(): boolean {
     return false;
 }
 
+/**
+ * Selects all text in the document's root node, rather than the node itself
+ */
+export function selectAllTextCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    if (dispatch) {
+        let rootNodePos = 0;
+        let rootNodeLength = 0;
+
+        // find the root text node's position so we can highlight just it
+        state.doc.nodesBetween(0, state.doc.content.size, (node, pos) => {
+            if (node.type.name !== "text") {
+                return true;
+            }
+
+            rootNodePos = pos;
+            rootNodeLength = node.nodeSize;
+            return false;
+        });
+
+        dispatch(
+            state.tr.setSelection(
+                TextSelection.create(
+                    state.doc,
+                    rootNodePos,
+                    rootNodePos + rootNodeLength
+                )
+            )
+        );
+    }
+
+    return true;
+}
+
 export const boldCommand = wrapInCommand("**");
 export const emphasisCommand = wrapInCommand("*");
 export const inlineCodeCommand = wrapInCommand("`");

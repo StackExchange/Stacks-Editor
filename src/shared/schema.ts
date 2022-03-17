@@ -440,7 +440,7 @@ export const commonmarkSchema = new Schema({
             code: true,
             defining: true,
             isolating: true,
-            // don't let the user select / delete with (ctrl+a)
+            // don't let the user select / delete
             selectable: false,
             // force the block language to always be markdown
             attrs: { params: { default: "markdown" } },

@@ -14,6 +14,7 @@ import {
     insertHorizontalRuleCommand,
     insertCodeblockCommand,
     insertTableCommand,
+    selectAllTextCommand,
 } from "./commands";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import { baseKeymap } from "prosemirror-commands";
@@ -38,6 +39,8 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         "Mod-h": headerCommand,
         "Mod-r": insertHorizontalRuleCommand,
         "Mod-m": insertCodeblockCommand,
+        // selectAll selects the outermost node and messes up our other commands
+        "Mod-a": selectAllTextCommand,
     });
 
     const tableKeymap = keymap({
