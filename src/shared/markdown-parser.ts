@@ -6,6 +6,7 @@ import {
     TokenConfig,
 } from "prosemirror-markdown";
 import { NodeType, Schema } from "prosemirror-model";
+import { AggregatedEditorPlugin } from "../builder/types";
 import { ExternalEditorPlugin } from "./external-editor-plugin";
 import { log } from "./logger";
 import { html } from "./markdown-it/html";
@@ -316,5 +317,20 @@ export function buildMarkdownParser(
     return new SOMarkdownParser(schema, defaultMarkdownItInstance, {
         ...customMarkdownParserTokens,
         ...externalPlugins?.markdownParser?.tokens,
+    });
+}
+
+/** TODO DOCUMENT */
+export function buildMarkdownParser_new<T>(plugin: AggregatedEditorPlugin<T>) {
+    const defaultMarkdownItInstance = new SOMarkdownIt("default");
+    plugin.configureMarkdownIt(defaultMarkdownItInstance);
+
+    plugin.markdownParser.plugins.forEach((p) => {
+        defaultMarkdownItInstance.use(p);
+    });
+
+    return new SOMarkdownParser(plugin.schema, defaultMarkdownItInstance, {
+        ...customMarkdownParserTokens,
+        ...plugin.markdownParser?.tokens,
     });
 }

@@ -170,15 +170,15 @@ export class BaseEditor<TOptions extends BaseOptions> implements Editor {
         this.pluginContainer.appendChild(menuTarget);
 
         // set the editors' menu containers to be the combo container
-        const menuContainerFn = () => menuTarget;
-        this.options.menuParentContainer = menuContainerFn;
+        // const menuContainerFn = () => menuTarget;
+        // this.options.menuParentContainer = menuContainerFn;
 
         // create a specific area for the editor plugins
         const pluginTarget = document.createElement("div");
         this.pluginContainer.appendChild(pluginTarget);
 
-        const pluginContainerFn = () => pluginTarget;
-        this.options.pluginParentContainer = pluginContainerFn;
+        // const pluginContainerFn = () => pluginTarget;
+        // this.options.pluginParentContainer = pluginContainerFn;
 
         this.innerTarget.appendChild(this.pluginContainer);
 

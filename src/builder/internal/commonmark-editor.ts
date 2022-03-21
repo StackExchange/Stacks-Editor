@@ -5,9 +5,9 @@ import { log } from "../../shared/logger";
 import { editableCheck } from "../../shared/prosemirror-plugins/readonly";
 import { CodeStringParser, commonmarkSchema } from "../../shared/schema";
 import { BaseView } from "../../shared/view";
-import { AggregatedEditorPlugin } from "../types";
+import { AggregatedEditorPlugin, BaseOptions } from "../types";
 
-export class CommonmarkEditor<TOptions> extends BaseView {
+export class CommonmarkEditor<TOptions extends BaseOptions> extends BaseView {
     constructor(
         target: Element,
         content: string,
@@ -17,25 +17,14 @@ export class CommonmarkEditor<TOptions> extends BaseView {
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                //node.classList.add(...this.options.classList); //TODO
+                node.classList.add(...plugin.options.classList);
                 target.appendChild(node);
             },
             {
                 editable: editableCheck,
                 state: EditorState.create({
                     doc: this.parseContent(content),
-                    plugins: [
-                        // history(),
-                        // ...allKeymaps(this.options.parserFeatures),
-                        // createMenu(this.options),
-                        // CodeBlockHighlightPlugin(null),
-                        // commonmarkImageUpload(
-                        //     this.options.imageUpload,
-                        //     this.options.pluginParentContainer
-                        // ),
-                        // readonlyPlugin(),
-                        ...plugin.commonmark.plugins,
-                    ],
+                    plugins: [...plugin.commonmark.plugins],
                 }),
             }
         );

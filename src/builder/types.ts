@@ -1,7 +1,8 @@
+import type MarkdownIt from "markdown-it";
 import type { TokenConfig } from "prosemirror-markdown";
 import type { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
-import type { EditorProps, EditorView } from "prosemirror-view";
+import type { EditorProps } from "prosemirror-view";
 import type { MarkdownSerializerNodes } from "../rich-text/markdown-serializer";
 import type { MenuCommandEntry } from "../shared/menu";
 import type { View } from "../shared/view";
@@ -14,22 +15,11 @@ export enum EditorType {
 
 export interface BaseOptions {
     /** The editor to show on instantiation */
-    defaultView: EditorType;
+    defaultView?: EditorType;
     /** The classes to add to the editor target */
     classList?: string[];
     /** The list of classes to add to the backing editor's target */
     targetClassList?: string[];
-    /**
-     * Function to get the container to place the menu bar;
-     * defaults to returning this editor's target's parentNode
-     */
-    menuParentContainer?: (view: EditorView) => Element;
-    /**
-     * TODO need both this AND menuParentContainer?
-     * Function to get the container to place any floating plugins;
-     * defaults to returning this editor's target's parentNode
-     */
-    pluginParentContainer?: (view: EditorView) => Element;
 }
 
 export interface Editor extends View {
@@ -49,6 +39,8 @@ export interface EditorPlugin<TOptions = unknown> {
         menuEntries: MenuCommandEntry[];
     };
     options?: TOptions;
+
+    configureMarkdownIt?: (instance: MarkdownIt) => void;
 
     markdownParser?: {
         tokens: { [key: string]: TokenConfig };

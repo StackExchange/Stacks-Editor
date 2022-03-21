@@ -14,6 +14,7 @@ import {
     TagType,
 } from "../shared/html-helpers";
 import { normalizeReference } from "markdown-it/lib/common/utils";
+import { AggregatedEditorPlugin } from "../builder/types";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<
@@ -641,3 +642,17 @@ export const stackOverflowMarkdownSerializer = (
         },
         customMarkdownSerializerMarks
     );
+
+/** TODO DOCUMENT */
+export function stackOverflowMarkdownSerializer_new<T>(
+    plugin: AggregatedEditorPlugin<T>
+): MarkdownSerializer {
+    return new SOMarkdownSerializer(
+        {
+            ...defaultMarkdownSerializerNodes,
+            ...customMarkdownSerializerNodes,
+            ...plugin.markdownSerializers,
+        },
+        customMarkdownSerializerMarks
+    );
+}

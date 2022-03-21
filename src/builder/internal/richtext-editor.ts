@@ -3,18 +3,18 @@ import { Node } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
-import { stackOverflowMarkdownSerializer } from "../../rich-text/markdown-serializer";
+import { stackOverflowMarkdownSerializer_new } from "../../rich-text/markdown-serializer";
 import { error, log } from "../../shared/logger";
-import { buildMarkdownParser } from "../../shared/markdown-parser";
+import { buildMarkdownParser_new } from "../../shared/markdown-parser";
 import { editableCheck } from "../../shared/prosemirror-plugins/readonly";
 import { CodeStringParser } from "../../shared/schema";
 import { BaseView } from "../../shared/view";
-import { AggregatedEditorPlugin } from "../types";
+import { AggregatedEditorPlugin, BaseOptions } from "../types";
 
 /*
  * Implements an WYSIWYG-style editor. Content will be rendered immediately by prosemirror but the in- and output will still be markdown
  */
-export class RichTextEditor<TOptions> extends BaseView {
+export class RichTextEditor<TOptions extends BaseOptions> extends BaseView {
     private markdownSerializer: MarkdownSerializer;
     private plugin: AggregatedEditorPlugin<TOptions>;
 
@@ -26,63 +26,22 @@ export class RichTextEditor<TOptions> extends BaseView {
         super();
 
         this.plugin = plugin;
-        // TODO this.plugin.markdownParser
-        this.markdownSerializer = stackOverflowMarkdownSerializer(null);
+        this.markdownSerializer = stackOverflowMarkdownSerializer_new(plugin);
 
         const doc = this.parseContent(content);
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                //node.classList.add(...this.options.classList); //TODO
+                node.classList.add(...plugin.options.classList);
                 target.appendChild(node);
             },
             {
                 editable: editableCheck,
                 state: EditorState.create({
                     doc: doc,
-                    plugins: [
-                        // history(),
-                        // ...allKeymaps(this.options.parserFeatures),
-                        // createMenu(this.options),
-                        // richTextInputRules(this.options.parserFeatures),
-                        // linkPreviewPlugin(this.options.linkPreviewProviders),
-                        // CodeBlockHighlightPlugin(
-                        //     this.options.codeblockOverrideLanguage
-                        // ),
-                        // linkTooltipPlugin(this.options.parserFeatures),
-                        // richTextImageUpload(
-                        //     this.options.imageUpload,
-                        //     this.options.pluginParentContainer
-                        // ),
-                        // readonlyPlugin(),
-                        // spoilerToggle,
-                        // tables,
-                        // codePasteHandler,
-                        // linkPasteHandler(this.options.parserFeatures),
-                        // ...this.externalPlugins.plugins,
-                        ...this.plugin.richText.plugins,
-                    ],
+                    plugins: [...this.plugin.richText.plugins],
                 }),
                 nodeViews: {
-                    // code_block(node: ProseMirrorNode) {
-                    //     return new CodeBlockView(node);
-                    // },
-                    // image(
-                    //     node: ProseMirrorNode,
-                    //     view: EditorView,
-                    //     getPos: () => number
-                    // ) {
-                    //     return new ImageView(node, view, getPos);
-                    // },
-                    // tagLink(node: ProseMirrorNode) {
-                    //     return new TagLink(node, tagLinkOptions);
-                    // },
-                    // html_block: function (node: ProseMirrorNode) {
-                    //     return new HtmlBlock(node);
-                    // },
-                    // html_block_container: function (node: ProseMirrorNode) {
-                    //     return new HtmlBlockContainer(node);
-                    // },
                     ...plugin.richText.nodeViews,
                 },
             }
@@ -95,11 +54,7 @@ export class RichTextEditor<TOptions> extends BaseView {
     }
 
     parseContent(content: string): Node {
-        const markdownParser = buildMarkdownParser(
-            null, // TODO this.plugin.markdownParser
-            this.plugin.schema,
-            null
-        );
+        const markdownParser = buildMarkdownParser_new(this.plugin);
 
         let doc: Node;
 
