@@ -239,3 +239,9 @@ export function dispatchEditorEvent(
     });
     return target.dispatchEvent(event);
 }
+
+export type DeepRequired<T> = T extends Record<string | number, unknown>
+    ? Required<{
+          [Prop in keyof T]: NonNullable<DeepRequired<T[Prop]>>;
+      }>
+    : T;

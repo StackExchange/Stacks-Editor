@@ -7,6 +7,7 @@ import type { EditorState, Plugin } from "prosemirror-state";
 import type { EditorProps } from "prosemirror-view";
 import type { MarkdownSerializerNodes } from "../rich-text/markdown-serializer";
 import type { MenuCommand } from "../shared/menu";
+import { DeepRequired } from "../shared/utils";
 import type { View } from "../shared/view";
 
 export interface PluginSchemaSpec extends SchemaSpec {
@@ -61,7 +62,7 @@ export type MenuBlock = {
 
 /** TODO DOCUMENT ALL ITEMS */
 export interface EditorPlugin<TOptions = unknown> {
-    optionDefaults?: TOptions;
+    optionDefaults?: DeepRequired<TOptions>; // TODO make Required
 
     richText?: (options: TOptions) => {
         nodeViews?: EditorProps["nodeViews"];
@@ -82,7 +83,7 @@ export interface EditorPlugin<TOptions = unknown> {
     };
     markdownSerializers?: (options: TOptions) => MarkdownSerializerNodes;
 
-    schema?: (schema: PluginSchemaSpec, options: TOptions) => PluginSchemaSpec;
+    schema?: (schema: PluginSchemaSpec) => PluginSchemaSpec;
 
     events?: {
         onEnable?: EventCallback;
@@ -93,11 +94,10 @@ export interface EditorPlugin<TOptions = unknown> {
 }
 
 export interface AggregatedEditorPlugin<TOptions>
-    extends Required<
-        Omit<EditorPlugin<TOptions>, "schema" | "optionDefaults">
+    extends DeepRequired<
+        Omit<EditorPlugin<TOptions>, "schema" | "postProcess">
     > {
     schema: Schema;
-    options: TOptions;
 }
 
 export interface EditorConstructor<T> {

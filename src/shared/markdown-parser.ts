@@ -321,11 +321,14 @@ export function buildMarkdownParser(
 }
 
 /** TODO DOCUMENT */
-export function buildMarkdownParser_new<T>(plugin: AggregatedEditorPlugin<T>) {
+export function buildMarkdownParser_new<T>(
+    options: T,
+    plugin: AggregatedEditorPlugin<T>
+) {
     const defaultMarkdownItInstance = new SOMarkdownIt("default");
     plugin.configureMarkdownIt(defaultMarkdownItInstance);
 
-    const markdownSettings = plugin.markdownParser(plugin.options);
+    const markdownSettings = plugin.markdownParser(options);
 
     markdownSettings.plugins.forEach((p) => {
         defaultMarkdownItInstance.use(p);

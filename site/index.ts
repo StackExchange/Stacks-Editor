@@ -161,7 +161,7 @@ domReady(() => {
     }
 
     // asynchronously load the required bundles
-    void import("../src/index").then(function ({ StacksEditor }) {
+    void import("../src/builder/index").then(function ({ StacksEditor }) {
         const options: StacksEditorOptions = {
             defaultView: getDefaultEditor(),
             editorHelpLink: "#TODO",

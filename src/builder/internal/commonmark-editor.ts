@@ -11,20 +11,21 @@ export class CommonmarkEditor<TOptions extends BaseOptions> extends BaseView {
     constructor(
         target: Element,
         content: string,
+        options: TOptions,
         plugin: AggregatedEditorPlugin<TOptions>
     ) {
         super();
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                node.classList.add(...plugin.options.classList);
+                node.classList.add(...options.classList);
                 target.appendChild(node);
             },
             {
                 editable: editableCheck,
                 state: EditorState.create({
                     doc: this.parseContent(content),
-                    plugins: [...plugin.commonmark(plugin.options).plugins],
+                    plugins: [...plugin.commonmark(options).plugins],
                 }),
             }
         );

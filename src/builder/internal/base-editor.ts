@@ -41,14 +41,13 @@ export class BaseEditor<TOptions extends BaseOptions> implements Editor {
     private onDisable: EventCallback;
 
     constructor(
+        plugin: AggregatedEditorPlugin<TOptions>,
         target: HTMLElement,
         content: string,
-        options: TOptions,
-        defaultOptions: TOptions,
-        plugin: AggregatedEditorPlugin<TOptions>
+        options: TOptions
     ) {
         // do a deep merge of the passed options with our default options
-        this.options = deepMerge(defaultOptions, options) as TOptions;
+        this.options = deepMerge(plugin.optionDefaults, options) as TOptions;
         this.plugin = plugin;
 
         this.target = target;
@@ -227,12 +226,14 @@ export class BaseEditor<TOptions extends BaseOptions> implements Editor {
             this.backingView = new RichTextEditor(
                 this.innerTarget,
                 content,
+                this.options,
                 this.plugin
             );
         } else if (type === EditorType.Commonmark) {
             this.backingView = new CommonmarkEditor(
                 this.innerTarget,
                 content,
+                this.options,
                 this.plugin
             );
         } else {
