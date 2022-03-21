@@ -1,5 +1,11 @@
-import { BaseOptions, AggregatedEditorPlugin, EditorType } from "../types";
-import { BaseView, View } from "../../shared/view";
+import {
+    BaseOptions,
+    AggregatedEditorPlugin,
+    EditorType,
+    Editor,
+    EventCallback,
+} from "../types";
+import { BaseView } from "../../shared/view";
 import {
     deepMerge,
     dispatchEditorEvent,
@@ -12,9 +18,10 @@ import { EditorView } from "prosemirror-view";
 import { Node } from "prosemirror-model";
 import { RichTextEditor } from "./richtext-editor";
 import { CommonmarkEditor } from "./commonmark-editor";
+import { toggleReadonly } from "../../shared/prosemirror-plugins/readonly";
 
 /** TODO DOCUMENT */
-export class BaseEditor<TOptions extends BaseOptions> implements View {
+export class BaseEditor<TOptions extends BaseOptions> implements Editor {
     /** The element to render this view into */
     private target: HTMLElement;
     /** The element to render the backing view into */
@@ -30,8 +37,8 @@ export class BaseEditor<TOptions extends BaseOptions> implements View {
 
     private plugin: AggregatedEditorPlugin<TOptions>;
 
-    private onEnable: () => void;
-    private onDisable: () => void;
+    private onEnable: EventCallback;
+    private onDisable: EventCallback;
 
     constructor(
         target: HTMLElement,
@@ -79,6 +86,10 @@ export class BaseEditor<TOptions extends BaseOptions> implements View {
         return this.editorView.dom;
     }
 
+    get editorTarget(): Element {
+        return this.innerTarget;
+    }
+
     get readonly(): boolean {
         if (!this.editorView) {
             return false;
@@ -113,14 +124,24 @@ export class BaseEditor<TOptions extends BaseOptions> implements View {
      * Enables the editor view
      */
     enable(): void {
-        this.onEnable();
+        toggleReadonly(
+            false,
+            this.editorView.state,
+            this.editorView.dispatch.bind(null)
+        );
+        this.onEnable(this);
     }
 
     /**
      * Disables the editor view
      */
     disable(): void {
-        this.onDisable();
+        toggleReadonly(
+            true,
+            this.editorView.state,
+            this.editorView.dispatch.bind(null)
+        );
+        this.onDisable(this);
     }
 
     /**
@@ -309,10 +330,7 @@ export class BaseEditor<TOptions extends BaseOptions> implements View {
         const noOp = () => {
             /* This space intentionally left blank */
         };
-        this.onEnable =
-            (this.plugin.events?.onEnable?.bind(
-                this,
-                this
-            ) as BaseEditor<TOptions>["onEnable"]) || noOp;
+        this.onEnable = this.plugin.events?.onEnable || noOp;
+        this.onDisable = this.plugin.events?.onDisable || noOp;
     }
 }

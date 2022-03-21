@@ -15,6 +15,8 @@ export enum EditorType {
 export interface BaseOptions {
     /** The editor to show on instantiation */
     defaultView: EditorType;
+    /** The classes to add to the editor target */
+    classList?: string[];
     /** The list of classes to add to the backing editor's target */
     targetClassList?: string[];
     /**
@@ -29,6 +31,12 @@ export interface BaseOptions {
      */
     pluginParentContainer?: (view: EditorView) => Element;
 }
+
+export interface Editor extends View {
+    readonly editorTarget: Element;
+}
+
+export type EventCallback = (event: Editor) => void;
 
 export interface EditorPlugin<TOptions = unknown> {
     richText?: {
@@ -54,8 +62,8 @@ export interface EditorPlugin<TOptions = unknown> {
     };
 
     events?: {
-        onEnable?: (view: View) => void;
-        onDisable?: (view: View) => void;
+        onEnable?: EventCallback;
+        onDisable?: EventCallback;
     };
 }
 

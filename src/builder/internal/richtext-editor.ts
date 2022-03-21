@@ -95,11 +95,6 @@ export class RichTextEditor<TOptions> extends BaseView {
     }
 
     parseContent(content: string): Node {
-        // const alteredSchema = combineSchemas(
-        //     richTextSchema,
-        //     this.externalPlugins?.schema
-        // );
-
         const markdownParser = buildMarkdownParser(
             null, // TODO this.plugin.markdownParser
             this.plugin.schema,
