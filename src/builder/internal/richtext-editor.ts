@@ -29,6 +29,7 @@ export class RichTextEditor<TOptions extends BaseOptions> extends BaseView {
         this.markdownSerializer = stackOverflowMarkdownSerializer_new(plugin);
 
         const doc = this.parseContent(content);
+        const richTextSettings = plugin.richText(plugin.options);
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
@@ -39,10 +40,10 @@ export class RichTextEditor<TOptions extends BaseOptions> extends BaseView {
                 editable: editableCheck,
                 state: EditorState.create({
                     doc: doc,
-                    plugins: [...this.plugin.richText.plugins],
+                    plugins: [...richTextSettings.plugins],
                 }),
                 nodeViews: {
-                    ...plugin.richText.nodeViews,
+                    ...richTextSettings.nodeViews,
                 },
             }
         );

@@ -24,7 +24,7 @@ export class CommonmarkEditor<TOptions extends BaseOptions> extends BaseView {
                 editable: editableCheck,
                 state: EditorState.create({
                     doc: this.parseContent(content),
-                    plugins: [...plugin.commonmark.plugins],
+                    plugins: [...plugin.commonmark(plugin.options).plugins],
                 }),
             }
         );

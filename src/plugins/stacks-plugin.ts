@@ -20,7 +20,7 @@ interface OtherEditorPluginOptions extends BaseOptions {
 const READONLY_CLASSES = ["s-input__readonly"];
 
 export const stacksPlugin: EditorPlugin<OtherEditorPluginOptions> = {
-    options: {
+    optionDefaults: {
         defaultView: EditorType.RichText,
         targetClassList: [
             "ps-relative",

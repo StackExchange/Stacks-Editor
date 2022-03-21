@@ -1,11 +1,18 @@
 import type MarkdownIt from "markdown-it";
+import type OrderedMap from "orderedmap";
+import type { InputRule } from "prosemirror-inputrules";
 import type { TokenConfig } from "prosemirror-markdown";
-import type { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
-import type { Plugin } from "prosemirror-state";
+import type { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
+import type { EditorState, Plugin } from "prosemirror-state";
 import type { EditorProps } from "prosemirror-view";
 import type { MarkdownSerializerNodes } from "../rich-text/markdown-serializer";
-import type { MenuCommandEntry } from "../shared/menu";
+import type { MenuCommand } from "../shared/menu";
 import type { View } from "../shared/view";
+
+export interface PluginSchemaSpec extends SchemaSpec {
+    nodes: OrderedMap<NodeSpec>;
+    marks: OrderedMap<MarkSpec>;
+}
 
 /** Describes each distinct editor type the StacksEditor handles */
 export enum EditorType {
@@ -28,40 +35,69 @@ export interface Editor extends View {
 
 export type EventCallback = (event: Editor) => void;
 
+export interface MenuCommandEntryVariant {
+    active?: (state: EditorState) => boolean;
+    visible?: (state: EditorState) => boolean;
+    command: MenuCommand;
+}
+
+export interface MenuCommandEntry {
+    richText: MenuCommandEntryVariant | MenuCommand;
+    commonmark: MenuCommandEntryVariant | MenuCommand;
+    keybind?: string;
+
+    dom: HTMLElement;
+    key: string;
+
+    // if this menu entry is a dropdown menu, it will have child items containing the actual commands
+    children?: MenuCommandEntry[];
+}
+
+export type MenuBlock = {
+    name?: string;
+    priority?: number;
+    entries: MenuCommandEntry[];
+};
+
+/** TODO DOCUMENT ALL ITEMS */
 export interface EditorPlugin<TOptions = unknown> {
-    richText?: {
-        nodeViews: EditorProps["nodeViews"];
-        plugins: Plugin[];
-        menuEntries: MenuCommandEntry[];
+    optionDefaults?: TOptions;
+
+    richText?: (options: TOptions) => {
+        nodeViews?: EditorProps["nodeViews"];
+        plugins?: Plugin[];
+        inputRules?: InputRule[];
     };
-    commonmark?: {
-        plugins: Plugin[];
-        menuEntries: MenuCommandEntry[];
+    commonmark?: (options: TOptions) => {
+        plugins?: Plugin[];
     };
-    options?: TOptions;
+
+    menu?: (options: TOptions) => MenuBlock[];
 
     configureMarkdownIt?: (instance: MarkdownIt) => void;
 
-    markdownParser?: {
+    markdownParser?: (options: TOptions) => {
         tokens: { [key: string]: TokenConfig };
         plugins: markdownit.PluginSimple[];
     };
-    markdownSerializers?: MarkdownSerializerNodes;
+    markdownSerializers?: (options: TOptions) => MarkdownSerializerNodes;
 
-    schema?: {
-        nodes?: { [name: string]: NodeSpec };
-        marks?: { [name: string]: MarkSpec };
-    };
+    schema?: (schema: PluginSchemaSpec, options: TOptions) => PluginSchemaSpec;
 
     events?: {
         onEnable?: EventCallback;
         onDisable?: EventCallback;
     };
+
+    postProcess?: <T>(editor: AggregatedEditorPlugin<T>) => void;
 }
 
 export interface AggregatedEditorPlugin<TOptions>
-    extends Required<Omit<EditorPlugin<TOptions>, "schema">> {
+    extends Required<
+        Omit<EditorPlugin<TOptions>, "schema" | "optionDefaults">
+    > {
     schema: Schema;
+    options: TOptions;
 }
 
 export interface EditorConstructor<T> {

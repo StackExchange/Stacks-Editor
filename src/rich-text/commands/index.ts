@@ -41,7 +41,7 @@ import {
 export * from "./tables";
 
 //TODO
-function toggleWrapIn(nodeType: NodeType) {
+export function toggleWrapIn(nodeType: NodeType) {
     const nodeCheck = nodeTypeActive(nodeType);
     const wrapInCommand = wrapIn(nodeType);
 
@@ -73,7 +73,7 @@ function toggleWrapIn(nodeType: NodeType) {
 /** Command to set a block type to a paragraph (plain text) */
 const setToTextCommand = setBlockType(schema.nodes.paragraph);
 
-function toggleBlockType(
+export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
@@ -161,7 +161,7 @@ export function insertLinkCommand(
  * Creates an `active` method that returns true of the current selection is/contained in the current block type
  * @param nodeType The type of the node to check for
  */
-function nodeTypeActive(nodeType: NodeType) {
+export function nodeTypeActive(nodeType: NodeType) {
     return function (state: EditorState) {
         const { from, to } = state.selection;
         let isNodeType = false;
@@ -182,7 +182,7 @@ function nodeTypeActive(nodeType: NodeType) {
  * Creates an `active` method that returns true of the current selection has the passed mark
  * @param mark The mark to check for
  */
-function markActive(mark: MarkType) {
+export function markActive(mark: MarkType) {
     return function (state: EditorState) {
         const { from, $from, to, empty } = state.selection;
         if (empty) {

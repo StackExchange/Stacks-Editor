@@ -159,3 +159,19 @@ export const richTextInputRules = (features: CommonmarkParserFeatures) =>
             linkRule(features),
         ],
     });
+
+/** TODO */
+export const richTextInputRules_new = (features: CommonmarkParserFeatures) => [
+    blockquoteInputRule,
+    spoilerInputRule,
+    headingInputRule,
+    codeBlockRule,
+    unorderedListRule,
+    orderedListRule,
+    inlineCodeRule,
+    boldRule,
+    boldUnderlineRule,
+    emphasisRule,
+    emphasisUnderlineRule,
+    linkRule(features),
+];
