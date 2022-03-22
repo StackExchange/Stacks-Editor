@@ -106,7 +106,7 @@ export function getBlockLanguage(
     return dealiasLangauge(rawLanguage);
 }
 
-/** TODO DOCUMENT */
+/** Returns all supported language codes */
 export function getLoadedLanguages() {
     return SUPPORTED_LANGS;
 }

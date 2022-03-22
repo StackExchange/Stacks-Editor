@@ -97,6 +97,7 @@ export class CodeBlockView implements NodeView {
 
         if (this.language.autodetected) {
             $sel.value = "auto";
+            // TODO localization
             $auto.textContent = lang + " (auto)";
         } else {
             $sel.value = lang;
