@@ -1,5 +1,5 @@
 import { Node } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { EditorState, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { log } from "../../shared/logger";
 import { editableCheck } from "../../shared/prosemirror-plugins/readonly";
@@ -12,7 +12,8 @@ export class CommonmarkEditor<TOptions extends BaseOptions> extends BaseView {
         target: Element,
         content: string,
         options: TOptions,
-        plugin: AggregatedEditorPlugin<TOptions>
+        plugin: AggregatedEditorPlugin<TOptions>,
+        menuPlugin: Plugin
     ) {
         super();
 
@@ -25,7 +26,10 @@ export class CommonmarkEditor<TOptions extends BaseOptions> extends BaseView {
                 editable: editableCheck,
                 state: EditorState.create({
                     doc: this.parseContent(content),
-                    plugins: [...plugin.commonmark(options).plugins],
+                    plugins: [
+                        menuPlugin,
+                        ...plugin.commonmark(options).plugins,
+                    ],
                 }),
             }
         );

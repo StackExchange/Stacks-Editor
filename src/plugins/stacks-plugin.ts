@@ -9,12 +9,12 @@ import { defaultImageUploadHandler } from "../shared/prosemirror-plugins/image-u
 // TODO we should pull these in from the plugins themselves
 // so removing options "upstream" doesn't cause them to stick around here...
 interface OtherEditorPluginOptions extends BaseOptions {
-    imageUpload: {
-        handler: (file: File) => Promise<string>;
+    imageUpload?: {
+        handler?: (file: File) => Promise<string>;
     };
 
-    linkPreviewProviders: [];
-    codeblockOverrideLanguage: string;
+    linkPreviewProviders?: [];
+    codeblockOverrideLanguage?: string;
 }
 
 const READONLY_CLASSES = ["s-input__readonly"];

@@ -79,7 +79,7 @@ export interface EditorPlugin<TOptions = unknown> {
 
     markdownParser?: (options: TOptions) => {
         tokens: { [key: string]: TokenConfig };
-        plugins: markdownit.PluginSimple[];
+        plugins: markdownit.PluginSimple[]; // TODO UNUSED due to configureMarkdownIt?
     };
     markdownSerializers?: (options: TOptions) => MarkdownSerializerNodes;
 

@@ -1,5 +1,6 @@
 import { Schema } from "prosemirror-model";
 import { basePlugin } from "../plugins/base";
+import { stacksPlugin } from "../plugins/stacks-plugin";
 import { deepMerge } from "../shared/utils";
 import { BaseEditor } from "./internal/base-editor";
 import {
@@ -46,7 +47,7 @@ export class EditorBuilder<TOptions extends BaseOptions> {
         type X = Omit<
             MakeArray<EditorPlugin<T>>,
             "optionDefaults" | "events"
-        > & { optionDefaults: Record<string, unknown> } & {
+        > & { optionDefaults: unknown } & {
             events: MakeArray<EditorPlugin<T>["events"]>;
         };
 
@@ -57,7 +58,7 @@ export class EditorBuilder<TOptions extends BaseOptions> {
                     p.optionDefaults = deepMerge(
                         p.optionDefaults,
                         n.optionDefaults
-                    ) as AggregatedEditorPlugin<T>["optionDefaults"];
+                    );
 
                     p.richText.push(n.richText);
                     p.commonmark.push(n.commonmark);
@@ -66,18 +67,14 @@ export class EditorBuilder<TOptions extends BaseOptions> {
                     p.markdownParser.push(n.markdownParser);
                     p.markdownSerializers.push(n.markdownSerializers);
                     p.schema.push(n.schema); // TODO
-                    p.events.onEnable.push(n.events.onEnable);
-                    p.events.onDisable.push(n.events.onDisable);
+                    p.events.onEnable.push(n.events?.onEnable);
+                    p.events.onDisable.push(n.events?.onDisable);
                     p.postProcess.push(n.postProcess);
 
                     return p;
                 },
                 {
-                    optionDefaults:
-                        EditorBuilder.getBaseOptionDefaults() as Record<
-                            string,
-                            unknown
-                        >,
+                    optionDefaults: EditorBuilder.getBaseOptionDefaults(),
                     richText: [],
                     commonmark: [],
                     menu: [],
@@ -93,16 +90,22 @@ export class EditorBuilder<TOptions extends BaseOptions> {
                 }
             );
 
-        const schema = new Schema(wrapCallEach(aggregatedProps.schema)); // TODO
+        const schema = new Schema(wrapCallEach(aggregatedProps.schema)(null));
 
         const ret: AggregatedEditorPlugin<T> = {
             optionDefaults:
                 aggregatedProps.optionDefaults as AggregatedEditorPlugin<T>["optionDefaults"],
-            richText: null,
-            commonmark: null,
+            richText: aggregateRichTextEditorSettings(aggregatedProps.richText),
+            commonmark: aggregateCommonmarkEditorSettings(
+                aggregatedProps.commonmark
+            ),
             menu: aggregateMenu(aggregatedProps.menu),
-            configureMarkdownIt: null,
-            markdownParser: null,
+            configureMarkdownIt: wrapCallEach(
+                aggregatedProps.configureMarkdownIt
+            ),
+            markdownParser: aggregateMarkdownParser(
+                aggregatedProps.markdownParser
+            ),
             markdownSerializers: null,
             schema: schema,
             events: {
@@ -123,11 +126,112 @@ type MakeArray<T> = {
     [Prop in keyof T]: T[Prop][];
 };
 
+function wrapCallEach<T extends (...args: unknown[]) => unknown>(fns: T[]) {
+    return (...args: Parameters<T>) => {
+        let ret: ReturnType<T> = undefined;
+
+        for (const fn of fns) {
+            if (fn) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                ret = fn(...args);
+            }
+
+            if (ret !== undefined) {
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-expect-error
+                args = [ret];
+            }
+        }
+
+        return ret;
+    };
+}
+
+function aggregateRichTextEditorSettings(
+    m: EditorPlugin["richText"][]
+): EditorPlugin["richText"] {
+    return (opts) => {
+        let ret: ReturnType<EditorPlugin["richText"]> = {
+            plugins: [],
+            nodeViews: {},
+            inputRules: [],
+        };
+
+        for (const fn of m) {
+            if (fn) {
+                const newRet = fn(opts);
+                ret = {
+                    plugins: [...ret.plugins, ...newRet.plugins],
+                    nodeViews: {
+                        ...ret.nodeViews,
+                        ...newRet.nodeViews,
+                    },
+                    inputRules: [...ret.inputRules, ...newRet.inputRules],
+                };
+            }
+        }
+
+        return ret;
+    };
+}
+
+function aggregateCommonmarkEditorSettings(
+    m: EditorPlugin["commonmark"][]
+): EditorPlugin["commonmark"] {
+    return (opts) => {
+        let ret: ReturnType<EditorPlugin["commonmark"]> = {
+            plugins: [],
+        };
+
+        for (const fn of m) {
+            if (fn) {
+                const newRet = fn(opts);
+                ret = {
+                    plugins: [...ret.plugins, ...newRet.plugins],
+                };
+            }
+        }
+
+        return ret;
+    };
+}
+
+function aggregateMarkdownParser(
+    m: EditorPlugin["markdownParser"][]
+): EditorPlugin["markdownParser"] {
+    return (opts) => {
+        let ret: ReturnType<EditorPlugin["markdownParser"]> = {
+            tokens: {},
+            plugins: [],
+        };
+
+        for (const fn of m) {
+            if (fn) {
+                const newRet = fn(opts);
+                ret = {
+                    tokens: {
+                        ...ret.tokens,
+                        ...newRet.tokens,
+                    },
+                    plugins: [...ret.plugins, ...newRet.plugins],
+                };
+            }
+        }
+
+        return ret;
+    };
+}
+
 function aggregateMenu(m: EditorPlugin["menu"][]): EditorPlugin["menu"] {
     return (opts) => {
         const existingBlocks: Record<string, MenuBlock> = {};
 
         for (const fn of m) {
+            if (!fn) {
+                continue;
+            }
+
             const blocks = fn(opts);
 
             for (const block of blocks) {
@@ -169,4 +273,7 @@ function aggregateMenu(m: EditorPlugin["menu"][]): EditorPlugin["menu"] {
     };
 }
 
-export const StacksEditor = new EditorBuilder().add("base", basePlugin).build();
+export const StacksEditor = new EditorBuilder()
+    .add("base", basePlugin)
+    .add("stacks", stacksPlugin)
+    .build();

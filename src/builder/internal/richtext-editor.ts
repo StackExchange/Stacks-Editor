@@ -1,6 +1,6 @@
 import { MarkdownSerializer } from "prosemirror-markdown";
 import { Node } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { EditorState, Plugin } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import { stackOverflowMarkdownSerializer_new } from "../../rich-text/markdown-serializer";
@@ -23,7 +23,8 @@ export class RichTextEditor<TOptions extends BaseOptions> extends BaseView {
         target: Element,
         content: string,
         options: TOptions,
-        plugin: AggregatedEditorPlugin<TOptions>
+        plugin: AggregatedEditorPlugin<TOptions>,
+        menuPlugin: Plugin
     ) {
         super();
 
@@ -43,7 +44,7 @@ export class RichTextEditor<TOptions extends BaseOptions> extends BaseView {
                 editable: editableCheck,
                 state: EditorState.create({
                     doc: doc,
-                    plugins: [...richTextSettings.plugins],
+                    plugins: [menuPlugin, ...richTextSettings.plugins],
                 }),
                 nodeViews: {
                     ...richTextSettings.nodeViews,

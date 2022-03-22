@@ -334,8 +334,9 @@ export function buildMarkdownParser_new<T>(
         defaultMarkdownItInstance.use(p);
     });
 
-    return new SOMarkdownParser(plugin.schema, defaultMarkdownItInstance, {
-        ...customMarkdownParserTokens,
-        ...markdownSettings.tokens,
-    });
+    return new SOMarkdownParser(
+        plugin.schema,
+        defaultMarkdownItInstance,
+        markdownSettings.tokens
+    );
 }

@@ -4,6 +4,7 @@ import {
     EditorType,
     Editor,
     EventCallback,
+    MenuBlock,
 } from "../types";
 import { BaseView } from "../../shared/view";
 import {
@@ -19,6 +20,11 @@ import { Node } from "prosemirror-model";
 import { RichTextEditor } from "./richtext-editor";
 import { CommonmarkEditor } from "./commonmark-editor";
 import { toggleReadonly } from "../../shared/prosemirror-plugins/readonly";
+import {
+    createMenuPlugin,
+    makeMenuSpacerEntry,
+    MenuCommandEntry,
+} from "../../shared/menu";
 
 /** TODO DOCUMENT */
 export class BaseEditor<TOptions extends BaseOptions> implements Editor {
@@ -39,6 +45,8 @@ export class BaseEditor<TOptions extends BaseOptions> implements Editor {
 
     private onEnable: EventCallback;
     private onDisable: EventCallback;
+
+    private menuParentContainer: () => HTMLElement;
 
     constructor(
         plugin: AggregatedEditorPlugin<TOptions>,
@@ -169,8 +177,7 @@ export class BaseEditor<TOptions extends BaseOptions> implements Editor {
         this.pluginContainer.appendChild(menuTarget);
 
         // set the editors' menu containers to be the combo container
-        // const menuContainerFn = () => menuTarget;
-        // this.options.menuParentContainer = menuContainerFn;
+        this.menuParentContainer = () => menuTarget;
 
         // create a specific area for the editor plugins
         const pluginTarget = document.createElement("div");
@@ -227,14 +234,16 @@ export class BaseEditor<TOptions extends BaseOptions> implements Editor {
                 this.innerTarget,
                 content,
                 this.options,
-                this.plugin
+                this.plugin,
+                this.createMenuPlugin(type)
             );
         } else if (type === EditorType.Commonmark) {
             this.backingView = new CommonmarkEditor(
                 this.innerTarget,
                 content,
                 this.options,
-                this.plugin
+                this.plugin,
+                this.createMenuPlugin(type)
             );
         } else {
             throw `Unable to set editor to unknown type: ${EditorType[type]}`;
@@ -333,5 +342,48 @@ export class BaseEditor<TOptions extends BaseOptions> implements Editor {
         };
         this.onEnable = this.plugin.events?.onEnable || noOp;
         this.onDisable = this.plugin.events?.onDisable || noOp;
+    }
+
+    private createMenuPlugin(type: EditorType) {
+        const entries: MenuCommandEntry[] = [];
+
+        const toLegacyEntry = (
+            e: MenuBlock["entries"][0]
+        ): MenuCommandEntry => {
+            let command: Pick<
+                MenuCommandEntry,
+                "command" | "active" | "visible"
+            >;
+
+            const c =
+                type === EditorType.Commonmark ? e.commonmark : e.richText;
+
+            if ("command" in c) {
+                command = c;
+            } else {
+                command = {
+                    command: c,
+                };
+            }
+
+            return {
+                ...command,
+                dom: e.dom,
+                key: e.key,
+                children: e.children?.map(toLegacyEntry),
+            };
+        };
+
+        this.plugin.menu(this.options).forEach((block) => {
+            if (entries.length) {
+                entries.push(makeMenuSpacerEntry());
+            }
+
+            const newEntries = block.entries.map(toLegacyEntry);
+
+            entries.push(...newEntries);
+        });
+
+        return createMenuPlugin(entries, this.menuParentContainer);
     }
 }
