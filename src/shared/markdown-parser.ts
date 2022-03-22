@@ -8,6 +8,7 @@ import {
 import { NodeType, Schema } from "prosemirror-model";
 import { ExternalEditorPlugin } from "./external-editor-plugin";
 import { log } from "./logger";
+import { hardbreak_markup } from "./markdown-it/hardbreak-markup";
 import { html } from "./markdown-it/html";
 import { reference_link } from "./markdown-it/reference-link";
 import { spoiler } from "./markdown-it/spoiler";
@@ -306,6 +307,9 @@ export function buildMarkdownParser(
 
     // ensure links are have their references properly referenced
     defaultMarkdownItInstance.use(reference_link);
+
+    // ensure we can tell the difference between the different types of hardbreaks
+    defaultMarkdownItInstance.use(hardbreak_markup);
 
     if (externalPlugins?.markdownParser) {
         externalPlugins.markdownParser.plugins.forEach((p) => {

@@ -268,13 +268,13 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             return;
         }
 
-        // TODO `[space][space][newline]` or `\[newline]`
-        // TODO markdown-it's output doesn't differentiate in the later two cases, so assume spacespace since that is likely more common
-        for (let i = index + 1; i < parent.childCount; i++)
+        for (let i = index + 1; i < parent.childCount; i++) {
             if (parent.child(i).type != node.type) {
-                state.write("  \n");
+                // `[space][space][newline]` or `\[newline]`
+                state.write(node.attrs.markup || "  \n");
                 return;
             }
+        }
     },
     text(state, node) {
         const linkMark = node.marks.find((m) => m.type.name === "link");
