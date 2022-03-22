@@ -26,7 +26,7 @@ export class CodeBlockView implements NodeView {
 
         this.dom.innerHTML = escapeHTML`
 <pre class="s-code-block"><code class="content-dom"></code></pre>
-<select class="ps-absolute bg-transparent h:bg-unset c-pointer t2 r4 fs-fine us-none js-lang-select"></select>
+<div class="s-select s-select__sm ps-absolute t6 r6"><select class="js-lang-select"></select></div>
         `;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
