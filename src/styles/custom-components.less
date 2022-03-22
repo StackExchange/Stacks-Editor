@@ -107,6 +107,23 @@
             right: @su4;
         }
     }
+
+    &.s-editor-btn__dropdown-item {
+        display: block;
+        padding: @su4 @su12;
+        border: none;
+        border-radius: 0;
+        color: var(--black-800);
+        text-align: left;
+
+        &:hover {
+            color: var(--black-800);
+        }
+
+        &.is-disabled {
+            color: var(--black-150);
+        }
+    }
 }
 
 .s-editor-resizable {
