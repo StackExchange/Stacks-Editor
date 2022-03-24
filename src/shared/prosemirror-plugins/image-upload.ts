@@ -348,6 +348,7 @@ export class ImageUploader implements PluginView {
                 image.className = "hmx1 w-auto";
                 image.title = file.name;
                 image.src = reader.result as string;
+                image.alt = "image preview";
                 previewElement.appendChild(image);
                 previewElement.classList.remove("d-none");
                 this.image = file;
