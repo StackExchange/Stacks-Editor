@@ -41,6 +41,23 @@ describe("image upload plugin", () => {
         expect(updatedUploadContainer.classList).not.toContain("d-none");
     });
 
+    it("should focus 'browse' button when showing image uploader", () => {
+        // we need to add our DOM to the doc's body in order to make jsdom's "focus" handling work
+        // see https://github.com/jsdom/jsdom/issues/2586#issuecomment-742593116
+        document.body.appendChild(pluginContainer);
+
+        expect(uploader.uploadContainer.classList).toContain("d-none");
+
+        showImageUploader(view.editorView);
+        uploader.update(view.editorView);
+        const updatedUploadContainer =
+            pluginContainer.querySelector(".js-image-uploader");
+
+        expect(document.activeElement).toEqual(
+            updatedUploadContainer.querySelector(".js-browse-button")
+        );
+    });
+
     it("should hide image uploader", () => {
         showImageUploader(view.editorView);
         uploader.update(view.editorView);
