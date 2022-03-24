@@ -113,15 +113,18 @@ export class ImageUploader implements PluginView {
 
         this.uploadField = document.createElement("input");
         this.uploadField.type = "file";
-        this.uploadField.className = "d-none";
+        this.uploadField.className = "js-image-uploader-input v-visible-sr";
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + (Math.random() * 10000).toFixed(0);
 
         this.uploadContainer.innerHTML = escapeHTML`
-            <div class="fs-body2 p12 pb0"><label class="s-link" for="${this.uploadField.id}">Browse</label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
+            <div class="fs-body2 p12 pb0">
+                <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" role="button" aria-controls="image-preview">
+                    Browse
+                </label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
 
-            <div class="js-image-preview wmx100 pt12 px12 d-none"></div>
+            <div id="image-preview" class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
 
             <div class="d-flex ai-center p12">
@@ -135,7 +138,9 @@ export class ImageUploader implements PluginView {
         `;
 
         // add in the uploadField right after the first child element
-        this.uploadContainer.children[0].after(this.uploadField);
+        this.uploadContainer
+            .querySelector(`.js-browse-button`)
+            .appendChild(this.uploadField);
 
         // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
         // eslint-disable-next-line no-unsanitized/property
@@ -336,6 +341,8 @@ export class ImageUploader implements PluginView {
                 image.className = "hmx1 w-auto";
                 image.title = file.name;
                 image.src = reader.result as string;
+                // TODO localization
+                image.alt = "uploaded image preview";
                 previewElement.appendChild(image);
                 previewElement.classList.remove("d-none");
                 this.image = file;
@@ -464,7 +471,10 @@ export class ImageUploader implements PluginView {
 
         if (this.isVisible) {
             this.uploadContainer.classList.remove("d-none");
-            this.uploadContainer.querySelector("button").focus();
+
+            this.uploadContainer
+                .querySelector<HTMLElement>(".js-image-uploader-input")
+                .focus();
 
             if (this.image) {
                 void this.showImagePreview(this.image);
