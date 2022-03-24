@@ -120,7 +120,7 @@ export class ImageUploader implements PluginView {
 
         this.uploadContainer.innerHTML = escapeHTML`
             <div class="fs-body2 p12 pb0">
-                <label for="${this.uploadField.id}">
+                <label for="${this.uploadField.id}" class="d-inline-flex">
                     <span class="s-link js-browse-button" role="button" aria-controls="image-preview" tabindex="0">Browse</span>
                 </label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
 
