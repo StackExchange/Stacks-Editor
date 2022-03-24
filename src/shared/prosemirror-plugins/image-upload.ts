@@ -113,7 +113,7 @@ export class ImageUploader implements PluginView {
 
         this.uploadField = document.createElement("input");
         this.uploadField.type = "file";
-        this.uploadField.className = "v-visible-sr";
+        this.uploadField.className = "js-image-uploader-input v-visible-sr";
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + (Math.random() * 10000).toFixed(0);
@@ -473,7 +473,7 @@ export class ImageUploader implements PluginView {
             this.uploadContainer.classList.remove("d-none");
 
             this.uploadContainer
-                .querySelector<HTMLElement>(".js-browse-button input")
+                .querySelector<HTMLElement>(".js-image-uploader-input")
                 .focus();
 
             if (this.image) {

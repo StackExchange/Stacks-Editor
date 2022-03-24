@@ -53,9 +53,14 @@ describe("image upload plugin", () => {
         const updatedUploadContainer =
             pluginContainer.querySelector(".js-image-uploader");
 
-        expect(document.activeElement).toEqual(
-            updatedUploadContainer.querySelector(".js-browse-button")
+        const fileInput = updatedUploadContainer.querySelector(
+            ".js-browse-button input"
         );
+        // the actual element changes when the plugin state is updated, so we can't check exact match
+        expect(document.activeElement.className).toEqual(fileInput.className);
+
+        // cleanup the appended child
+        pluginContainer.remove();
     });
 
     it("should hide image uploader", () => {
