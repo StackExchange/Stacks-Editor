@@ -113,15 +113,15 @@ export class ImageUploader implements PluginView {
 
         this.uploadField = document.createElement("input");
         this.uploadField.type = "file";
-        this.uploadField.className = "d-none";
+        this.uploadField.className = "v-visible-sr";
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + (Math.random() * 10000).toFixed(0);
 
         this.uploadContainer.innerHTML = escapeHTML`
             <div class="fs-body2 p12 pb0">
-                <label for="${this.uploadField.id}" class="d-inline-flex">
-                    <span class="s-link js-browse-button" role="button" aria-controls="image-preview" tabindex="0">Browse</span>
+                <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" role="button" aria-controls="image-preview">
+                    Browse
                 </label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
 
             <div id="image-preview" class="js-image-preview wmx100 pt12 px12 d-none"></div>
@@ -138,7 +138,9 @@ export class ImageUploader implements PluginView {
         `;
 
         // add in the uploadField right after the first child element
-        this.uploadContainer.children[0].after(this.uploadField);
+        this.uploadContainer
+            .querySelector(`.js-browse-button`)
+            .appendChild(this.uploadField);
 
         // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
         // eslint-disable-next-line no-unsanitized/property
@@ -208,15 +210,6 @@ export class ImageUploader implements PluginView {
             .addEventListener("click", (e: Event) =>
                 this.handleUploadTrigger(e, this.image, view)
             );
-
-        this.uploadContainer
-            .querySelector(".js-browse-button")
-            .addEventListener("keydown", (e: KeyboardEvent) => {
-                if (e.key === "Enter") {
-                    e.preventDefault();
-                    this.uploadField.click();
-                }
-            });
     }
 
     highlightDropArea(event: DragEvent): void {
@@ -348,7 +341,8 @@ export class ImageUploader implements PluginView {
                 image.className = "hmx1 w-auto";
                 image.title = file.name;
                 image.src = reader.result as string;
-                image.alt = "image preview";
+                // TODO localization
+                image.alt = "uploaded image preview";
                 previewElement.appendChild(image);
                 previewElement.classList.remove("d-none");
                 this.image = file;
@@ -479,7 +473,7 @@ export class ImageUploader implements PluginView {
             this.uploadContainer.classList.remove("d-none");
 
             this.uploadContainer
-                .querySelector<HTMLElement>(".js-browse-button")
+                .querySelector<HTMLElement>(".js-browse-button input")
                 .focus();
 
             if (this.image) {
