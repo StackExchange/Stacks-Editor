@@ -60,12 +60,17 @@ export class CommonmarkEditor extends BaseView {
                             props: {
                                 handleDOMEvents: {
                                     mousedown(view, event) {
-                                        const { selection: { $from, $to } } = view.state;
-                                        return $from.sameParent($to) && event.detail === 3;
-                                    }
-                                }
-                            }
-                        })
+                                        const {
+                                            selection: { $from, $to },
+                                        } = view.state;
+                                        return (
+                                            $from.sameParent($to) &&
+                                            event.detail === 3
+                                        );
+                                    },
+                                },
+                            },
+                        }),
                     ],
                 }),
             }
