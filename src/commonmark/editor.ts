@@ -1,6 +1,6 @@
 import { history } from "prosemirror-history";
 import { Node as ProseMirrorNode } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { EditorState, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
@@ -54,6 +54,18 @@ export class CommonmarkEditor extends BaseView {
                             this.options.pluginParentContainer
                         ),
                         readonlyPlugin(),
+                        // address https://github.com/StackExchange/Stacks-Editor/issues/27
+                        // prosemirror doesn't handle triple-clicks well in markdown mode
+                        new Plugin({
+                            props: {
+                                handleDOMEvents: {
+                                    mousedown(view, event) {
+                                        const { selection: { $from, $to } } = view.state;
+                                        return $from.sameParent($to) && event.detail === 3;
+                                    }
+                                }
+                            }
+                        })
                     ],
                 }),
             }
