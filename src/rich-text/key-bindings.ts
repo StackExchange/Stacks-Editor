@@ -1,10 +1,4 @@
-import {
-    toggleMark,
-    wrapIn,
-    setBlockType,
-    exitCode,
-    baseKeymap,
-} from "prosemirror-commands";
+import { toggleMark, wrapIn, exitCode, baseKeymap } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
@@ -27,6 +21,7 @@ import {
     moveSelectionAfterTableCommand,
     insertTableCommand,
     exitInclusiveMarkCommand,
+    toggleBlockType,
 } from "./commands";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
@@ -62,9 +57,9 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         "Ctrl-g": insertImageCommand,
         "Mod-o": wrapIn(schema.nodes.ordered_list),
         "Mod-u": wrapIn(schema.nodes.bullet_list),
-        "Mod-h": setBlockType(schema.nodes.heading),
+        "Mod-h": toggleBlockType(schema.nodes.heading),
         "Mod-r": insertHorizontalRuleCommand,
-        "Mod-m": setBlockType(schema.nodes.code_block),
+        "Mod-m": toggleBlockType(schema.nodes.code_block),
         // users expect to be able to leave certain blocks/marks using the arrow keys
         "ArrowRight": exitInclusiveMarkCommand,
         "ArrowDown": exitCode,

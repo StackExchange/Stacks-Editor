@@ -73,11 +73,11 @@ function toggleWrapIn(nodeType: NodeType) {
 /** Command to set a block type to a paragraph (plain text) */
 const setToTextCommand = setBlockType(schema.nodes.paragraph);
 
-function toggleBlockType(
+export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
-    const nodeCheck = nodeTypeActive(nodeType);
+    const nodeCheck = nodeTypeActive(nodeType, attrs);
     const setBlockTypeCommand = setBlockType(nodeType, attrs);
 
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
