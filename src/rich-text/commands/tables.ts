@@ -6,7 +6,7 @@ import {
 } from "prosemirror-model";
 import { EditorState, Transaction, Selection } from "prosemirror-state";
 import { richTextSchema as schema, tableNodes } from "../../shared/schema";
-import { insertParagraphIfAtDocEnd } from "./helpers";
+import { insertParagraphIfAtDocEnd } from "../../utils/richtext-commands";
 
 export function inTable(selection: Selection): boolean {
     return tableNodes.includes(selection.$head.parent.type);
@@ -406,7 +406,7 @@ export function insertTableCommand(
         body(row(cell(), cell()), row(cell(), cell()))
     );
     let tr = state.tr.replaceSelectionWith(t);
-    tr = insertParagraphIfAtDocEnd(tr, 2);
+    tr = insertParagraphIfAtDocEnd(schema.nodes.paragraph, tr, 2);
 
     dispatch(tr.scrollIntoView());
 

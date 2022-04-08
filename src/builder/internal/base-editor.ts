@@ -19,7 +19,7 @@ import { EditorView } from "prosemirror-view";
 import { Node } from "prosemirror-model";
 import { RichTextEditor } from "./richtext-editor";
 import { CommonmarkEditor } from "./commonmark-editor";
-import { toggleReadonly } from "../../shared/prosemirror-plugins/readonly";
+import { toggleReadonly } from "../../plugins/base/readonly";
 import {
     createMenuPlugin,
     makeMenuSpacerEntry,

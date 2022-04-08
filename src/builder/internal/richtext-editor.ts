@@ -6,7 +6,7 @@ import { EditorView } from "prosemirror-view";
 import { stackOverflowMarkdownSerializer_new } from "../../rich-text/markdown-serializer";
 import { error, log } from "../../shared/logger";
 import { buildMarkdownParser_new } from "../../shared/markdown-parser";
-import { editableCheck } from "../../shared/prosemirror-plugins/readonly";
+import { editableCheck } from "../../plugins/base/readonly";
 import { CodeStringParser } from "../../shared/schema";
 import { BaseView } from "../../shared/view";
 import { AggregatedEditorPlugin, BaseOptions } from "../types";

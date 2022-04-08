@@ -1,4 +1,4 @@
-import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
+import { toggleMark } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Mark, MarkType, NodeType } from "prosemirror-model";
 import {
@@ -7,7 +7,6 @@ import {
     TextSelection,
     Transaction,
 } from "prosemirror-state";
-import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
     addIf,
@@ -25,8 +24,8 @@ import {
 } from "../../shared/prosemirror-plugins/image-upload";
 import { richTextSchema as schema } from "../../shared/schema";
 import type { CommonViewOptions } from "../../shared/view";
+import { toggleBlockType, toggleWrapIn } from "../../utils/richtext-commands";
 import { LINK_TOOLTIP_KEY } from "../plugins/link-tooltip";
-import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
     insertTableColumnAfterCommand,
     insertTableColumnBeforeCommand,
@@ -39,62 +38,6 @@ import {
 } from "./tables";
 
 export * from "./tables";
-
-//TODO
-export function toggleWrapIn(nodeType: NodeType) {
-    const nodeCheck = nodeTypeActive(nodeType);
-    const wrapInCommand = wrapIn(nodeType);
-
-    return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
-        // if the node is not wrapped, go ahead and wrap it
-        if (!nodeCheck(state)) {
-            return wrapInCommand(state, dispatch);
-        }
-
-        const { $from, $to } = state.selection;
-        const range = $from.blockRange($to);
-
-        // check if there is a valid target to lift to
-        const target = range && liftTarget(range);
-
-        // if we cannot unwrap, return false
-        if (target == null) {
-            return false;
-        }
-
-        if (dispatch) {
-            dispatch(state.tr.lift(range, target));
-        }
-
-        return true;
-    };
-}
-
-/** Command to set a block type to a paragraph (plain text) */
-const setToTextCommand = setBlockType(schema.nodes.paragraph);
-
-export function toggleBlockType(
-    nodeType: NodeType,
-    attrs?: { [key: string]: unknown }
-) {
-    const nodeCheck = nodeTypeActive(nodeType);
-    const setBlockTypeCommand = setBlockType(nodeType, attrs);
-
-    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
-        // if the node is set, toggle it off
-        if (nodeCheck(state)) {
-            return setToTextCommand(state, dispatch);
-        }
-
-        return setBlockTypeCommand(state, (t) => {
-            if (dispatch) {
-                // when adding a block node, make sure the user can navigate past it
-                t = insertParagraphIfAtDocEnd(t);
-                dispatch(t);
-            }
-        });
-    };
-}
 
 export function insertHorizontalRuleCommand(
     state: EditorState,
@@ -291,7 +234,11 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
         [
             {
                 key: "toggleHeading",
-                command: toggleBlockType(schema.nodes.heading, { level: 1 }),
+                command: toggleBlockType(
+                    schema.nodes.heading,
+                    schema.nodes.paragraph,
+                    { level: 1 }
+                ),
                 dom: makeMenuIcon("Header", "Heading", "heading-btn"),
                 active: nodeTypeActive(schema.nodes.heading),
             },
@@ -340,7 +287,10 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             },
             {
                 key: "toggleCodeblock",
-                command: toggleBlockType(schema.nodes.code_block),
+                command: toggleBlockType(
+                    schema.nodes.code_block,
+                    schema.nodes.paragraph
+                ),
                 dom: makeMenuIcon("Codeblock", "Code block", "code-block-btn"),
                 active: nodeTypeActive(schema.nodes.code_block),
             },

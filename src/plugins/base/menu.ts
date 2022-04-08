@@ -5,6 +5,7 @@ import { MenuBlock } from "../../builder/types";
 import * as commonmarkCommands from "../../commonmark/commands";
 import * as richTextCommands from "../../rich-text/commands";
 import { makeMenuIcon } from "../../shared/menu";
+import { toggleBlockType, toggleWrapIn } from "../../utils/richtext-commands";
 
 export function generateBasicMenu(): MenuBlock[] {
     return [
@@ -15,9 +16,12 @@ export function generateBasicMenu(): MenuBlock[] {
                 {
                     key: "toggleHeading",
                     richText: {
-                        command: richTextCommands.toggleBlockType(
+                        command: toggleBlockType(
                             schema.nodes.heading,
-                            { level: 1 }
+                            schema.nodes.paragraph,
+                            {
+                                level: 1,
+                            }
                         ),
                         active: richTextCommands.nodeTypeActive(
                             schema.nodes.heading
@@ -70,9 +74,7 @@ export function generateBasicMenu(): MenuBlock[] {
                 {
                     key: "toggleBlockquote",
                     richText: {
-                        command: richTextCommands.toggleWrapIn(
-                            schema.nodes.blockquote
-                        ),
+                        command: toggleWrapIn(schema.nodes.blockquote),
                         active: richTextCommands.nodeTypeActive(
                             schema.nodes.blockquote
                         ),
@@ -83,8 +85,9 @@ export function generateBasicMenu(): MenuBlock[] {
                 {
                     key: "insertCodeblock",
                     richText: {
-                        command: richTextCommands.toggleBlockType(
-                            schema.nodes.code_block
+                        command: toggleBlockType(
+                            schema.nodes.code_block,
+                            schema.nodes.paragraph
                         ),
                         active: richTextCommands.nodeTypeActive(
                             schema.nodes.code_block
@@ -106,9 +109,7 @@ export function generateBasicMenu(): MenuBlock[] {
                 {
                     key: "toggleOrderedList",
                     richText: {
-                        command: richTextCommands.toggleWrapIn(
-                            schema.nodes.ordered_list
-                        ),
+                        command: toggleWrapIn(schema.nodes.ordered_list),
                         active: richTextCommands.nodeTypeActive(
                             schema.nodes.ordered_list
                         ),
@@ -123,9 +124,7 @@ export function generateBasicMenu(): MenuBlock[] {
                 {
                     key: "toggleUnorderedList",
                     richText: {
-                        command: richTextCommands.toggleWrapIn(
-                            schema.nodes.bullet_list
-                        ),
+                        command: toggleWrapIn(schema.nodes.bullet_list),
                         active: richTextCommands.nodeTypeActive(
                             schema.nodes.bullet_list
                         ),

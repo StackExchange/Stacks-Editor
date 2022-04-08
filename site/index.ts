@@ -1,5 +1,5 @@
 import packageJson from "../package.json";
-import type { StacksEditor, StacksEditorOptions } from "../src";
+// import type { StacksEditor, StacksEditorOptions } from "../src";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
@@ -134,9 +134,9 @@ domReady(() => {
             e.stopPropagation();
 
             // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-            const editor = (window as any).editorInstance as StacksEditor;
+            // const editor = (window as any).editorInstance as StacksEditor;
 
-            editor.readonly ? editor.enable() : editor.disable();
+            // editor.readonly ? editor.enable() : editor.disable();
         });
 
     // create the editor
@@ -162,7 +162,7 @@ domReady(() => {
 
     // asynchronously load the required bundles
     void import("../src/builder/index").then(function ({ StacksEditor }) {
-        const options: StacksEditorOptions = {
+        const options = {
             defaultView: getDefaultEditor(),
             editorHelpLink: "#TODO",
             commonmarkOptions: {},
@@ -171,16 +171,16 @@ domReady(() => {
                 tagLinks: {
                     allowNonAscii: false,
                     allowMetaTags: true,
-                    renderer: (tagName, isMetaTag) => {
-                        return {
-                            link: "#" + tagName,
-                            linkTitle:
-                                "Show questions tagged '" + tagName + "'",
-                            additionalClasses: isMetaTag
-                                ? ["s-tag__muted"]
-                                : [],
-                        };
-                    },
+                    // renderer: (tagName, isMetaTag) => {
+                    //     return {
+                    //         link: "#" + tagName,
+                    //         linkTitle:
+                    //             "Show questions tagged '" + tagName + "'",
+                    //         additionalClasses: isMetaTag
+                    //             ? ["s-tag__muted"]
+                    //             : [],
+                    //     };
+                    // },
                 },
             },
             richTextOptions: {

@@ -3,7 +3,7 @@ import {
     readonlyPlugin,
     editableCheck,
     toggleReadonly,
-} from "../../../src/shared/prosemirror-plugins/readonly";
+} from "../../../src/plugins/base/readonly";
 import { DOMParser } from "prosemirror-model";
 import { commonmarkSchema } from "../../../src/shared/schema";
 

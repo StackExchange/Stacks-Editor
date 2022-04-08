@@ -1,6 +1,6 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { NodeView } from "prosemirror-view";
-import { getBlockLanguage } from "../../shared/highlighting/highlight-plugin";
+import { getBlockLanguage } from "./highlighting/highlight-plugin";
 import { escapeHTML } from "../../shared/utils";
 
 /**

@@ -2,7 +2,7 @@ import { Node } from "prosemirror-model";
 import { EditorState, Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { log } from "../../shared/logger";
-import { editableCheck } from "../../shared/prosemirror-plugins/readonly";
+import { editableCheck } from "../../plugins/base/readonly";
 import { CodeStringParser, commonmarkSchema } from "../../shared/schema";
 import { BaseView } from "../../shared/view";
 import { AggregatedEditorPlugin, BaseOptions } from "../types";
