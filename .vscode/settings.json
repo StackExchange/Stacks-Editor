@@ -13,5 +13,8 @@
     "typescript.tsserver.experimental.enableProjectDiagnostics": true,
     "conventionalCommits.autoCommit": false,
     "conventionalCommits.gitmoji": false,
-    "jestrunner.configPath": "config/jest-unit.config.js"
+    "jestrunner.configPath": "config/jest-unit.config.js",
+    "[html]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode"
+    }
 }
