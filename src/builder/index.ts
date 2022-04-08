@@ -1,5 +1,6 @@
 import { Schema } from "prosemirror-model";
 import { basePlugin } from "../plugins/base";
+import { spoilerPlugin } from "../plugins/spoilers";
 import { stacksPlugin } from "../plugins/stacks-plugin";
 import { deepMerge } from "../shared/utils";
 import { BaseEditor } from "./internal/base-editor";
@@ -161,6 +162,9 @@ function aggregateRichTextEditorSettings(
         for (const fn of m) {
             if (fn) {
                 const newRet = fn(opts);
+                newRet.plugins = newRet.plugins || [];
+                newRet.nodeViews = newRet.nodeViews || {};
+                newRet.inputRules = newRet.inputRules || [];
                 ret = {
                     plugins: [...ret.plugins, ...newRet.plugins],
                     nodeViews: {
@@ -275,5 +279,6 @@ function aggregateMenu(m: EditorPlugin["menu"][]): EditorPlugin["menu"] {
 
 export const StacksEditor = new EditorBuilder()
     .add("base", basePlugin)
+    .add("spoiler", spoilerPlugin)
     .add("stacks", stacksPlugin)
     .build();

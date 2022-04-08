@@ -25,7 +25,7 @@ import {
 import { richTextSchema as schema } from "../../shared/schema";
 import type { CommonViewOptions } from "../../shared/view";
 import { toggleBlockType, toggleWrapIn } from "../../utils/richtext-commands";
-import { LINK_TOOLTIP_KEY } from "../plugins/link-tooltip";
+import { LINK_TOOLTIP_KEY } from "../../plugins/links/link-tooltip";
 import {
     insertTableColumnAfterCommand,
     insertTableColumnBeforeCommand,
@@ -35,9 +35,9 @@ import {
     inTable,
     removeColumnCommand,
     removeRowCommand,
-} from "./tables";
+} from "../../plugins/tables/tables";
 
-export * from "./tables";
+export * from "../../plugins/tables/tables";
 
 export function insertHorizontalRuleCommand(
     state: EditorState,

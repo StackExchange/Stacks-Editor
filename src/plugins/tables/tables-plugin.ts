@@ -2,7 +2,7 @@ import { Plugin, PluginKey } from "prosemirror-state";
 import { Fragment, Slice, Node as ProsemirrorNode } from "prosemirror-model";
 import { richTextSchema } from "../../shared/schema";
 import { EditorView } from "prosemirror-view";
-import { inTable } from "../commands";
+import { inTable } from "../../rich-text/commands";
 
 export const tables = new Plugin({
     key: new PluginKey("tablesPlugin"),

@@ -11,7 +11,7 @@ import { ExternalEditorPlugin } from "./external-editor-plugin";
 import { log } from "./logger";
 import { html } from "./markdown-it/html";
 import { reference_link } from "./markdown-it/reference-link";
-import { spoiler } from "./markdown-it/spoiler";
+import { spoiler } from "../plugins/spoilers/spoiler";
 import { stackLanguageComments } from "./markdown-it/stack-language-comments";
 import { tagLinks } from "./markdown-it/tag-link";
 import { tight_list } from "./markdown-it/tight-list";
