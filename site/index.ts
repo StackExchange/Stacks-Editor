@@ -1,3 +1,4 @@
+import "@stackoverflow/stacks";
 import packageJson from "../package.json";
 import type { StacksEditor, StacksEditorOptions } from "../src";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
