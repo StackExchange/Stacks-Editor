@@ -75,36 +75,6 @@ const customMarkdownParserTokens: { [key: string]: TokenConfig } = {
             mark: "strike",
         },
 
-        table: {
-            block: "table",
-        },
-
-        thead: {
-            block: "table_head",
-        },
-
-        tbody: {
-            block: "table_body",
-        },
-
-        th: {
-            block: "table_header",
-            getAttrs: (tok) => ({
-                style: tok.attrGet("style"),
-            }),
-        },
-
-        tr: {
-            block: "table_row",
-        },
-
-        td: {
-            block: "table_cell",
-            getAttrs: (tok) => ({
-                style: tok.attrGet("style"),
-            }),
-        },
-
         // override the default image parser so we can add our own extended attributes
         image: {
             node: "image",
@@ -123,10 +93,6 @@ const customMarkdownParserTokens: { [key: string]: TokenConfig } = {
                 tagName: tok.attrGet("tagName"),
                 tagType: tok.attrGet("tagType"),
             }),
-        },
-
-        spoiler: {
-            block: "spoiler",
         },
 
         // support <code>foo</code> which parses differently from `bar`

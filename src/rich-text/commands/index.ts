@@ -35,9 +35,9 @@ import {
     inTable,
     removeColumnCommand,
     removeRowCommand,
-} from "../../plugins/tables/tables";
+} from "../../plugins/tables/commands-richtext";
 
-export * from "../../plugins/tables/tables";
+export * from "../../plugins/tables/commands-richtext";
 
 export function insertHorizontalRuleCommand(
     state: EditorState,
@@ -195,40 +195,6 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
-const tableDropdown = () =>
-    makeMenuDropdown(
-        "Table",
-        "Edit table",
-        "table-dropdown",
-        (state: EditorState) => inTable(state.selection),
-
-        dropdownSection("Column", "columnSection"),
-        dropdownItem("Remove column", removeColumnCommand, "remove-column-btn"),
-        dropdownItem(
-            "Insert column before",
-            insertTableColumnBeforeCommand,
-            "insert-column-before-btn"
-        ),
-        dropdownItem(
-            "Insert column after",
-            insertTableColumnAfterCommand,
-            "insert-column-after-btn"
-        ),
-
-        dropdownSection("Row", "rowSection"),
-        dropdownItem("Remove row", removeRowCommand, "remove-row-btn"),
-        dropdownItem(
-            "Insert row before",
-            insertTableRowBeforeCommand,
-            "insert-row-before-btn"
-        ),
-        dropdownItem(
-            "Insert row after",
-            insertTableRowAfterCommand,
-            "insert-row-after-btn"
-        )
-    );
-
 export const createMenu = (options: CommonViewOptions): Plugin =>
     createMenuPlugin(
         [
@@ -302,16 +268,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 },
                 !!options.imageUpload?.handler
             ),
-            addIf(
-                {
-                    key: "insertTable",
-                    command: insertTableCommand,
-                    dom: makeMenuIcon("Table", "Table", "insert-table-btn"),
-                    visible: (state: EditorState) => !inTable(state.selection),
-                },
-                options.parserFeatures.tables
-            ),
-            addIf(tableDropdown(), options.parserFeatures.tables),
+
             makeMenuSpacerEntry(),
             {
                 key: "toggleOrderedList",
