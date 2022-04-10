@@ -102,7 +102,7 @@ test.describe.serial("rich-text mode", () => {
 
         expect(await getMarkdownContent(page)).toEqual("### plain text");
 
-        await new Promise(resolve => setTimeout(resolve, 1000)); // wait for grace period to end
+        await new Promise((resolve) => setTimeout(resolve, 1000)); // wait for grace period to end
         await page.press(editorSelector, "Control+h"); // should remove h3
 
         expect(await getMarkdownContent(page)).toEqual("plain text");
