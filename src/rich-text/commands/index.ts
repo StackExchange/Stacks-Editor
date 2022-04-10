@@ -96,6 +96,51 @@ export function toggleBlockType(
     };
 }
 
+const headingInfo = {
+    level: 0,
+    time: 0,
+};
+
+export function cycleThroughHeadings(nodeType: NodeType) {
+    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const delay = Date.now() - headingInfo.time;
+        const nodeCheck = nodeTypeActive(nodeType);
+        const isSelectionHeading = nodeCheck(state);
+
+        // toggle off heading
+        if (
+            // already past the grace period or ran out of headings
+            // in both cases, the selected text *must* be a heading
+            (delay > 700 || headingInfo.level === 6) &&
+            isSelectionHeading
+        ) {
+            headingInfo.level = 0;
+            headingInfo.time = Date.now();
+
+            return setToTextCommand(state, dispatch);
+        }
+
+        // reset heading level after the end of grace period
+        if (delay > 700) headingInfo.level = 0;
+
+        headingInfo.level += 1;
+        headingInfo.time = Date.now();
+
+        const attributes = {
+            level: headingInfo.level,
+        };
+        const setBlockTypeCommand = setBlockType(nodeType, attributes);
+
+        return setBlockTypeCommand(state, (t) => {
+            if (dispatch) {
+                // when adding a block node, make sure the user can navigate past it
+                t = insertParagraphIfAtDocEnd(t);
+                dispatch(t);
+            }
+        });
+    };
+}
+
 export function insertHorizontalRuleCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void

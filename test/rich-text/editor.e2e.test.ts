@@ -92,6 +92,22 @@ test.describe.serial("rich-text mode", () => {
         expect(await getMarkdownContent(page)).toEqual("# plain text");
     });
 
+    test("should cycle through headings on Ctrl-h", async () => {
+        await enterTextAsMarkdown(page, "plain text");
+
+        // three consecutive Ctrl+h presses should result in an h3
+        await page.press(editorSelector, "Control+h");
+        await page.press(editorSelector, "Control+h");
+        await page.press(editorSelector, "Control+h");
+
+        expect(await getMarkdownContent(page)).toEqual("### plain text");
+
+        await new Promise(resolve => setTimeout(resolve, 1000)); // wait for grace period to end
+        await page.press(editorSelector, "Control+h"); // should remove h3
+
+        expect(await getMarkdownContent(page)).toEqual("plain text");
+    });
+
     test.describe("input rules", () => {
         for (const input of [`"`, "...", "--"] as const) {
             test(`should not transform special characters: ${input}`, async () => {

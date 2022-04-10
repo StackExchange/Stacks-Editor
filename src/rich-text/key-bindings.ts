@@ -22,6 +22,7 @@ import {
     insertTableCommand,
     exitInclusiveMarkCommand,
     toggleBlockType,
+    cycleThroughHeadings,
 } from "./commands";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
@@ -57,7 +58,7 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         "Ctrl-g": insertImageCommand,
         "Mod-o": wrapIn(schema.nodes.ordered_list),
         "Mod-u": wrapIn(schema.nodes.bullet_list),
-        "Mod-h": toggleBlockType(schema.nodes.heading),
+        "Mod-h": cycleThroughHeadings(schema.nodes.heading),
         "Mod-r": insertHorizontalRuleCommand,
         "Mod-m": toggleBlockType(schema.nodes.code_block),
         // users expect to be able to leave certain blocks/marks using the arrow keys
