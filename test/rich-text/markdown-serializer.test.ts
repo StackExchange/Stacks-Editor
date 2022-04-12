@@ -87,6 +87,7 @@ describe("markdown-serializer", () => {
     /**
      * Represents different types of data that were rendered differently in markup.
      * All entries should render exactly the same before and after rich-text conversion.
+     * NOTE: some serialization tests are in the tests for the plugin that implemented the feature (e.g. html)
      */
     const markupSerializeData = [
         /* Nodes */
@@ -100,7 +101,7 @@ describe("markdown-serializer", () => {
         "~~~\ntest\n~~~",
         `<pre><code>test</code></pre>`,
         `# ATX heading`,
-        //`Setext heading\n===`,
+        //`Setext heading\n===`, // TODO
         `<h1>html heading</h1>`,
         `<h2>html heading</h2>`,
         `<h3>html heading</h3>`,
@@ -150,8 +151,9 @@ describe("markdown-serializer", () => {
         `test<br>test`,
         `test<br/>test`,
         `test<br />test`,
-        // TODO html_inline, html_block, html_block_container
-        // TODO stack_snippet, table, taglink, spoiler
+        /* Tables */
+        `| foo | bar |\n| --- | --- |\n| baz | bim |`,
+        `| abc | def | ghi |\n|:---:|:--- | ---:|\n| foo | bar | baz |`,
         /* Marks */
         `*test*`,
         `_test_`,

@@ -343,6 +343,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
                     columnAlignments = serializeTableRow(headRow);
                 }
             });
+            state.ensureNewLine();
 
             // write table header separator
             for (const alignment of columnAlignments) {
@@ -357,7 +358,6 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
                 );
             }
             state.write("|");
-            state.ensureNewLine();
         }
 
         function serializeTableBody(body: ProsemirrorNode) {
@@ -366,11 +366,11 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
                     serializeTableRow(bodyRow);
                 }
             });
-            state.ensureNewLine();
         }
 
         function serializeTableRow(row: ProsemirrorNode): string[] {
             const columnAlignment: string[] = [];
+            state.ensureNewLine();
             row.forEach((cell) => {
                 if (
                     cell.type === richTextSchema.nodes.table_header ||
@@ -381,7 +381,6 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
                 }
             });
             state.write("|");
-            state.ensureNewLine();
             return columnAlignment;
         }
 
@@ -416,8 +415,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
                 serializeTableBody(table_child);
         });
 
-        state.ensureNewLine();
-        state.write("\n");
+        state.closeBlock(node);
     },
 
     tagLink(state, node) {
