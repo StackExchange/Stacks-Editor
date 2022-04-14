@@ -162,7 +162,16 @@ domReady(() => {
     }
 
     // asynchronously load the required bundles
-    void import("../src/index").then(function ({ StacksEditor }) {
+    void import("../src/index").then(function ({
+        StacksEditor,
+        registerLocalizationStrings,
+    }) {
+        registerLocalizationStrings({
+            menubar: {
+                mode_toggle_title: "Localization test: Toggle editor mode",
+            },
+        });
+
         const options: StacksEditorOptions = {
             defaultView: getDefaultEditor(),
             editorHelpLink: "#TODO",

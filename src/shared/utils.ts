@@ -239,3 +239,6 @@ export function dispatchEditorEvent(
     });
     return target.dispatchEvent(event);
 }
+
+/** Helper type that recursively makes an object and all its children Partials */
+export type PartialDeep<T> = { [key in keyof T]?: PartialDeep<T[key]> };

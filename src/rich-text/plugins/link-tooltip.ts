@@ -2,6 +2,7 @@ import { toggleMark } from "prosemirror-commands";
 import { Mark, Schema } from "prosemirror-model";
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
+import { _t } from "../../shared/localization";
 import {
     StatefulPlugin,
     StatefulPluginKey,
@@ -53,7 +54,6 @@ class LinkTooltip {
         this.content.setAttribute("data-controller", "s-popover");
         this.content.setAttribute("data-s-popover-placement", "bottom");
 
-        // TODO localization (everywhere we have harcoded template strings)
         this.content.innerHTML = escapeHTML`<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
             id="link-tooltip-popover"
             role="menu">
@@ -72,13 +72,19 @@ class LinkTooltip {
                 </div>
                 <button type="button"
                         class="flex--item s-btn mr4 js-link-tooltip-edit"
-                        title="${"Edit link"}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
+                        title="${_t(
+                            "link_tooltip.edit_button_title"
+                        )}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
                 <button type="button"
                         class="flex--item s-btn d-none js-link-tooltip-apply"
-                        title="${"Apply new link"}">${"Apply"}</button>
+                        title="${_t("link_tooltip.apply_button_title")}">${_t(
+            "link_tooltip.apply_button_text"
+        )}</button>
                 <button type="button"
                         class="flex--item s-btn js-link-tooltip-remove"
-                        title="${"Remove link"}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
+                        title="${_t(
+                            "link_tooltip.remove_button_title"
+                        )}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
             </div>
         </div>`;
 

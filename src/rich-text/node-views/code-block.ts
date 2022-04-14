@@ -1,6 +1,7 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { NodeView } from "prosemirror-view";
 import { getBlockLanguage } from "../../shared/highlighting/highlight-plugin";
+import { _t } from "../../shared/localization";
 import { escapeHTML } from "../../shared/utils";
 
 /**
@@ -49,8 +50,9 @@ export class CodeBlockView implements NodeView {
             .detectedHighlightLanguage as string;
 
         if (autodetectedLanguage) {
-            // TODO localization
-            autodetectedLanguage += " (auto)";
+            autodetectedLanguage = _t("nodes.codeblock_lang_auto", {
+                lang: autodetectedLanguage,
+            });
         }
 
         return autodetectedLanguage || getBlockLanguage(node);

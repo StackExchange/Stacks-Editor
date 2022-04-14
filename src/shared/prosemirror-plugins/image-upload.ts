@@ -10,6 +10,7 @@ import { richTextSchema } from "../schema";
 import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
 import { dispatchEditorEvent, escapeHTML } from "../utils";
+import { _t } from "../localization";
 
 /**
  * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
@@ -319,13 +320,13 @@ export class ImageUploader implements PluginView {
         switch (validationResult) {
             case ValidationResult.FileTooLarge:
                 this.showValidationError(
-                    "Your image is too large to upload (over 2 MiB)"
+                    _t("image_upload.upload_error_file_too_big")
                 );
                 reject("file too large");
                 return;
             case ValidationResult.InvalidFileType:
                 this.showValidationError(
-                    "Please select an image (jpeg, png, gif) to upload"
+                    _t("image_upload.upload_error_unsupported_format")
                 );
                 reject("invalid filetype");
                 return;
@@ -341,8 +342,7 @@ export class ImageUploader implements PluginView {
                 image.className = "hmx1 w-auto";
                 image.title = file.name;
                 image.src = reader.result as string;
-                // TODO localization
-                image.alt = "uploaded image preview";
+                image.alt = _t("image_upload.uploaded_image_preview_alt");
                 previewElement.appendChild(image);
                 previewElement.classList.remove("d-none");
                 this.image = file;
@@ -446,7 +446,7 @@ export class ImageUploader implements PluginView {
                 // reshow the image uploader along with an error message
                 showImageUploader(view);
                 this.showValidationError(
-                    "Image upload failed. Please try again.",
+                    _t("image_upload.upload_error_generic"),
                     "error"
                 );
             }

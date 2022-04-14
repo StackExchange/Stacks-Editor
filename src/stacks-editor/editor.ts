@@ -12,6 +12,7 @@ import { View, CommonViewOptions, BaseView } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { toggleReadonly } from "../shared/prosemirror-plugins/readonly";
+import { _t } from "../shared/localization";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -314,17 +315,22 @@ export class StacksEditor implements View {
         const container = document.createElement("div");
         container.className = "flex--item d-flex ai-center ml24 fc-medium";
 
-        // TODO localization
-        container.innerHTML = escapeHTML`<label class="flex--item fs-caption mr4 sm:d-none" for="js-editor-toggle-${this.internalId}">Markdown</label>
-            <label class="flex--item mr4 d-none sm:d-block" for="js-editor-toggle-${this.internalId}">
+        container.innerHTML = escapeHTML`<label class="flex--item fs-caption mr4 sm:d-none" for="js-editor-toggle-${
+            this.internalId
+        }">${_t("menubar.mode_toggle_label")}</label>
+            <label class="flex--item mr4 d-none sm:d-block" for="js-editor-toggle-${
+                this.internalId
+            }">
                 <span class="icon-bg iconMarkdown"></span>
             </label>
             <div class="flex--item s-toggle-switch js-editor-mode-switcher">
-                <input class="js-editor-toggle-state" id="js-editor-toggle-${this.internalId}" type="checkbox" ${checkedProp}/>
+                <input class="js-editor-toggle-state" id="js-editor-toggle-${
+                    this.internalId
+                }" type="checkbox" ${checkedProp}/>
                 <div class="s-toggle-switch--indicator"></div>
             </div>`;
 
-        container.title = "Toggle Markdown editing";
+        container.title = _t("menubar.mode_toggle_title");
 
         container
             .querySelector("#js-editor-toggle-" + this.internalId)
