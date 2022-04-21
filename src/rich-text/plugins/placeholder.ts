@@ -6,13 +6,13 @@ import { EditorView } from "prosemirror-view";
 export const placeholderPlugin = (placeholderText = ""): Plugin => {
     const update = (view: EditorView) => {
         const { content, textContent } = view.state.doc;
+        const firstChildType = content.firstChild.type.name;
         // TODO investigate a more dependable check for empty content
         // TODO check for image upload placeholder
         const showPlaceholder =
             placeholderText &&
             !textContent &&
-            (content.firstChild.type.name === "paragraph" ||
-                content.firstChild.type.name === "heading") &&
+            (firstChildType === "paragraph" || firstChildType === "heading") &&
             content.firstChild.childCount === 0;
         if (showPlaceholder) {
             view.dom.setAttribute("data-placeholder", placeholderText);
