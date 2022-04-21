@@ -39,6 +39,7 @@ import { codePasteHandler } from "./plugins/code-paste-handler";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
 import { linkTooltipPlugin } from "./plugins/link-tooltip";
+import { placeholderPlugin } from "./plugins/placeholder";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
 
@@ -90,6 +91,7 @@ export class RichTextEditor extends BaseView {
                             this.options.codeblockOverrideLanguage
                         ),
                         linkTooltipPlugin(this.options.parserFeatures),
+                        placeholderPlugin(this.options.placeholderText),
                         richTextImageUpload(
                             this.options.imageUpload,
                             this.options.pluginParentContainer

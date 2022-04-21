@@ -193,6 +193,7 @@ domReady(() => {
                     },
                 },
             },
+            placeholderText: "Enter your question…",
             richTextOptions: {
                 linkPreviewProviders: [
                     ExampleTextOnlyLinkPreviewProvider,
