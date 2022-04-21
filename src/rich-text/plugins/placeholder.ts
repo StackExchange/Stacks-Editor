@@ -1,21 +1,26 @@
+import { Fragment } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 
+function showPlaceholder(content: Fragment<any>, textContent: string) {
+    const { firstChild } = content;
+    const { name } = firstChild.type;
+    // TODO check for image upload placeholder
+    return (
+        !textContent &&
+        (name === "paragraph" || name === "heading") &&
+        firstChild.childCount === 0
+    );
+}
+
 // TODO write a test for this
-// TODO cleanup to match common plugin code style
-export const placeholderPlugin = (placeholderText = ""): Plugin => {
+/** Plugin that add placeholder text to the editor when it's empty */
+export function placeholderPlugin(placeholder = ""): Plugin {
     const update = (view: EditorView) => {
         const { content, textContent } = view.state.doc;
-        const firstChildType = content.firstChild.type.name;
-        // TODO investigate a more dependable check for empty content
-        // TODO check for image upload placeholder
-        const showPlaceholder =
-            placeholderText &&
-            !textContent &&
-            (firstChildType === "paragraph" || firstChildType === "heading") &&
-            content.firstChild.childCount === 0;
-        if (showPlaceholder) {
-            view.dom.setAttribute("data-placeholder", placeholderText);
+
+        if (placeholder && showPlaceholder(content, textContent)) {
+            view.dom.setAttribute("data-placeholder", placeholder);
         } else {
             view.dom.removeAttribute("data-placeholder");
         }
@@ -28,4 +33,4 @@ export const placeholderPlugin = (placeholderText = ""): Plugin => {
             return { update };
         },
     });
-};
+}
