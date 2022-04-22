@@ -8,6 +8,7 @@ import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
 } from "../shared/prosemirror-plugins/image-upload";
+import { placeholderPlugin } from "../rich-text/plugins/placeholder";
 import {
     editableCheck,
     readonlyPlugin,
@@ -53,6 +54,7 @@ export class CommonmarkEditor extends BaseView {
                             this.options.imageUpload,
                             this.options.pluginParentContainer
                         ),
+                        placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
                     ],
                 }),

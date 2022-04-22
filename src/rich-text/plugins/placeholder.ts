@@ -5,12 +5,12 @@ import { EditorView } from "prosemirror-view";
 function showPlaceholder(content: Fragment<any>, textContent: string) {
     const { firstChild } = content;
     const { name } = firstChild.type;
+    const allowPlaceholder =
+        name === "paragraph" ||
+        name === "heading" ||
+        firstChild.attrs.params === "markdown";
     // TODO check for image upload placeholder
-    return (
-        !textContent &&
-        (name === "paragraph" || name === "heading") &&
-        firstChild.childCount === 0
-    );
+    return !textContent && allowPlaceholder && firstChild.childCount === 0;
 }
 
 // TODO write a test for this
