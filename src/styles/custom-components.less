@@ -198,6 +198,11 @@
         content: attr(data-placeholder);
         pointer-events: none;
     }
+    &.js-markdown[data-placeholder]::before {
+        font-family: var(--ff-mono);
+        font-size: @fs-body1;
+        margin-top: -@su2;
+    }
 
     // taken from prosemirror.css for compatibility
     .ProseMirror-hideselection *::selection {
