@@ -11,8 +11,8 @@ import {
 
 const boldMenuButtonSelector = ".js-bold-btn";
 const insertLinkMenuItemSelector = ".js-insert-link-btn";
-const insertHeadingDropdownButtonSelector = ".js-heading-dropdown";
-const headingPopoverSelector = "#heading-dropdown-popover";
+const insertHeadingDropdownButtonSelector = ".js-heading-dropdown-example-1";
+const headingPopoverSelector = "#heading-dropdown-example-1-popover";
 const insertH1ButtonSelector = "button[data-key='h1-btn']";
 
 const linkViewTooltipSelector = ".js-link-tooltip";
