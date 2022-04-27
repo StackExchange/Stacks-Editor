@@ -160,7 +160,7 @@ export interface MenuCommandEntry {
 
 /**
  * Simple wrapper function to ensure that conditional menu item adds are consistent
- * @param item The item to add if flag is truty
+ * @param item The item to add if flag is truthy
  * @param flag Whether to add the item
  */
 export function addIf(item: MenuCommandEntry, flag: boolean): MenuCommandEntry {
@@ -268,7 +268,7 @@ export function makeMenuSpacerEntry(
  * @param key A unique identifier used for this dropdown menu
  * @param visible A function that determines wether the dropdown should be visible or hidden
  * @param active A function to determine if the dropdown should be highlighted as active
- * @param children The child MenuComandEntry items to be placed in the dropdown menu
+ * @param children The child MenuCommandEntry items to be placed in the dropdown menu
  */
 export function makeMenuDropdown(
     svg: string,

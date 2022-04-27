@@ -7,6 +7,7 @@ import {
     StickyChangeDetails,
     escapeHTML,
     dispatchEditorEvent,
+    generateRandomId,
 } from "../shared/utils";
 import { View, CommonViewOptions, BaseView } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
@@ -51,8 +52,6 @@ export class StacksEditor implements View {
     private backingView: BaseView;
     /** The fully filled out (passed merged with default) options */
     private options: StacksEditorOptions;
-    /** An internal-only, randomly generated id for selector targeting */
-    private internalId: string;
 
     private static readonly READONLY_CLASSES = ["s-input__readonly"];
 
@@ -64,9 +63,6 @@ export class StacksEditor implements View {
         // do a deep merge of the passed options with our default options
         this.options = deepMerge(StacksEditor.defaultOptions, options);
         this.target = target;
-
-        // naively generate a random internalId for this editor instance
-        this.internalId = (Math.random() * 10000).toFixed(0);
 
         this.innerTarget = document.createElement("div");
         this.target.appendChild(this.innerTarget);
@@ -145,6 +141,7 @@ export class StacksEditor implements View {
             richTextOptions: {
                 classList: commonClasses,
             },
+            uniqueEditorId: generateRandomId(),
         };
     }
 
@@ -316,16 +313,16 @@ export class StacksEditor implements View {
         container.className = "flex--item d-flex ai-center ml24 fc-medium";
 
         container.innerHTML = escapeHTML`<label class="flex--item fs-caption mr4 sm:d-none" for="js-editor-toggle-${
-            this.internalId
+            this.options.uniqueEditorId
         }">${_t("menubar.mode_toggle_label")}</label>
             <label class="flex--item mr4 d-none sm:d-block" for="js-editor-toggle-${
-                this.internalId
+                this.options.uniqueEditorId
             }">
                 <span class="icon-bg iconMarkdown"></span>
             </label>
             <div class="flex--item s-toggle-switch js-editor-mode-switcher">
                 <input class="js-editor-toggle-state" id="js-editor-toggle-${
-                    this.internalId
+                    this.options.uniqueEditorId
                 }" type="checkbox" ${checkedProp}/>
                 <div class="s-toggle-switch--indicator"></div>
             </div>`;
@@ -333,7 +330,7 @@ export class StacksEditor implements View {
         container.title = _t("menubar.mode_toggle_title");
 
         container
-            .querySelector("#js-editor-toggle-" + this.internalId)
+            .querySelector("#js-editor-toggle-" + this.options.uniqueEditorId)
             .addEventListener(
                 "change",
                 this.editorSwitcherChangeHandler.bind(this)
@@ -362,7 +359,7 @@ export class StacksEditor implements View {
 
         // ensure the checkbox matches the selected editor
         this.target.querySelector<HTMLInputElement>(
-            "#js-editor-toggle-" + this.internalId
+            "#js-editor-toggle-" + this.options.uniqueEditorId
         ).checked = type === EditorType.Commonmark;
 
         // TODO better event name?

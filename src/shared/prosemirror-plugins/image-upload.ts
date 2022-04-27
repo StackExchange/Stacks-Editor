@@ -9,7 +9,7 @@ import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { richTextSchema } from "../schema";
 import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
-import { dispatchEditorEvent, escapeHTML } from "../utils";
+import { dispatchEditorEvent, escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
 
 /**
@@ -117,7 +117,7 @@ export class ImageUploader implements PluginView {
         this.uploadField.className = "js-image-uploader-input v-visible-sr";
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
-        this.uploadField.id = "fileUpload" + (Math.random() * 10000).toFixed(0);
+        this.uploadField.id = "fileUpload" + generateRandomId();
 
         this.uploadContainer.innerHTML = escapeHTML`
             <div class="fs-body2 p12 pb0">

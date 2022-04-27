@@ -30,6 +30,8 @@ export interface CommonViewOptions {
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
     externalPlugins?: ExternalEditorPlugin[];
+    /** A unique identifier to be used for this editor instance. Will generate a random identifier if left undefined */
+    uniqueEditorId?: string;
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
