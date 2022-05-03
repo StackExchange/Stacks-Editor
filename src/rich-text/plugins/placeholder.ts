@@ -15,7 +15,7 @@ function showPlaceholder(content: Fragment, textContent: string) {
 
 // TODO write a test for this
 /** Plugin that add placeholder text to the editor when it's empty */
-export function placeholderPlugin(placeholder = ""): Plugin {
+export function placeholderPlugin(placeholder: string): Plugin {
     const update = (view: EditorView) => {
         const { content, textContent } = view.state.doc;
 
