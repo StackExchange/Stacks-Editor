@@ -2,7 +2,7 @@ import { Fragment } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 
-function showPlaceholder(content: Fragment<any>, textContent: string) {
+function showPlaceholder(content: Fragment, textContent: string) {
     const { firstChild } = content;
     const { name } = firstChild.type;
     const allowPlaceholder =
