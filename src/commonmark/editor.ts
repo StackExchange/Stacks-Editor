@@ -56,6 +56,7 @@ export class CommonmarkEditor extends BaseView {
                         readonlyPlugin(),
                     ],
                 }),
+                plugins: [],
             }
         );
 
