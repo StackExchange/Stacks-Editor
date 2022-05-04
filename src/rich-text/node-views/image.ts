@@ -28,7 +28,7 @@ export class ImageView implements NodeView {
 
         this.popover = this.createPopover();
 
-        this.dom = document.createElement("div");
+        this.dom = document.createElement("span");
         this.dom.appendChild(this.img);
         this.dom.appendChild(this.popover);
         this.dom.addEventListener("s-popover:hide", (event: Event) =>
