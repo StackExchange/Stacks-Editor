@@ -79,16 +79,16 @@
         color: var(--black-700);
     }
 
-    .theme-highcontrast & {
+    .highcontrast-mode({
         color: var(--black-900);
-    }
+    });
 
     &.is-selected,
     &:active {
         color: var(--black-900);
         background-color: var(--black-100);
 
-        .theme-highcontrast & {
+        .highcontrast-mode({
             color: var(--black-050);
             background-color: var(--black-900);
             &:hover {
@@ -97,7 +97,7 @@
             &.s-btn.s-btn__dropdown {
                 border-color: var(--black-900);
             }
-        }
+        });
     }
 
     &.is-disabled {
@@ -107,10 +107,10 @@
             background-color: transparent;
         }
 
-        .theme-highcontrast & {
+        .highcontrast-mode({
             opacity: 0.5;
             color: var(--black-300);
-        }
+        });
     }
 
     &:focus {
