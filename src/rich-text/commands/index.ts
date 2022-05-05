@@ -105,7 +105,9 @@ export function insertHorizontalRuleCommand(
         return false;
     }
 
-    if (!dispatch) return true;
+    if (!dispatch) {
+        return true;
+    }
 
     const docSize = Selection.atEnd(state.tr.doc).$anchor.pos;
     const { $anchor, $head } = state.tr.selection;
