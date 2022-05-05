@@ -4,6 +4,7 @@ import { Mark, MarkType, NodeType } from "prosemirror-model";
 import {
     EditorState,
     Plugin,
+    Selection,
     TextSelection,
     Transaction,
 } from "prosemirror-state";
@@ -104,10 +105,28 @@ export function insertHorizontalRuleCommand(
         return false;
     }
 
-    dispatch &&
+    if (!dispatch) return true;
+
+    const docSize = Selection.atEnd(state.tr.doc).$anchor.pos;
+    const { $anchor: cursorAnchor, $head: cursorHead } = state.tr.selection;
+    const atEnd = docSize === Math.max(cursorAnchor.pos, cursorHead.pos);
+    // If selection is at end, insert hr, p
+    if (atEnd) {
         dispatch(
-            state.tr.replaceSelectionWith(schema.nodes.horizontal_rule.create())
+            state.tr
+                .replaceSelectionWith(schema.nodes.paragraph.create(null))
+                .insert(
+                    state.selection.from,
+                    schema.nodes.horizontal_rule.create()
+                )
         );
+        return true;
+    }
+    // If none of the above conditions are met, insert a hr only. p
+    dispatch(
+        state.tr.replaceSelectionWith(schema.nodes.horizontal_rule.create())
+    );
+
     return true;
 }
 
