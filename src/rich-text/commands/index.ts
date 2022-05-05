@@ -114,9 +114,9 @@ export function insertHorizontalRuleCommand(
     if (docSize === 1) {
         dispatch(
             state.tr
-                .replaceSelectionWith(schema.nodes.paragraph.create(null))
+                .replaceSelectionWith(schema.nodes.paragraph.create())
                 .insert(1, schema.nodes.horizontal_rule.create()) // insert after p
-                .insert(3, schema.nodes.paragraph.create(null)) // insert after hr
+                .insert(3, schema.nodes.paragraph.create()) // insert after hr
         );
         return true;
     }
@@ -124,7 +124,7 @@ export function insertHorizontalRuleCommand(
     if (atEnd) {
         dispatch(
             state.tr
-                .replaceSelectionWith(schema.nodes.paragraph.create(null))
+                .replaceSelectionWith(schema.nodes.paragraph.create())
                 .insert(
                     state.selection.from,
                     schema.nodes.horizontal_rule.create()
