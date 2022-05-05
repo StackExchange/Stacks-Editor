@@ -108,8 +108,8 @@ export function insertHorizontalRuleCommand(
     if (!dispatch) return true;
 
     const docSize = Selection.atEnd(state.tr.doc).$anchor.pos;
-    const { $anchor: cursorAnchor, $head: cursorHead } = state.tr.selection;
-    const atEnd = docSize === Math.max(cursorAnchor.pos, cursorHead.pos);
+    const { $anchor, $head } = state.tr.selection;
+    const atEnd = docSize === Math.max($anchor.pos, $head.pos);
     // If selection is at end, insert hr, p
     if (atEnd) {
         dispatch(
