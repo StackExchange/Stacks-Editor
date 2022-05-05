@@ -110,9 +110,9 @@ export function insertHorizontalRuleCommand(
     }
 
     const tr = insertParagraphIfAtDocEnd(state.tr);
-    const docSize = Selection.atEnd(tr.doc).$anchor.pos;
+    const isEmptyEditor = Selection.atEnd(tr.doc).$anchor.pos === 1;
 
-    if (docSize === 1) {
+    if (isEmptyEditor) {
         dispatch(
             tr
                 .replaceSelectionWith(schema.nodes.paragraph.create())
@@ -121,7 +121,7 @@ export function insertHorizontalRuleCommand(
         );
         return true;
     }
-    // If none of the above conditions are met, insert a hr only
+
     dispatch(tr.replaceSelectionWith(schema.nodes.horizontal_rule.create()));
     return true;
 }
