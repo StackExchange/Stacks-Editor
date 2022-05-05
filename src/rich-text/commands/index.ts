@@ -110,13 +110,13 @@ export function insertHorizontalRuleCommand(
     const docSize = Selection.atEnd(state.tr.doc).$anchor.pos;
     const { $anchor, $head } = state.tr.selection;
     const atEnd = docSize === Math.max($anchor.pos, $head.pos);
-    // If editor is empty, insert p, then prepend with an p and hr
+
     if (docSize === 1) {
         dispatch(
             state.tr
                 .replaceSelectionWith(schema.nodes.paragraph.create(null))
-                .insert(0, schema.nodes.horizontal_rule.create())
-                .insert(0, schema.nodes.paragraph.create(null))
+                .insert(1, schema.nodes.horizontal_rule.create()) // insert after p
+                .insert(3, schema.nodes.paragraph.create(null)) // insert after hr
         );
         return true;
     }
