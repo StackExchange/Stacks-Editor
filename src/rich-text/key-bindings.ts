@@ -15,6 +15,7 @@ import {
 } from "prosemirror-schema-list";
 import type { Plugin } from "prosemirror-state";
 import { richTextSchema as schema } from "../shared/schema";
+import { bindLetterKeymap } from "../shared/utils";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import {
     insertLinkCommand,
@@ -31,7 +32,7 @@ import {
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
     const tableKeymap = keymap({
-        "Mod-e": insertTableCommand,
+        ...bindLetterKeymap("Mod-e", insertTableCommand),
         "Mod-Enter": moveSelectionAfterTableCommand,
         "Shift-Enter": moveSelectionAfterTableCommand,
         "Enter": moveToNextCellCommand,
@@ -44,27 +45,27 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
     });
 
     const richTextKeymap = keymap({
-        "Mod-z": undo,
-        "Mod-y": redo,
-        "Mod-Shift-z": redo,
+        ...bindLetterKeymap("Mod-z", undo),
+        ...bindLetterKeymap("Mod-y", redo),
+        ...bindLetterKeymap("Mod-Shift-z", redo),
         "Backspace": undoInputRule,
         "Enter": splitListItem(schema.nodes.list_item),
         "Tab": sinkListItem(schema.nodes.list_item),
         "Shift-Tab": liftListItem(schema.nodes.list_item),
         "Mod-Enter": exitBlockCommand,
         "Shift-Enter": exitBlockCommand,
-        "Mod-b": toggleMark(schema.marks.strong),
-        "Mod-i": toggleMark(schema.marks.em),
-        "Mod-l": insertLinkCommand,
-        "Ctrl-q": wrapIn(schema.nodes.blockquote),
-        "Mod-k": toggleMark(schema.marks.code),
-        "Mod-g": insertImageCommand,
-        "Ctrl-g": insertImageCommand,
-        "Mod-o": wrapIn(schema.nodes.ordered_list),
-        "Mod-u": wrapIn(schema.nodes.bullet_list),
-        "Mod-h": setBlockType(schema.nodes.heading),
-        "Mod-r": insertHorizontalRuleCommand,
-        "Mod-m": setBlockType(schema.nodes.code_block),
+        ...bindLetterKeymap("Mod-b", toggleMark(schema.marks.strong)),
+        ...bindLetterKeymap("Mod-i", toggleMark(schema.marks.em)),
+        ...bindLetterKeymap("Mod-l", insertLinkCommand),
+        ...bindLetterKeymap("Ctrl-q", wrapIn(schema.nodes.blockquote)),
+        ...bindLetterKeymap("Mod-k", toggleMark(schema.marks.code)),
+        ...bindLetterKeymap("Mod-g", insertImageCommand),
+        ...bindLetterKeymap("Ctrl-g", insertImageCommand),
+        ...bindLetterKeymap("Mod-o", wrapIn(schema.nodes.ordered_list)),
+        ...bindLetterKeymap("Mod-u", wrapIn(schema.nodes.bullet_list)),
+        ...bindLetterKeymap("Mod-h", setBlockType(schema.nodes.heading)),
+        ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
+        ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
         // users expect to be able to leave certain blocks/marks using the arrow keys
         "ArrowRight": exitInclusiveMarkCommand,
         "ArrowDown": exitCode,
