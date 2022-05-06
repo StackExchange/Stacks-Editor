@@ -109,12 +109,14 @@ export function insertHorizontalRuleCommand(
         return true;
     }
 
-    const tr = insertParagraphIfAtDocEnd(state.tr);
-    const isEmptyEditor = Selection.atEnd(tr.doc).$anchor.pos === 1;
+    const docSize = Selection.atEnd(state.tr.doc).$anchor.pos;
+    const { $anchor, $head } = state.tr.selection;
+    const isEmptyEditor = docSize === 1;
+    const isAtEnd = docSize === Math.max($anchor.pos, $head.pos);
 
     if (isEmptyEditor) {
         dispatch(
-            tr
+            state.tr
                 .replaceSelectionWith(schema.nodes.paragraph.create())
                 .insert(1, schema.nodes.horizontal_rule.create()) // insert after p
                 .insert(3, schema.nodes.paragraph.create()) // insert after hr
@@ -122,7 +124,21 @@ export function insertHorizontalRuleCommand(
         return true;
     }
 
-    dispatch(tr.replaceSelectionWith(schema.nodes.horizontal_rule.create()));
+    if (isAtEnd) {
+        dispatch(
+            state.tr
+                .replaceSelectionWith(schema.nodes.paragraph.create())
+                .insert(
+                    state.selection.from,
+                    schema.nodes.horizontal_rule.create()
+                )
+        );
+        return true;
+    }
+
+    dispatch(
+        state.tr.replaceSelectionWith(schema.nodes.horizontal_rule.create())
+    );
     return true;
 }
 
