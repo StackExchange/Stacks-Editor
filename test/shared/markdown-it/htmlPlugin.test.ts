@@ -215,10 +215,7 @@ describe("html markdown-it plugin", () => {
             [`<ol>test</ol>`, "ol", `ordered_list_open`, `ordered_list_close`],
             [`<li>test</li>`, "li", `list_item_open`, `list_item_close`],
             [`<pre>test</pre>`, `pre`, `pre_open`, `pre_close`],
-            // TODO dd, dl, dt not implemented
-            // [`<dd>test</dd>`, "dd", `???`, `???`],
-            // [`<dt>test</dt>`, "dt", `???`, `???`],
-            // [`<dl>test</dl>`, "dl", `???`, `???`],
+            // TODO dd, dl, dt not implemented as distinct nodes in schema
         ];
 
         it.each(htmlSimpleBlockData)(
@@ -296,11 +293,10 @@ describe("html markdown-it plugin", () => {
             [`<ul><li>test</li></ul>`, `<ul><li>test</li></ul>`],
             [`<ol><li>test</li></ol>`, `<ol><li>test</li></ol>`],
             [`<ol><li>test</li></ol>`, `<ol><li>test</li></ol>`],
-            // TODO description lists not implemented yet
-            // [
-            //     `<dl><dt>test</dt><dd>test</dd></dl>`,
-            //     `<dl><dt>test</dt><dd>test</dd></dl>`,
-            // ],
+            [
+                `<dl><dt>test</dt><dd>test</dd></dl>`,
+                `<dl><dt>test</dt><dd>test</dd></dl>`,
+            ],
             // remove tags with attributes, etc
             [
                 `<div class="yo" data-test="note the trailing space!" ><h1>test</h1></div>`,
