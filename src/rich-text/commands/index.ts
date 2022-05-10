@@ -264,7 +264,7 @@ const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
         "Edit table",
-        `table-dropdown`,
+        "table-dropdown",
         (state: EditorState) => inTable(state.selection),
         () => false,
 

@@ -228,6 +228,7 @@ function prefixEventName(eventName: string) {
 export function generateRandomId(): string {
     return (Math.random() * 10000).toFixed(0);
 }
+
 /**
  * Prefixes and dispatches a custom event on the target
  * @param target The target to dispatch the event on
