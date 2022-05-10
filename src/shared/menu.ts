@@ -279,19 +279,20 @@ export function makeMenuDropdown(
     ...children: MenuCommandEntry[]
 ): MenuCommandEntry {
     const randomId = generateRandomId();
-    const popoverId = `${key}-popover`;
-    const buttonId = `${key}-btn`;
+    const popoverId = `${key}-popover-${randomId}`;
+    const buttonId = `${key}-btn-${randomId}`;
+
     const button = makeMenuIcon(svg, title, key);
     button.classList.add("s-btn", "s-btn__dropdown");
     button.setAttribute("aria-controls", popoverId);
     button.setAttribute("data-action", "s-popover#toggle");
     button.setAttribute("data-controller", "s-tooltip");
-    button.id = buttonId + randomId;
+    button.id = buttonId;
     button.dataset.key = key;
 
     const popover = document.createElement("div");
     popover.className = "s-popover wmn-initial w-auto px0 pt0 pb8";
-    popover.id = popoverId + randomId;
+    popover.id = popoverId;
     popover.setAttribute("role", "menu");
 
     const arrow = document.createElement("div");
