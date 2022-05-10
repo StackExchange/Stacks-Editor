@@ -1,23 +1,21 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { EditorView, NodeView } from "prosemirror-view";
-import { escapeHTML } from "../../shared/utils";
+import { escapeHTML, generateRandomId } from "../../shared/utils";
 
 //NOTE relies on Stacks classes. Should we separate out so the view is more agnostic?
 
 type getPosParam = boolean | (() => number);
 
-// keep track of all images so we can assign unique IDs for stacks popovers
-let imageId = 0;
 export class ImageView implements NodeView {
     dom?: Node | null;
     img: HTMLImageElement;
     popover: HTMLElement;
     form: HTMLFormElement;
-    id: number;
+    id: string;
     selectionActive: boolean;
 
     constructor(node: ProsemirrorNode, view: EditorView, getPos: getPosParam) {
-        this.id = imageId++;
+        this.id = generateRandomId();
 
         this.img = this.createImage(node);
 
