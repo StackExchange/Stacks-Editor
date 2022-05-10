@@ -1,163 +1,187 @@
-import OrderedMap from "orderedmap";
-import { schema } from "prosemirror-markdown";
-import { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
+import { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
 import { _t } from "../shared/localization";
 
 //TODO this relies on Stacks classes, should we abstract?
 
-/**
- * Defines an uneditable html_block node; Only appears when a user has written a "complicated" html_block
- * i.e. anything not resembling `<tag>content</tag>` or `<tag />`
- */
-const htmlBlockSpec: NodeSpec = {
-    content: "text*",
-    attrs: { content: { default: "" } },
-    marks: "_",
-    group: "block",
-    atom: true,
-    inline: false,
-    selectable: true,
-    // IMPORTANT! Removing this will cause inline content to be "collapsed" upwards, removing the metadata
-    defining: true,
-    // isolating set true so we don't allow outside content to accidentally enter this node (preserves html inside)
-    isolating: true,
-    parseDOM: [{ tag: "div.html_block" }],
-    toDOM(node) {
-        return [
-            "div",
-            {
-                class: "html_block",
-            },
-            node.attrs.content,
-        ];
-    },
-};
+/** Base rich-text schema; heavily inspired by prosemirror-markdown's schema */
 
-/**
- * Defines an uneditable html_inline node; These should very rarely appear in cases where
- * a user has a "valid", but unpaired html_inline tag (e.g. `test</em>`)
- */
-const htmlInlineSpec: NodeSpec = {
-    content: "text*",
-    attrs: { content: { default: "" } },
-    marks: "_",
-    group: "inline",
-    atom: true,
-    inline: true,
-    selectable: true,
-    // IMPORTANT! Removing this will cause inline content to be "collapsed" upwards, removing the metadata
-    defining: true,
-    // isolating set true so we don't allow outside content to accidentally enter this node (preserves html inside)
-    isolating: true,
-    parseDOM: [{ tag: "span.html_inline" }],
-    toDOM(node) {
-        return [
-            "span",
-            {
-                class: "html_inline",
-            },
-            node.attrs.content,
-        ];
-    },
-};
-
-/**
- * Represents an `html_block` node that was split by a newline, then put back together post-tokenization.
- * The "content" of the container is editable, but the leading/trailing html is not.
- * e.g `<blockquote>**Test**\n\n_test_</blockquote>` will have the `_test_` editable, but not the `**Test**`
- */
-const htmlBlockContainerSpec: NodeSpec = {
-    content: "block*",
-    attrs: { contentOpen: { default: "" }, contentClose: { default: "" } },
-    marks: "_",
-    group: "block",
-    inline: false,
-    selectable: true,
-    // IMPORTANT! Removing this will cause inline content to be "collapsed" upwards, removing the metadata
-    defining: true,
-    // isolating set true so we don't allow outside content to accidentally enter this node (preserves html inside)
-    isolating: true,
-};
-
-// manually render softbreaks, making sure to mark them
-// so we when parse them back out we can convert back to \n for markdown
-const softbreakSpec: NodeSpec = {
-    content: "inline+",
-    attrs: {},
-    marks: "_",
-    inline: true,
-    group: "inline",
-    // TODO accurate? necessary?
-    parseDOM: [
-        {
-            tag: "span[softbreak]",
-            getAttrs(node: HTMLElement) {
-                return {
-                    content: node.innerHTML,
-                };
-            },
-        },
-    ],
-    toDOM() {
-        return [
-            "span",
-            {
-                softbreak: "",
-            },
-            0,
-        ];
-    },
-};
-
-const spoilerNodeSpec: NodeSpec = {
-    content: "block+",
-    group: "block",
-    attrs: { revealed: { default: false } },
-    parseDOM: [
-        {
-            tag: "blockquote.spoiler",
-            getAttrs(node: HTMLElement) {
-                return {
-                    revealed: node.classList.contains("is-visible"),
-                };
-            },
-        },
-    ],
-    toDOM(node) {
-        return [
-            "blockquote",
-            {
-                "class": "spoiler" + (node.attrs.revealed ? " is-visible" : ""),
-                "data-spoiler": _t("nodes.spoiler_reveal_text"),
-            },
-            0,
-        ];
-    },
-};
-
-/**
- * Creates a generic html NodeSpec for a block html tag
- * @param tag The name of the tag to use in the Prosemirror dom
- */
-function genHtmlBlockNodeSpec(tag: string): NodeSpec {
-    return {
+const nodes: SchemaSpec["nodes"] = {
+    doc: {
         content: "block+",
-        marks: "",
+    },
+
+    paragraph: {
+        content: "inline*",
         group: "block",
-        inline: false,
-        selectable: true,
+        parseDOM: [{ tag: "p" }],
         toDOM() {
-            return [tag, 0];
+            return ["p", 0];
         },
-        parseDOM: [{ tag: tag }],
-    };
-}
+    },
 
-const defaultNodes = schema.spec.nodes as OrderedMap<NodeSpec>;
+    /** IMPORTANT: This needs be be set _before_ blockquote below, since they share the same tag in parseDOM */
+    spoiler: {
+        content: "block+",
+        group: "block",
+        attrs: { revealed: { default: false } },
+        parseDOM: [
+            {
+                tag: "blockquote.spoiler",
+                getAttrs(node: HTMLElement) {
+                    return {
+                        revealed: node.classList.contains("is-visible"),
+                    };
+                },
+            },
+        ],
+        toDOM(node) {
+            return [
+                "blockquote",
+                {
+                    "class":
+                        "spoiler" + (node.attrs.revealed ? " is-visible" : ""),
+                    "data-spoiler": _t("nodes.spoiler_reveal_text"),
+                },
+                0,
+            ];
+        },
+    },
 
-const extendedImageSpec: NodeSpec = {
-    ...defaultNodes.get("image"),
-    ...{
+    blockquote: {
+        content: "block+",
+        group: "block",
+        parseDOM: [{ tag: "blockquote" }],
+        toDOM() {
+            return ["blockquote", 0];
+        },
+    },
+
+    horizontal_rule: {
+        group: "block",
+        parseDOM: [{ tag: "hr" }],
+        toDOM() {
+            return ["div", ["hr"]];
+        },
+    },
+
+    heading: {
+        attrs: { level: { default: 1 } },
+        content: "(text | image)*",
+        group: "block",
+        defining: true,
+        parseDOM: [
+            { tag: "h1", attrs: { level: 1 } },
+            { tag: "h2", attrs: { level: 2 } },
+            { tag: "h3", attrs: { level: 3 } },
+            { tag: "h4", attrs: { level: 4 } },
+            { tag: "h5", attrs: { level: 5 } },
+            { tag: "h6", attrs: { level: 6 } },
+        ],
+        toDOM(node) {
+            return ["h" + <string>node.attrs.level, 0];
+        },
+    },
+
+    code_block: {
+        content: "text*",
+        group: "block",
+        code: true,
+        defining: true,
+        marks: "",
+        attrs: {
+            params: { default: "" },
+            detectedHighlightLanguage: { default: "" },
+        },
+        parseDOM: [
+            {
+                tag: "pre",
+                preserveWhitespace: "full",
+                getAttrs: (node: HTMLElement) => ({
+                    params: node.getAttribute("data-params") || "",
+                }),
+            },
+        ],
+        toDOM(node) {
+            return [
+                "pre",
+                node.attrs.params
+                    ? { "data-params": node.attrs.params as string }
+                    : {},
+                ["code", 0],
+            ];
+        },
+    },
+
+    ordered_list: {
+        content: "list_item+",
+        group: "block",
+        attrs: { order: { default: 1 }, tight: { default: false } },
+        parseDOM: [
+            {
+                tag: "ol",
+                getAttrs(dom: HTMLElement) {
+                    return {
+                        order: dom.hasAttribute("start")
+                            ? +dom.getAttribute("start")
+                            : 1,
+                        tight: dom.hasAttribute("data-tight"),
+                    };
+                },
+            },
+        ],
+        toDOM(node) {
+            return [
+                "ol",
+                {
+                    "start":
+                        node.attrs.order === 1
+                            ? null
+                            : String(node.attrs.order),
+                    "data-tight": node.attrs.tight ? "true" : null,
+                },
+                0,
+            ];
+        },
+    },
+
+    bullet_list: {
+        content: "list_item+",
+        group: "block",
+        attrs: { tight: { default: false } },
+        parseDOM: [
+            {
+                tag: "ul",
+                getAttrs: (dom: HTMLElement) => ({
+                    tight: dom.hasAttribute("data-tight"),
+                }),
+            },
+        ],
+        toDOM(node) {
+            return [
+                "ul",
+                { "data-tight": node.attrs.tight ? "true" : null },
+                0,
+            ];
+        },
+    },
+
+    list_item: {
+        content: "paragraph block*",
+        defining: true,
+        parseDOM: [{ tag: "li" }],
+        toDOM() {
+            return ["li", 0];
+        },
+    },
+
+    text: {
+        group: "inline",
+    },
+
+    image: {
+        inline: true,
+        group: "inline",
+        draggable: true,
         attrs: {
             src: {},
             alt: { default: null },
@@ -183,139 +207,364 @@ const extendedImageSpec: NodeSpec = {
             return ["img", node.attrs];
         },
     },
-};
 
-const extendedCodeblockSpec: NodeSpec = {
-    ...defaultNodes.get("code_block"),
-    ...{
+    hard_break: {
+        inline: true,
+        group: "inline",
+        selectable: false,
+        parseDOM: [{ tag: "br" }],
+        toDOM() {
+            return ["br"];
+        },
+    },
+
+    pre: genHtmlBlockNodeSpec("pre"),
+
+    /**
+     * Defines an uneditable html_block node; Only appears when a user has written a "complicated" html_block
+     * i.e. anything not resembling `<tag>content</tag>` or `<tag />`
+     */
+    html_block: {
+        content: "text*",
+        attrs: { content: { default: "" } },
+        marks: "_",
+        group: "block",
+        atom: true,
+        inline: false,
+        selectable: true,
+        // IMPORTANT! Removing this will cause inline content to be "collapsed" upwards, removing the metadata
+        defining: true,
+        // isolating set true so we don't allow outside content to accidentally enter this node (preserves html inside)
+        isolating: true,
+        parseDOM: [{ tag: "div.html_block" }],
+        toDOM(node) {
+            return [
+                "div",
+                {
+                    class: "html_block",
+                },
+                node.attrs.content,
+            ];
+        },
+    },
+
+    /**
+     * Defines an uneditable html_inline node; These should very rarely appear in cases where
+     * a user has a "valid", but unpaired html_inline tag (e.g. `test</em>`)
+     */
+    html_inline: {
+        content: "text*",
+        attrs: { content: { default: "" } },
+        marks: "_",
+        group: "inline",
+        atom: true,
+        inline: true,
+        selectable: true,
+        // IMPORTANT! Removing this will cause inline content to be "collapsed" upwards, removing the metadata
+        defining: true,
+        // isolating set true so we don't allow outside content to accidentally enter this node (preserves html inside)
+        isolating: true,
+        parseDOM: [{ tag: "span.html_inline" }],
+        toDOM(node) {
+            return [
+                "span",
+                {
+                    class: "html_inline",
+                },
+                node.attrs.content,
+            ];
+        },
+    },
+
+    /**
+     * Represents an `html_block` node that was split by a newline, then put back together post-tokenization.
+     * The "content" of the container is editable, but the leading/trailing html is not.
+     * e.g `<blockquote>**Test**\n\n_test_</blockquote>` will have the `_test_` editable, but not the `**Test**`
+     */
+    html_block_container: {
+        content: "block*",
+        attrs: { contentOpen: { default: "" }, contentClose: { default: "" } },
+        marks: "_",
+        group: "block",
+        inline: false,
+        selectable: true,
+        // IMPORTANT! Removing this will cause inline content to be "collapsed" upwards, removing the metadata
+        defining: true,
+        // isolating set true so we don't allow outside content to accidentally enter this node (preserves html inside)
+        isolating: true,
+    },
+
+    // manually render softbreaks, making sure to mark them
+    // so we when parse them back out we can convert back to \n for markdown
+    softbreak: {
+        content: "inline+",
+        attrs: {},
+        marks: "_",
+        inline: true,
+        group: "inline",
+        // TODO accurate? necessary?
+        parseDOM: [
+            {
+                tag: "span[softbreak]",
+                getAttrs(node: HTMLElement) {
+                    return {
+                        content: node.innerHTML,
+                    };
+                },
+            },
+        ],
+        toDOM() {
+            return [
+                "span",
+                {
+                    softbreak: "",
+                },
+                0,
+            ];
+        },
+    },
+
+    table: {
+        content: "table_head table_body*",
+        isolating: true,
+        group: "block",
+        selectable: false,
+        parseDOM: [{ tag: "table" }],
+        toDOM() {
+            return [
+                "div",
+                { class: "s-table-container" },
+                ["table", { class: "s-table" }, 0],
+            ];
+        },
+    },
+
+    table_head: {
+        content: "table_row",
+        isolating: true,
+        group: "table_block",
+        selectable: false,
+        parseDOM: [{ tag: "thead" }],
+        toDOM() {
+            return ["thead", 0];
+        },
+    },
+
+    table_body: {
+        content: "table_row+",
+        isolating: true,
+        group: "table_block",
+        selectable: false,
+        parseDOM: [{ tag: "tbody" }],
+        toDOM() {
+            return ["tbody", 0];
+        },
+    },
+
+    table_row: {
+        content: "(table_cell | table_header)+",
+        isolating: true,
+        group: "table_block",
+        selectable: false,
+        parseDOM: [{ tag: "tr" }],
+        toDOM() {
+            return ["tr", 0];
+        },
+    },
+
+    table_cell: {
+        content: "inline*",
+        isolating: true,
+        group: "table_block",
+        selectable: false,
         attrs: {
-            params: { default: "" },
-            detectedHighlightLanguage: { default: "" },
+            style: { default: null },
         },
-    },
-};
-
-const tableNodeSpec: NodeSpec = {
-    content: "table_head table_body*",
-    isolating: true,
-    group: "block",
-    selectable: false,
-    parseDOM: [{ tag: "table" }],
-    toDOM() {
-        return [
-            "div",
-            { class: "s-table-container" },
-            ["table", { class: "s-table" }, 0],
-        ];
-    },
-};
-
-const tableHeadNodeSpec: NodeSpec = {
-    content: "table_row",
-    isolating: true,
-    group: "table_block",
-    selectable: false,
-    parseDOM: [{ tag: "thead" }],
-    toDOM() {
-        return ["thead", 0];
-    },
-};
-
-const tableBodyNodeSpec: NodeSpec = {
-    content: "table_row+",
-    isolating: true,
-    group: "table_block",
-    selectable: false,
-    parseDOM: [{ tag: "tbody" }],
-    toDOM() {
-        return ["tbody", 0];
-    },
-};
-
-const tableRowNodeSpec: NodeSpec = {
-    content: "(table_cell | table_header)+",
-    isolating: true,
-    group: "table_block",
-    selectable: false,
-    parseDOM: [{ tag: "tr" }],
-    toDOM() {
-        return ["tr", 0];
-    },
-};
-
-const tableCellNodeSpec: NodeSpec = {
-    content: "inline*",
-    isolating: true,
-    group: "table_block",
-    selectable: false,
-    attrs: {
-        style: { default: null },
-    },
-    parseDOM: [
-        {
-            tag: "td",
-            getAttrs(dom: HTMLElement) {
-                const textAlign = dom.style.textAlign;
-                return textAlign ? { style: `text-align: ${textAlign}` } : null;
+        parseDOM: [
+            {
+                tag: "td",
+                getAttrs(dom: HTMLElement) {
+                    const textAlign = dom.style.textAlign;
+                    return textAlign
+                        ? { style: `text-align: ${textAlign}` }
+                        : null;
+                },
             },
+        ],
+        toDOM(node) {
+            return ["td", node.attrs, 0];
         },
-    ],
-    toDOM(node) {
-        return ["td", node.attrs, 0];
     },
-};
 
-const tableHeaderNodeSpec: NodeSpec = {
-    content: "inline*",
-    isolating: true,
-    group: "table_block",
-    selectable: false,
-    attrs: {
-        style: { default: null },
-    },
-    parseDOM: [
-        {
-            tag: "th",
-            getAttrs(dom: HTMLElement) {
-                const textAlign = dom.style.textAlign;
-                return textAlign ? { style: `text-align: ${textAlign}` } : null;
+    table_header: {
+        content: "inline*",
+        isolating: true,
+        group: "table_block",
+        selectable: false,
+        attrs: {
+            style: { default: null },
+        },
+        parseDOM: [
+            {
+                tag: "th",
+                getAttrs(dom: HTMLElement) {
+                    const textAlign = dom.style.textAlign;
+                    return textAlign
+                        ? { style: `text-align: ${textAlign}` }
+                        : null;
+                },
             },
+        ],
+        toDOM(node) {
+            return ["th", node.attrs, 0];
         },
-    ],
-    toDOM(node) {
-        return ["th", node.attrs, 0];
+    },
+
+    // TODO should this be a mark instead?
+    tagLink: {
+        content: "text*",
+        marks: "", // TODO should it accept marks?
+        atom: true, // TODO allow this to be editable
+        inline: true,
+        group: "inline",
+        attrs: {
+            tagName: { default: null },
+            tagType: { default: "tag" },
+        },
     },
 };
 
-// TODO should this be a mark instead?
-const tagLinkNodeSpec: NodeSpec = {
-    content: "text*",
-    marks: "", // TODO should it accept marks?
-    atom: true, // TODO allow this to be editable
-    inline: true,
-    group: "inline",
-    attrs: {
-        tagName: { default: null },
-        tagType: { default: "tag" },
+const marks: SchemaSpec["marks"] = {
+    em: {
+        parseDOM: [
+            { tag: "i" },
+            { tag: "em" },
+            {
+                style: "font-style",
+                getAttrs: (value) => value === "italic" && null,
+            },
+        ],
+        toDOM() {
+            return ["em"];
+        },
     },
+
+    strong: {
+        parseDOM: [
+            { tag: "b" },
+            { tag: "strong" },
+            {
+                style: "font-weight",
+                getAttrs: (value: string) =>
+                    /^(bold(er)?|[5-9]\d{2,})$/.test(value) && null,
+            },
+        ],
+        toDOM() {
+            return ["strong"];
+        },
+    },
+
+    link: {
+        inclusive: false,
+        attrs: {
+            href: {},
+            title: { default: null },
+            referenceType: { default: "" },
+            referenceLabel: { default: "" },
+        },
+        parseDOM: [
+            {
+                tag: "a[href]",
+                getAttrs(dom: HTMLElement) {
+                    return {
+                        href: dom.getAttribute("href"),
+                        title: dom.getAttribute("title"),
+                    };
+                },
+            },
+        ],
+        toDOM(node) {
+            return [
+                "a",
+                {
+                    href: node.attrs.href as string,
+                    title: node.attrs.title as string,
+                },
+            ];
+        },
+    },
+
+    code: {
+        exitable: true,
+        inclusive: true,
+        parseDOM: [{ tag: "code" }],
+        toDOM() {
+            return ["code"];
+        },
+    },
+
+    strike: genHtmlInlineMarkSpec({}, "del", "s", "strike"),
+
+    kbd: genHtmlInlineMarkSpec({ exitable: true, inclusive: true }, "kbd"),
+
+    sup: genHtmlInlineMarkSpec({}, "sup"),
+
+    sub: genHtmlInlineMarkSpec({}, "sub"),
 };
 
-const nodes = defaultNodes
-    .addBefore("image", "pre", genHtmlBlockNodeSpec("pre"))
-    .addBefore("image", "html_block", htmlBlockSpec)
-    .addBefore("image", "html_inline", htmlInlineSpec)
-    .addBefore("image", "html_block_container", htmlBlockContainerSpec)
-    .addBefore("image", "softbreak", softbreakSpec)
-    .addBefore("image", "table", tableNodeSpec)
-    .addBefore("image", "table_head", tableHeadNodeSpec)
-    .addBefore("image", "table_body", tableBodyNodeSpec)
-    .addBefore("image", "table_row", tableRowNodeSpec)
-    .addBefore("image", "table_cell", tableCellNodeSpec)
-    .addBefore("image", "table_header", tableHeaderNodeSpec)
-    .addBefore("image", "tagLink", tagLinkNodeSpec)
-    .addBefore("blockquote", "spoiler", spoilerNodeSpec)
-    .update("image", extendedImageSpec)
-    .update("code_block", extendedCodeblockSpec);
+// for *every* mark, add in support for the `markup` attribute
+// we use this to save the "original" html tag used to create the mark when converting from html markdown
+// this is important because a user could use either `<b>` or `<strong>` to create bold, and we want to preserve this when converting back
+Object.values(marks).forEach((node) => {
+    const attrs = node.attrs || {};
+    attrs.markup = { default: "" };
+    node.attrs = attrs;
+});
+
+// ditto for nodes
+Object.entries(nodes).forEach(([k, node]) => {
+    if (k === "text") {
+        return;
+    }
+
+    const attrs = node.attrs || {};
+    attrs.markup = { default: "" };
+    node.attrs = attrs;
+});
+
+/** The complete schema used by the rich-text editor */
+export const richTextSchema = new Schema({
+    nodes: nodes,
+    marks: marks,
+});
+
+/** All nodes that are considered to be within a table */
+export const tableNodes = [
+    richTextSchema.nodes.table,
+    richTextSchema.nodes.table_head,
+    richTextSchema.nodes.table_body,
+    richTextSchema.nodes.table_row,
+    richTextSchema.nodes.table_cell,
+    richTextSchema.nodes.table_header,
+];
+
+/**
+ * Creates a generic html NodeSpec for a block html tag
+ * @param tag The name of the tag to use in the Prosemirror dom
+ */
+function genHtmlBlockNodeSpec(tag: string): NodeSpec {
+    return {
+        content: "block+",
+        marks: "",
+        group: "block",
+        inline: false,
+        selectable: true,
+        toDOM() {
+            return [tag, 0];
+        },
+        parseDOM: [{ tag: tag }],
+    };
+}
 
 /**
  * Creates a generic html MarkSpec for an inline html tag
@@ -333,84 +582,3 @@ function genHtmlInlineMarkSpec(
         parseDOM: tags.map((tag) => ({ tag: tag })),
     };
 }
-
-const defaultMarks = schema.spec.marks as OrderedMap<MarkSpec>;
-
-const defaultLinkMark = defaultMarks.get("link");
-const extendedLinkMark: MarkSpec = {
-    ...defaultLinkMark,
-    ...{
-        attrs: {
-            ...defaultLinkMark.attrs,
-            referenceType: { default: "" },
-            referenceLabel: { default: "" },
-        },
-        toDOM(node) {
-            return [
-                "a",
-                {
-                    href: node.attrs.href as string,
-                    title: node.attrs.title as string,
-                },
-            ];
-        },
-    },
-};
-
-const defaultCodeMark = defaultMarks.get("code");
-const extendedCodeMark: MarkSpec = {
-    ...defaultCodeMark,
-    exitable: true,
-    inclusive: true,
-};
-
-const marks = defaultMarks
-    .addBefore(
-        "strong",
-        "strike",
-        genHtmlInlineMarkSpec({}, "del", "s", "strike")
-    )
-    .addBefore(
-        "strong",
-        "kbd",
-        genHtmlInlineMarkSpec({ exitable: true, inclusive: true }, "kbd")
-    )
-    .addBefore("strong", "sup", genHtmlInlineMarkSpec({}, "sup"))
-    .addBefore("strong", "sub", genHtmlInlineMarkSpec({}, "sub"))
-    .update("link", extendedLinkMark)
-    .update("code", extendedCodeMark);
-
-// for *every* mark, add in support for the `markup` attribute
-// we use this to save the "original" html tag used to create the mark when converting from html markdown
-// this is important because a user could use either `<b>` or `<strong>` to create bold, and we want to preserve this when converting back
-marks.forEach((k: string, node: MarkSpec) => {
-    const attrs = node.attrs || {};
-    attrs.markup = { default: "" };
-    node.attrs = attrs;
-});
-
-// ditto for nodes
-nodes.forEach((k: string, node: NodeSpec) => {
-    if (k === "text") {
-        return;
-    }
-
-    const attrs = node.attrs || {};
-    attrs.markup = { default: "" };
-    node.attrs = attrs;
-});
-
-// create our new, final schema using the extended nodes/marks taken from `schema`
-export const richTextSchema = new Schema({
-    nodes: nodes,
-    marks: marks,
-});
-
-export const tableNodes = [
-    richTextSchema.nodes.table,
-    richTextSchema.nodes.table_head,
-    richTextSchema.nodes.table_body,
-    richTextSchema.nodes.table_row,
-    richTextSchema.nodes.table_cell,
-    richTextSchema.nodes.table_header,
-];

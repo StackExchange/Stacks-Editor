@@ -238,7 +238,7 @@ _world_.
             const markdown = "<strong><em><del>wtf?</del></em></strong>";
             const richEditorView = richView(markdown);
 
-            const expectedHtml = `<p><em><del><strong>wtf?</strong></del></em></p>`;
+            const expectedHtml = `<p><em><strong><del>wtf?</del></strong></em></p>`;
             expect(editorDom(richEditorView)).toEqual(normalize(expectedHtml));
         });
 
