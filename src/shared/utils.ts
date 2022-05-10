@@ -222,6 +222,14 @@ function prefixEventName(eventName: string) {
 }
 
 /**
+ * Generated a random id that can be used to ensure DOM element ids are unique
+ * @returns a random string
+ */
+export function generateRandomId(): string {
+    return (Math.random() * 10000).toFixed(0);
+}
+
+/**
  * Prefixes and dispatches a custom event on the target
  * @param target The target to dispatch the event on
  * @param eventName The unprefixed event name

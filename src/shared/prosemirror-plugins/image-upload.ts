@@ -9,7 +9,7 @@ import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { richTextSchema } from "../schema";
 import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
-import { dispatchEditorEvent, escapeHTML } from "../utils";
+import { dispatchEditorEvent, escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
 
 /**
@@ -103,6 +103,7 @@ export class ImageUploader implements PluginView {
         pluginContainer: Element,
         addTransactionDispatcher: addTransactionDispatcher
     ) {
+        const randomId = generateRandomId();
         this.isVisible = false;
         this.uploadOptions = uploadOptions;
         this.pluginContainer = pluginContainer;
@@ -117,15 +118,15 @@ export class ImageUploader implements PluginView {
         this.uploadField.className = "js-image-uploader-input v-visible-sr";
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
-        this.uploadField.id = "fileUpload" + (Math.random() * 10000).toFixed(0);
+        this.uploadField.id = "fileUpload" + randomId;
 
         this.uploadContainer.innerHTML = escapeHTML`
             <div class="fs-body2 p12 pb0">
-                <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" role="button" aria-controls="image-preview">
+                <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" role="button" aria-controls="image-preview-${randomId}">
                     Browse
                 </label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
 
-            <div id="image-preview" class="js-image-preview wmx100 pt12 px12 d-none"></div>
+            <div id="image-preview-${randomId}" class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
 
             <div class="d-flex ai-center p12">
