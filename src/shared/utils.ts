@@ -222,7 +222,7 @@ function prefixEventName(eventName: string) {
 }
 
 /**
- * Generated a random id that can be used to ensure we've got truly unique DOM element ids
+ * Generated a random id that can be used to ensure DOM element ids are unique
  * @returns a random string
  */
 export function generateRandomId(): string {

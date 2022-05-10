@@ -260,11 +260,11 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
-const tableDropdown = (uniqueEditorId: string) =>
+const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
         "Edit table",
-        `table-dropdown-${uniqueEditorId}`,
+        `table-dropdown`,
         (state: EditorState) => inTable(state.selection),
         () => false,
 
@@ -295,11 +295,11 @@ const tableDropdown = (uniqueEditorId: string) =>
         )
     );
 
-const headingDropdown = (uniqueEditorId: string) =>
+const headingDropdown = () =>
     makeMenuDropdown(
         "Header",
         "Header",
-        `heading-dropdown-${uniqueEditorId}`,
+        "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
 
@@ -329,7 +329,7 @@ const headingDropdown = (uniqueEditorId: string) =>
 export const createMenu = (options: CommonViewOptions): Plugin =>
     createMenuPlugin(
         [
-            headingDropdown(options.uniqueEditorId),
+            headingDropdown(),
             {
                 key: "toggleBold",
                 command: toggleMark(schema.marks.strong),
@@ -396,10 +396,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 },
                 options.parserFeatures.tables
             ),
-            addIf(
-                tableDropdown(options.uniqueEditorId),
-                options.parserFeatures.tables
-            ),
+            addIf(tableDropdown(), options.parserFeatures.tables),
             makeMenuSpacerEntry(),
             {
                 key: "toggleOrderedList",

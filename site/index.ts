@@ -201,7 +201,6 @@ domReady(() => {
             },
             imageUpload: imageUploadOptions,
             externalPlugins: [StackSnippetsPlugin],
-            uniqueEditorId: place.id,
         };
 
         const editorInstance = new StacksEditor(place, content.value, options);
@@ -211,7 +210,6 @@ domReady(() => {
         (window as any)["editorInstance"] = editorInstance;
 
         if (place2) {
-            options.uniqueEditorId = place2.id;
             const secondEditorInstance = new StacksEditor(
                 place2,
                 content.value,

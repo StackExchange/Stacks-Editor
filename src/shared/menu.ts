@@ -1,7 +1,7 @@
 import { EditorState, Plugin, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import type { PluginView } from "./view";
-import { docChanged } from "./utils";
+import { docChanged, generateRandomId } from "./utils";
 
 /** NoOp to use in place of missing commands */
 const commandNoOp = () => false;
@@ -278,6 +278,7 @@ export function makeMenuDropdown(
     active?: (state: EditorState) => boolean,
     ...children: MenuCommandEntry[]
 ): MenuCommandEntry {
+    const randomId = generateRandomId();
     const popoverId = `${key}-popover`;
     const buttonId = `${key}-btn`;
     const button = makeMenuIcon(svg, title, key);
@@ -285,12 +286,12 @@ export function makeMenuDropdown(
     button.setAttribute("aria-controls", popoverId);
     button.setAttribute("data-action", "s-popover#toggle");
     button.setAttribute("data-controller", "s-tooltip");
-    button.id = buttonId;
+    button.id = buttonId + randomId;
     button.dataset.key = key;
 
     const popover = document.createElement("div");
     popover.className = "s-popover wmn-initial w-auto px0 pt0 pb8";
-    popover.id = popoverId;
+    popover.id = popoverId + randomId;
     popover.setAttribute("role", "menu");
 
     const arrow = document.createElement("div");
