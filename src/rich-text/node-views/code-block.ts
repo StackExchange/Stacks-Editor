@@ -103,8 +103,7 @@ export class CodeBlockView implements NodeView {
             });
         } else {
             $sel.value = lang;
-            // TODO localization
-            $auto.textContent = "auto";
+            $auto.textContent = _t("nodes.codeblock_auto");
         }
     }
 
