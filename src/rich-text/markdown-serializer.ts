@@ -4,7 +4,6 @@ import {
     MarkdownSerializerState,
     MarkSerializerConfig,
 } from "prosemirror-markdown";
-import { richTextSchema } from "../shared/schema";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
 import { error } from "../shared/logger";
 import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
@@ -14,6 +13,7 @@ import {
     TagType,
 } from "../shared/html-helpers";
 import { normalizeReference } from "markdown-it/lib/common/utils";
+import { richTextSchema } from "./schema";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<

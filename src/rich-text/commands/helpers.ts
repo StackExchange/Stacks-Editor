@@ -1,5 +1,5 @@
 import { Transaction } from "prosemirror-state";
-import { richTextSchema as schema } from "../../shared/schema";
+import { richTextSchema as schema } from "../schema";
 
 /**
  * Returns a transaction that inserts a new paragraph if there is no node after the cursor.

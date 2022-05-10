@@ -6,7 +6,7 @@ import {
 } from "prosemirror-inputrules";
 import { MarkType } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
-import { richTextSchema as schema } from "../shared/schema";
+import { richTextSchema as schema } from "./schema";
 import { CommonmarkParserFeatures } from "../shared/view";
 
 const blockquoteInputRule = wrappingInputRule(

@@ -1,6 +1,6 @@
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Fragment, Slice, Node as ProsemirrorNode } from "prosemirror-model";
-import { richTextSchema } from "../../shared/schema";
+import { richTextSchema } from "../schema";
 import { EditorView } from "prosemirror-view";
 import { inTable } from "../commands";
 

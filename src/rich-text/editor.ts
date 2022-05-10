@@ -20,7 +20,7 @@ import {
     editableCheck,
     readonlyPlugin,
 } from "../shared/prosemirror-plugins/readonly";
-import { CodeStringParser, richTextSchema } from "../shared/schema";
+import { CodeStringParser } from "../shared/schema";
 import { deepMerge } from "../shared/utils";
 import {
     BaseView,
@@ -41,6 +41,7 @@ import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
 import { linkTooltipPlugin } from "./plugins/link-tooltip";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
+import { richTextSchema } from "./schema";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */

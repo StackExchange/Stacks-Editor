@@ -14,7 +14,7 @@ import {
     splitListItem,
 } from "prosemirror-schema-list";
 import type { Plugin } from "prosemirror-state";
-import { richTextSchema as schema } from "../shared/schema";
+import { richTextSchema as schema } from "./schema";
 import { bindLetterKeymap } from "../shared/utils";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import {

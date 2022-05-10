@@ -7,7 +7,7 @@ import {
     StatefulPlugin,
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
-import { richTextSchema as schema } from "../../shared/schema";
+import { richTextSchema as schema } from "../schema";
 import { escapeHTML, generateRandomId } from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 

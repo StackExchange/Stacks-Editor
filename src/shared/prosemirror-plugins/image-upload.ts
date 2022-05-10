@@ -6,11 +6,11 @@ import {
 } from "prosemirror-state";
 import { NodeSpec } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import { richTextSchema } from "../schema";
 import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
 import { dispatchEditorEvent, escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
+import { richTextSchema } from "../../rich-text/schema";
 
 /**
  * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image

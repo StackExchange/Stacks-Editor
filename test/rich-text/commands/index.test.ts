@@ -1,6 +1,6 @@
 import { EditorState } from "prosemirror-state";
 import { exitInclusiveMarkCommand } from "../../../src/rich-text/commands";
-import { richTextSchema } from "../../../src/shared/schema";
+import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
