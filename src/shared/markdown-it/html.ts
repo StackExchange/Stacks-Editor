@@ -80,6 +80,12 @@ function getTagInfo(tag: string): TagInfo {
         tagType = TagType.paragraph;
     } else if (tagName === "hr") {
         tagType = TagType.horizontal_rule;
+    } else if (tagName === "dd") {
+        tagType = TagType.description_details;
+    } else if (tagName === "dl") {
+        tagType = TagType.description_list;
+    } else if (tagName === "dt") {
+        tagType = TagType.description_term;
     } else {
         tagType = TagType.unknown;
     }

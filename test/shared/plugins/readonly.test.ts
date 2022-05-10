@@ -5,7 +5,7 @@ import {
     toggleReadonly,
 } from "../../../src/shared/prosemirror-plugins/readonly";
 import { DOMParser } from "prosemirror-model";
-import { commonmarkSchema } from "../../../src/shared/schema";
+import { commonmarkSchema } from "../../../src/commonmark/schema";
 
 function createState() {
     return EditorState.create({

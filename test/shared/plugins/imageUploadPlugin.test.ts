@@ -8,9 +8,10 @@ import {
     commonmarkImageUpload,
     richTextImageUpload,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
-import { commonmarkSchema, richTextSchema } from "../../../src/shared/schema";
+import { richTextSchema } from "../../../src/rich-text/schema";
 import "../../matchers";
 import { getSelectedText } from "../../test-helpers";
+import { commonmarkSchema } from "../../../src/commonmark/schema";
 
 let pluginContainer: Element;
 let view: RichTextEditor;

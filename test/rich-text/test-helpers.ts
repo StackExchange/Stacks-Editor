@@ -7,7 +7,7 @@ import {
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { MenuCommand } from "../../src/shared/menu";
-import { richTextSchema } from "../../src/shared/schema";
+import { richTextSchema } from "../../src/rich-text/schema";
 
 /**
  * Url to use when testing (de)serialization that contains special encodings/other pitfalls and

@@ -7,6 +7,7 @@ import {
     StickyChangeDetails,
     escapeHTML,
     dispatchEditorEvent,
+    generateRandomId,
 } from "../shared/utils";
 import { View, CommonViewOptions, BaseView } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
@@ -66,7 +67,7 @@ export class StacksEditor implements View {
         this.target = target;
 
         // naively generate a random internalId for this editor instance
-        this.internalId = (Math.random() * 10000).toFixed(0);
+        this.internalId = generateRandomId();
 
         this.innerTarget = document.createElement("div");
         this.target.appendChild(this.innerTarget);

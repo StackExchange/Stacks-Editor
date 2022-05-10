@@ -1,6 +1,6 @@
 import { insertParagraphIfAtDocEnd } from "../../../src/rich-text/commands/helpers";
 import { createState, setSelection } from "../test-helpers";
-import { richTextSchema } from "../../../src/shared/schema";
+import { richTextSchema } from "../../../src/rich-text/schema";
 
 describe("commands helpers", () => {
     describe("insertParagraphIfAtDocEnd", () => {

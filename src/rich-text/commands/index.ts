@@ -24,7 +24,7 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { richTextSchema as schema } from "../../shared/schema";
+import { richTextSchema as schema } from "../schema";
 import type { CommonViewOptions } from "../../shared/view";
 import { LINK_TOOLTIP_KEY } from "../plugins/link-tooltip";
 import { insertParagraphIfAtDocEnd } from "./helpers";

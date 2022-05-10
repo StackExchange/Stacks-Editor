@@ -3,7 +3,7 @@ import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
 } from "../../../src/rich-text/commands";
-import { richTextSchema } from "../../../src/shared/schema";
+import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
 import "../../matchers";
 
