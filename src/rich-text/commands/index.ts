@@ -109,46 +109,24 @@ export function insertHorizontalRuleCommand(
         return true;
     }
 
-    const docSize = Selection.atEnd(state.tr.doc).$anchor.pos;
-    const { $anchor, $head } = state.tr.selection;
-    const isEmptyEditor = docSize === 1;
-    const isAtEnd = docSize === Math.max($anchor.pos, $head.pos);
+    const isAtEnd =
+        state.doc.content.size - 1 ===
+        Math.max(state.selection.from, state.selection.to);
     const isAtBeginning = state.tr.selection.from === 1;
 
-    if (isEmptyEditor) {
-        dispatch(
-            state.tr
-                .replaceSelectionWith(schema.nodes.paragraph.create())
-                .insert(1, schema.nodes.horizontal_rule.create()) // insert after p
-                .insert(3, schema.nodes.paragraph.create()) // insert after hr
-        );
-        return true;
-    }
+    let tr = state.tr.replaceSelectionWith(
+        schema.nodes.horizontal_rule.create()
+    );
 
     if (isAtBeginning) {
-        dispatch(
-            state.tr
-                .replaceSelectionWith(schema.nodes.horizontal_rule.create())
-                .insert(0, schema.nodes.paragraph.create())
-        );
-        return true;
+        tr = tr.insert(0, schema.nodes.paragraph.create());
     }
 
     if (isAtEnd) {
-        dispatch(
-            state.tr
-                .replaceSelectionWith(schema.nodes.paragraph.create())
-                .insert(
-                    state.selection.from,
-                    schema.nodes.horizontal_rule.create()
-                )
-        );
-        return true;
+        tr = tr.insert(tr.selection.to, schema.nodes.paragraph.create());
     }
 
-    dispatch(
-        state.tr.replaceSelectionWith(schema.nodes.horizontal_rule.create())
-    );
+    dispatch(tr);
     return true;
 }
 
