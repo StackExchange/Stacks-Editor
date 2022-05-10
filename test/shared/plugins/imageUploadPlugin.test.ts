@@ -41,6 +41,28 @@ describe("image upload plugin", () => {
         expect(updatedUploadContainer.classList).not.toContain("d-none");
     });
 
+    it("should focus 'browse' button when showing image uploader", () => {
+        // we need to add our DOM to the doc's body in order to make jsdom's "focus" handling work
+        // see https://github.com/jsdom/jsdom/issues/2586#issuecomment-742593116
+        document.body.appendChild(pluginContainer);
+
+        expect(uploader.uploadContainer.classList).toContain("d-none");
+
+        showImageUploader(view.editorView);
+        uploader.update(view.editorView);
+        const updatedUploadContainer =
+            pluginContainer.querySelector(".js-image-uploader");
+
+        const fileInput = updatedUploadContainer.querySelector(
+            ".js-browse-button input"
+        );
+        // the actual element changes when the plugin state is updated, so we can't check exact match
+        expect(document.activeElement.className).toEqual(fileInput.className);
+
+        // cleanup the appended child
+        pluginContainer.remove();
+    });
+
     it("should hide image uploader", () => {
         showImageUploader(view.editorView);
         uploader.update(view.editorView);
@@ -134,6 +156,7 @@ describe("image upload plugin", () => {
                     schema: richTextSchema,
                     plugins: [plugin],
                 }),
+                plugins: [],
             });
 
             const imageUploader = plugin.spec.view(view) as ImageUploader;
@@ -198,6 +221,7 @@ describe("image upload plugin", () => {
                     schema: commonmarkSchema,
                     plugins: [plugin],
                 }),
+                plugins: [],
             });
 
             const imageUploader = plugin.spec.view(view) as ImageUploader;

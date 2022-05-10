@@ -56,8 +56,6 @@ describe("markdown-serializer", () => {
             `![alt1](src1 "title1")`,
         ],
         [`test<br>test`, `test  \ntest`],
-        // TODO html_inline, html_block, html_block_container, stack_snippet, softbreak? Can't be typed, but could be pasted...
-        // TODO table, taglink, spoiler
         /* Marks */
         [`<em>test</em>`, `*test*`],
         [`<strong>test</strong>`, `**test**`],
@@ -87,6 +85,7 @@ describe("markdown-serializer", () => {
     /**
      * Represents different types of data that were rendered differently in markup.
      * All entries should render exactly the same before and after rich-text conversion.
+     * NOTE: some serialization tests are in the tests for the plugin that implemented the feature (e.g. html)
      */
     const markupSerializeData = [
         /* Nodes */
@@ -100,7 +99,9 @@ describe("markdown-serializer", () => {
         "~~~\ntest\n~~~",
         `<pre><code>test</code></pre>`,
         `# ATX heading`,
-        //`Setext heading\n===`,
+        // TODO Setext headings don't remember the number of "underline" characters
+        [`Setext heading\n===`, `Setext heading\n=`],
+        [`Setext heading\n---`, `Setext heading\n-`],
         `<h1>html heading</h1>`,
         `<h2>html heading</h2>`,
         `<h3>html heading</h3>`,
@@ -120,7 +121,8 @@ describe("markdown-serializer", () => {
         `+ li1\n+ li2\n+ li3`,
         `* li1\n* li2\n* li3`,
         `<ul><li>li1</li><li>li2</li></ul>`,
-        //`1. li1\n1. li2\n1. li3`,
+        // ordered item numbers will auto-increment
+        [`1. li1\n1. li2\n1. li3`, `1. li1\n2. li2\n3. li3`],
         `1. li1\n2. li2\n3. li3`,
         `1) li1\n2) li2\n3) li3`,
         `<ol><li>li1</li><li>li2</li></ol>`,
@@ -136,18 +138,22 @@ describe("markdown-serializer", () => {
         `<img alt="alt1" src="src1" title="title1"/>`,
         `<img alt="alt1" src="src1" title="title1" />`,
         `<img height="10" src="src1" width="10" />`,
-        // TODO attributes render in alpha order
-        //[`<img src="src1" width="10" height="10" />`, `<img src="src1" height="10" width="10" />`],
+        // attributes render in alpha order
+        [
+            `<img src="src1" width="10" height="10" />`,
+            `<img height="10" src="src1" width="10" />`,
+        ],
         /* Soft/Hard breaks */
         `test\ntest`,
         `test\n\ntest`,
-        //`test\\\ntest`,
+        `test\\\ntest`, // TODO renders with double trailing spaces
         `test  \ntest`,
         `test<br>test`,
         `test<br/>test`,
         `test<br />test`,
-        // TODO html_inline, html_block, html_block_container
-        // TODO stack_snippet, softbreak, table, taglink, spoiler
+        /* Tables */
+        `| foo | bar |\n| --- | --- |\n| baz | bim |`,
+        `| abc | def | ghi |\n|:---:|:--- | ---:|\n| foo | bar | baz |`,
         /* Marks */
         `*test*`,
         `_test_`,
@@ -169,14 +175,19 @@ describe("markdown-serializer", () => {
         `[test](${crazyTestUrl} "title1")`,
         `<${crazyTestUrl}>`,
         `${crazyTestUrl}`,
-        // TODO reference links
     ];
 
     it.each(markupSerializeData)(
         "should serialize elements with different source markup correctly (test #%#)",
         (input) => {
+            let expected = input;
+            if (input instanceof Array) {
+                expected = input[1];
+                input = input[0];
+            }
+
             const view = richView(input);
-            expect(view.content).toBe(input);
+            expect(view.content).toBe(expected);
         }
     );
 

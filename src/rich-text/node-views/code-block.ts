@@ -4,6 +4,7 @@ import {
     getBlockLanguage,
     getLoadedLanguages,
 } from "../../shared/highlighting/highlight-plugin";
+import { _t } from "../../shared/localization";
 import { escapeHTML } from "../../shared/utils";
 
 type getPosParam = boolean | (() => number);
@@ -97,10 +98,12 @@ export class CodeBlockView implements NodeView {
 
         if (this.language.autodetected) {
             $sel.value = "auto";
-            // TODO localization
-            $auto.textContent = lang + " (auto)";
+            $auto.textContent = _t("nodes.codeblock_lang_auto", {
+                lang,
+            });
         } else {
             $sel.value = lang;
+            // TODO localization
             $auto.textContent = "auto";
         }
     }

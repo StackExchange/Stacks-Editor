@@ -9,6 +9,7 @@ import {
     ParseRule,
     Schema,
 } from "prosemirror-model";
+import { _t } from "./localization";
 import { escapeHTML } from "./utils";
 
 //TODO this relies on Stacks classes, should we abstract?
@@ -136,8 +137,7 @@ const spoilerNodeSpec: NodeSpec = {
             "blockquote",
             {
                 "class": "spoiler" + (node.attrs.revealed ? " is-visible" : ""),
-                // TODO localization
-                "data-spoiler": "Reveal spoiler",
+                "data-spoiler": _t("nodes.spoiler_reveal_text"),
             },
             0,
         ];

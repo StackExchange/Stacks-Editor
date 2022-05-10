@@ -11,6 +11,9 @@ import {
 
 const boldMenuButtonSelector = ".js-bold-btn";
 const insertLinkMenuItemSelector = ".js-insert-link-btn";
+const insertHeadingDropdownButtonSelector = `[id^="heading-dropdown-btn-"]`;
+const headingPopoverSelector = `[id^="heading-dropdown-popover-"]`;
+const insertH1ButtonSelector = "button[data-key='h1-btn']";
 
 const linkViewTooltipSelector = ".js-link-tooltip";
 const removeLinkSelector = ".js-link-tooltip-remove";
@@ -65,6 +68,28 @@ test.describe.serial("rich-text mode", () => {
             /is-selected/,
             { timeout: 1000 }
         );
+    });
+
+    test("should insert heading from dropdown", async () => {
+        await enterTextAsMarkdown(page, "plain text");
+        await expect(page.locator(headingPopoverSelector)).not.toHaveClass(
+            /is-visible/,
+            { timeout: 1000 }
+        );
+
+        await page.click(insertHeadingDropdownButtonSelector);
+        await expect(page.locator(headingPopoverSelector)).toHaveClass(
+            /is-visible/,
+            { timeout: 1000 }
+        );
+
+        await page.click(insertH1ButtonSelector);
+        await expect(page.locator(headingPopoverSelector)).not.toHaveClass(
+            /is-visible/,
+            { timeout: 1000 }
+        );
+
+        expect(await getMarkdownContent(page)).toEqual("# plain text");
     });
 
     test.describe("input rules", () => {

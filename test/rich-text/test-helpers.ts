@@ -43,6 +43,7 @@ export function createState(
 export function createView(state: EditorState<Schema>): EditorView<Schema> {
     return new EditorView(document.createElement("div"), {
         state: state,
+        plugins: [],
     });
 }
 

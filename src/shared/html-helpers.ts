@@ -29,10 +29,10 @@ export enum TagType {
     ordered_list,
     unordered_list,
 
-    //TODO not yet implemented (needs added to schema in prosemirror)
-    dd,
-    dl,
-    dt,
+    // Description lists
+    description_details, // <dd>
+    description_list, // <dl>
+    description_term, // <dt>
 }
 
 /**
@@ -54,9 +54,9 @@ export const blockElements = [
     TagType.list_item,
     TagType.ordered_list,
     TagType.unordered_list,
-    TagType.dd,
-    TagType.dl,
-    TagType.dt,
+    TagType.description_details,
+    TagType.description_list,
+    TagType.description_term,
     TagType.paragraph,
     TagType.horizontal_rule,
     TagType.pre,

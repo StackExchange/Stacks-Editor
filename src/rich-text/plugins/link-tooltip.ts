@@ -2,12 +2,13 @@ import { toggleMark } from "prosemirror-commands";
 import { Mark, Schema } from "prosemirror-model";
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
+import { _t } from "../../shared/localization";
 import {
     StatefulPlugin,
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
 import { richTextSchema as schema } from "../../shared/schema";
-import { escapeHTML } from "../../shared/utils";
+import { escapeHTML, generateRandomId } from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 
 class LinkTooltip {
@@ -46,16 +47,16 @@ class LinkTooltip {
         state: EditorState<Schema>,
         linkValidator: CommonmarkParserFeatures["validateLink"]
     ) {
+        const popoverId = "link-tooltip-popover" + generateRandomId();
         this.validateLink = linkValidator;
         this.content = document.createElement("span");
         this.content.className = "w0";
-        this.content.setAttribute("aria-controls", "link-tooltip-popover");
+        this.content.setAttribute("aria-controls", popoverId);
         this.content.setAttribute("data-controller", "s-popover");
         this.content.setAttribute("data-s-popover-placement", "bottom");
 
-        // TODO localization (everywhere we have harcoded template strings)
         this.content.innerHTML = escapeHTML`<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
-            id="link-tooltip-popover"
+            id="${popoverId}"
             role="menu">
             <div class="s-popover--arrow"></div>
             <div class="d-flex ai-center">
@@ -72,13 +73,19 @@ class LinkTooltip {
                 </div>
                 <button type="button"
                         class="flex--item s-btn mr4 js-link-tooltip-edit"
-                        title="${"Edit link"}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
+                        title="${_t(
+                            "link_tooltip.edit_button_title"
+                        )}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
                 <button type="button"
                         class="flex--item s-btn d-none js-link-tooltip-apply"
-                        title="${"Apply new link"}">${"Apply"}</button>
+                        title="${_t("link_tooltip.apply_button_title")}">${_t(
+            "link_tooltip.apply_button_text"
+        )}</button>
                 <button type="button"
                         class="flex--item s-btn js-link-tooltip-remove"
-                        title="${"Remove link"}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
+                        title="${_t(
+                            "link_tooltip.remove_button_title"
+                        )}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
             </div>
         </div>`;
 

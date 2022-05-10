@@ -10,7 +10,7 @@ import type { HLJSApi } from "highlight.js";
 /** Attempts to get the optional highlight.js instance */
 export function getHljsInstance(): HLJSApi {
     // @ts-expect-error
-    let hljs: HLJSApi = global.hljs as HLJSApi;
+    let hljs: HLJSApi = globalThis.hljs as HLJSApi;
 
     if (!hljs) {
         try {

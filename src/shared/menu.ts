@@ -1,7 +1,7 @@
 import { EditorState, Plugin, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import type { PluginView } from "./view";
-import { docChanged } from "./utils";
+import { docChanged, generateRandomId } from "./utils";
 
 /** NoOp to use in place of missing commands */
 const commandNoOp = () => false;
@@ -160,7 +160,7 @@ export interface MenuCommandEntry {
 
 /**
  * Simple wrapper function to ensure that conditional menu item adds are consistent
- * @param item The item to add if flag is truty
+ * @param item The item to add if flag is truthy
  * @param flag Whether to add the item
  */
 export function addIf(item: MenuCommandEntry, flag: boolean): MenuCommandEntry {
@@ -267,22 +267,27 @@ export function makeMenuSpacerEntry(
  * @param title The text to place in the dropdown button's title attribute
  * @param key A unique identifier used for this dropdown menu
  * @param visible A function that determines wether the dropdown should be visible or hidden
- * @param children The child MenuComandEntry items to be placed in the dropdown menu
+ * @param active A function to determine if the dropdown should be highlighted as active
+ * @param children The child MenuCommandEntry items to be placed in the dropdown menu
  */
 export function makeMenuDropdown(
     svg: string,
     title: string,
     key: string,
     visible?: (state: EditorState) => boolean,
+    active?: (state: EditorState) => boolean,
     ...children: MenuCommandEntry[]
 ): MenuCommandEntry {
-    const popoverId = "table-button-popover";
+    const randomId = generateRandomId();
+    const popoverId = `${key}-popover-${randomId}`;
+    const buttonId = `${key}-btn-${randomId}`;
+
     const button = makeMenuIcon(svg, title, key);
     button.classList.add("s-btn", "s-btn__dropdown");
     button.setAttribute("aria-controls", popoverId);
-    button.setAttribute("data-controller", "s-popover");
     button.setAttribute("data-action", "s-popover#toggle");
-    button.setAttribute("data-s-popover-toggle-class", "is-selected");
+    button.setAttribute("data-controller", "s-tooltip");
+    button.id = buttonId;
     button.dataset.key = key;
 
     const popover = document.createElement("div");
@@ -302,6 +307,10 @@ export function makeMenuDropdown(
     popover.appendChild(content);
 
     const wrapper = document.createElement("div");
+    wrapper.dataset.controller = "s-popover";
+    wrapper.setAttribute("data-s-popover-toggle-class", "is-selected");
+    wrapper.setAttribute("data-s-popover-placement", "bottom");
+    wrapper.setAttribute("data-s-popover-reference-selector", `#${buttonId}`);
     wrapper.appendChild(button);
     wrapper.appendChild(popover);
 
@@ -311,6 +320,7 @@ export function makeMenuDropdown(
         children: children,
         command: () => true,
         visible: visible,
+        active: active,
     };
 }
 
@@ -319,22 +329,32 @@ export function makeMenuDropdown(
  * @param title The text to be displayed for this item
  * @param command The command to be executed when this item is clicked
  * @param key A unique identifier used for identifying the command to be executed on click
+ * @param active A function to determine whether this item should be rendered as "active"
+ * @param cssClasses Additional css classes to be applied to this dropdown item
  */
 export function dropdownItem(
     title: string,
     command: MenuCommand,
-    key: string
+    key: string,
+    active?: (state: EditorState) => boolean,
+    cssClasses?: string[]
 ): MenuCommandEntry {
     const button = document.createElement("button");
     button.type = "button";
-    button.className = `s-btn s-btn__unset flex--item ta-left px12 py4 h:bg-black-050 c-pointer js-editor-btn`;
     button.dataset.key = key;
     button.textContent = title;
+    button.dataset.action = "s-popover#hide";
+    button.className = `s-editor-btn s-editor-btn__dropdown-item js-editor-btn`;
+
+    if (cssClasses) {
+        button.classList.add(...cssClasses);
+    }
 
     return {
         key: key,
         command: command,
         dom: button,
+        active: active,
     };
 }
 

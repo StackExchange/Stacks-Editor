@@ -1,10 +1,7 @@
-@import (reference) "@stackoverflow/stacks/lib/css/exports/_stacks-mixins";
-@import (reference)
-    "@stackoverflow/stacks/lib/css/exports/_stacks-constants-type";
-@import (reference)
-    "@stackoverflow/stacks/lib/css/exports/_stacks-constants-colors";
-@import (reference)
-    "@stackoverflow/stacks/lib/css/exports/_stacks-constants-helpers";
+@import (reference) "@stackoverflow/stacks/lib/css/exports/mixins";
+@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-type";
+@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-colors";
+@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-helpers";
 
 // TODO move this into Stacks!
 .bg-inherit {
@@ -62,16 +59,16 @@
 .s-editor-btn {
     position: relative;
     display: inline-block;
-    padding: @su2;
+    padding: var(--su2);
     border: 1px solid transparent;
-    border-radius: @br-sm;
+    border-radius: var(--br-sm);
     color: var(--black-700);
     background-color: transparent;
     outline: none;
     font-family: inherit;
-    font-size: @fs-body1;
+    font-size: var(--fs-body1);
     font-weight: normal;
-    line-height: @lh-sm;
+    line-height: var(--lh-sm);
     text-align: center;
     text-decoration: none;
     cursor: pointer;
@@ -82,10 +79,25 @@
         color: var(--black-700);
     }
 
+    .highcontrast-mode({
+        color: var(--black-900);
+    });
+
     &.is-selected,
     &:active {
         color: var(--black-900);
         background-color: var(--black-100);
+
+        .highcontrast-mode({
+            color: var(--black-050);
+            background-color: var(--black-900);
+            &:hover {
+                color: var(--black-050);
+            }
+            &.s-btn.s-btn__dropdown {
+                border-color: var(--black-900);
+            }
+        });
     }
 
     &.is-disabled {
@@ -94,23 +106,45 @@
         &:hover {
             background-color: transparent;
         }
+
+        .highcontrast-mode({
+            opacity: 0.5;
+            color: var(--black-300);
+        });
     }
 
     &:focus {
-        box-shadow: 0 0 0 @su4 var(--focus-ring-muted);
+        box-shadow: 0 0 0 var(--su4) var(--focus-ring-muted);
     }
 
     &.s-btn__dropdown {
-        padding-right: @su16;
+        padding-right: var(--su16);
 
         &:after {
-            right: @su4;
+            right: var(--su4);
+        }
+    }
+
+    &.s-editor-btn__dropdown-item {
+        display: block;
+        padding: var(--su4) var(--su12);
+        border: none;
+        border-radius: 0;
+        color: var(--black-800);
+        text-align: left;
+
+        &:hover {
+            color: var(--black-800);
+        }
+
+        &.is-disabled {
+            color: var(--black-150);
         }
     }
 }
 
 .s-editor-resizable {
-    max-height: (@s-step * 6); // hmx6
+    max-height: calc(var(--s-step) * 6); // hmx6
     resize: vertical;
 
     // if the user manually resizes (via css resize handle), remove the max-height restriction
@@ -138,7 +172,7 @@
         border-width: 2px;
         border-style: solid;
         border-color: currentColor;
-        border-radius: @br-circle;
+        border-radius: var(--br-circle);
     }
 
     &:after {
@@ -152,7 +186,7 @@
         border-style: solid;
         border-color: transparent;
         border-left-color: currentColor;
-        border-radius: @br-circle;
+        border-radius: var(--br-circle);
         animation: s-spinner-rotate 0.9s infinite
             cubic-bezier(0.5, 0.1, 0.5, 0.9);
         // see _stacks-spinner.less for an explanation of the following two

@@ -18,6 +18,9 @@ Stacks-Editor is a combination rich text / markdown editor that powers Stack Ove
 import { StacksEditor } from "@stackoverflow/stacks-editor";
 // don't forget to include the styles as well
 import "@stackoverflow/stacks-editor/dist/styles.css";
+// include the Stacks js and css as they're not included in the bundle
+import "@stackoverflow/stacks";
+import "@stackoverflow/stacks/dist/css/stacks.css";
 
 new StacksEditor(
     document.querySelector("#editor-container"),
@@ -28,6 +31,8 @@ new StacksEditor(
 ### Import via &lt;script&gt; tag
 
 ```html
+<!--include Stacks -->
+<link rel="stylesheet" src="path/to/node_modules/@stackoverflow/stacks/dist/css/stacks.css" />
 <!-- include the bundled styles -->
 <link
     rel="stylesheet"
@@ -38,7 +43,8 @@ new StacksEditor(
 
 <!-- highlight.js is not included in the bundle, so include it as well if you want it -->
 <script src="//unpkg.com/@highlightjs/cdn-assets@latest/highlight.min.js"></script>
-
+<!--include Stacks -->
+<script src="path/to/node_modules/@stackoverflow/stacks/dist/stacks.min.js"></script>
 <!-- include the bundle -->
 <script src="path/to/node_modules/@stackoverflow/stacks-editor/dist/app.bundle.js"></script>
 
