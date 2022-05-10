@@ -124,6 +124,7 @@ export class RichTextEditor extends BaseView {
                     },
                     ...this.externalPlugins.nodeViews,
                 },
+                plugins: [],
             }
         );
 

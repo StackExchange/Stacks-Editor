@@ -156,6 +156,7 @@ describe("image upload plugin", () => {
                     schema: richTextSchema,
                     plugins: [plugin],
                 }),
+                plugins: [],
             });
 
             const imageUploader = plugin.spec.view(view) as ImageUploader;
@@ -220,6 +221,7 @@ describe("image upload plugin", () => {
                     schema: commonmarkSchema,
                     plugins: [plugin],
                 }),
+                plugins: [],
             });
 
             const imageUploader = plugin.spec.view(view) as ImageUploader;
