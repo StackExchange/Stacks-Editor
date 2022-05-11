@@ -41,6 +41,8 @@ describe("commands", () => {
     describe("toggleBlockType", () => {
         it.todo("should insert a paragraph at the end of the doc");
         it.todo("should not insert a paragraph at the end of the doc");
+        it.todo("should change heading level from 1 to 2");
+        it.todo("should change toggle heading off");
     });
 
     describe("insertHorizontalRuleCommand", () => {
