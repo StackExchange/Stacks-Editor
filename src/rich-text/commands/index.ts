@@ -4,7 +4,6 @@ import { Mark, MarkType, NodeType } from "prosemirror-model";
 import {
     EditorState,
     Plugin,
-    Selection,
     TextSelection,
     Transaction,
 } from "prosemirror-state";
