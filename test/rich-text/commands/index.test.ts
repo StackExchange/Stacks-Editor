@@ -1,7 +1,11 @@
-import { EditorState } from "prosemirror-state";
-import { exitInclusiveMarkCommand } from "../../../src/rich-text/commands";
+import { EditorState, Transaction } from "prosemirror-state";
+import {
+    exitInclusiveMarkCommand,
+    insertHorizontalRuleCommand,
+} from "../../../src/rich-text/commands";
 import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
+import "../../matchers";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;
@@ -13,10 +17,225 @@ function getEndOfNode(state: EditorState, nodePos: number) {
     return from;
 }
 
+/**
+ * Applies a command to the state and expects the entire doc to resemble
+ * `expected` and the selected text to resemble `expectedSelected`
+ */
+function executeTransaction(
+    state: EditorState,
+    command: (
+        state: EditorState,
+        dispatch: (tr: Transaction) => void
+    ) => boolean
+) {
+    let newState = state;
+
+    const isValid = command(state, (t) => {
+        newState = state.apply(t);
+    });
+
+    return { newState, isValid };
+}
+
 describe("commands", () => {
     describe("toggleBlockType", () => {
         it.todo("should insert a paragraph at the end of the doc");
         it.todo("should not insert a paragraph at the end of the doc");
+    });
+
+    describe("insertHorizontalRuleCommand", () => {
+        it("should not insert while in a table", () => {
+            const state = applySelection(
+                createState(
+                    "<table><thead><tr><th>asdf</th></tr></thead></table>",
+                    []
+                ),
+                3
+            );
+
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("table_header");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                insertHorizontalRuleCommand
+            );
+
+            expect(isValid).toBeFalsy();
+            let constainsHr = false;
+
+            newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
+                constainsHr = node.type.name === "horizontal_rule";
+
+                return !constainsHr;
+            });
+
+            expect(constainsHr).toBeFalsy();
+        });
+        it("should add paragraph after when inserted at the end of the doc", () => {
+            let state = createState("asdf", []);
+
+            state = applySelection(state, getEndOfNode(state, 1));
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                insertHorizontalRuleCommand
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                    },
+                    {
+                        "type.name": "horizontal_rule",
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    },
+                ],
+            });
+        });
+        it("should add paragraph before when inserted at the beginning of the doc", () => {
+            const state = createState("asdf", []);
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                insertHorizontalRuleCommand
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    },
+                    {
+                        "type.name": "horizontal_rule",
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                    },
+                ],
+            });
+        });
+
+        it("should add paragraph before and after when inserted into empty doc", () => {
+            const state = createState("", []);
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                insertHorizontalRuleCommand
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    },
+                    {
+                        "type.name": "horizontal_rule",
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    },
+                ],
+            });
+        });
+
+        it("should insert without paragraphs when surrounded by other nodes", () => {
+            let state = createState("asdf", []);
+
+            state = applySelection(state, 2);
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                insertHorizontalRuleCommand
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "as",
+                            },
+                        ],
+                    },
+                    {
+                        "type.name": "horizontal_rule",
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "df",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+
+        it("should replace selected text", () => {
+            let state = createState("asdf", []);
+
+            state = applySelection(state, 2, 3);
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                insertHorizontalRuleCommand
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "as",
+                            },
+                        ],
+                    },
+                    {
+                        "type.name": "horizontal_rule",
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "f",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
     });
 
     describe("exitMarkCommand", () => {

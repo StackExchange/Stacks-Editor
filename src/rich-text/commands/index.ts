@@ -104,10 +104,28 @@ export function insertHorizontalRuleCommand(
         return false;
     }
 
-    dispatch &&
-        dispatch(
-            state.tr.replaceSelectionWith(schema.nodes.horizontal_rule.create())
-        );
+    if (!dispatch) {
+        return true;
+    }
+
+    const isAtEnd =
+        state.doc.content.size - 1 ===
+        Math.max(state.selection.from, state.selection.to);
+    const isAtBeginning = state.tr.selection.from === 1;
+
+    let tr = state.tr.replaceSelectionWith(
+        schema.nodes.horizontal_rule.create()
+    );
+
+    if (isAtBeginning) {
+        tr = tr.insert(0, schema.nodes.paragraph.create());
+    }
+
+    if (isAtEnd) {
+        tr = tr.insert(tr.selection.to, schema.nodes.paragraph.create());
+    }
+
+    dispatch(tr);
     return true;
 }
 
