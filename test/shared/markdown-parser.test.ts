@@ -360,4 +360,35 @@ console.log("test");
             expect(doc.content[0].content[1].marks).toBeUndefined();
         });
     });
+
+    describe("headings", () => {
+        it.each([
+            // hard breaks
+            ["# heading <br> test", ["text", "hard_break", "text"]],
+            ["heading  \ntest\n---", ["text", "hard_break", "text"]],
+            // soft breaks
+            ["heading\ntest\n---", ["text", "softbreak", "text"]],
+            // images
+            [
+                "# heading ![alt](http://www.example.com/image.png)",
+                ["text", "image"],
+            ],
+        ])("should allow all inline nodes", (input, childNodeTypes) => {
+            const doc = markdownParser.parse(input);
+
+            expect(doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "heading",
+                        "content": [
+                            ...childNodeTypes.map((t) => ({
+                                "type.name": t,
+                            })),
+                        ],
+                    },
+                ],
+            });
+        });
+    });
 });

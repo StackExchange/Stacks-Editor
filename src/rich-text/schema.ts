@@ -66,7 +66,7 @@ const nodes: SchemaSpec["nodes"] = {
 
     heading: {
         attrs: { level: { default: 1 } },
-        content: "(text | image)*",
+        content: "inline*",
         group: "block",
         defining: true,
         parseDOM: [
