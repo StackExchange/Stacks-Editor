@@ -2,6 +2,7 @@ import { EditorState, Transaction } from "prosemirror-state";
 import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
+    toggleBlockType
 } from "../../../src/rich-text/commands";
 import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
@@ -41,8 +42,103 @@ describe("commands", () => {
     describe("toggleBlockType", () => {
         it.todo("should insert a paragraph at the end of the doc");
         it.todo("should not insert a paragraph at the end of the doc");
-        it.todo("should change heading level from 1 to 2");
-        it.todo("should change toggle heading off");
+        it("should replace heading with paragraph", () => {
+            const state = applySelection(
+                createState(
+                    "<h1>heading</h1>",
+                    []
+                ),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("heading");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockType(richTextSchema.nodes.heading, { level: 1 })
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                    }
+                ],
+            });
+        });
+        it("should replace paragraph with heading level 1", () => {
+            const state = applySelection(
+                createState(
+                    "<p>paragraph</p>",
+                    []
+                ),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("paragraph");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockType(richTextSchema.nodes.heading, { level: 1 })
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "heading",
+                        "attrs": {
+                            "level": 1,
+                            "markup": '',
+                        },
+                        "childCount": 1,
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    }
+                ],
+            });
+        });
+        it("should change heading level from 1 to 2", () => {
+            const state = applySelection(
+                createState(
+                    "<h1>heading</h1>",
+                    []
+                ),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("heading");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockType(richTextSchema.nodes.heading, { level: 2 })
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "heading",
+                        "attrs": {
+                            "level": 2,
+                            "markup": '',
+                        },
+                        "childCount": 1,
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    }
+                ],
+            });
+        });
     });
 
     describe("insertHorizontalRuleCommand", () => {
