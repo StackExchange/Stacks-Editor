@@ -2,7 +2,7 @@ import { EditorState, Transaction } from "prosemirror-state";
 import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
-    toggleBlockType
+    toggleBlockType,
 } from "../../../src/rich-text/commands";
 import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
@@ -42,12 +42,10 @@ describe("commands", () => {
     describe("toggleBlockType", () => {
         it.todo("should insert a paragraph at the end of the doc");
         it.todo("should not insert a paragraph at the end of the doc");
-        it("should replace heading with paragraph", () => {
+
+        it("should toggle a type off when attributes match", () => {
             const state = applySelection(
-                createState(
-                    "<h1>heading</h1>",
-                    []
-                ),
+                createState("<h1>heading</h1>", []),
                 3
             );
             const resolvedNode = state.selection.$from;
@@ -65,16 +63,14 @@ describe("commands", () => {
                     {
                         "type.name": "paragraph",
                         "childCount": 1,
-                    }
+                    },
                 ],
             });
         });
-        it("should replace paragraph with heading level 1", () => {
+
+        it("should should toggle a type on and set attributes when the NodeType doesn't match", () => {
             const state = applySelection(
-                createState(
-                    "<p>paragraph</p>",
-                    []
-                ),
+                createState("<p>paragraph</p>", []),
                 3
             );
             const resolvedNode = state.selection.$from;
@@ -92,24 +88,22 @@ describe("commands", () => {
                     {
                         "type.name": "heading",
                         "attrs": {
-                            "level": 1,
-                            "markup": '',
+                            level: 1,
+                            markup: "",
                         },
                         "childCount": 1,
                     },
                     {
                         "type.name": "paragraph",
                         "childCount": 0,
-                    }
+                    },
                 ],
             });
         });
-        it("should change heading level from 1 to 2", () => {
+
+        it("should should toggle a type on and set attributes when the NodeType matches", () => {
             const state = applySelection(
-                createState(
-                    "<h1>heading</h1>",
-                    []
-                ),
+                createState("<h1>heading</h1>", []),
                 3
             );
             const resolvedNode = state.selection.$from;
@@ -127,15 +121,15 @@ describe("commands", () => {
                     {
                         "type.name": "heading",
                         "attrs": {
-                            "level": 2,
-                            "markup": '',
+                            level: 2,
+                            markup: "",
                         },
                         "childCount": 1,
                     },
                     {
                         "type.name": "paragraph",
                         "childCount": 0,
-                    }
+                    },
                 ],
             });
         });
