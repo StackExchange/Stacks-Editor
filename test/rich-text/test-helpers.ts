@@ -1,4 +1,4 @@
-import { DOMParser, Schema } from "prosemirror-model";
+import { DOMParser, Node, Schema, Slice } from "prosemirror-model";
 import {
     EditorState,
     Plugin,
@@ -21,19 +21,33 @@ export const crazyTestUrl =
         `prefix:("+#some-zany_input.that,encodes~like*CRAZY?!_[don't@me&=send$$$]/);`
     ).replace(/[-_.!~*'()]/g, (c) => `%${c.charCodeAt(0).toString(16)}`);
 
+/** Parses an html string into a ProseMirror node */
+export function parseHtmlToDoc<T extends boolean>(
+    htmlContent: string,
+    asSlice: T
+): T extends true ? Slice : Node;
+
+/** Parses an html string into a ProseMirror node */
+export function parseHtmlToDoc(
+    htmlContent: string,
+    asSlice: boolean
+): Slice | Node {
+    const container = document.createElement("div");
+    // NOTE: tests only, no XSS danger
+    // eslint-disable-next-line no-unsanitized/property
+    container.innerHTML = htmlContent;
+    const parser = DOMParser.fromSchema(richTextSchema);
+
+    return asSlice ? parser.parseSlice(container) : parser.parse(container);
+}
+
 /** Creates a bare rich-text state with only the passed plugins enabled */
 export function createState(
     htmlContent: string,
     plugins: Plugin[]
 ): EditorState {
-    const container = document.createElement("div");
-    // NOTE: tests only, no XSS danger
-    // eslint-disable-next-line no-unsanitized/property
-    container.innerHTML = htmlContent;
-    const doc = DOMParser.fromSchema(richTextSchema).parse(container);
-
     return EditorState.create({
-        doc: doc,
+        doc: parseHtmlToDoc(htmlContent, false),
         schema: richTextSchema,
         plugins: plugins,
     });
@@ -134,13 +148,15 @@ export class DataTransferMock implements DataTransfer {
 export function dispatchPasteEvent(
     el: Element,
     data: Record<string, string>
-): void {
+): ClipboardEvent {
     const event = new Event("paste");
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
     event.clipboardData = new DataTransferMock(data);
 
     el.dispatchEvent(event);
+
+    return event as ClipboardEvent;
 }
 
 /** Returns a promise that is resolved delayMs from when it is called */
