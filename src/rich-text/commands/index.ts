@@ -73,6 +73,11 @@ function toggleWrapIn(nodeType: NodeType) {
 /** Command to set a block type to a paragraph (plain text) */
 const setToTextCommand = setBlockType(schema.nodes.paragraph);
 
+/**
+ * Creates a command that toggles the NodeType of the current node to the passed type
+ * @param nodeType The type to toggle to
+ * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
+ */
 export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
