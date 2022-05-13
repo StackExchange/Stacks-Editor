@@ -8,9 +8,10 @@ import {
     commonmarkImageUpload,
     richTextImageUpload,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
-import { commonmarkSchema, richTextSchema } from "../../../src/shared/schema";
+import { richTextSchema } from "../../../src/rich-text/schema";
 import "../../matchers";
 import { getSelectedText } from "../../test-helpers";
+import { commonmarkSchema } from "../../../src/commonmark/schema";
 
 let pluginContainer: Element;
 let view: RichTextEditor;
@@ -156,6 +157,7 @@ describe("image upload plugin", () => {
                     schema: richTextSchema,
                     plugins: [plugin],
                 }),
+                plugins: [],
             });
 
             const imageUploader = plugin.spec.view(view) as ImageUploader;
@@ -220,6 +222,7 @@ describe("image upload plugin", () => {
                     schema: commonmarkSchema,
                     plugins: [plugin],
                 }),
+                plugins: [],
             });
 
             const imageUploader = plugin.spec.view(view) as ImageUploader;

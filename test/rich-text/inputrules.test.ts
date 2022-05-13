@@ -1,7 +1,7 @@
 import { MarkType } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { richTextInputRules } from "../../src/rich-text/inputrules";
-import { richTextSchema } from "../../src/shared/schema";
+import { richTextSchema } from "../../src/rich-text/schema";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import "../matchers";
 import {

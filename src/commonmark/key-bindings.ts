@@ -19,32 +19,33 @@ import {
 import type { CommonmarkParserFeatures } from "../shared/view";
 import { baseKeymap } from "prosemirror-commands";
 import type { Plugin } from "prosemirror-state";
+import { bindLetterKeymap } from "../shared/utils";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
     const commonmarkKeymap = keymap({
-        "Mod-z": undo,
-        "Mod-y": redo,
-        "Mod-Shift-z": redo,
+        ...bindLetterKeymap("Mod-z", undo),
+        ...bindLetterKeymap("Mod-y", redo),
+        ...bindLetterKeymap("Mod-Shift-z", redo),
         "Tab": indentCommand,
         "Shift-Tab": indentCommand,
-        "Mod-b": boldCommand,
-        "Mod-i": emphasisCommand,
-        "Mod-l": insertLinkCommand,
-        "Ctrl-q": blockquoteCommand,
-        "Mod-k": inlineCodeCommand,
-        "Mod-g": insertImageCommand,
-        "Ctrl-g": insertImageCommand,
-        "Mod-o": orderedListCommand,
-        "Mod-u": unorderedListCommand,
-        "Mod-h": headerCommand,
-        "Mod-r": insertHorizontalRuleCommand,
-        "Mod-m": insertCodeblockCommand,
+        ...bindLetterKeymap("Mod-b", boldCommand),
+        ...bindLetterKeymap("Mod-i", emphasisCommand),
+        ...bindLetterKeymap("Mod-l", insertLinkCommand),
+        ...bindLetterKeymap("Ctrl-q", blockquoteCommand),
+        ...bindLetterKeymap("Mod-k", inlineCodeCommand),
+        ...bindLetterKeymap("Mod-g", insertImageCommand),
+        ...bindLetterKeymap("Ctrl-g", insertImageCommand),
+        ...bindLetterKeymap("Mod-o", orderedListCommand),
+        ...bindLetterKeymap("Mod-u", unorderedListCommand),
+        ...bindLetterKeymap("Mod-h", headerCommand),
+        ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
+        ...bindLetterKeymap("Mod-m", insertCodeblockCommand),
         // selectAll selects the outermost node and messes up our other commands
-        "Mod-a": selectAllTextCommand,
+        ...bindLetterKeymap("Mod-a", selectAllTextCommand),
     });
 
     const tableKeymap = keymap({
-        "Mod-e": insertTableCommand,
+        ...bindLetterKeymap("Mod-e", insertTableCommand),
     });
 
     const keymaps = [commonmarkKeymap, keymap(baseKeymap)];

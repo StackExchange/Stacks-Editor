@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import type { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
-import { richTextSchema } from "../../src/shared/schema";
+import { richTextSchema } from "../../src/rich-text/schema";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
 import "../matchers";
@@ -358,6 +358,37 @@ console.log("test");
                 " [bar](www.notexample.com/test2)"
             );
             expect(doc.content[0].content[1].marks).toBeUndefined();
+        });
+    });
+
+    describe("headings", () => {
+        it.each([
+            // hard breaks
+            ["# heading <br> test", ["text", "hard_break", "text"]],
+            ["heading  \ntest\n---", ["text", "hard_break", "text"]],
+            // soft breaks
+            ["heading\ntest\n---", ["text", "softbreak", "text"]],
+            // images
+            [
+                "# heading ![alt](http://www.example.com/image.png)",
+                ["text", "image"],
+            ],
+        ])("should allow all inline nodes", (input, childNodeTypes) => {
+            const doc = markdownParser.parse(input);
+
+            expect(doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "heading",
+                        "content": [
+                            ...childNodeTypes.map((t) => ({
+                                "type.name": t,
+                            })),
+                        ],
+                    },
+                ],
+            });
         });
     });
 });

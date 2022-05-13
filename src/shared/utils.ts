@@ -1,4 +1,5 @@
 import { escapeHtml } from "markdown-it/lib/common/utils";
+import type { Command, Keymap } from "prosemirror-commands";
 import { EditorState } from "prosemirror-state";
 
 /**
@@ -221,6 +222,14 @@ function prefixEventName(eventName: string) {
 }
 
 /**
+ * Generated a random id that can be used to ensure DOM element ids are unique
+ * @returns a random string
+ */
+export function generateRandomId(): string {
+    return (Math.random() * 10000).toFixed(0);
+}
+
+/**
  * Prefixes and dispatches a custom event on the target
  * @param target The target to dispatch the event on
  * @param eventName The unprefixed event name
@@ -242,3 +251,25 @@ export function dispatchEditorEvent(
 
 /** Helper type that recursively makes an object and all its children Partials */
 export type PartialDeep<T> = { [key in keyof T]?: PartialDeep<T[key]> };
+
+/**
+ * Binds a keymap containing a letter to both the lowercase and uppercase version of that letter;
+ * this is done so that when the user has CAPS LOCK on, the keymap will still work
+ * @param mapping The keymap string to bind
+ * @param command The command to bind to all generated keymaps
+ */
+export function bindLetterKeymap(mapping: string, command: Command): Keymap {
+    const letter = mapping.split("-")[1]?.toLowerCase().trim();
+
+    // not a single letter, so just return the mapping
+    if (!letter || !letter.match(/^[a-z]{1}$/)) {
+        return { [mapping]: command };
+    }
+
+    const prefix = mapping.slice(0, -1);
+
+    return {
+        [prefix + letter]: command,
+        [prefix + letter.toUpperCase()]: command,
+    };
+}

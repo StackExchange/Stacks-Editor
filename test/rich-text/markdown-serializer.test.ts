@@ -56,8 +56,6 @@ describe("markdown-serializer", () => {
             `![alt1](src1 "title1")`,
         ],
         [`test<br>test`, `test  \ntest`],
-        // TODO html_inline, html_block, html_block_container, stack_snippet, softbreak? Can't be typed, but could be pasted...
-        // TODO table, taglink, spoiler
         /* Marks */
         [`<em>test</em>`, `*test*`],
         [`<strong>test</strong>`, `**test**`],
@@ -101,7 +99,9 @@ describe("markdown-serializer", () => {
         "~~~\ntest\n~~~",
         `<pre><code>test</code></pre>`,
         `# ATX heading`,
-        //`Setext heading\n===`, // TODO
+        // TODO Setext headings don't remember the number of "underline" characters
+        [`Setext heading\n===`, `Setext heading\n=`],
+        [`Setext heading\n---`, `Setext heading\n-`],
         `<h1>html heading</h1>`,
         `<h2>html heading</h2>`,
         `<h3>html heading</h3>`,

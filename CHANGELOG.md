@@ -2,6 +2,42 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.5.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.4.2...v0.5.0) (2022-05-13)
+
+
+### ⚠ BREAKING CHANGES
+
+* Stacks 1.0 contains breaking changes
+
+### Features
+
+* add basic description list (`<dl>`, `<dd>`, `<dt>`) support ([4ec9f36](https://github.com/StackExchange/Stacks-Editor/commit/4ec9f36af16c0c069c901b676ae70f8c459ed457))
+* add heading dropdown menu ([0f1a096](https://github.com/StackExchange/Stacks-Editor/commit/0f1a096ecfb5805d82f300397a4379bd63b19e5c)), closes [#5](https://github.com/StackExchange/Stacks-Editor/issues/5)
+* add localization support ([e9ae75e](https://github.com/StackExchange/Stacks-Editor/commit/e9ae75e5af799410e99a0bd13587f9a863373509)), closes [#60](https://github.com/StackExchange/Stacks-Editor/issues/60)
+* add mod+e keybinding to insert tables ([#8](https://github.com/StackExchange/Stacks-Editor/issues/8)) ([d3c6975](https://github.com/StackExchange/Stacks-Editor/commit/d3c69756c4bf3ba560dc7575c18a5d33d3d97559))
+* add text only link preview support ([#94](https://github.com/StackExchange/Stacks-Editor/issues/94)) ([a49d73c](https://github.com/StackExchange/Stacks-Editor/commit/a49d73ce262d37c5ff7f40627f6879d8396ed7e8))
+* allow users to exit certain marks and code blocks by using the arrow keys ([e37a959](https://github.com/StackExchange/Stacks-Editor/commit/e37a959bf21949792bcedac249f3f60ced66daee)), closes [#64](https://github.com/StackExchange/Stacks-Editor/issues/64)
+
+
+### Bug Fixes
+
+* allow headings to contain any inline nodes, such as soft/hard line breaks ([e709127](https://github.com/StackExchange/Stacks-Editor/commit/e709127915aaf28db9c14e29ed408516e859aa5a)), closes [#107](https://github.com/StackExchange/Stacks-Editor/issues/107)
+* allow unformatted text to inherit formatting when pasted into formatted content ([6254acf](https://github.com/StackExchange/Stacks-Editor/commit/6254acf01187e045ebe8f5272f42b0b31f9233de)), closes [#48](https://github.com/StackExchange/Stacks-Editor/issues/48)
+* backslash escaped hardbreaks now detect and serialize correctly ([1bbbb89](https://github.com/StackExchange/Stacks-Editor/commit/1bbbb8980c1c5804fa8dae9bd973dfaed23950d3))
+* change editor target to display: flex so the inner editor grows when resized ([9be120f](https://github.com/StackExchange/Stacks-Editor/commit/9be120f3e441ee312cf91a668d9c912c1a1d1df8)), closes [#88](https://github.com/StackExchange/Stacks-Editor/issues/88)
+* change mod+a to only select markdown text, excluding the root node itself ([d3598f5](https://github.com/StackExchange/Stacks-Editor/commit/d3598f5469809fdc33e44cd7e1ef0845712c810c)), closes [#24](https://github.com/StackExchange/Stacks-Editor/issues/24)
+* disallow any marks or nodes inside code_blocks ([439bed6](https://github.com/StackExchange/Stacks-Editor/commit/439bed63480ae54b6f4de64e053e551557873b48)), closes [#39](https://github.com/StackExchange/Stacks-Editor/issues/39)
+* ensure all generated element ids are unique to prevent clashes with multiple editors ([#118](https://github.com/StackExchange/Stacks-Editor/issues/118)) ([859f315](https://github.com/StackExchange/Stacks-Editor/commit/859f31567c7d1cd77b2d28cf44021ddcbf331238))
+* fix `global` runtime crashes when bundling as an es6 module ([1d2e7f1](https://github.com/StackExchange/Stacks-Editor/commit/1d2e7f137d0c527d7cd6bedf87c819c7ad97ad0c)), closes [#108](https://github.com/StackExchange/Stacks-Editor/issues/108)
+* fix table serialization having incorrect trailing whitespace ([5a4c9b0](https://github.com/StackExchange/Stacks-Editor/commit/5a4c9b03b141e0c06fd3a90923bc4daaae102422))
+* increase button contrast in high contrast mode ([#123](https://github.com/StackExchange/Stacks-Editor/issues/123)) ([f769642](https://github.com/StackExchange/Stacks-Editor/commit/f76964204fad900f4ca507f65e75eda4b2926d7c)), closes [#86](https://github.com/StackExchange/Stacks-Editor/issues/86)
+* link preview decorations not showing on the correct node ([16cfde3](https://github.com/StackExchange/Stacks-Editor/commit/16cfde310ed52d666cf0f117e5f05732fedc3459)), closes [#37](https://github.com/StackExchange/Stacks-Editor/issues/37)
+* on horizontal_rule insert, append and prepend paragraph nodes as needed ([#124](https://github.com/StackExchange/Stacks-Editor/issues/124)) ([bda2637](https://github.com/StackExchange/Stacks-Editor/commit/bda2637d829af966af5f8651e379e9809db3d8fa)), closes [#26](https://github.com/StackExchange/Stacks-Editor/issues/26)
+* toggle heading only when same level ([#125](https://github.com/StackExchange/Stacks-Editor/issues/125)) ([7b5b5c1](https://github.com/StackExchange/Stacks-Editor/commit/7b5b5c1311a64edeba5d0a8ef513cfa3d8095541)), closes [#105](https://github.com/StackExchange/Stacks-Editor/issues/105)
+* treat images as inline ([#121](https://github.com/StackExchange/Stacks-Editor/issues/121)) ([00cd3ea](https://github.com/StackExchange/Stacks-Editor/commit/00cd3ea86f722333653613fc5bde87f259564cfe)), closes [#53](https://github.com/StackExchange/Stacks-Editor/issues/53)
+* update all keybinds to work with capslock turned on ([27a785a](https://github.com/StackExchange/Stacks-Editor/commit/27a785a50a761189ba6c39648c8c634a5ccd711c)), closes [#90](https://github.com/StackExchange/Stacks-Editor/issues/90)
+* update to Stacks 1.0.1 ([#117](https://github.com/StackExchange/Stacks-Editor/issues/117)) ([b7b44bc](https://github.com/StackExchange/Stacks-Editor/commit/b7b44bc8323f443a97b8856e9b8f3b4d84af8d86))
+
 ### [0.4.2](https://github.com/StackExchange/Stacks-Editor/compare/v0.4.1...v0.4.2) (2022-03-04)
 
 

@@ -7,8 +7,8 @@ import {
     StatefulPlugin,
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
-import { richTextSchema as schema } from "../../shared/schema";
-import { escapeHTML } from "../../shared/utils";
+import { richTextSchema as schema } from "../schema";
+import { escapeHTML, generateRandomId } from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 
 class LinkTooltip {
@@ -47,15 +47,16 @@ class LinkTooltip {
         state: EditorState<Schema>,
         linkValidator: CommonmarkParserFeatures["validateLink"]
     ) {
+        const popoverId = "link-tooltip-popover" + generateRandomId();
         this.validateLink = linkValidator;
         this.content = document.createElement("span");
         this.content.className = "w0";
-        this.content.setAttribute("aria-controls", "link-tooltip-popover");
+        this.content.setAttribute("aria-controls", popoverId);
         this.content.setAttribute("data-controller", "s-popover");
         this.content.setAttribute("data-s-popover-placement", "bottom");
 
         this.content.innerHTML = escapeHTML`<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
-            id="link-tooltip-popover"
+            id="${popoverId}"
             role="menu">
             <div class="s-popover--arrow"></div>
             <div class="d-flex ai-center">

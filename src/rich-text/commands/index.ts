@@ -23,7 +23,7 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { richTextSchema as schema } from "../../shared/schema";
+import { richTextSchema as schema } from "../schema";
 import type { CommonViewOptions } from "../../shared/view";
 import { LINK_TOOLTIP_KEY } from "../plugins/link-tooltip";
 import { insertParagraphIfAtDocEnd } from "./helpers";
@@ -73,11 +73,16 @@ function toggleWrapIn(nodeType: NodeType) {
 /** Command to set a block type to a paragraph (plain text) */
 const setToTextCommand = setBlockType(schema.nodes.paragraph);
 
-function toggleBlockType(
+/**
+ * Creates a command that toggles the NodeType of the current node to the passed type
+ * @param nodeType The type to toggle to
+ * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
+ */
+export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
-    const nodeCheck = nodeTypeActive(nodeType);
+    const nodeCheck = nodeTypeActive(nodeType, attrs);
     const setBlockTypeCommand = setBlockType(nodeType, attrs);
 
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
@@ -104,10 +109,28 @@ export function insertHorizontalRuleCommand(
         return false;
     }
 
-    dispatch &&
-        dispatch(
-            state.tr.replaceSelectionWith(schema.nodes.horizontal_rule.create())
-        );
+    if (!dispatch) {
+        return true;
+    }
+
+    const isAtEnd =
+        state.doc.content.size - 1 ===
+        Math.max(state.selection.from, state.selection.to);
+    const isAtBeginning = state.tr.selection.from === 1;
+
+    let tr = state.tr.replaceSelectionWith(
+        schema.nodes.horizontal_rule.create()
+    );
+
+    if (isAtBeginning) {
+        tr = tr.insert(0, schema.nodes.paragraph.create());
+    }
+
+    if (isAtEnd) {
+        tr = tr.insert(tr.selection.to, schema.nodes.paragraph.create());
+    }
+
+    dispatch(tr);
     return true;
 }
 

@@ -13,7 +13,7 @@ import {
     editableCheck,
     readonlyPlugin,
 } from "../shared/prosemirror-plugins/readonly";
-import { CodeStringParser, commonmarkSchema } from "../shared/schema";
+import { CodeStringParser } from "../shared/schema";
 import { deepMerge } from "../shared/utils";
 import {
     BaseView,
@@ -22,6 +22,7 @@ import {
 } from "../shared/view";
 import { createMenu } from "./commands";
 import { allKeymaps } from "./key-bindings";
+import { commonmarkSchema } from "./schema";
 
 export type CommonmarkOptions = CommonViewOptions;
 
@@ -58,6 +59,7 @@ export class CommonmarkEditor extends BaseView {
                         readonlyPlugin(),
                     ],
                 }),
+                plugins: [],
             }
         );
 

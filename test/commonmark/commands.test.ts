@@ -1,6 +1,6 @@
 import { CodeStringParser } from "../../src/shared/schema";
 import { EditorState, TextSelection } from "prosemirror-state";
-import { commonmarkSchema } from "../../src/shared/schema";
+import { commonmarkSchema } from "../../src/commonmark/schema";
 import * as commands from "../../src/commonmark/commands";
 import { MenuCommand } from "../../src/shared/menu";
 import { getSelectedText } from "../test-helpers";

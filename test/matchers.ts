@@ -95,7 +95,14 @@ function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
         const contentLength = tree.content
             ? tree.content.length
             : tree.childCount;
-        expect(doc.content.childCount).toEqual(contentLength);
+        // check that the value on our tree matches the value on the object
+        try {
+            expect(doc.content.childCount).toEqual(contentLength);
+        } catch (e: unknown) {
+            throw `Unexpected number of children \n${e?.toString()}\nReceived: ${JSON.stringify(
+                doc.content.toJSON()
+            )}`;
+        }
     }
 
     // go through each child compare tree and compare to the node's children recursively

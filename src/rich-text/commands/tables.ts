@@ -5,7 +5,7 @@ import {
     ResolvedPos,
 } from "prosemirror-model";
 import { EditorState, Transaction, Selection } from "prosemirror-state";
-import { richTextSchema as schema, tableNodes } from "../../shared/schema";
+import { richTextSchema as schema, tableNodes } from "../schema";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 
 export function inTable(selection: Selection): boolean {

@@ -29,9 +29,16 @@ export interface LinkPreviewProvider {
  */
 function getValidProvider(
     providers: LinkPreviewProvider[],
-    node: ProsemirrorNode
-): { url: string; provider: LinkPreviewProvider } | null {
-    const n = node.isText ? node : node.content.firstChild;
+    node: ProsemirrorNode,
+    parent: ProsemirrorNode
+): {
+    url: string;
+    provider: LinkPreviewProvider;
+} | null {
+    if (!node?.isText || !parent) {
+        return null;
+    }
+    const n = node; // TODO CLEANUP
     const url = n?.marks.find((m) => m.type.name === "link")?.attrs
         ?.href as string;
 
@@ -47,7 +54,7 @@ function getValidProvider(
         }
 
         // full preview providers require links to be in a paragraph by themselves
-        if (!provider.textOnly && !isStandalonePreviewableLink(node)) {
+        if (!provider.textOnly && !isStandalonePreviewableLink(parent)) {
             continue;
         }
 
@@ -93,8 +100,8 @@ function getValidNodes(
     }[] = [];
 
     // iterate over current document structure
-    currState.doc.descendants((node, pos) => {
-        const provider = getValidProvider(providers, node);
+    currState.doc.descendants((node, pos, parent) => {
+        const provider = getValidProvider(providers, node, parent);
 
         if (provider) {
             validNodes.push({ provider, pos, node });
@@ -143,14 +150,20 @@ function generateRecentPreviewDecorations(
         if (!n.isTextOnly && n.content) {
             // if the url is in the cache, insert the link preview
             linkPreviewDecorations.push(insertLinkPreview(n.pos, n.content));
-        } else {
-            const node = doc.nodeAt(n.pos);
+        } else if (!n.content) {
             // otherwise, add the loading styles
+            // attach the node decorations to the text's parent node
+            const resolved = doc.resolve(n.pos);
+            const parentPos = resolved.posAtIndex(0, resolved.depth - 1);
             linkPreviewDecorations.push(
-                Decoration.node(n.pos, n.pos + node.nodeSize, {
-                    class: "is-loading js-link-preview-loading",
-                    title: "Loading...",
-                })
+                Decoration.node(
+                    parentPos,
+                    parentPos + resolved.parent.nodeSize,
+                    {
+                        class: "is-loading js-link-preview-loading",
+                        title: "Loading...",
+                    }
+                )
             );
         }
     });
@@ -173,7 +186,9 @@ function insertLinkPreview(pos: number, content: Node | null) {
         placeholder.appendChild(content.cloneNode(true));
     }
 
-    return Decoration.widget(pos, placeholder);
+    return Decoration.widget(pos, placeholder, {
+        side: -1,
+    });
 }
 
 /**

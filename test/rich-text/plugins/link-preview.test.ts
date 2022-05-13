@@ -79,12 +79,11 @@ describe("link-preview", () => {
             textOnly: true,
         });
 
-        // TODO loading indicator broken - decoration is not valid to be added to node
         // check that the loading indicator is shown
-        // let loadingIndicator = richEditorView.dom.querySelectorAll(
-        //     ".js-link-preview-loading"
-        // );
-        // expect(loadingIndicator).toHaveLength(1);
+        let loadingIndicator = richEditorView.dom.querySelectorAll(
+            ".js-link-preview-loading"
+        );
+        expect(loadingIndicator).toHaveLength(1);
 
         resolver(document.createTextNode(textOnlyPreviewText));
 
@@ -92,10 +91,10 @@ describe("link-preview", () => {
         await sleepAsync(0);
 
         // check that the loading indicator is no longer showing
-        // loadingIndicator = richEditorView.dom.querySelectorAll(
-        //     ".js-link-preview-loading"
-        // );
-        // expect(loadingIndicator).toHaveLength(0);
+        loadingIndicator = richEditorView.dom.querySelectorAll(
+            ".js-link-preview-loading"
+        );
+        expect(loadingIndicator).toHaveLength(0);
 
         expect(richEditorView.document).toMatchNodeTree({
             childCount: 1,
@@ -115,4 +114,37 @@ describe("link-preview", () => {
             ],
         });
     });
+
+    it.each([
+        [
+            `| Column A | Column B |
+| --- | --- |
+| [Cell 1](https://example.com/foo/bar) | Cell 2 |
+| Cell 3 | Cell 4 |`,
+            "TD",
+        ],
+        [`# https://example.com/foo/bar`, "H1"],
+    ])(
+        "should add rich previews directly before the link in the same parent node",
+        async (markdown, parentNodeName) => {
+            const richEditorView = richView(markdown, {
+                domainTest: /example.com/,
+                renderer: (url) => {
+                    const promiseContent = document.createElement("div");
+                    promiseContent.textContent = url;
+                    return Promise.resolve(promiseContent);
+                },
+            });
+
+            // wait for the promise to resolve (immediately) and check that the async content was pulled in
+            await sleepAsync(0);
+
+            const oneboxDom = richEditorView.dom.querySelectorAll(
+                ".js-link-preview-decoration"
+            );
+            expect(oneboxDom).toHaveLength(1);
+            expect(oneboxDom[0].parentElement.nodeName).toBe(parentNodeName);
+            expect(oneboxDom[0].nextElementSibling.nodeName).toBe("A");
+        }
+    );
 });
