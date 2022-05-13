@@ -217,8 +217,8 @@
     }
     &.js-markdown[data-placeholder]::before {
         font-family: var(--ff-mono);
-        font-size: @fs-body1;
-        margin-top: -@su2;
+        font-size: var(--fs-body1);
+        margin-top: calc(var(--su2) * -1);
     }
 
     // taken from prosemirror.css for compatibility
