@@ -21,12 +21,8 @@ export function placeholderPlugin(placeholder: string): Plugin {
 
         if (placeholder && showPlaceholder(content, textContent)) {
             view.dom.setAttribute("data-placeholder", placeholder);
-            if (content.firstChild.attrs.params === "markdown") {
-                view.dom.classList.add("js-markdown");
-            }
         } else {
             view.dom.removeAttribute("data-placeholder");
-            view.dom.classList.remove("js-markdown");
         }
     };
 

@@ -76,6 +76,7 @@ export class CommonmarkEditor extends BaseView {
             menuParentContainer: null,
             parserFeatures: defaultParserFeatures,
             placeholderText: null,
+            classList: ["md-editor"],
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
