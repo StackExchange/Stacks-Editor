@@ -176,7 +176,7 @@ describe("image upload plugin", () => {
                             {
                                 "type.name": "image",
                                 "attrs": {
-                                    alt: null,
+                                    alt: "enter image description here",
                                     height: null,
                                     markup: "",
                                     src: "https://www.example.com/image",
@@ -213,6 +213,105 @@ describe("image upload plugin", () => {
                     handler: () =>
                         Promise.resolve("https://www.example.com/image"),
                     wrapImagesInLinks: optionSet,
+                },
+                () => document.createElement("div")
+            );
+
+            const view = new EditorView(document.createElement("div"), {
+                state: EditorState.create({
+                    schema: commonmarkSchema,
+                    plugins: [plugin],
+                }),
+                plugins: [],
+            });
+
+            const imageUploader = plugin.spec.view(view) as ImageUploader;
+            await imageUploader.startImageUpload(
+                view,
+                mockFile("some image", "image/png")
+            );
+
+            expect(view.state.doc.textContent).toBe(expectedText);
+
+            expect(getSelectedText(view.state)).toBe(
+                "enter image description here"
+            );
+        });
+    });
+
+    describe("embedImagesAsLinks", () => {
+        it.each([false, true])("rich-text", async (optionSet: boolean) => {
+            const plugin = richTextImageUpload(
+                {
+                    handler: () =>
+                        Promise.resolve("https://www.example.com/image"),
+                    embedImagesAsLinks: optionSet,
+                },
+                () => document.createElement("div")
+            );
+
+            const view = new EditorView(document.createElement("div"), {
+                state: EditorState.create({
+                    schema: richTextSchema,
+                    plugins: [plugin],
+                }),
+                plugins: [],
+            });
+
+            const imageUploader = plugin.spec.view(view) as ImageUploader;
+            await imageUploader.startImageUpload(
+                view,
+                mockFile("some image", "image/png")
+            );
+
+            expect(view.state.doc).toMatchNodeTree({
+                childCount: 1,
+                content: [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                "type.name": optionSet ? "text" : "image",
+                                ...(optionSet
+                                    ? {
+                                          "marks.length": 1,
+                                          "marks.0.type.name": "link",
+                                          "marks.0.attrs.href":
+                                              "https://www.example.com/image",
+                                      }
+                                    : {
+                                          attrs: {
+                                              alt: "enter image description here",
+                                              height: null,
+                                              markup: "",
+                                              src: "https://www.example.com/image",
+                                              title: null,
+                                              width: null,
+                                          },
+                                      }),
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+
+        it.each([
+            [
+                false,
+                "![enter image description here](https://www.example.com/image)",
+            ],
+            [
+                true,
+                "[enter image description here](https://www.example.com/image)",
+            ],
+        ])("commonmark", async (optionSet: boolean, expectedText: string) => {
+            const plugin = commonmarkImageUpload(
+                {
+                    handler: () =>
+                        Promise.resolve("https://www.example.com/image"),
+                    embedImagesAsLinks: optionSet,
                 },
                 () => document.createElement("div")
             );

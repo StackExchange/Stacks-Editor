@@ -42,6 +42,11 @@ export interface ImageUploadOptions {
      * If true, wraps all images in links that point to the uploaded image url
      */
     wrapImagesInLinks?: boolean;
+    /**
+     * If true, all uploaded images will embedded as links to the image, rather than the image itself
+     * NOTE: this is only supported for images that are uploaded via the image uploader
+     */
+    embedImagesAsLinks?: boolean;
 }
 
 /**
@@ -741,15 +746,21 @@ export function richTextImageUpload(
         uploadOptions,
         containerFn,
         (state, url, pos) => {
-            const marks = uploadOptions.wrapImagesInLinks
-                ? [richTextSchema.marks.link.create({ href: url })]
-                : null;
+            const defaultAltText = _t("image_upload.default_image_alt_text");
 
-            const imgNode = richTextSchema.nodes.image.create(
-                { src: url },
-                null,
-                marks
-            );
+            const marks =
+                uploadOptions.wrapImagesInLinks ||
+                uploadOptions.embedImagesAsLinks
+                    ? [richTextSchema.marks.link.create({ href: url })]
+                    : null;
+
+            const imgNode = uploadOptions.embedImagesAsLinks
+                ? richTextSchema.text(defaultAltText, marks)
+                : richTextSchema.nodes.image.create(
+                      { src: url, alt: defaultAltText },
+                      null,
+                      marks
+                  );
 
             return state.tr.replaceWith(pos, pos, imgNode);
         }
@@ -777,13 +788,18 @@ export function commonmarkImageUpload(
         uploadOptions,
         containerFn,
         (state, url, pos) => {
+            const defaultAltText = _t("image_upload.default_image_alt_text");
             // construct the raw markdown
-            const defaultAltText = "enter image description here";
             let mdString = `![${defaultAltText}](${url})`;
             let selectionStart = pos + 2;
             let selectionEnd = selectionStart + defaultAltText.length;
 
-            if (uploadOptions.wrapImagesInLinks) {
+            if (uploadOptions.embedImagesAsLinks) {
+                // strip off the leading `!`
+                mdString = mdString.slice(1);
+                selectionStart -= 1;
+                selectionEnd -= 1;
+            } else if (uploadOptions.wrapImagesInLinks) {
                 mdString = `[${mdString}](${url})`;
                 selectionStart += 1;
                 selectionEnd += 1;
