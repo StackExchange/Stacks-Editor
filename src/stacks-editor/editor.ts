@@ -229,13 +229,6 @@ export class StacksEditor implements View {
 
         this.createEditorSwitcher(this.options.defaultView, menuTarget);
 
-        // Call `preventDefault` on all `mousedown` events in our plugin container so that the Editor
-        // itself does not blur on e.g. button clicks. This does not affect other mouse events / bubbling
-        // and allows us to use `click` listeners in our plugins for better code transparency
-        this.pluginContainer.addEventListener("mousedown", (e) => {
-            e.preventDefault();
-        });
-
         // watch the sticky header and add additional styling when it becomes unstuck
         startStickyObservers(this.innerTarget);
         document.addEventListener(

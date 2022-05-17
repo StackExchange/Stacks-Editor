@@ -81,6 +81,11 @@ export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
 const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
     setTimeoutAsync(2000).then(() => {
         return new Promise(function (resolve) {
+            if (typeof file === "string") {
+                resolve(file);
+                return;
+            }
+
             // if the serviceworker is registered, send it the image and use the local image url hack instead
             if (navigator.serviceWorker.controller) {
                 const id = Math.floor(Math.random() * 1000);
@@ -153,6 +158,7 @@ domReady(() => {
         contentPolicyHtml:
             "These images are uploaded nowhere, so no content policy applies",
         wrapImagesInLinks: true,
+        allowExternalUrls: true,
     };
 
     // TODO should null out entire object, but that currently just defaults back to the original on merge

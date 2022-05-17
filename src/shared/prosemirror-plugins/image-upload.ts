@@ -6,7 +6,7 @@ import {
 } from "prosemirror-state";
 import { NodeSpec } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import { PluginView } from "../view";
+import { CommonmarkParserFeatures, PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
 import { dispatchEditorEvent, escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
@@ -14,10 +14,10 @@ import { richTextSchema } from "../../rich-text/schema";
 
 /**
  * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
- * @param {File} file The uploaded image file
+ * @param {File} file The uploaded image file or user entered image url
  * @returns {string} The resolvable path to where the file was uploaded
  */
-type ImageUploadHandlerCallback = (file: File) => Promise<string>;
+type ImageUploadHandlerCallback = (file: File | string) => Promise<string>;
 
 /**
  * Image upload options
@@ -47,6 +47,10 @@ export interface ImageUploadOptions {
      * NOTE: this is only supported for images that are uploaded via the image uploader
      */
     embedImagesAsLinks?: boolean;
+    /**
+     * If true, allow users to add images via an external url
+     */
+    allowExternalUrls?: boolean;
 }
 
 /**
@@ -100,18 +104,22 @@ export class ImageUploader implements PluginView {
     image: File = null;
     isVisible: boolean;
     pluginContainer: Element;
+    // TODO do external image urls need to support a different link validator?
+    private validateLink: CommonmarkParserFeatures["validateLink"];
     private addTransactionDispatcher: addTransactionDispatcher;
 
     constructor(
         view: EditorView,
         uploadOptions: ImageUploadOptions,
         pluginContainer: Element,
+        validateLink: CommonmarkParserFeatures["validateLink"],
         addTransactionDispatcher: addTransactionDispatcher
     ) {
         const randomId = generateRandomId();
         this.isVisible = false;
         this.uploadOptions = uploadOptions;
         this.pluginContainer = pluginContainer;
+        this.validateLink = validateLink;
         this.addTransactionDispatcher = addTransactionDispatcher;
 
         this.uploadContainer = document.createElement("div");
@@ -125,11 +133,22 @@ export class ImageUploader implements PluginView {
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + randomId;
 
+        // TODO i18n
         this.uploadContainer.innerHTML = escapeHTML`
-            <div class="fs-body2 p12 pb0">
+            <div class="fs-body2 p12 pb0 js-cta-container">
                 <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" role="button" aria-controls="image-preview-${randomId}">
                     Browse
-                </label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
+                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span>
+            </div>
+
+            <div class="js-external-url-input-container p12 d-none">
+                <div class="d-flex fd-row sm:fd-column ai-center">
+                    <label class="d-block s-label ws-nowrap mr4" for="external-url-input-${randomId}">
+                        External url
+                    </label>
+                    <input id="external-url-input-${randomId}" type="text" class="s-input js-external-url-input" placeholder="https://example.com/img.png" />
+                </div>
+            </div>
 
             <div id="image-preview-${randomId}" class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
@@ -217,6 +236,25 @@ export class ImageUploader implements PluginView {
             .addEventListener("click", (e: Event) =>
                 this.handleUploadTrigger(e, this.image, view)
             );
+
+        if (this.uploadOptions.allowExternalUrls) {
+            this.uploadContainer
+                .querySelector(".js-external-url-trigger-container")
+                .classList.remove("d-none");
+            this.uploadContainer
+                .querySelector(".js-external-url-trigger")
+                .addEventListener("click", () => {
+                    this.toggleExternalUrlInput(true);
+                });
+
+            this.uploadContainer
+                .querySelector(".js-external-url-input")
+                .addEventListener("input", (e) => {
+                    this.validateExternalUrl(
+                        (e.target as HTMLInputElement).value
+                    );
+                });
+        }
     }
 
     highlightDropArea(event: DragEvent): void {
@@ -360,6 +398,37 @@ export class ImageUploader implements PluginView {
         reader.readAsDataURL(file);
     }
 
+    toggleExternalUrlInput(show: boolean): void {
+        const cta = this.uploadContainer.querySelector(".js-cta-container");
+        const container = this.uploadContainer.querySelector(
+            ".js-external-url-input-container"
+        );
+
+        cta.classList.toggle("d-none", show);
+        container.classList.toggle("d-none", !show);
+
+        container.querySelector<HTMLInputElement>(
+            ".js-external-url-input"
+        ).value = "";
+    }
+
+    validateExternalUrl(url: string): void {
+        this.resetImagePreview();
+        const addImageButton =
+            this.uploadContainer.querySelector<HTMLButtonElement>(
+                ".js-add-image"
+            );
+
+        if (!this.validateLink(url)) {
+            // TODO i18n
+            this.showValidationError("TODO invalid external url");
+            addImageButton.disabled = true;
+        } else {
+            this.hideValidationError();
+            addImageButton.disabled = false;
+        }
+    }
+
     resetImagePreview(): void {
         this.uploadContainer.querySelector(".js-image-preview").innerHTML = "";
         this.image = null;
@@ -370,23 +439,30 @@ export class ImageUploader implements PluginView {
 
     resetUploader(): void {
         this.resetImagePreview();
+        this.toggleExternalUrlInput(false);
         this.hideValidationError();
 
         this.uploadField.value = null;
     }
 
     handleUploadTrigger(event: Event, file: File, view: EditorView): void {
-        if (!file) {
+        const externalUrl =
+            this.uploadContainer.querySelector<HTMLInputElement>(
+                ".js-external-url-input"
+            ).value;
+        const urlIsValue = externalUrl && this.validateLink(externalUrl);
+
+        if (!file && !urlIsValue) {
             return;
         }
 
-        void this.startImageUpload(view, file);
+        void this.startImageUpload(view, file || externalUrl);
         this.resetUploader();
         hideImageUploader(view);
         view.focus();
     }
 
-    startImageUpload(view: EditorView, file: File): Promise<void> {
+    startImageUpload(view: EditorView, file: File | string): Promise<void> {
         // A fresh object to act as the ID for this upload
         const id = {};
 
@@ -413,6 +489,7 @@ export class ImageUploader implements PluginView {
 
         return this.uploadOptions.handler(file).then(
             (url) => {
+                // ON SUCCESS
                 // find where we inserted our placeholder so the content insert knows where to go
                 const decos = IMAGE_UPLOADER_KEY.getState(
                     view.state
@@ -440,6 +517,7 @@ export class ImageUploader implements PluginView {
                 view.dispatch(tr);
             },
             () => {
+                // ON ERROR
                 // let the plugin know it can remove the upload decoration
                 view.dispatch(
                     IMAGE_UPLOADER_KEY.setMeta(view.state.tr, {
@@ -597,6 +675,7 @@ type ImageUploadState = {
 function imageUploaderPlaceholderPlugin(
     uploadOptions: ImageUploadOptions,
     containerFn: (view: EditorView) => Element,
+    validateLink: CommonmarkParserFeatures["validateLink"],
     addTransactionDispatcher: addTransactionDispatcher
 ) {
     // if the required image upload options are missing, don't enable the plugin at all
@@ -715,6 +794,7 @@ function imageUploaderPlaceholderPlugin(
                 editorView,
                 uploadOptions,
                 containerFn(editorView),
+                validateLink,
                 addTransactionDispatcher
             );
         },
@@ -740,11 +820,13 @@ const IMAGE_UPLOADER_KEY = new StatefulPluginKey<ImageUploadState>(
  */
 export function richTextImageUpload(
     uploadOptions: ImageUploadOptions,
+    validateLink: CommonmarkParserFeatures["validateLink"],
     containerFn: (view: EditorView) => Element
 ): Plugin {
     return imageUploaderPlaceholderPlugin(
         uploadOptions,
         containerFn,
+        validateLink,
         (state, url, pos) => {
             const defaultAltText = _t("image_upload.default_image_alt_text");
 
@@ -782,11 +864,13 @@ export function richTextImageUpload(
  */
 export function commonmarkImageUpload(
     uploadOptions: ImageUploadOptions,
+    validateLink: CommonmarkParserFeatures["validateLink"],
     containerFn: (view: EditorView) => Element
 ): Plugin {
     return imageUploaderPlaceholderPlugin(
         uploadOptions,
         containerFn,
+        validateLink,
         (state, url, pos) => {
             const defaultAltText = _t("image_upload.default_image_alt_text");
             // construct the raw markdown

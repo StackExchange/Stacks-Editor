@@ -52,6 +52,7 @@ export class CommonmarkEditor extends BaseView {
                         CodeBlockHighlightPlugin(null),
                         commonmarkImageUpload(
                             this.options.imageUpload,
+                            this.options.parserFeatures.validateLink,
                             this.options.pluginParentContainer
                         ),
                         readonlyPlugin(),
