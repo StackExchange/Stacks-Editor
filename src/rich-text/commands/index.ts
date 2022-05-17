@@ -25,6 +25,7 @@ import {
 } from "../../shared/prosemirror-plugins/image-upload";
 import { richTextSchema as schema } from "../schema";
 import type { CommonViewOptions } from "../../shared/view";
+import { getShortcut } from "../../shared/utils";
 import { LINK_TOOLTIP_KEY } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
@@ -283,31 +284,6 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
-/**
- * Returns a string containing the label and readable keyboard shortcut for button tooltips
- * @param label The type to toggle to
- * @param mapping? Corresponding command mapping (keyboard shortcut)
- */
-function getTooltipText(label: string, mapping?: string): string {
-    if (!mapping) {
-        return label;
-    }
-
-    let osSpecificMapping = mapping;
-    // Replaces `Mod-` with the OS-appropriate modifier
-    if (mapping.indexOf("Mod-") === 0) {
-        const isMac = /Mac/.test(navigator.userAgent);
-        osSpecificMapping = mapping.replace("Mod-", isMac ? "Cmd-" : "Ctrl-");
-    }
-
-    const readableMapping = osSpecificMapping
-        .split("-")
-        .join(" + ")
-        .toLowerCase();
-
-    return `${label} (${readableMapping})`;
-}
-
 const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
@@ -346,7 +322,7 @@ const tableDropdown = () =>
 const headingDropdown = () =>
     makeMenuDropdown(
         "Header",
-        getTooltipText("Header", "Mod-h"),
+        `Heading (${getShortcut("Mod-h")})`,
         "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
@@ -383,7 +359,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleMark(schema.marks.strong),
                 dom: makeMenuIcon(
                     "Bold",
-                    getTooltipText("Bold", "Mod-b"),
+                    `Bold (${getShortcut("Mod-b")})`,
                     "bold-btn"
                 ),
                 active: markActive(schema.marks.strong),
@@ -393,7 +369,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleMark(schema.marks.em),
                 dom: makeMenuIcon(
                     "Italic",
-                    getTooltipText("Italic", "Mod-i"),
+                    `Italic (${getShortcut("Mod-i")})`,
                     "italic-btn"
                 ),
                 active: markActive(schema.marks.em),
@@ -403,7 +379,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleMark(schema.marks.code),
                 dom: makeMenuIcon(
                     "Code",
-                    getTooltipText("Code", "Mod-k"),
+                    `Inline Code (${getShortcut("Mod-k")})`,
                     "code-btn"
                 ),
                 active: markActive(schema.marks.code),
@@ -427,7 +403,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: insertLinkCommand,
                 dom: makeMenuIcon(
                     "Link",
-                    getTooltipText("Link", "Mod-l"),
+                    `Link (${getShortcut("Mod-l")})`,
                     "insert-link-btn"
                 ),
             },
@@ -436,7 +412,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleWrapIn(schema.nodes.blockquote),
                 dom: makeMenuIcon(
                     "Quote",
-                    getTooltipText("Blockquote", "Ctrl-q"),
+                    `Blockquote (${getShortcut("Ctrl-q")})`,
                     "blockquote-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.blockquote),
@@ -446,7 +422,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleBlockType(schema.nodes.code_block),
                 dom: makeMenuIcon(
                     "Codeblock",
-                    getTooltipText("Code block", "Mod-m"),
+                    `Code block (${getShortcut("Mod-m")})`,
                     "code-block-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.code_block),
@@ -457,7 +433,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                     command: insertImageCommand,
                     dom: makeMenuIcon(
                         "Image",
-                        getTooltipText("Image", "Mod-g"),
+                        `Image (${getShortcut("Mod-g")})`,
                         "insert-image-btn"
                     ),
                 },
@@ -469,7 +445,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                     command: insertTableCommand,
                     dom: makeMenuIcon(
                         "Table",
-                        getTooltipText("Table", "Mod-e"),
+                        `Table (${getShortcut("Mod-e")})`,
                         "insert-table-btn"
                     ),
                     visible: (state: EditorState) => !inTable(state.selection),
@@ -483,7 +459,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleWrapIn(schema.nodes.ordered_list),
                 dom: makeMenuIcon(
                     "OrderedList",
-                    getTooltipText("Numbered list", "Mod-o"),
+                    `Numbered list (${getShortcut("Mod-o")})`,
                     "numbered-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.ordered_list),
@@ -493,7 +469,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleWrapIn(schema.nodes.bullet_list),
                 dom: makeMenuIcon(
                     "UnorderedList",
-                    getTooltipText("Bulleted list", "Mod-u"),
+                    `Bulleted list (${getShortcut("Mod-u")})`,
                     "bullet-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.bullet_list),
@@ -503,7 +479,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: insertHorizontalRuleCommand,
                 dom: makeMenuIcon(
                     "HorizontalRule",
-                    getTooltipText("Horizontal rule", "Mod-r"),
+                    `Horizontal rule (${getShortcut("Mod-r")})`,
                     "horizontal-rule-btn"
                 ),
             },
@@ -511,23 +487,17 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "undo",
                 command: undo,
-                dom: makeMenuIcon(
-                    "Undo",
-                    getTooltipText("Undo", "Mod-z"),
-                    "undo-btn",
-                    ["sm:d-inline-block"]
-                ),
+                dom: makeMenuIcon("Undo", "Undo", "undo-btn", [
+                    "sm:d-inline-block",
+                ]),
                 visible: () => false,
             },
             {
                 key: "redo",
                 command: redo,
-                dom: makeMenuIcon(
-                    "Refresh",
-                    getTooltipText("Redo", "Mod-y"),
-                    "redo-btn",
-                    ["sm:d-inline-block"]
-                ),
+                dom: makeMenuIcon("Refresh", "Refresh", "redo-btn", [
+                    "sm:d-inline-block",
+                ]),
                 visible: () => false,
             },
             makeMenuSpacerEntry(),
