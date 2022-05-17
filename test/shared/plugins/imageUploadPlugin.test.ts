@@ -481,7 +481,8 @@ describe("image upload plugin", () => {
                 );
             });
 
-            it.todo("should show url input when prompt is clicked", () => {
+            // TODO test fails due to DOM not updating
+            it.skip("should show url input when prompt is clicked", () => {
                 showImageUploader(view.editorView);
                 uploader.update(view.editorView);
                 const inputContainer = pluginContainer.querySelector(
