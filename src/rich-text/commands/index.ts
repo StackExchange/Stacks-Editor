@@ -283,6 +283,31 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
+/**
+ * Returns a string containing the label and readable keyboard shortcut for button tooltips
+ * @param label The type to toggle to
+ * @param mapping? Corresponding command mapping (keyboard shortcut)
+ */
+function getTooltipText(label: string, mapping?: string): string {
+    if (!mapping) {
+        return label;
+    }
+
+    let osSpecificMapping = mapping;
+    // Replaces `Mod-` with the OS-appropriate modifier
+    if (mapping.indexOf("Mod-") === 0) {
+        const isMac = /Mac/.test(navigator.userAgent);
+        osSpecificMapping = mapping.replace("Mod-", isMac ? "Cmd-" : "Ctrl-");
+    }
+
+    const readableMapping = osSpecificMapping
+        .split("-")
+        .join(" + ")
+        .toLowerCase();
+
+    return `${label} (${readableMapping})`;
+}
+
 const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
@@ -321,7 +346,7 @@ const tableDropdown = () =>
 const headingDropdown = () =>
     makeMenuDropdown(
         "Header",
-        "Header",
+        getTooltipText("Header", "Mod-h"),
         "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
@@ -356,19 +381,31 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "toggleBold",
                 command: toggleMark(schema.marks.strong),
-                dom: makeMenuIcon("Bold", "Bold", "bold-btn"),
+                dom: makeMenuIcon(
+                    "Bold",
+                    getTooltipText("Bold", "Mod-b"),
+                    "bold-btn"
+                ),
                 active: markActive(schema.marks.strong),
             },
             {
                 key: "toggleEmphasis",
                 command: toggleMark(schema.marks.em),
-                dom: makeMenuIcon("Italic", "Italic", "italic-btn"),
+                dom: makeMenuIcon(
+                    "Italic",
+                    getTooltipText("Italic", "Mod-i"),
+                    "italic-btn"
+                ),
                 active: markActive(schema.marks.em),
             },
             {
                 key: "toggleCode",
                 command: toggleMark(schema.marks.code),
-                dom: makeMenuIcon("Code", "Inline code", "code-btn"),
+                dom: makeMenuIcon(
+                    "Code",
+                    getTooltipText("Code", "Mod-k"),
+                    "code-btn"
+                ),
                 active: markActive(schema.marks.code),
             },
             addIf(
@@ -388,25 +425,41 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "toggleLink",
                 command: insertLinkCommand,
-                dom: makeMenuIcon("Link", "Link selection", "insert-link-btn"),
+                dom: makeMenuIcon(
+                    "Link",
+                    getTooltipText("Link", "Mod-l"),
+                    "insert-link-btn"
+                ),
             },
             {
                 key: "toggleBlockquote",
                 command: toggleWrapIn(schema.nodes.blockquote),
-                dom: makeMenuIcon("Quote", "Blockquote", "blockquote-btn"),
+                dom: makeMenuIcon(
+                    "Quote",
+                    getTooltipText("Blockquote", "Ctrl-q"),
+                    "blockquote-btn"
+                ),
                 active: nodeTypeActive(schema.nodes.blockquote),
             },
             {
                 key: "toggleCodeblock",
                 command: toggleBlockType(schema.nodes.code_block),
-                dom: makeMenuIcon("Codeblock", "Code block", "code-block-btn"),
+                dom: makeMenuIcon(
+                    "Codeblock",
+                    getTooltipText("Code block", "Mod-m"),
+                    "code-block-btn"
+                ),
                 active: nodeTypeActive(schema.nodes.code_block),
             },
             addIf(
                 {
                     key: "insertImage",
                     command: insertImageCommand,
-                    dom: makeMenuIcon("Image", "Image", "insert-image-btn"),
+                    dom: makeMenuIcon(
+                        "Image",
+                        getTooltipText("Image", "Mod-g"),
+                        "insert-image-btn"
+                    ),
                 },
                 !!options.imageUpload?.handler
             ),
@@ -414,7 +467,11 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertTable",
                     command: insertTableCommand,
-                    dom: makeMenuIcon("Table", "Table", "insert-table-btn"),
+                    dom: makeMenuIcon(
+                        "Table",
+                        getTooltipText("Table", "Mod-e"),
+                        "insert-table-btn"
+                    ),
                     visible: (state: EditorState) => !inTable(state.selection),
                 },
                 options.parserFeatures.tables
@@ -426,7 +483,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleWrapIn(schema.nodes.ordered_list),
                 dom: makeMenuIcon(
                     "OrderedList",
-                    "Numbered list",
+                    getTooltipText("Numbered list", "Mod-o"),
                     "numbered-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.ordered_list),
@@ -436,7 +493,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleWrapIn(schema.nodes.bullet_list),
                 dom: makeMenuIcon(
                     "UnorderedList",
-                    "Bulleted list",
+                    getTooltipText("Bulleted list", "Mod-u"),
                     "bullet-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.bullet_list),
@@ -446,7 +503,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: insertHorizontalRuleCommand,
                 dom: makeMenuIcon(
                     "HorizontalRule",
-                    "Horizontal rule",
+                    getTooltipText("Horizontal rule", "Mod-r"),
                     "horizontal-rule-btn"
                 ),
             },
@@ -454,17 +511,23 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "undo",
                 command: undo,
-                dom: makeMenuIcon("Undo", "Undo", "undo-btn", [
-                    "sm:d-inline-block",
-                ]),
+                dom: makeMenuIcon(
+                    "Undo",
+                    getTooltipText("Undo", "Mod-z"),
+                    "undo-btn",
+                    ["sm:d-inline-block"]
+                ),
                 visible: () => false,
             },
             {
                 key: "redo",
                 command: redo,
-                dom: makeMenuIcon("Refresh", "Redo", "redo-btn", [
-                    "sm:d-inline-block",
-                ]),
+                dom: makeMenuIcon(
+                    "Refresh",
+                    getTooltipText("Redo", "Mod-y"),
+                    "redo-btn",
+                    ["sm:d-inline-block"]
+                ),
                 visible: () => false,
             },
             makeMenuSpacerEntry(),
