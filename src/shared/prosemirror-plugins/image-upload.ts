@@ -184,7 +184,7 @@ export class ImageUploader implements PluginView {
         });
 
         // add the upload container to the menu area
-        pluginContainer.appendChild(this.uploadContainer);
+        this.pluginContainer.appendChild(this.uploadContainer);
 
         this.uploadContainer.addEventListener(
             "dragenter",
@@ -420,8 +420,10 @@ export class ImageUploader implements PluginView {
             );
 
         if (!this.validateLink(url)) {
-            // TODO i18n
-            this.showValidationError("TODO invalid external url");
+            this.showValidationError(
+                _t("image_upload.external_url_validation_error"),
+                "danger"
+            );
             addImageButton.disabled = true;
         } else {
             this.hideValidationError();
