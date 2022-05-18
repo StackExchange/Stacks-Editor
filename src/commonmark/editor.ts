@@ -12,6 +12,7 @@ import {
     editableCheck,
     readonlyPlugin,
 } from "../shared/prosemirror-plugins/readonly";
+import { tripleClickHandler } from "./plugins/triple-click-handler";
 import { CodeStringParser } from "../shared/schema";
 import { deepMerge } from "../shared/utils";
 import {
@@ -56,6 +57,7 @@ export class CommonmarkEditor extends BaseView {
                             this.options.pluginParentContainer
                         ),
                         readonlyPlugin(),
+                        tripleClickHandler(),
                     ],
                 }),
                 plugins: [],
