@@ -25,7 +25,6 @@ import {
 } from "../../shared/prosemirror-plugins/image-upload";
 import { richTextSchema as schema } from "../schema";
 import type { CommonViewOptions } from "../../shared/view";
-import { LINK_TOOLTIP_KEY } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
     insertTableColumnAfterCommand,
@@ -37,6 +36,7 @@ import {
     removeColumnCommand,
     removeRowCommand,
 } from "./tables";
+import { showLinkEditor } from "../plugins/link-editor";
 
 export * from "./tables";
 
@@ -157,27 +157,22 @@ export function insertLinkCommand(
     dispatch: (tr: Transaction) => void,
     view: EditorView
 ): boolean {
-    if (state.selection.empty) return false;
+    let linkUrl: string = null;
 
-    let linkUrl = null;
+    // never actually toggle the mark, as that is done in the link editor
+    // we do want to *pretend* to, as toggleMark checks for validity
+    const valid = toggleMark(schema.marks.link, { href: linkUrl })(state, null);
 
-    if (dispatch) {
+    if (dispatch && valid) {
         const selectedText =
             state.selection.content().content.firstChild?.textContent ?? null;
         const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
         linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
 
-        // wrap the dispatch function so that we can add additional transactions after toggleMark
-        const oldDispatch = dispatch;
-        dispatch = (tr) => {
-            oldDispatch(tr);
-            view.dispatch(
-                LINK_TOOLTIP_KEY.setEditMode(true, state, view.state.tr)
-            );
-        };
+        showLinkEditor(view, linkUrl, selectedText);
     }
 
-    return toggleMark(schema.marks.link, { href: linkUrl })(state, dispatch);
+    return valid;
 }
 
 /**

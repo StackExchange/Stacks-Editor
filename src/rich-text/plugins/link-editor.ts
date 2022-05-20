@@ -1,5 +1,5 @@
 import { toggleMark } from "prosemirror-commands";
-import { Mark } from "prosemirror-model";
+import { Mark, Schema } from "prosemirror-model";
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { _t } from "../../shared/localization";
@@ -8,23 +8,326 @@ import {
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
 import { richTextSchema as schema } from "../schema";
-import { escapeHTML, generateRandomId } from "../../shared/utils";
-import { CommonmarkParserFeatures } from "../../shared/view";
+import {
+    dispatchEditorEvent,
+    escapeHTML,
+    generateRandomId,
+} from "../../shared/utils";
+import { CommonmarkParserFeatures, PluginView } from "../../shared/view";
+
+export class LinkEditor implements PluginView {
+    private pluginContainer: Element;
+    private validateLink: CommonmarkParserFeatures["validateLink"];
+    private viewContainer: Element;
+    private isVisible = false;
+
+    private get hrefInput(): HTMLInputElement {
+        return this.viewContainer.querySelector<HTMLInputElement>(
+            ".js-link-editor-href"
+        );
+    }
+
+    private get textInput(): HTMLInputElement {
+        return this.viewContainer.querySelector<HTMLInputElement>(
+            ".js-link-editor-text"
+        );
+    }
+
+    private get saveBtn(): HTMLInputElement {
+        return this.viewContainer.querySelector<HTMLInputElement>(
+            ".js-link-editor-save-btn"
+        );
+    }
+
+    private get hrefError(): Element {
+        return this.viewContainer.querySelector(".js-link-editor-href-error");
+    }
+
+    constructor(
+        view: EditorView,
+        pluginContainer: Element,
+        validateLink: CommonmarkParserFeatures["validateLink"]
+    ) {
+        this.pluginContainer = pluginContainer;
+        this.validateLink = validateLink;
+
+        const randomId = generateRandomId();
+        this.viewContainer = document.createElement("form");
+        this.viewContainer.className =
+            "mt6 bt bb bc-black-400 d-none js-image-uploader";
+
+        this.viewContainer.innerHTML = escapeHTML`<div class="d-flex fd-column gsy gs8 p12">
+            <div class="flex--item">
+                <label for="link-editor-href-input-${randomId}" class="s-label mb4">${_t(
+            "link_editor.href_label"
+        )}</label>
+                <input id="link-editor-href-input-${randomId}" class="s-input js-link-editor-href" type="text" name="href" aria-describedby="link-editor-href-error-${randomId}" />
+                <p id="link-editor-href-error-${randomId}" class="s-input-message mt4 d-none js-link-editor-href-error"></p>
+            </div>
+
+            <div class="flex--item">
+                <label for="link-editor-text-input-${randomId}" class="s-label mb4">${_t(
+            "link_editor.text_label"
+        )}</label>
+                <input id="link-text-href-input-${randomId}" class="s-input js-link-editor-text" type="text" name="text" />
+            </div>
+
+            <div class="flex--item">
+                <button class="s-btn s-btn__primary js-link-editor-save-btn" type="submit" disabled>${_t(
+                    "link_editor.save_button"
+                )}</button>
+                <button class="s-btn" type="reset">${_t(
+                    "link_editor.cancel_button"
+                )}</button>
+            </div>
+        </div>`;
+
+        this.viewContainer.addEventListener("submit", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            this.handleSave(view);
+        });
+
+        this.viewContainer.addEventListener("reset", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            hideLinkEditor(view);
+        });
+
+        this.hrefInput.addEventListener("input", (e) => {
+            this.validate((e.target as HTMLInputElement).value);
+        });
+
+        // add the view container to the menu area
+        this.pluginContainer.appendChild(this.viewContainer);
+    }
+
+    validate(href: string): boolean {
+        const valid = this.validateLink(href);
+        if (!valid) {
+            this.showValidationError(_t("link_editor.validation_error"));
+        } else {
+            this.hideValidationError();
+        }
+
+        this.saveBtn.disabled = !valid;
+
+        return valid;
+    }
+
+    showValidationError(errorMessage: string): void {
+        const parent = this.hrefInput.parentElement;
+        const error = this.hrefError;
+        parent.classList.add("has-error");
+        error.textContent = errorMessage;
+        error.classList.remove("d-none");
+    }
+
+    hideValidationError(): void {
+        const parent = this.hrefInput.parentElement;
+        const error = this.hrefError;
+        parent.classList.remove("has-error");
+        error.textContent = "";
+        error.classList.add("d-none");
+    }
+
+    resetEditor(): void {
+        this.hrefInput.value = "";
+        this.textInput.value = "";
+        this.hideValidationError();
+    }
+
+    handleSave(view: EditorView): void {
+        const href = this.hrefInput.value;
+
+        if (!this.validate(href)) {
+            return;
+        }
+
+        const text = this.textInput.value || href;
+        const node = schema.text(text, []);
+
+        // set the text first, inheriting all marks
+        let tr = view.state.tr.replaceSelectionWith(node, true);
+
+        // reselect the now unselected text
+        tr = tr.setSelection(
+            TextSelection.create(
+                tr.doc,
+                tr.selection.from - text.length,
+                tr.selection.to
+            )
+        );
+
+        // drop any link marks that might already exist
+        tr = tr.removeMark(
+            tr.selection.from,
+            tr.selection.to,
+            schema.marks.link
+        );
+
+        // add our link mark back onto the selection
+        tr = tr.addMark(
+            tr.selection.from,
+            tr.selection.to,
+            schema.marks.link.create({ href })
+        );
+
+        view.dispatch(tr);
+
+        hideLinkEditor(view);
+    }
+
+    update(view: EditorView): void {
+        const state = LINK_EDITOR_KEY.getState(view.state);
+        let isVisible = state?.visible;
+
+        if (typeof isVisible !== "boolean") {
+            isVisible = false;
+        }
+
+        // states already match, nothing to do
+        if (isVisible === this.isVisible) {
+            return;
+        }
+
+        this.isVisible = isVisible;
+
+        if (this.isVisible) {
+            if (state?.url) {
+                this.hrefInput.value = state.url;
+                this.validate(state.url);
+            }
+
+            if (state?.text) {
+                this.textInput.value = state.text;
+            }
+
+            this.viewContainer.classList.remove("d-none");
+            this.hrefInput.focus();
+        } else {
+            this.resetEditor();
+            this.viewContainer.classList.add("d-none");
+        }
+    }
+
+    destroy(): void {
+        // this.uploadField.remove();
+        this.viewContainer.remove();
+    }
+}
+
+type LinkEditorState = {
+    url?: string;
+    text?: string;
+    visible: boolean;
+};
+
+/** Represents the link tooltip plugin's state */
+type LinkTooltipState = {
+    forceHide?: boolean;
+    linkTooltip: LinkTooltip;
+    decorations: DecorationSet;
+};
+
+/**
+ * Custom PluginKey with additional methods for interacting with a LinkTooltip
+ */
+class LinkEditorPluginKey extends StatefulPluginKey<
+    LinkTooltipState & LinkEditorState
+> {
+    constructor() {
+        super(LinkEditor.name);
+    }
+
+    /**
+     * Force the link tooltip to hide - useful e.g. when the entire editor is losing
+     * focus and we want to make sure the tooltip disappears, too
+     */
+    forceHide(state: EditorState, dispatch: (tr: Transaction) => void): void {
+        const meta = this.getState(state);
+
+        // if the tooltip is not showing, just return
+        if (meta.decorations === DecorationSet.empty) {
+            return;
+        }
+
+        meta.forceHide = true;
+        const tr = this.setMeta(state.tr, meta);
+
+        // immediately dispatch
+        dispatch(tr);
+    }
+}
+
+/** The plugin key the image uploader plugin is tied to */
+const LINK_EDITOR_KEY = new LinkEditorPluginKey();
+
+export function hideLinkEditor(view: EditorView): void {
+    const state = LINK_EDITOR_KEY.getState(view.state);
+
+    // already hidden, don't dispatch the event
+    if (!state || !state.visible) {
+        return;
+    }
+
+    const tr = view.state.tr;
+    LINK_EDITOR_KEY.setMeta(tr, {
+        forceHide: false,
+        decorations: state.decorations,
+        linkTooltip: state.linkTooltip,
+        visible: false,
+        // explicitly clear out data
+        url: null,
+        text: null,
+    });
+    const newState = view.state.apply(tr);
+    view.updateState(newState);
+}
+
+export function showLinkEditor(
+    view: EditorView,
+    url?: string,
+    text?: string
+): void {
+    const state = LINK_EDITOR_KEY.getState(view.state);
+
+    // already visible, don't dispatch the event
+    if (!state || state.visible) {
+        return;
+    }
+
+    // TODO find a way to add this event to StacksEditor TSDocs
+    // dispatch a browser event and return early if it is cancelled
+    if (!dispatchEditorEvent(view.dom, "link-editor-show", { url, text })) {
+        return;
+    }
+
+    const tr = view.state.tr;
+
+    LINK_EDITOR_KEY.setMeta(tr, {
+        decorations: state.decorations,
+        linkTooltip: state.linkTooltip,
+        visible: true,
+        forceHide: true,
+        // explicitly clear the data if none was passed
+        url: url || null,
+        text: text || null,
+    });
+    const newState = view.state.apply(tr);
+    view.updateState(newState);
+}
 
 class LinkTooltip {
     private content: HTMLElement;
     private href: string;
     private removeListener: () => void;
-    private applyListener: () => void;
-    private validateLink: CommonmarkParserFeatures["validateLink"];
+    private editListener: () => void;
 
     editing: boolean;
 
     private get editButton() {
         return this.content.querySelector(".js-link-tooltip-edit");
-    }
-    private get applyButton() {
-        return this.content.querySelector(".js-link-tooltip-apply");
     }
     private get removeButton() {
         return this.content.querySelector(".js-link-tooltip-remove");
@@ -32,23 +335,9 @@ class LinkTooltip {
     private get link() {
         return this.content.querySelector("a");
     }
-    private get input() {
-        return this.content.querySelector<HTMLInputElement>(
-            ".js-link-tooltip-input"
-        );
-    }
-    private get inputWrapper() {
-        return this.content.querySelector<HTMLInputElement>(
-            ".js-link-tooltip-input-wrapper"
-        );
-    }
 
-    constructor(
-        state: EditorState,
-        linkValidator: CommonmarkParserFeatures["validateLink"]
-    ) {
+    constructor(state: EditorState<Schema>) {
         const popoverId = "link-tooltip-popover" + generateRandomId();
-        this.validateLink = linkValidator;
         this.content = document.createElement("span");
         this.content.className = "w0";
         this.content.setAttribute("aria-controls", popoverId);
@@ -64,23 +353,11 @@ class LinkTooltip {
                     class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4"
                     target="_blank"
                     rel="nofollow noreferrer">${this.href}</a>
-                <div class="flex--item d-none wmn2 ml2 mr4 mb0 js-link-tooltip-input-wrapper">
-                    <input type="text"
-                            class="s-input s-input__sm js-link-tooltip-input"
-                            autocomplete="off"
-                            name="link"
-                            value="${this.href}" />
-                </div>
                 <button type="button"
                         class="flex--item s-btn mr4 js-link-tooltip-edit"
                         title="${_t(
                             "link_tooltip.edit_button_title"
                         )}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
-                <button type="button"
-                        class="flex--item s-btn d-none js-link-tooltip-apply"
-                        title="${_t("link_tooltip.apply_button_title")}">${_t(
-            "link_tooltip.apply_button_text"
-        )}</button>
                 <button type="button"
                         class="flex--item s-btn js-link-tooltip-remove"
                         title="${_t(
@@ -98,27 +375,13 @@ class LinkTooltip {
         const removeListener = (e: Event) => {
             this.removeListener.call(this, e);
         };
-
-        // same as above, don't bind directly
-        const applyListener = (e: Event) => {
-            this.applyListener.call(this, e);
+        const editListener = (e: Event) => {
+            this.editListener.call(this, e);
         };
 
-        // prevent form submits on ENTER press and apply changes instead
-        this.input.addEventListener("keydown", (e) => {
-            if (e.key === "Enter") {
-                e.stopPropagation();
-                e.preventDefault();
-                applyListener(e);
-            }
-        });
-
         // hook up the click/keyboard events for the supporting buttons
-        this.bindElementInteraction(this.applyButton, applyListener);
         this.bindElementInteraction(this.removeButton, removeListener);
-        this.bindElementInteraction(this.editButton, () => {
-            this.showEditMode(this.href);
-        });
+        this.bindElementInteraction(this.editButton, editListener);
 
         this.editing = false;
         this.update(state);
@@ -169,15 +432,6 @@ class LinkTooltip {
             const link = this.link;
             link.href = link.title = link.innerText = this.href;
         }
-
-        // if we can toggle the mark and actually found an href to display, show the tooltip
-        if (toggleMark(schema.marks.link)(state) && this.href) {
-            this.hideEditMode();
-        }
-
-        if (this.editing || this.href === "") {
-            this.showEditMode(this.href);
-        }
     }
 
     /**
@@ -223,7 +477,7 @@ class LinkTooltip {
                 // cancel all events coming from inside this widget
                 stopEvent: () => true,
             }
-        ) as Decoration<unknown>;
+        );
 
         return DecorationSet.create(newState.doc, [decoration]);
     }
@@ -237,6 +491,7 @@ class LinkTooltip {
     }
 
     /**
+     * TODO abstract into utility/helper? Does something like this already exist?
      * Find out if the current selection contains a link mark
      * @param state The current editor state
      */
@@ -250,42 +505,6 @@ class LinkTooltip {
             schema.marks.link.isInSet(state.storedMarks || $from.marks()) !==
             undefined
         );
-    }
-
-    /**
-     * Shows the input for href editing and focuses it
-     * @param url
-     */
-    private showEditMode(url: string) {
-        this.hideValidationError();
-        const input = this.input;
-        input.value = url || "https://";
-        this.inputWrapper.classList.remove("d-none");
-        input.select();
-        this.applyButton.classList.remove("d-none");
-        this.editButton.classList.add("d-none");
-        this.link.classList.add("d-none");
-        input.focus();
-    }
-
-    /**
-     * Hides the href focus input and changes back to view mode
-     */
-    private hideEditMode() {
-        this.editButton.classList.remove("d-none");
-        this.link.classList.remove("d-none");
-        this.inputWrapper.classList.add("d-none");
-        this.applyButton.classList.add("d-none");
-    }
-
-    /** Marks the input with a visual validation error */
-    private showValidationError() {
-        this.inputWrapper.classList.add("has-error");
-    }
-
-    /** Clears the input of any visual validation errors */
-    private hideValidationError() {
-        this.inputWrapper.classList.remove("has-error");
     }
 
     /**
@@ -306,7 +525,7 @@ class LinkTooltip {
      * Gets the positions immediately before and after a link mark in the current selection
      * @param state
      */
-    private linkAround(state: EditorState) {
+    private linkAround(state: EditorState<Schema>) {
         const $pos = state.selection.$from;
         const start = $pos.parent.childAfter($pos.parentOffset);
         if (!start.node) {
@@ -384,135 +603,58 @@ class LinkTooltip {
             toggleMark(schema.marks.link)(state, view.dispatch.bind(view));
         };
 
-        this.applyListener = () => {
-            const link = this.link;
-            const input = this.input;
-
-            let { from, to } = view.state.selection;
-
-            this.editing = false;
-
-            // the input stole focus from the editor, so reset focus
-            view.focus();
-
-            // if the link didn't change, close and move on
-            if (link.href === input.value) {
-                this.hideEditMode();
-                return;
-            }
-
-            this.hideValidationError();
-
-            // validate link
-            if (!this.validateLink(input.value)) {
-                this.showValidationError();
-                return;
-            }
-
-            link.href = link.title = link.innerText = input.value;
-
+        this.editListener = () => {
             if (view.state.selection.empty) {
-                const expanded = this.linkAround(view.state);
-                from = expanded.from;
-                to = expanded.to;
+                // TODO chain the double dispatch!
+                view.dispatch(this.expandSelection(view.state, view.state.tr));
             }
 
-            const tr = view.state.tr.addMark(
-                from,
-                to,
-                schema.marks.link.create({ href: this.link.href })
-            );
+            const { from, to } = view.state.selection;
+            const text = view.state.doc.textBetween(from, to);
+            const href = this.findMarksInSelection(view.state)[0].attrs
+                .href as string;
 
-            view.dispatch(tr);
+            showLinkEditor(view, href, text); // TODO
         };
     }
 }
-
-/** Represents the link tooltip plugin's state */
-type LinkTooltipState = {
-    forceHide?: boolean;
-    editing?: boolean;
-    linkTooltip: LinkTooltip;
-    decorations: DecorationSet;
-};
-
-/**
- * Custom PluginKey with additional methods for interacting with a LinkTooltip
- */
-class LinkTooltipPluginKey extends StatefulPluginKey<LinkTooltipState> {
-    constructor() {
-        super(LinkTooltip.name);
-    }
-
-    /**
-     * Launch the link tooltip in edit mode
-     */
-    setEditMode(
-        isEditing: boolean,
-        state: EditorState,
-        tr: Transaction
-    ): Transaction {
-        // set edit mode on the link tooltip
-        const meta = this.getState(state);
-        meta.editing = isEditing;
-
-        // signal to the view that an update has been made
-        return this.setMeta(tr, meta);
-    }
-
-    /**
-     * Force the link tooltip to hide - useful e.g. when the entire editor is losing
-     * focus and we want to make sure the tooltip disappears, too
-     */
-    forceHide(state: EditorState, dispatch: (tr: Transaction) => void): void {
-        const meta = this.getState(state);
-
-        // if the tooltip is not showing, just return
-        if (meta.decorations === DecorationSet.empty) {
-            return;
-        }
-
-        meta.forceHide = true;
-        const tr = this.setMeta(state.tr, meta);
-
-        // immediately dispatch
-        dispatch(tr);
-    }
-}
-
-export const LINK_TOOLTIP_KEY = new LinkTooltipPluginKey();
-
 /**
  * A plugin view that shows a tooltip when selecting a link in rich-text mode.
  * The tooltip shows the href attribute of the selected link and allows removing
- * the link mark from the document.
+ * the link mark from the document. Clicking on the tooltip's edit button will launch
+ * a plugin view that allows editing the link's href and text.
  *
  * Note: This is not a _NodeView_ because when dealing with links, we're dealing with
  * _marks_, not _nodes_.
  */
-export const linkTooltipPlugin = (features: CommonmarkParserFeatures) =>
-    new StatefulPlugin<LinkTooltipState>({
-        key: LINK_TOOLTIP_KEY,
+export const linkEditorPlugin = (
+    containerFn: (view: EditorView) => Element,
+    features: CommonmarkParserFeatures
+) =>
+    new StatefulPlugin<LinkTooltipState & LinkEditorState>({
+        key: LINK_EDITOR_KEY,
         state: {
             init(_, instance) {
                 return {
+                    visible: false,
                     linkTooltip: new LinkTooltip(
-                        instance,
-                        features.validateLink
+                        instance
+                        //features.validateLink
                     ),
                     decorations: DecorationSet.empty,
                 };
             },
-            apply(tr, value, oldState, newState): LinkTooltipState {
+            apply(
+                tr,
+                value,
+                oldState,
+                newState
+            ): LinkTooltipState & LinkEditorState {
                 // check if force hide was set and add to value for getDecorations to use
                 const meta = this.getMeta(tr) || value;
                 if ("forceHide" in meta) {
                     value.forceHide = meta.forceHide;
                 }
-
-                // check for editing as well
-                value.linkTooltip.editing =
-                    "editing" in meta ? meta.editing : false;
 
                 // update the linkTooltip and get the decorations
                 const decorations = value.linkTooltip.getDecorations(
@@ -524,28 +666,26 @@ export const linkTooltipPlugin = (features: CommonmarkParserFeatures) =>
 
                 // always return a "fresh" state with just the required items set
                 return {
+                    ...meta,
                     linkTooltip: value.linkTooltip,
                     decorations: decorations,
                 };
             },
         },
         props: {
-            decorations(
-                this: StatefulPlugin<LinkTooltipState>,
-                state: EditorState
-            ) {
+            decorations(state: EditorState) {
                 return this.getState(state).decorations;
             },
             handleDOMEvents: {
                 /** Handle editor blur and close the tooltip if it isn't focused */
                 blur(view, e: FocusEvent) {
-                    const linkTooltip = LINK_TOOLTIP_KEY.getState(
+                    const linkTooltip = LINK_EDITOR_KEY.getState(
                         view.state
                     ).linkTooltip;
 
                     // if the editor blurs, but NOT because of the tooltip, hide the tooltip
                     if (!view.hasFocus() && !linkTooltip.hasFocus(e)) {
-                        LINK_TOOLTIP_KEY.forceHide(
+                        LINK_EDITOR_KEY.forceHide(
                             view.state,
                             view.dispatch.bind(view)
                         );
@@ -555,5 +695,18 @@ export const linkTooltipPlugin = (features: CommonmarkParserFeatures) =>
                     return false;
                 },
             },
+        },
+        view(editorView): PluginView {
+            // TODO centralize! done in menu.ts too
+            containerFn =
+                containerFn ||
+                function (view) {
+                    return view.dom.parentElement;
+                };
+            return new LinkEditor(
+                editorView,
+                containerFn(editorView),
+                features.validateLink
+            );
         },
     });

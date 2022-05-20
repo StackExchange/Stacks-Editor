@@ -38,7 +38,7 @@ import { TagLink } from "./node-views/tag-link";
 import { codePasteHandler } from "./plugins/code-paste-handler";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
-import { linkTooltipPlugin } from "./plugins/link-editor";
+import { linkEditorPlugin } from "./plugins/link-editor";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
@@ -95,7 +95,10 @@ export class RichTextEditor extends BaseView {
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
-                        linkTooltipPlugin(this.options.parserFeatures),
+                        linkEditorPlugin(
+                            this.options.pluginParentContainer,
+                            this.options.parserFeatures
+                        ),
                         richTextImageUpload(
                             this.options.imageUpload,
                             this.options.parserFeatures.validateLink
