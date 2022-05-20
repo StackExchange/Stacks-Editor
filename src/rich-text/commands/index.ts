@@ -82,20 +82,21 @@ export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
-    const shouldCycleHeading = nodeType.name === "heading" && !attrs?.level;
-    const nodeCheck = nodeTypeActive(nodeType, attrs);
-    let updatedAttrs = attrs;
-
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
         const headingLevel = getHeadingLevel(state);
+        const shouldCycleHeading =
+            (nodeType.name === "heading" && !attrs?.level) ||
+            headingLevel === 6;
+        let updatedAttrs = attrs;
 
         // if the node is set, toggle it off unless it's a heading with a level lower other than 6
-        if ((nodeCheck(state) && !shouldCycleHeading) || headingLevel === 6) {
+        if (nodeCheck(state) && !shouldCycleHeading) {
             return setToTextCommand(state, dispatch);
         }
 
         // if the node is a heading, increment the level
-        if (shouldCycleHeading) {
+        if (shouldCycleHeading && !attrs?.level) {
             updatedAttrs = { level: headingLevel + 1 };
         }
 
