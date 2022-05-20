@@ -82,15 +82,24 @@ export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
+    const isHeading = nodeType.name === "heading";
     const nodeCheck = nodeTypeActive(nodeType, attrs);
-    const setBlockTypeCommand = setBlockType(nodeType, attrs);
+    let updatedAttrs = attrs;
 
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
-        // if the node is set, toggle it off
-        if (nodeCheck(state)) {
+        const headingLevel = getHeadingLevel(state);
+
+        // if the node is set, toggle it off unless it's a heading with a level lower other than 6
+        if ((nodeCheck(state) && !isHeading) || headingLevel === 6) {
             return setToTextCommand(state, dispatch);
         }
 
+        // if the node is a heading, increment the level
+        if (isHeading) {
+            updatedAttrs = { level: headingLevel + 1 };
+        }
+
+        const setBlockTypeCommand = setBlockType(nodeType, updatedAttrs);
         return setBlockTypeCommand(state, (t) => {
             if (dispatch) {
                 // when adding a block node, make sure the user can navigate past it
@@ -99,6 +108,23 @@ export function toggleBlockType(
             }
         });
     };
+}
+
+/**
+ * Returns the first heading level of the current selection
+ * @param state The current editor state
+ */
+function getHeadingLevel(state: EditorState): number {
+    const { from, to } = state.selection;
+    let level = 0;
+    state.doc.nodesBetween(from, to, (node) => {
+        if (node.type.name === "heading") {
+            level = node.attrs.level;
+            return true;
+        }
+    });
+
+    return level;
 }
 
 export function insertHorizontalRuleCommand(
