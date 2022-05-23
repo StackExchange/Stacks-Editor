@@ -133,6 +133,63 @@ describe("commands", () => {
                 ],
             });
         });
+
+        it("switch heading to next level when no level is passed", () => {
+            const state = applySelection(
+                createState("<h1>heading</h1>", []),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("heading");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockType(richTextSchema.nodes.heading)
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                content: [
+                    {
+                        "type.name": "heading",
+                        "attrs": {
+                            level: 2,
+                            markup: "",
+                        },
+                        "childCount": 1,
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    },
+                ],
+            });
+        });
+
+        it("should toggle last heading level (h6)", () => {
+            const state = applySelection(
+                createState("<h6>heading</h6>", []),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("heading");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockType(richTextSchema.nodes.heading)
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                    },
+                ],
+            });
+        });
     });
 
     describe("insertHorizontalRuleCommand", () => {
