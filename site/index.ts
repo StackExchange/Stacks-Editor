@@ -199,7 +199,7 @@ domReady(() => {
                     },
                 },
             },
-            placeholderText: "Enter your question…",
+            placeholderText: "This is placeholder text, so start typing…",
             richTextOptions: {
                 linkPreviewProviders: [
                     ExampleTextOnlyLinkPreviewProvider,
