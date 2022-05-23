@@ -2,7 +2,7 @@ import { Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { DecorationSet, EditorView } from "prosemirror-view";
 import { insertLinkCommand } from "../../../src/rich-text/commands";
-import { linkTooltipPlugin } from "../../../src/rich-text/plugins/link-tooltip";
+import { linkTooltipPlugin } from "../../../src/rich-text/plugins/link-editor";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
 import { applySelection, createState, createView } from "../test-helpers";
 

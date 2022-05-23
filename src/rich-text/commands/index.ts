@@ -25,7 +25,7 @@ import {
 } from "../../shared/prosemirror-plugins/image-upload";
 import { richTextSchema as schema } from "../schema";
 import type { CommonViewOptions } from "../../shared/view";
-import { LINK_TOOLTIP_KEY } from "../plugins/link-tooltip";
+import { LINK_TOOLTIP_KEY } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
     insertTableColumnAfterCommand,
