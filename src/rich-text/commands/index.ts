@@ -495,7 +495,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "redo",
                 command: redo,
-                dom: makeMenuIcon("Refresh", "Refresh", "redo-btn", [
+                dom: makeMenuIcon("Refresh", "Redo", "redo-btn", [
                     "sm:d-inline-block",
                 ]),
                 visible: () => false,
