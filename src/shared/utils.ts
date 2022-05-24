@@ -217,7 +217,7 @@ export function escapeHTML(
  * @param label The type to toggle to
  * @param mapping? Corresponding command mapping (keyboard shortcut)
  */
-export function getShortcut(mapping?: string): string {
+export function getShortcut(mapping: string): string {
     if (mapping.indexOf("Mod-") !== 0) {
         return mapping;
     }
