@@ -3,6 +3,7 @@ import {
     deepMerge,
     escapeHTML,
     stackOverflowValidateLink,
+    getShortcut,
 } from "../../src/shared/utils";
 
 describe("utils", () => {
@@ -141,5 +142,16 @@ describe("utils", () => {
                 expect(keys[0]).not.toBe(keys[1]);
             }
         );
+    });
+
+    describe("getShortcut", () => {
+        it("should replace `Mod` with appropriate modifier key for current platform", () => {
+            const shortcut = getShortcut("Mod-z");
+            expect(shortcut).toBe("Ctrl-z");
+        });
+        it("should return unmodified string when `Mod` isn't passed", () => {
+            const shortcut = getShortcut("Cmd-y");
+            expect(shortcut).toBe("Cmd-y");
+        });
     });
 });
