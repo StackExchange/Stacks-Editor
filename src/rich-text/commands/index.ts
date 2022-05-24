@@ -487,17 +487,23 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "undo",
                 command: undo,
-                dom: makeMenuIcon("Undo", "Undo", "undo-btn", [
-                    "sm:d-inline-block",
-                ]),
+                dom: makeMenuIcon(
+                    "Undo",
+                    `Undo (${getShortcut("Mod-z")})`,
+                    "undo-btn",
+                    ["sm:d-inline-block"]
+                ),
                 visible: () => false,
             },
             {
                 key: "redo",
                 command: redo,
-                dom: makeMenuIcon("Refresh", "Redo", "redo-btn", [
-                    "sm:d-inline-block",
-                ]),
+                dom: makeMenuIcon(
+                    "Refresh",
+                    `Redo (${getShortcut("Mod-y")})`,
+                    "redo-btn",
+                    ["sm:d-inline-block"]
+                ),
                 visible: () => false,
             },
             makeMenuSpacerEntry(),
