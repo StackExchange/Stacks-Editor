@@ -224,7 +224,7 @@ export function getShortcut(mapping?: string): string {
 
     return mapping.replace(
         "Mod-",
-        /Mac/.test(navigator.userAgent) ? "Cmd-" : "Ctrl-"
+        /Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd-" : "Ctrl-"
     );
 }
 
