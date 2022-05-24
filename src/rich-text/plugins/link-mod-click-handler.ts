@@ -26,7 +26,9 @@ export const linkModClickHandler = () =>
             ) {
                 const selectedLink = findLinkAtCursor(view.state);
                 const modPressed = event.getModifierState(
-                    /Mac/.test(navigator.userAgent) ? "Meta" : "Control"
+                    /Mac|iP(hone|[oa]d)/.test(navigator.platform)
+                        ? "Meta"
+                        : "Control"
                 );
 
                 if (selectedLink && modPressed) {
