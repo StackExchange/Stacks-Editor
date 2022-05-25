@@ -8,6 +8,7 @@ import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
 } from "../shared/prosemirror-plugins/image-upload";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
 import {
     editableCheck,
     readonlyPlugin,
@@ -50,10 +51,12 @@ export class CommonmarkEditor extends BaseView {
                         ...allKeymaps(this.options.parserFeatures),
                         createMenu(this.options),
                         CodeBlockHighlightPlugin(null),
+                        interfaceManagerPlugin(
+                            this.options.pluginParentContainer
+                        ),
                         commonmarkImageUpload(
                             this.options.imageUpload,
-                            this.options.parserFeatures.validateLink,
-                            this.options.pluginParentContainer
+                            this.options.parserFeatures.validateLink
                         ),
                         readonlyPlugin(),
                     ],
