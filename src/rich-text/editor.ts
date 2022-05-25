@@ -43,6 +43,7 @@ import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
 import { richTextSchema } from "./schema";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -91,11 +92,13 @@ export class RichTextEditor extends BaseView {
                         CodeBlockHighlightPlugin(
                             this.options.codeblockOverrideLanguage
                         ),
+                        interfaceManagerPlugin(
+                            this.options.pluginParentContainer
+                        ),
                         linkTooltipPlugin(this.options.parserFeatures),
                         richTextImageUpload(
                             this.options.imageUpload,
-                            this.options.parserFeatures.validateLink,
-                            this.options.pluginParentContainer
+                            this.options.parserFeatures.validateLink
                         ),
                         readonlyPlugin(),
                         spoilerToggle,
