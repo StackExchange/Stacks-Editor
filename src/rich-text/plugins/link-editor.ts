@@ -211,22 +211,19 @@ export class LinkEditor extends PluginInterfaceView<
     }
 }
 
-type LinkEditorState = {
+/** Represents the link-editor plugin's state */
+interface LinkEditorPluginState {
+    // interface
     url?: string;
     text?: string;
     visible: boolean;
-};
+    shouldShow: boolean;
 
-/** Represents the link tooltip plugin's state */
-type LinkTooltipState = {
-    forceHide?: boolean;
+    // tooltip
+    forceHideTooltip?: boolean;
     linkTooltip: LinkTooltip;
     decorations: DecorationSet;
-};
-
-// TODO CLEANUP TYPES
-type LinkEditorPluginState = LinkTooltipState &
-    LinkEditorState & { shouldShow: boolean };
+}
 
 /**
  * Custom PluginKey with additional methods for interacting with a LinkTooltip
@@ -240,7 +237,10 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
      * Force the link tooltip to hide - useful e.g. when the entire editor is losing
      * focus and we want to make sure the tooltip disappears, too
      */
-    forceHide(state: EditorState, dispatch: (tr: Transaction) => void): void {
+    forceHideTooltip(
+        state: EditorState,
+        dispatch: (tr: Transaction) => void
+    ): void {
         const meta = this.getState(state);
 
         // if the tooltip is not showing, just return
@@ -248,7 +248,7 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
             return;
         }
 
-        meta.forceHide = true;
+        meta.forceHideTooltip = true;
         const tr = this.setMeta(state.tr, meta);
 
         // immediately dispatch
@@ -258,24 +258,6 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
 
 /** The plugin key the image uploader plugin is tied to */
 const LINK_EDITOR_KEY = new LinkEditorPluginKey();
-
-export function hideLinkEditor(view: EditorView): void {
-    LINK_EDITOR_KEY.showInterface(view, {
-        url: null,
-        text: null,
-    });
-}
-
-export function showLinkEditor(
-    view: EditorView,
-    url?: string,
-    text?: string
-): void {
-    LINK_EDITOR_KEY.showInterface(view, {
-        url,
-        text,
-    });
-}
 
 class LinkTooltip {
     private content: HTMLElement;
@@ -395,19 +377,15 @@ class LinkTooltip {
 
     /**
      * Gets the tooltip decoration from a new PluginState.apply call
-     * @param tr The transaction that was applied (to map existing decorations)
-     * @param value The existing LinkTooltipState (with forceHidden potentially set)
-     * @param oldState The state before the transaction
+     * @param value The existing LinkTooltipState (with forceHideTooltip potentially set)
      * @param newState The state after the transaction
      */
     getDecorations(
-        tr: Transaction,
-        value: LinkTooltipState,
-        oldState: EditorState,
+        value: LinkEditorPluginState,
         newState: EditorState
     ): DecorationSet {
         // if we're forced to hide the decorations, don't even attempt to create them
-        if ("forceHide" in value && value.forceHide) {
+        if ("forceHide" in value && value.forceHideTooltip) {
             return DecorationSet.empty;
         }
 
@@ -577,6 +555,7 @@ class LinkTooltip {
         };
     }
 }
+
 /**
  * A plugin view that shows a tooltip when selecting a link in rich-text mode.
  * The tooltip shows the href attribute of the selected link and allows removing
@@ -593,30 +572,24 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
             init(_, instance) {
                 return {
                     visible: false,
-                    linkTooltip: new LinkTooltip(
-                        instance
-                        //features.validateLink
-                    ),
+                    linkTooltip: new LinkTooltip(instance),
                     decorations: DecorationSet.empty,
                     shouldShow: false,
                 };
             },
-            apply(tr, value, oldState, newState): LinkEditorPluginState {
+            apply(tr, value, _, newState): LinkEditorPluginState {
                 // check if force hide was set and add to value for getDecorations to use
                 const meta = this.getMeta(tr) || value;
-                if ("forceHide" in meta) {
-                    value.forceHide = meta.forceHide;
+                if ("forceHideTooltip" in meta) {
+                    value.forceHideTooltip = meta.forceHideTooltip;
                 }
 
                 // update the linkTooltip and get the decorations
                 const decorations = value.linkTooltip.getDecorations(
-                    tr,
                     value,
-                    oldState,
                     newState
                 );
 
-                // always return a "fresh" state with just the required items set
                 return {
                     ...meta,
                     linkTooltip: value.linkTooltip,
@@ -637,7 +610,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
 
                     // if the editor blurs, but NOT because of the tooltip, hide the tooltip
                     if (!view.hasFocus() && !linkTooltip.hasFocus(e)) {
-                        LINK_EDITOR_KEY.forceHide(
+                        LINK_EDITOR_KEY.forceHideTooltip(
                             view.state,
                             view.dispatch.bind(view)
                         );
@@ -652,3 +625,23 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
             return new LinkEditor(editorView, features.validateLink);
         },
     });
+
+// TODO DOCUMENT
+export function showLinkEditor(
+    view: EditorView,
+    url?: string,
+    text?: string
+): void {
+    LINK_EDITOR_KEY.showInterface(view, {
+        url,
+        text,
+    });
+}
+
+// TODO DOCUMENT
+export function hideLinkEditor(view: EditorView): void {
+    LINK_EDITOR_KEY.showInterface(view, {
+        url: null,
+        text: null,
+    });
+}

@@ -709,10 +709,6 @@ function imageUploaderPlaceholderPlugin(
             decorations(this: StatefulPlugin<ImageUploadState>, state) {
                 return this.getState(state).decorations;
             },
-            handleClick(view: EditorView) {
-                hideImageUploader(view);
-                return false;
-            },
             handleDrop(view: EditorView, event: DragEvent) {
                 const files = event.dataTransfer.files;
 
@@ -726,7 +722,6 @@ function imageUploaderPlaceholderPlugin(
 
                 return false;
             },
-
             handlePaste(view: EditorView, event: ClipboardEvent) {
                 const files = event.clipboardData.files;
 

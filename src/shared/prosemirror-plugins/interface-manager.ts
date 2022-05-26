@@ -229,7 +229,7 @@ export class ManagedInterfaceKey<
 /**
  * Main plugin for coordinating the use of the interface container for all interface-enabled plugins.
  * This plugin is *required* for any interface-enabled plugin to work. This plugin also adds a listener to hide the interface
- * if the ESC key is pressed.
+ * if the ESC key is pressed or if the text editor gains focus.
  * @param containerGetter The method for getting the container element for the interface; falls back to the editor view's DOM's parentElement if not provided
  */
 export function interfaceManagerPlugin(
@@ -262,6 +262,11 @@ export function interfaceManagerPlugin(
                 }
 
                 // don't stop the event from propagating
+                return false;
+            },
+            handleClick(view: EditorView) {
+                // if the editor is clicked, then hide the interface
+                MAIN_INTERFACE_MANAGER_KEY.hideCurrentInterface(view);
                 return false;
             },
         },
