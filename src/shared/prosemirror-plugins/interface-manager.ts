@@ -279,7 +279,7 @@ export abstract class PluginInterfaceView<
 > implements PluginView
 {
     protected key: TKey;
-    private isShown: boolean;
+    protected isShown: boolean;
 
     constructor(key: TKey) {
         this.key = key;

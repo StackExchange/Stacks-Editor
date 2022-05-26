@@ -3,23 +3,21 @@ import { Mark, Schema } from "prosemirror-model";
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { _t } from "../../shared/localization";
-import {
-    StatefulPlugin,
-    StatefulPluginKey,
-} from "../../shared/prosemirror-plugins/plugin-extensions";
+import { StatefulPlugin } from "../../shared/prosemirror-plugins/plugin-extensions";
 import { richTextSchema as schema } from "../schema";
-import {
-    dispatchEditorEvent,
-    escapeHTML,
-    generateRandomId,
-} from "../../shared/utils";
+import { escapeHTML, generateRandomId } from "../../shared/utils";
 import { CommonmarkParserFeatures, PluginView } from "../../shared/view";
+import {
+    ManagedInterfaceKey,
+    PluginInterfaceView,
+} from "../../shared/prosemirror-plugins/interface-manager";
 
-export class LinkEditor implements PluginView {
-    private pluginContainer: Element;
+export class LinkEditor extends PluginInterfaceView<
+    LinkEditorPluginState,
+    LinkEditorPluginKey
+> {
     private validateLink: CommonmarkParserFeatures["validateLink"];
     private viewContainer: Element;
-    private isVisible = false;
 
     private get hrefInput(): HTMLInputElement {
         return this.viewContainer.querySelector<HTMLInputElement>(
@@ -45,16 +43,16 @@ export class LinkEditor implements PluginView {
 
     constructor(
         view: EditorView,
-        pluginContainer: Element,
         validateLink: CommonmarkParserFeatures["validateLink"]
     ) {
-        this.pluginContainer = pluginContainer;
+        super(LINK_EDITOR_KEY);
+
         this.validateLink = validateLink;
 
         const randomId = generateRandomId();
         this.viewContainer = document.createElement("form");
         this.viewContainer.className =
-            "mt6 bt bb bc-black-400 d-none js-image-uploader";
+            "mt6 bt bb bc-black-400 js-image-uploader";
 
         this.viewContainer.innerHTML = escapeHTML`<div class="d-flex fd-column gsy gs8 p12">
             <div class="flex--item">
@@ -91,16 +89,14 @@ export class LinkEditor implements PluginView {
         this.viewContainer.addEventListener("reset", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            hideLinkEditor(view);
+            this.tryHideInterface(view);
         });
 
         this.hrefInput.addEventListener("input", (e) => {
             this.validate((e.target as HTMLInputElement).value);
         });
-
-        // add the view container to the menu area
-        this.pluginContainer.appendChild(this.viewContainer);
     }
+    protected key: LinkEditorPluginKey;
 
     validate(href: string): boolean {
         const valid = this.validateLink(href);
@@ -179,21 +175,10 @@ export class LinkEditor implements PluginView {
     }
 
     update(view: EditorView): void {
-        const state = LINK_EDITOR_KEY.getState(view.state);
-        let isVisible = state?.visible;
+        super.update(view);
 
-        if (typeof isVisible !== "boolean") {
-            isVisible = false;
-        }
-
-        // states already match, nothing to do
-        if (isVisible === this.isVisible) {
-            return;
-        }
-
-        this.isVisible = isVisible;
-
-        if (this.isVisible) {
+        if (this.isShown) {
+            const state = LINK_EDITOR_KEY.getState(view.state);
             if (state?.url) {
                 this.hrefInput.value = state.url;
                 this.validate(state.url);
@@ -203,17 +188,26 @@ export class LinkEditor implements PluginView {
                 this.textInput.value = state.text;
             }
 
-            this.viewContainer.classList.remove("d-none");
+            this.tryShowInterface(view);
             this.hrefInput.focus();
         } else {
             this.resetEditor();
-            this.viewContainer.classList.add("d-none");
+            this.tryHideInterface(view);
         }
     }
 
     destroy(): void {
         // this.uploadField.remove();
         this.viewContainer.remove();
+    }
+
+    buildInterface(container: Element): void {
+        // add the view container to the menu area
+        container.appendChild(this.viewContainer);
+    }
+
+    destroyInterface(container: Element): void {
+        container.removeChild(this.viewContainer);
     }
 }
 
@@ -230,12 +224,14 @@ type LinkTooltipState = {
     decorations: DecorationSet;
 };
 
+// TODO CLEANUP TYPES
+type LinkEditorPluginState = LinkTooltipState &
+    LinkEditorState & { shouldShow: boolean };
+
 /**
  * Custom PluginKey with additional methods for interacting with a LinkTooltip
  */
-class LinkEditorPluginKey extends StatefulPluginKey<
-    LinkTooltipState & LinkEditorState
-> {
+class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
     constructor() {
         super(LinkEditor.name);
     }
@@ -264,25 +260,10 @@ class LinkEditorPluginKey extends StatefulPluginKey<
 const LINK_EDITOR_KEY = new LinkEditorPluginKey();
 
 export function hideLinkEditor(view: EditorView): void {
-    const state = LINK_EDITOR_KEY.getState(view.state);
-
-    // already hidden, don't dispatch the event
-    if (!state || !state.visible) {
-        return;
-    }
-
-    const tr = view.state.tr;
-    LINK_EDITOR_KEY.setMeta(tr, {
-        forceHide: false,
-        decorations: state.decorations,
-        linkTooltip: state.linkTooltip,
-        visible: false,
-        // explicitly clear out data
+    LINK_EDITOR_KEY.showInterface(view, {
         url: null,
         text: null,
     });
-    const newState = view.state.apply(tr);
-    view.updateState(newState);
 }
 
 export function showLinkEditor(
@@ -290,32 +271,10 @@ export function showLinkEditor(
     url?: string,
     text?: string
 ): void {
-    const state = LINK_EDITOR_KEY.getState(view.state);
-
-    // already visible, don't dispatch the event
-    if (!state || state.visible) {
-        return;
-    }
-
-    // TODO find a way to add this event to StacksEditor TSDocs
-    // dispatch a browser event and return early if it is cancelled
-    if (!dispatchEditorEvent(view.dom, "link-editor-show", { url, text })) {
-        return;
-    }
-
-    const tr = view.state.tr;
-
-    LINK_EDITOR_KEY.setMeta(tr, {
-        decorations: state.decorations,
-        linkTooltip: state.linkTooltip,
-        visible: true,
-        forceHide: true,
-        // explicitly clear the data if none was passed
-        url: url || null,
-        text: text || null,
+    LINK_EDITOR_KEY.showInterface(view, {
+        url,
+        text,
     });
-    const newState = view.state.apply(tr);
-    view.updateState(newState);
 }
 
 class LinkTooltip {
@@ -627,11 +586,8 @@ class LinkTooltip {
  * Note: This is not a _NodeView_ because when dealing with links, we're dealing with
  * _marks_, not _nodes_.
  */
-export const linkEditorPlugin = (
-    containerFn: (view: EditorView) => Element,
-    features: CommonmarkParserFeatures
-) =>
-    new StatefulPlugin<LinkTooltipState & LinkEditorState>({
+export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
+    new StatefulPlugin<LinkEditorPluginState>({
         key: LINK_EDITOR_KEY,
         state: {
             init(_, instance) {
@@ -642,14 +598,10 @@ export const linkEditorPlugin = (
                         //features.validateLink
                     ),
                     decorations: DecorationSet.empty,
+                    shouldShow: false,
                 };
             },
-            apply(
-                tr,
-                value,
-                oldState,
-                newState
-            ): LinkTooltipState & LinkEditorState {
+            apply(tr, value, oldState, newState): LinkEditorPluginState {
                 // check if force hide was set and add to value for getDecorations to use
                 const meta = this.getMeta(tr) || value;
                 if ("forceHide" in meta) {
@@ -697,16 +649,6 @@ export const linkEditorPlugin = (
             },
         },
         view(editorView): PluginView {
-            // TODO centralize! done in menu.ts too
-            containerFn =
-                containerFn ||
-                function (view) {
-                    return view.dom.parentElement;
-                };
-            return new LinkEditor(
-                editorView,
-                containerFn(editorView),
-                features.validateLink
-            );
+            return new LinkEditor(editorView, features.validateLink);
         },
     });

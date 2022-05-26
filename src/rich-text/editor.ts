@@ -95,10 +95,7 @@ export class RichTextEditor extends BaseView {
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
-                        linkEditorPlugin(
-                            this.options.pluginParentContainer,
-                            this.options.parserFeatures
-                        ),
+                        linkEditorPlugin(this.options.parserFeatures),
                         richTextImageUpload(
                             this.options.imageUpload,
                             this.options.parserFeatures.validateLink

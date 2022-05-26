@@ -5,7 +5,7 @@ import { linkEditorPlugin } from "../../../src/rich-text/plugins/link-editor";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
 import { applySelection, createState, createView } from "../test-helpers";
 
-const tooltipPlugin = linkEditorPlugin(() => document.createElement("div"), {
+const tooltipPlugin = linkEditorPlugin({
     validateLink: stackOverflowValidateLink,
 });
 
