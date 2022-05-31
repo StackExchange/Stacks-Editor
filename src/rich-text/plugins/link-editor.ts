@@ -17,7 +17,8 @@ export class LinkEditor extends PluginInterfaceView<
     LinkEditorPluginKey
 > {
     private validateLink: CommonmarkParserFeatures["validateLink"];
-    private viewContainer: Element;
+    // TODO exposed for testing
+    viewContainer: Element;
 
     private get hrefInput(): HTMLInputElement {
         return this.viewContainer.querySelector<HTMLInputElement>(
@@ -51,8 +52,7 @@ export class LinkEditor extends PluginInterfaceView<
 
         const randomId = generateRandomId();
         this.viewContainer = document.createElement("form");
-        this.viewContainer.className =
-            "mt6 bt bb bc-black-400 js-image-uploader";
+        this.viewContainer.className = "mt6 bt bb bc-black-400 js-link-editor";
 
         this.viewContainer.innerHTML = escapeHTML`<div class="d-flex fd-column gsy gs8 p12">
             <div class="flex--item">
@@ -599,7 +599,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
         },
         props: {
             decorations(state: EditorState) {
-                return this.getState(state).decorations;
+                return this.getState(state).decorations || DecorationSet.empty;
             },
             handleDOMEvents: {
                 /** Handle editor blur and close the tooltip if it isn't focused */
@@ -640,7 +640,7 @@ export function showLinkEditor(
 
 // TODO DOCUMENT
 export function hideLinkEditor(view: EditorView): void {
-    LINK_EDITOR_KEY.showInterface(view, {
+    LINK_EDITOR_KEY.hideInterface(view, {
         url: null,
         text: null,
     });
