@@ -188,7 +188,12 @@ export class LinkEditor extends PluginInterfaceView<
                 this.textInput.value = state.text;
             }
 
-            this.tryShowInterface(view);
+            if (this.tryShowInterface(view)) {
+                LINK_EDITOR_KEY.forceHideTooltip(
+                    view.state,
+                    view.dispatch.bind(view)
+                );
+            }
             this.hrefInput.focus();
         } else {
             this.resetEditor();
@@ -592,6 +597,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
 
                 return {
                     ...meta,
+                    forceHideTooltip: value.forceHideTooltip,
                     linkTooltip: value.linkTooltip,
                     decorations: decorations,
                 };
