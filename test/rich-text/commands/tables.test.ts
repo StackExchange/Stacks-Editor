@@ -785,4 +785,10 @@ describe("table commands", () => {
             );
         });
     });
+
+    describe("command validity", () => {
+        it.todo("should show the table dropdown when inside a table");
+        it.todo("should show enable column commands when inside a table");
+        it.todo("should show only enable row commands in valid rows");
+    });
 });
