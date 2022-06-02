@@ -15,7 +15,7 @@ interface SnippetEditorState {
 }
 
 class StackSnippetsView implements NodeView {
-    dom?: HTMLElement | null;
+    dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
     state: SnippetEditorState;
 

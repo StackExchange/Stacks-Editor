@@ -1,4 +1,4 @@
-import { DOMParser, Node, Schema, Slice } from "prosemirror-model";
+import { DOMParser, Node, Slice } from "prosemirror-model";
 import {
     EditorState,
     Plugin,
@@ -54,7 +54,7 @@ export function createState(
 }
 
 /** Creates a bare editor view with only the passed state and nothing else */
-export function createView(state: EditorState<Schema>): EditorView<Schema> {
+export function createView(state: EditorState): EditorView {
     return new EditorView(document.createElement("div"), {
         state: state,
         plugins: [],
@@ -63,10 +63,10 @@ export function createView(state: EditorState<Schema>): EditorView<Schema> {
 
 /** Applies a text selection to the passed state based on the given from/to */
 export function applySelection(
-    state: EditorState<Schema>,
+    state: EditorState,
     from: number,
     to?: number
-): EditorState<Schema> {
+): EditorState {
     const tr = setSelection(state.tr, from, to);
     return state.apply(tr);
 }
@@ -88,7 +88,7 @@ export function setSelection(
 
 /** Applies a command to the state and expects it to apply correctly */
 export function runCommand(
-    state: EditorState<Schema>,
+    state: EditorState,
     command: MenuCommand,
     expectSuccess = true
 ) {

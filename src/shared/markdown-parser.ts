@@ -1,10 +1,6 @@
 import MarkdownIt from "markdown-it/lib";
 import Token from "markdown-it/lib/token";
-import {
-    defaultMarkdownParser,
-    MarkdownParser,
-    TokenConfig,
-} from "prosemirror-markdown";
+import { defaultMarkdownParser, MarkdownParser } from "prosemirror-markdown";
 import { NodeType, Schema } from "prosemirror-model";
 import { ExternalEditorPlugin } from "./external-editor-plugin";
 import { log } from "./logger";
@@ -18,121 +14,119 @@ import { tight_list } from "./markdown-it/tight-list";
 import type { CommonmarkParserFeatures } from "./view";
 
 // extend the default markdown parser's tokens and add our own
-const customMarkdownParserTokens: { [key: string]: TokenConfig } = {
+const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     ...defaultMarkdownParser.tokens,
-    ...{
-        pre: { block: "pre" },
-        kbd: { mark: "kbd" },
-        sup: { mark: "sup" },
-        sub: { mark: "sub" },
+    pre: { block: "pre" },
+    kbd: { mark: "kbd" },
+    sup: { mark: "sup" },
+    sub: { mark: "sub" },
 
-        html_inline: {
-            node: "html_inline",
-            getAttrs: (token) => ({
-                content: token.content,
-            }),
-        },
+    html_inline: {
+        node: "html_inline",
+        getAttrs: (token: Token) => ({
+            content: token.content,
+        }),
+    },
 
-        html_block: {
-            node: "html_block",
-            getAttrs: (token) => ({
-                content: token.content,
-            }),
-        },
-        html_block_container: {
-            block: "html_block_container",
-            getAttrs: (token) => ({
-                contentOpen: token.attrGet("contentOpen"),
-                contentClose: token.attrGet("contentClose"),
-            }),
-        },
+    html_block: {
+        node: "html_block",
+        getAttrs: (token: Token) => ({
+            content: token.content,
+        }),
+    },
+    html_block_container: {
+        block: "html_block_container",
+        getAttrs: (token: Token) => ({
+            contentOpen: token.attrGet("contentOpen"),
+            contentClose: token.attrGet("contentClose"),
+        }),
+    },
 
-        // don't map our intermediary "stack_language*_comment" tokens. These are stripped from the stream, so they shouldn't be coming back anyways
-        stack_language_comment: { ignore: true },
-        stack_language_all_comment: { ignore: true },
+    // don't map our intermediary "stack_language*_comment" tokens. These are stripped from the stream, so they shouldn't be coming back anyways
+    stack_language_comment: { ignore: true },
+    stack_language_all_comment: { ignore: true },
 
-        bullet_list: {
-            block: "bullet_list",
-            getAttrs: (tok) => ({
-                tight: tok.attrGet("tight") === "true",
-            }),
-        },
-        ordered_list: {
-            block: "ordered_list",
-            getAttrs: (tok) => ({
-                order: +tok.attrGet("start") || 1,
-                tight: tok.attrGet("tight") === "true",
-            }),
-        },
+    bullet_list: {
+        block: "bullet_list",
+        getAttrs: (tok: Token) => ({
+            tight: tok.attrGet("tight") === "true",
+        }),
+    },
+    ordered_list: {
+        block: "ordered_list",
+        getAttrs: (tok: Token) => ({
+            order: +tok.attrGet("start") || 1,
+            tight: tok.attrGet("tight") === "true",
+        }),
+    },
 
-        code_block: {
-            block: "code_block",
-            getAttrs: (tok) => ({ params: tok.info || "" }),
-        },
+    code_block: {
+        block: "code_block",
+        getAttrs: (tok: Token) => ({ params: tok.info || "" }),
+    },
 
-        // add support for the strike mark
-        s: {
-            mark: "strike",
-        },
+    // add support for the strike mark
+    s: {
+        mark: "strike",
+    },
 
-        table: {
-            block: "table",
-        },
+    table: {
+        block: "table",
+    },
 
-        thead: {
-            block: "table_head",
-        },
+    thead: {
+        block: "table_head",
+    },
 
-        tbody: {
-            block: "table_body",
-        },
+    tbody: {
+        block: "table_body",
+    },
 
-        th: {
-            block: "table_header",
-            getAttrs: (tok) => ({
-                style: tok.attrGet("style"),
-            }),
-        },
+    th: {
+        block: "table_header",
+        getAttrs: (tok: Token) => ({
+            style: tok.attrGet("style"),
+        }),
+    },
 
-        tr: {
-            block: "table_row",
-        },
+    tr: {
+        block: "table_row",
+    },
 
-        td: {
-            block: "table_cell",
-            getAttrs: (tok) => ({
-                style: tok.attrGet("style"),
-            }),
-        },
+    td: {
+        block: "table_cell",
+        getAttrs: (tok: Token) => ({
+            style: tok.attrGet("style"),
+        }),
+    },
 
-        // override the default image parser so we can add our own extended attributes
-        image: {
-            node: "image",
-            getAttrs: (tok) => ({
-                src: tok.attrGet("src"),
-                width: tok.attrGet("width"),
-                height: tok.attrGet("height"),
-                alt: tok.attrGet("alt") || tok.children?.[0]?.content || null,
-                title: tok.attrGet("title"),
-            }),
-        },
+    // override the default image parser so we can add our own extended attributes
+    image: {
+        node: "image",
+        getAttrs: (tok: Token) => ({
+            src: tok.attrGet("src"),
+            width: tok.attrGet("width"),
+            height: tok.attrGet("height"),
+            alt: tok.attrGet("alt") || tok.children?.[0]?.content || null,
+            title: tok.attrGet("title"),
+        }),
+    },
 
-        tag_link: {
-            block: "tagLink",
-            getAttrs: (tok) => ({
-                tagName: tok.attrGet("tagName"),
-                tagType: tok.attrGet("tagType"),
-            }),
-        },
+    tag_link: {
+        block: "tagLink",
+        getAttrs: (tok: Token) => ({
+            tagName: tok.attrGet("tagName"),
+            tagType: tok.attrGet("tagType"),
+        }),
+    },
 
-        spoiler: {
-            block: "spoiler",
-        },
+    spoiler: {
+        block: "spoiler",
+    },
 
-        // support <code>foo</code> which parses differently from `bar`
-        code_inline_split: {
-            mark: "code",
-        },
+    // support <code>foo</code> which parses differently from `bar`
+    code_inline_split: {
+        mark: "code",
     },
 };
 
@@ -149,8 +143,8 @@ Object.keys(customMarkdownParserTokens).forEach((k) => {
 
         // reference links require special handling
         if (k === "link") {
-            token.getAttrs = (tok) => {
-                const attrs = origGetAttrs(tok);
+            token.getAttrs = (tok: Token, stream, index) => {
+                const attrs = { ...origGetAttrs(tok, stream, index) };
                 attrs.markup = tok.markup;
 
                 if (tok.markup === "reference") {
@@ -164,8 +158,8 @@ Object.keys(customMarkdownParserTokens).forEach((k) => {
                 return attrs;
             };
         } else {
-            token.getAttrs = (tok) => {
-                const attrs = origGetAttrs(tok);
+            token.getAttrs = (tok: Token, stream, index) => {
+                const attrs = { ...origGetAttrs(tok, stream, index) };
                 attrs.markup = tok.markup;
                 return attrs;
             };
@@ -175,7 +169,7 @@ Object.keys(customMarkdownParserTokens).forEach((k) => {
     }
 
     // set a getAttrs function that returns the tag attribute
-    token.getAttrs = (tok) => ({
+    token.getAttrs = (tok: Token) => ({
         markup: tok.markup,
     });
 });
@@ -209,12 +203,12 @@ class SOMarkdownParser extends MarkdownParser {
     // TODO the types are wrong on this one...
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    tokens: { [key: string]: TokenConfig };
+    tokens: MarkdownParser["tokens"];
 
     constructor(
         schema: Schema,
         tokenizer: MarkdownIt,
-        tokens: { [key: string]: TokenConfig }
+        tokens: MarkdownParser["tokens"]
     ) {
         super(schema, tokenizer, tokens);
 
