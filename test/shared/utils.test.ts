@@ -6,6 +6,17 @@ import {
     getShortcut,
 } from "../../src/shared/utils";
 
+const setNavigatorProperty = (
+    property: string,
+    value: string,
+    configurable = true
+): void => {
+    Object.defineProperty(navigator, property, {
+        value,
+        configurable,
+    });
+};
+
 describe("utils", () => {
     describe("deepmerge", () => {
         it("should merge two objects", () => {
@@ -145,13 +156,30 @@ describe("utils", () => {
     });
 
     describe("getShortcut", () => {
-        it("should replace `Mod` with appropriate modifier key for current platform", () => {
+        it("should replace `Mod` with `Cmd` when platform contains `Mac`", () => {
+            // Set the platform to macOS
+            setNavigatorProperty("platform", "MacIntel");
+
+            const shortcut = getShortcut("Mod-z");
+            expect(shortcut).toBe("Cmd-z");
+            expect(navigator.platform).toBe("MacIntel");
+
+            // Reset the platform
+            setNavigatorProperty("platform", "");
+        });
+        it("should replace `Mod` with `Ctrl` when platform is not an Apple platform", () => {
+            // Set the platform to Windows
+            setNavigatorProperty("platform", "Win32");
+
             const shortcut = getShortcut("Mod-z");
             expect(shortcut).toBe("Ctrl-z");
+
+            // Reset the platform
+            setNavigatorProperty("platform", "");
         });
         it("should return unmodified string when `Mod` isn't passed", () => {
             const shortcut = getShortcut("Cmd-y");
-            expect(shortcut).toBe("Cmd-y");
+            expect(shortcut).toBe("Cmd-y" + navigator.platform);
         });
     });
 });
