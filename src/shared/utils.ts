@@ -218,14 +218,11 @@ export function escapeHTML(
  * @param mapping? Corresponding command mapping (keyboard shortcut)
  */
 export function getShortcut(mapping: string): string {
-    if (mapping.indexOf("Mod-") !== 0) {
+    if (!mapping.startsWith("Mod-")) {
         return mapping;
     }
 
-    return mapping.replace(
-        "Mod-",
-        /Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd-" : "Ctrl-"
-    );
+    return (/Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl") + mapping.slice(3);
 }
 
 /**
