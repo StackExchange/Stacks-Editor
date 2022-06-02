@@ -118,8 +118,7 @@ function getHeadingLevel(state: EditorState): number {
     let level = 0;
     state.doc.nodesBetween(from, to, (node) => {
         if (node.type.name === "heading") {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-            level = node.attrs.level;
+            level = node.attrs.level as number;
             return true;
         }
     });
