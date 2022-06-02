@@ -1,6 +1,6 @@
 import { Plugin } from "prosemirror-state";
 
-/** Plugin that selects only the current node on triple click */
+/** Plugin that restores browser default triple-click handling behavior */
 export function tripleClickHandler(): Plugin {
     return new Plugin<boolean>({
         props: {
