@@ -12,7 +12,7 @@ function updateSpoilers(
     tr: Transaction,
     state: EditorState,
     shouldReveal: boolean,
-    transactions?: Transaction[]
+    transactions?: ReadonlyArray<Transaction>
 ) {
     const { from, to } = state.selection;
     state.doc.nodesBetween(from, to, (node, pos) => {

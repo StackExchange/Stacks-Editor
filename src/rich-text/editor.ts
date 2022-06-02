@@ -138,6 +138,7 @@ export class RichTextEditor extends BaseView {
 
         log(
             "prosemirror rich-text document",
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this.editorView.state.doc.toJSON().content
         );
     }

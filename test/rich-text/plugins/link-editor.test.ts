@@ -1,6 +1,5 @@
-import { Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
-import { DecorationSet, EditorView } from "prosemirror-view";
+import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { insertLinkCommand } from "../../../src/rich-text/commands";
 import { linkTooltipPlugin } from "../../../src/rich-text/plugins/link-editor";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
@@ -10,7 +9,7 @@ const tooltipPlugin = linkTooltipPlugin({
     validateLink: stackOverflowValidateLink,
 });
 
-function getDecorations(state: EditorState<Schema>) {
+function getDecorations(state: EditorState) {
     const pState = state.plugins[0].getState(state) as {
         decorations: DecorationSet;
     };
@@ -22,7 +21,9 @@ function getRenderedDecoration(
     editorView?: EditorView
 ): HTMLElement {
     const decorations = getDecorations(state);
-    const decoration = decorations.find(state.selection.from)[0];
+    const decoration = decorations.find(
+        state.selection.from
+    )[0] as Decoration<unknown>;
     expect(decoration).toBeDefined();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

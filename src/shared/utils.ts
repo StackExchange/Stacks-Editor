@@ -1,6 +1,5 @@
 import { escapeHtml } from "markdown-it/lib/common/utils";
-import type { Command, Keymap } from "prosemirror-commands";
-import { EditorState } from "prosemirror-state";
+import { Command, EditorState } from "prosemirror-state";
 
 /**
  * Recursively deep merges two objects into a new object, leaving the original two untouched
@@ -258,7 +257,12 @@ export type PartialDeep<T> = { [key in keyof T]?: PartialDeep<T[key]> };
  * @param mapping The keymap string to bind
  * @param command The command to bind to all generated keymaps
  */
-export function bindLetterKeymap(mapping: string, command: Command): Keymap {
+export function bindLetterKeymap(
+    mapping: string,
+    command: Command
+): {
+    [key: string]: Command;
+} {
     const letter = mapping.split("-")[1]?.toLowerCase().trim();
 
     // not a single letter, so just return the mapping
