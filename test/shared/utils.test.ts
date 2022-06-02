@@ -173,6 +173,7 @@ describe("utils", () => {
 
             const shortcut = getShortcut("Mod-z");
             expect(shortcut).toBe("Ctrl-z");
+            expect(navigator.platform).toBe("Win32");
 
             // Reset the platform
             setNavigatorProperty("platform", "");
