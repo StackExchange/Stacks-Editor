@@ -84,20 +84,44 @@ export function toggleBlockType(
 ) {
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
         const nodeCheck = nodeTypeActive(nodeType, attrs);
-        const headingLevel = getHeadingLevel(state);
-        const shouldCycleHeading = nodeType.name === "heading" && !attrs?.level;
-        let updatedAttrs = attrs;
 
-        // if the node is set, toggle it off unless it's a heading with a level lower other than 6
-        if ((nodeCheck(state) && !shouldCycleHeading) || headingLevel === 6) {
+        // if the node is set, toggle it off
+        if (nodeCheck(state)) {
             return setToTextCommand(state, dispatch);
         }
 
-        // if the node is a heading, increment the level
-        if (shouldCycleHeading && !attrs?.level) {
-            updatedAttrs = { level: headingLevel + 1 };
+        const setBlockTypeCommand = setBlockType(nodeType, attrs);
+        return setBlockTypeCommand(state, (t) => {
+            if (dispatch) {
+                // when adding a block node, make sure the user can navigate past it
+                t = insertParagraphIfAtDocEnd(t);
+                dispatch(t);
+            }
+        });
+    };
+}
+
+/**
+ * Creates a command that toggles heading and cycles through heading levels
+ * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
+ */
+export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
+    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeType = schema.nodes.heading;
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
+        const headingLevel = getHeadingLevel(state);
+
+        // if the node is a heading and is either level 6 or matches the current level, toggle it off
+        if (
+            nodeCheck(state) &&
+            (headingLevel === 6 || headingLevel === attrs?.level)
+        ) {
+            return setToTextCommand(state, dispatch);
         }
 
+        const updatedAttrs = !attrs?.level
+            ? { ...attrs, level: headingLevel + 1 }
+            : attrs;
         const setBlockTypeCommand = setBlockType(nodeType, updatedAttrs);
         return setBlockTypeCommand(state, (t) => {
             if (dispatch) {
@@ -353,21 +377,21 @@ const headingDropdown = () =>
 
         dropdownItem(
             "Heading 1",
-            toggleBlockType(schema.nodes.heading, { level: 1 }),
+            toggleHeadingLevel({ level: 1 }),
             "h1-btn",
             nodeTypeActive(schema.nodes.heading, { level: 1 }),
             ["fs-body3", "mt8"]
         ),
         dropdownItem(
             "Heading 2",
-            toggleBlockType(schema.nodes.heading, { level: 2 }),
+            toggleHeadingLevel({ level: 2 }),
             "h2-btn",
             nodeTypeActive(schema.nodes.heading, { level: 2 }),
             ["fs-body2"]
         ),
         dropdownItem(
             "Heading 3",
-            toggleBlockType(schema.nodes.heading, { level: 3 }),
+            toggleHeadingLevel({ level: 3 }),
             "h3-btn",
             nodeTypeActive(schema.nodes.heading, { level: 3 }),
             ["fs-body1"]

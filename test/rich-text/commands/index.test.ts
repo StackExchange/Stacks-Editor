@@ -2,7 +2,7 @@ import { EditorState, Transaction } from "prosemirror-state";
 import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
-    toggleBlockType,
+    toggleHeadingLevel,
 } from "../../../src/rich-text/commands";
 import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
@@ -39,7 +39,7 @@ function executeTransaction(
 }
 
 describe("commands", () => {
-    describe("toggleBlockType", () => {
+    describe("toggleHeadingLevel", () => {
         it.todo("should insert a paragraph at the end of the doc");
         it.todo("should not insert a paragraph at the end of the doc");
 
@@ -53,7 +53,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading, { level: 1 })
+                toggleHeadingLevel({ level: 1 })
             );
 
             expect(isValid).toBeTruthy();
@@ -78,7 +78,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading, { level: 1 })
+                toggleHeadingLevel({ level: 1 })
             );
 
             expect(isValid).toBeTruthy();
@@ -111,7 +111,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading, { level: 2 })
+                toggleHeadingLevel({ level: 2 })
             );
 
             expect(isValid).toBeTruthy();
@@ -144,7 +144,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading)
+                toggleHeadingLevel()
             );
 
             expect(isValid).toBeTruthy();
@@ -176,7 +176,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading)
+                toggleHeadingLevel()
             );
 
             expect(isValid).toBeTruthy();
