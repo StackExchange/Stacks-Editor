@@ -222,7 +222,10 @@ export function getShortcut(mapping: string): string {
         return mapping;
     }
 
-    return (/Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl") + mapping.slice(3);
+    return (
+        (/Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl") +
+        mapping.slice(3)
+    );
 }
 
 /**
