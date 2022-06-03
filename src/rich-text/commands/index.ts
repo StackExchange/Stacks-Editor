@@ -94,8 +94,7 @@ export function toggleBlockType(
         return setBlockTypeCommand(state, (t) => {
             if (dispatch) {
                 // when adding a block node, make sure the user can navigate past it
-                t = insertParagraphIfAtDocEnd(t);
-                dispatch(t);
+                dispatch(insertParagraphIfAtDocEnd(t));
             }
         });
     };
@@ -126,8 +125,7 @@ export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
         return setBlockTypeCommand(state, (t) => {
             if (dispatch) {
                 // when adding a block node, make sure the user can navigate past it
-                t = insertParagraphIfAtDocEnd(t);
-                dispatch(t);
+                dispatch(insertParagraphIfAtDocEnd(t));
             }
         });
     };
