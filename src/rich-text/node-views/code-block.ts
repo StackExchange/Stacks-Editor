@@ -8,7 +8,7 @@ import { escapeHTML } from "../../shared/utils";
  * View with <code> wrapping/decorations for code_block nodes
  */
 export class CodeBlockView implements NodeView {
-    dom?: HTMLElement | null;
+    dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
     private language: string = null;

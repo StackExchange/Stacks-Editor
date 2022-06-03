@@ -1,5 +1,5 @@
 import type MarkdownIt from "markdown-it";
-import type { TokenConfig } from "prosemirror-markdown";
+import type { MarkdownParser } from "prosemirror-markdown";
 import type { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
 import { ContentMatch, NodeType } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
@@ -12,7 +12,7 @@ export interface ExternalEditorPlugin {
     menuEntries: MenuCommandEntry[];
     nodeViews: EditorProps["nodeViews"];
     markdownParser: {
-        tokens: { [key: string]: TokenConfig };
+        tokens: MarkdownParser["tokens"];
         plugins: MarkdownIt.PluginSimple[];
     };
     markdownSerializers: MarkdownSerializerNodes;
@@ -92,7 +92,9 @@ export function combineSchemas(
         // @ts-expect-error
         const nodeType = new NodeType(n, schema, pluginSchema.nodes[n]);
         setContentMatch(nodeType, schema);
-        schema.nodes[n] = nodeType as NodeType<Schema>;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error
+        schema.nodes[n] = nodeType;
     });
 
     Object.keys(schema.nodes).forEach((n) => {

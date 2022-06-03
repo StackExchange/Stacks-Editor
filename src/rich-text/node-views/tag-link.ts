@@ -5,7 +5,7 @@ import { TagLinkOptions } from "../../shared/view";
 
 // TODO instead of a NodeView, should we use marks and an editor like `link-tooltip`?
 export class TagLink implements NodeView {
-    dom?: HTMLElement | null;
+    dom: HTMLElement | null;
 
     constructor(node: ProsemirrorNode, options: TagLinkOptions) {
         this.dom = document.createElement("a");

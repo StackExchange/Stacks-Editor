@@ -202,7 +202,7 @@ function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
     const content = token.content;
     // checks if a token matches `<open>content</close>` OR `<br />`
     const matches =
-        /^(?:(<[a-z0-9]+.*?>)([^<>]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
+        /^(?:(<[a-z0-9]+.*?>)([^<>\n]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
             content
         );
 

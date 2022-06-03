@@ -43,6 +43,7 @@ import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
 import { richTextSchema } from "./schema";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -75,7 +76,7 @@ export class RichTextEditor extends BaseView {
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                node.classList.add(...this.options.classList);
+                node.classList.add(...(this.options.classList || []));
                 target.appendChild(node);
             },
             {
@@ -91,11 +92,13 @@ export class RichTextEditor extends BaseView {
                         CodeBlockHighlightPlugin(
                             this.options.codeblockOverrideLanguage
                         ),
+                        interfaceManagerPlugin(
+                            this.options.pluginParentContainer
+                        ),
                         linkTooltipPlugin(this.options.parserFeatures),
                         richTextImageUpload(
                             this.options.imageUpload,
-                            this.options.parserFeatures.validateLink,
-                            this.options.pluginParentContainer
+                            this.options.parserFeatures.validateLink
                         ),
                         readonlyPlugin(),
                         spoilerToggle,
@@ -135,6 +138,7 @@ export class RichTextEditor extends BaseView {
 
         log(
             "prosemirror rich-text document",
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this.editorView.state.doc.toJSON().content
         );
     }
