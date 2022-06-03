@@ -2,7 +2,7 @@ import { registerLocalizationStrings, _t } from "../../src/shared/localization";
 
 describe("localization", () => {
     it("should find nested entries", () => {
-        expect(_t("link_tooltip.apply_button_text")).toBe("Apply");
+        expect(_t("link_editor.link_editor")).toBe("Cancel");
     });
 
     it("should execute function values with params passed", () => {
@@ -27,6 +27,6 @@ describe("localization", () => {
         // overridden
         expect(_t("nodes.spoiler_reveal_text")).toBe("Раскрыть спойлер");
         // not overridden - falls back to default
-        expect(_t("link_tooltip.apply_button_text")).toBe("Apply");
+        expect(_t("link_editor.link_editor")).toBe("Cancel");
     });
 });
