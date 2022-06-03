@@ -9,17 +9,17 @@ describe("hardbreak-markup", () => {
             .find((t) => t.type === "inline")
             .children.find((t) => t.type === "hardbreak");
 
-    it("should detect double space hardbreaks", () => {
-        const markdown = `test\
+    it("should detect backslash hardbreaks", () => {
+        // NOTE: String.raw used here because we want that backslash as a literal character
+        const markdown = String.raw`test\
 test`;
         const rendered = instance.parse(markdown, {});
-        expect(hardbreak(rendered).attrGet("markup")).toBe("\\\n");
+        expect(hardbreak(rendered).markup).toBe("\\\n");
     });
 
-    it("should detect backslash hardbreaks", () => {
-        const markdown = `test  
-test`;
+    it("should detect double space hardbreaks", () => {
+        const markdown = `test  \ntest`;
         const rendered = instance.parse(markdown, {});
-        expect(hardbreak(rendered).attrGet("markup")).toBe("  \n");
+        expect(hardbreak(rendered).markup).toBe("  \n");
     });
 });
