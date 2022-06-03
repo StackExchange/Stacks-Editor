@@ -1,4 +1,3 @@
-import { Schema } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { RichTextEditor } from "../../../src/rich-text/editor";
@@ -28,10 +27,8 @@ function getDecorations(state: EditorState) {
     return pState.decorations;
 }
 
-function getRenderedDecoration(
-    state: EditorState,
-    editorView?: EditorView
-): HTMLElement {
+function getRenderedDecoration(editorView: EditorView): HTMLElement {
+    const state = editorView.state;
     const decorations = getDecorations(state);
     const decoration = decorations.find(
         state.selection.from
@@ -48,7 +45,7 @@ function getRenderedDecoration(
         view: EditorView
     ) => HTMLElement;
 
-    const view = editorView || createView(state);
+    const view = editorView;
 
     return renderer(view);
 }
@@ -106,13 +103,92 @@ describe("link-editor", () => {
             expect(editor.viewContainer.parentElement).toBeNull();
         });
 
-        it.todo("should show error when failing required fields validation");
+        it("should show error when failing link validation", () => {
+            expect(editor.viewContainer.parentElement).toBeNull();
 
-        it.todo("should show error when failing link validation");
+            showLinkEditor(view.editorView);
+            editor.update(view.editorView);
+            const updatedUploadContainer =
+                pluginContainer.querySelector<HTMLFormElement>(
+                    "form.js-link-editor"
+                );
 
-        it.todo("should hide error when hiding editor");
+            // submit the form without filling in any inputs
+            updatedUploadContainer.submit();
 
-        it.todo("should prefill fields when a link is edited");
+            const inputContainer = updatedUploadContainer.querySelector(
+                ".js-link-editor-href"
+            ).parentElement;
+
+            expect(inputContainer.classList).toContain("has-error");
+        });
+
+        it("should hide error when hiding editor", () => {
+            expect(editor.viewContainer.parentElement).toBeNull();
+
+            showLinkEditor(view.editorView);
+            editor.update(view.editorView);
+            const updatedUploadContainer =
+                pluginContainer.querySelector<HTMLFormElement>(
+                    "form.js-link-editor"
+                );
+
+            // submit the form without filling in any inputs
+            updatedUploadContainer.submit();
+
+            let inputContainer = updatedUploadContainer.querySelector(
+                ".js-link-editor-href"
+            ).parentElement;
+
+            expect(inputContainer.classList).toContain("has-error");
+
+            hideLinkEditor(view.editorView);
+            editor.update(view.editorView);
+
+            showLinkEditor(view.editorView);
+            editor.update(view.editorView);
+
+            inputContainer = pluginContainer.querySelector(
+                ".js-link-editor-href"
+            ).parentElement;
+
+            expect(inputContainer.classList).not.toContain("has-error");
+        });
+
+        it("should prefill fields when a link is edited via the tooltip", async () => {
+            view = richTextView(
+                "[link text](https://www.example.com)",
+                () => pluginContainer
+            );
+
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 1)
+            );
+
+            await onViewDispatch(view.editorView, () => {
+                const updatedUploadContainer =
+                    pluginContainer.querySelector<HTMLFormElement>(
+                        "form.js-link-editor"
+                    );
+
+                expect(formValue(updatedUploadContainer, "href")).toBe(
+                    "https://www.example.com"
+                );
+                expect(formValue(updatedUploadContainer, "text")).toBe(
+                    "link text"
+                );
+            });
+
+            // simulate clicking the button
+            const renderedDeco = getRenderedDecoration(view.editorView);
+            renderedDeco
+                .querySelector<HTMLButtonElement>(".js-link-tooltip-edit")
+                .click();
+        });
+
+        it.todo(
+            "should prefill fields when a link is edited via the menu command"
+        );
 
         it.todo("should show insert new links on save");
 
@@ -121,6 +197,10 @@ describe("link-editor", () => {
         it.todo(
             "should use the url as the link text when the text is not provided"
         );
+
+        it.todo("should hide the tooltip when opened");
+        it.todo("should show the tooltip when closed");
+        it.todo("should manipulate the cursor position on save");
     });
 
     // TODO existing tests, rewrite to use helpers used above?
@@ -172,7 +252,7 @@ describe("link-editor", () => {
             expect(decorations).not.toEqual(DecorationSet.empty);
         });
 
-        it("should edit on button click", () => {
+        it("should edit on button click", async () => {
             const pluginContainer = document.createElement("div");
             const state = applySelection(
                 createState(
@@ -190,19 +270,19 @@ describe("link-editor", () => {
             expect(pluginContainer.parentElement).toBeNull();
 
             // intercept the dispatch
-            onViewDispatch(view, () => {
+            await onViewDispatch(view, () => {
                 // this should open the editor interface
                 const updatedUploadContainer =
                     view.dom.querySelector(".js-link-editor");
                 expect(updatedUploadContainer).toBeTruthy();
 
                 // the decoration should be hidden now
-                renderedDeco = getRenderedDecoration(view.state);
+                renderedDeco = getRenderedDecoration(view);
                 expect(renderedDeco).toBe(DecorationSet.empty);
             });
 
             // simulate clicking the button
-            let renderedDeco = getRenderedDecoration(view.state);
+            let renderedDeco = getRenderedDecoration(view);
             renderedDeco
                 .querySelector<HTMLButtonElement>(".js-link-tooltip-edit")
                 .click();
@@ -218,19 +298,19 @@ describe("link-editor", () => {
                         linkEditorPlugin({}),
                     ]
                 ),
-                5
+                6
             );
+
             // we have to create a view so that the decorations are rendered
             const view = createView(state);
 
-            expect(pluginContainer.parentElement).toBeNull();
+            const promise = onViewDispatch(view, (newView, tr) => {
+                if (tr) {
+                    return false;
+                }
 
-            // intercept the dispatch
-            onViewDispatch(view, () => {
-                // this should open the editor interface
-
-                const currentNode = view.state.doc.nodeAt(
-                    view.state.selection.from
+                const currentNode = newView.state.doc.nodeAt(
+                    newView.state.selection.from
                 );
 
                 expect(currentNode.isText).toBe(true);
@@ -238,15 +318,21 @@ describe("link-editor", () => {
                 expect(currentNode.marks).toHaveLength(0);
 
                 // the decoration should be hidden now
-                renderedDeco = getRenderedDecoration(view.state);
+                renderedDeco = getRenderedDecoration(newView);
 
                 expect(renderedDeco).toBe(DecorationSet.empty);
+
+                return true;
             });
 
-            let renderedDeco = getRenderedDecoration(view.state);
+            expect(pluginContainer.parentElement).toBeNull();
+
+            let renderedDeco = getRenderedDecoration(view);
             renderedDeco
                 .querySelector<HTMLButtonElement>(".js-link-tooltip-remove")
-                .click();
+                .dispatchEvent(new Event("mousedown"));
+
+            return promise;
         });
     });
 });
@@ -261,16 +347,28 @@ function richTextView(
     });
 }
 
-function onViewDispatch(view: EditorView, callback: (tr: Transaction) => void) {
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const oldDispatch = view.dispatch;
-    const spy = jest.fn(function (...args) {
-        callback(args[0]);
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return oldDispatch.apply(view, args);
+// TODO DOCUMENT
+function onViewDispatch(
+    view: EditorView,
+    callback: (newView: EditorView, tr: Transaction) => boolean
+) {
+    return new Promise<void>((resolve, reject) => {
+        view.setProps({
+            dispatchTransaction(this: EditorView, tr) {
+                try {
+                    const newState = this.state.apply(tr);
+                    this.updateState(newState);
+                    if (callback(this, tr)) {
+                        resolve();
+                    }
+                } catch (e) {
+                    reject(e);
+                }
+            },
+        });
     });
-    view.dispatch = spy;
+}
 
-    return spy;
+function formValue(form: HTMLFormElement, name: string) {
+    return (form[name] as HTMLInputElement).value;
 }
