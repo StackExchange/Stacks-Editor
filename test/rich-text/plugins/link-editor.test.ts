@@ -1,6 +1,6 @@
 import { Schema } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
-import { DecorationSet, EditorView } from "prosemirror-view";
+import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import {
     hideLinkEditor,
@@ -17,7 +17,7 @@ const editorPlugin = linkEditorPlugin({
     validateLink: stackOverflowValidateLink,
 });
 
-function getDecorations(state: EditorState<Schema>) {
+function getDecorations(state: EditorState) {
     const pState = state.plugins
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error this isn't a public field, but I don't care
@@ -33,7 +33,9 @@ function getRenderedDecoration(
     editorView?: EditorView
 ): HTMLElement {
     const decorations = getDecorations(state);
-    const decoration = decorations.find(state.selection.from)[0];
+    const decoration = decorations.find(
+        state.selection.from
+    )[0] as Decoration<unknown>;
     expect(decoration).toBeDefined();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment

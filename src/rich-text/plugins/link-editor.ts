@@ -1,5 +1,5 @@
 import { toggleMark } from "prosemirror-commands";
-import { Mark, Schema } from "prosemirror-model";
+import { Mark } from "prosemirror-model";
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { _t } from "../../shared/localization";
@@ -282,7 +282,7 @@ class LinkTooltip {
         return this.content.querySelector("a");
     }
 
-    constructor(state: EditorState<Schema>) {
+    constructor(state: EditorState) {
         const popoverId = "link-tooltip-popover" + generateRandomId();
         this.content = document.createElement("span");
         this.content.className = "w0";
@@ -419,7 +419,7 @@ class LinkTooltip {
                 // cancel all events coming from inside this widget
                 stopEvent: () => true,
             }
-        );
+        ) as Decoration<unknown>;
 
         return DecorationSet.create(newState.doc, [decoration]);
     }
@@ -467,7 +467,7 @@ class LinkTooltip {
      * Gets the positions immediately before and after a link mark in the current selection
      * @param state
      */
-    private linkAround(state: EditorState<Schema>) {
+    private linkAround(state: EditorState) {
         const $pos = state.selection.$from;
         const start = $pos.parent.childAfter($pos.parentOffset);
         if (!start.node) {
@@ -604,7 +604,10 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
             },
         },
         props: {
-            decorations(state: EditorState) {
+            decorations(
+                this: StatefulPlugin<LinkEditorPluginState>,
+                state: EditorState
+            ) {
                 return this.getState(state).decorations || DecorationSet.empty;
             },
             handleDOMEvents: {
