@@ -28,9 +28,16 @@ import {
     moveSelectionAfterTableCommand,
     insertTableCommand,
     exitInclusiveMarkCommand,
+    indentSelectedLinesCommand,
+    deindentSelectedLinesCommand,
 } from "./commands";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
+    const codeBlockKeymap = keymap({
+        "Tab": indentSelectedLinesCommand,
+        "Shift-Tab": deindentSelectedLinesCommand,
+    });
+
     const tableKeymap = keymap({
         ...bindLetterKeymap("Mod-e", insertTableCommand),
         "Mod-Enter": moveSelectionAfterTableCommand,
@@ -71,7 +78,7 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         "ArrowDown": exitCode,
     });
 
-    const keymaps = [richTextKeymap, keymap(baseKeymap)];
+    const keymaps = [richTextKeymap, keymap(baseKeymap), codeBlockKeymap];
 
     if (parserFeatures.tables) {
         keymaps.unshift(tableKeymap);

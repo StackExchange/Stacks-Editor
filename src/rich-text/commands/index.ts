@@ -101,6 +101,102 @@ export function toggleBlockType(
     };
 }
 
+function getCodeBlockLinesWithinSelection(state: EditorState): number[] {
+    const { from, to } = state.selection;
+    const lineStartIndentPos: number[] = [];
+
+    state.doc.nodesBetween(from, to, (node, pos) => {
+        if (node.type.name === "code_block") {
+            let lineStartPos = pos + 1;
+            let lineEndPos;
+
+            node.textContent.split("\n").map((line) => {
+                lineEndPos = lineStartPos + line.length;
+                // Selection overlaps with line
+                const selectionIsWithinLine =
+                    // Selection is contained entirely within line
+                    (from >= lineStartPos && to <= lineEndPos) ||
+                    // Line is contained entirely within selection
+                    (lineStartPos >= from && lineEndPos <= to) ||
+                    // Selection start is within line
+                    (from >= lineStartPos && from <= lineEndPos) ||
+                    // Selection end is within line
+                    (to >= lineStartPos && to <= lineEndPos);
+
+                if (selectionIsWithinLine) {
+                    lineStartIndentPos.push(lineStartPos);
+                }
+
+                lineStartPos = lineEndPos + 1;
+            });
+        }
+    });
+
+    return lineStartIndentPos;
+}
+
+export function indentSelectedLinesCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+): boolean {
+    const linesToIndent = getCodeBlockLinesWithinSelection(state);
+    const lineCount = linesToIndent.length;
+    let t = state.tr;
+
+    if (lineCount > 0) {
+        const { from, to } = state.selection;
+
+        linesToIndent.reverse().forEach((pos) => {
+            t = t.insertText("\t", pos);
+        });
+
+        t.setSelection(
+            TextSelection.create(
+                state.apply(t).doc,
+                from + lineCount,
+                to + lineCount
+            )
+        );
+    }
+
+    dispatch(t);
+    return true;
+}
+
+export function deindentSelectedLinesCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+): boolean {
+    const linesToIndent = getCodeBlockLinesWithinSelection(state);
+    const lineCount = linesToIndent.length;
+    let t = state.tr;
+
+    if (lineCount > 0) {
+        const { from, to } = state.selection;
+        let deindentedLinesCount = 0;
+
+        linesToIndent.reverse().forEach((pos) => {
+            const canDeindent = state.doc.textBetween(pos, pos + 1) === "\t";
+
+            if (canDeindent) {
+                t = t.insertText("", pos, pos + 1);
+                deindentedLinesCount++;
+            }
+        });
+
+        t.setSelection(
+            TextSelection.create(
+                state.apply(t).doc,
+                from - deindentedLinesCount,
+                to - deindentedLinesCount
+            )
+        );
+    }
+
+    dispatch(t);
+    return true;
+}
+
 export function insertHorizontalRuleCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
