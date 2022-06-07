@@ -135,7 +135,10 @@ function getCodeBlockLinesWithinSelection(state: EditorState): number[] {
     return lineStartIndentPos;
 }
 
-export function indentSelectedLinesCommand(
+/**
+ * Indents selected line(s) within a code block
+ */
+export function indentCodeBlockLinesCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
@@ -163,7 +166,10 @@ export function indentSelectedLinesCommand(
     return true;
 }
 
-export function deindentSelectedLinesCommand(
+/**
+ * De-indents selected line(s) within a code block, if indented
+ */
+export function deindentCodeBlockLinesCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {

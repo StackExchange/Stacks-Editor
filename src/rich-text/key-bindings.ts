@@ -28,14 +28,14 @@ import {
     moveSelectionAfterTableCommand,
     insertTableCommand,
     exitInclusiveMarkCommand,
-    indentSelectedLinesCommand,
-    deindentSelectedLinesCommand,
+    indentCodeBlockLinesCommand,
+    deindentCodeBlockLinesCommand,
 } from "./commands";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
     const codeBlockKeymap = keymap({
-        "Tab": indentSelectedLinesCommand,
-        "Shift-Tab": deindentSelectedLinesCommand,
+        "Tab": indentCodeBlockLinesCommand,
+        "Shift-Tab": deindentCodeBlockLinesCommand,
     });
 
     const tableKeymap = keymap({
