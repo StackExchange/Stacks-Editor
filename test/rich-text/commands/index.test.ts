@@ -3,6 +3,8 @@ import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
     toggleBlockType,
+    indentCodeBlockLinesCommand,
+    deindentCodeBlockLinesCommand,
 } from "../../../src/rich-text/commands";
 import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
@@ -376,6 +378,38 @@ describe("commands", () => {
                 state = applySelection(state, from);
                 expect(exitInclusiveMarkCommand(state, null)).toBe(true);
             }
+        );
+    });
+    describe("indentCodeBlockLinesCommand", () => {
+        it.todo(
+            "should indent code block line with empty selection at start of line"
+        );
+        it.todo(
+            "should indent code block line with empty selection at end of line"
+        );
+        it.todo("should indent code block line when entire line is selected");
+        it.todo(
+            "should indent code block lines when multiple lines are selected"
+        );
+        it.todo(
+            "shouldn't indent code block lines when selection is outside of the code block"
+        );
+    });
+    describe("deindentCodeBlockLinesCommand", () => {
+        it.todo(
+            "should deindent indented code block line with empty selection at start of line"
+        );
+        it.todo(
+            "should deindent indented code block line with empty selection at end of line"
+        );
+        it.todo(
+            "should deindent indented code block line when entire line is selected"
+        );
+        it.todo(
+            "should deindent indented code block lines when multiple lines are selected"
+        );
+        it.todo(
+            "shouldn't deindent indented code block lines when selection is outside of the code block"
         );
     });
 });
