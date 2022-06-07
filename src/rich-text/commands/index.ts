@@ -146,6 +146,7 @@ export function indentCodeBlockLinesCommand(
     const lineCount = linesToIndent.length;
     let t = state.tr;
 
+    console.log(t.doc);
     if (lineCount > 0) {
         const { from, to } = state.selection;
 
