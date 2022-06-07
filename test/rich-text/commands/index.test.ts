@@ -585,20 +585,205 @@ describe("commands", () => {
         });
     });
     describe("deindentCodeBlockLinesCommand", () => {
-        it.todo(
-            "should deindent indented code block line with empty selection at start of line"
-        );
-        it.todo(
-            "should deindent indented code block line with empty selection at end of line"
-        );
-        it.todo(
-            "should deindent indented code block line when entire line is selected"
-        );
-        it.todo(
-            "should deindent indented code block lines when multiple lines are selected"
-        );
-        it.todo(
-            "shouldn't deindent indented code block lines when selection is outside of the code block"
-        );
+        it("should deindent indented code block line with empty selection at start of line", () => {
+            const state = applySelection(
+                createState(indentionBaseState, []),
+                10, // start of second line of code block
+                10 // start of second line of code block
+            );
+
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("code_block");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                deindentCodeBlockLinesCommand
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "asdf",
+                            },
+                        ],
+                    },
+                    {
+                        "type.name": "code_block",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "in0\nin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+        it("should deindent indented code block line with empty selection at end of line", () => {
+            const state = applySelection(
+                createState(indentionBaseState, []),
+                14, // end of second line of code block
+                14 // end of second line of code block
+            );
+
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("code_block");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                deindentCodeBlockLinesCommand
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "asdf",
+                            },
+                        ],
+                    },
+                    {
+                        "type.name": "code_block",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "in0\nin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+        it("should deindent indented code block line when entire line is selected", () => {
+            const state = applySelection(
+                createState(indentionBaseState, []),
+                10, // end of second line of code block
+                14 // end of second line of code block
+            );
+
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("code_block");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                deindentCodeBlockLinesCommand
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "asdf",
+                            },
+                        ],
+                    },
+                    {
+                        "type.name": "code_block",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "in0\nin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+        it("should deindent indented code block lines when multiple lines are selected", () => {
+            const state = applySelection(
+                createState(indentionBaseState, []),
+                6, // start of first line of code block
+                18 // middle of third line of code block
+            );
+
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("code_block");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                deindentCodeBlockLinesCommand
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "asdf",
+                            },
+                        ],
+                    },
+                    {
+                        "type.name": "code_block",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "in0\nin1\n\tin2\n\t\tin3\n\n\tin1\nin0",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+        it("shouldn't deindent indented code block lines when selection is outside of the code block", () => {
+            const state = applySelection(
+                createState(indentionBaseState, []),
+                0, // start of paragraph
+                3 // end of paragraph
+            );
+
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("paragraph");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                deindentCodeBlockLinesCommand
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "asdf",
+                            },
+                        ],
+                    },
+                    {
+                        "type.name": "code_block",
+                        "childCount": 1,
+                        "content": [
+                            {
+                                text: "in0\n\tin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
     });
 });
