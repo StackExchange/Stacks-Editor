@@ -21,7 +21,9 @@ describe("placeholder plugin", () => {
         it("should add placeholder when the editor is empty", () => {
             const view = commonmarkView("", "Enter your question…");
             const hasPlaceholder =
-                view.editorView.dom.hasAttribute("data-placeholder");
+                view.editorView.dom.firstElementChild.hasAttribute(
+                    "data-placeholder"
+                );
 
             expect(hasPlaceholder).toBe(true);
         });
@@ -29,7 +31,9 @@ describe("placeholder plugin", () => {
         it("should not add placeholder when the editor is populated", () => {
             const view = commonmarkView("# Hello", "Enter your question…");
             const hasPlaceholder =
-                view.editorView.dom.hasAttribute("data-placeholder");
+                view.editorView.dom.firstElementChild.hasAttribute(
+                    "data-placeholder"
+                );
 
             expect(hasPlaceholder).toBe(false);
         });
@@ -38,25 +42,31 @@ describe("placeholder plugin", () => {
     describe("rich-text", () => {
         it("should add placeholder when the editor is empty", () => {
             const view = richView("", "Enter your question…");
+            const hasPlaceholder =
+                view.editorView.dom.firstElementChild.hasAttribute(
+                    "data-placeholder"
+                );
 
-            expect(view.editorView.dom.hasAttribute("data-placeholder")).toBe(
-                true
-            );
+            expect(hasPlaceholder).toBe(true);
         });
 
         it("should not add placeholder when the editor is populated", () => {
             const view = richView("# Hello", "Enter your question…");
+            const hasPlaceholder =
+                view.editorView.dom.firstElementChild.hasAttribute(
+                    "data-placeholder"
+                );
 
-            expect(view.editorView.dom.hasAttribute("data-placeholder")).toBe(
-                false
-            );
+            expect(hasPlaceholder).toBe(false);
         });
         it("should include the placeholder when the editor contains an empty heading", () => {
             const view = richView("# ", "Enter your question…");
+            const hasPlaceholder =
+                view.editorView.dom.firstElementChild.hasAttribute(
+                    "data-placeholder"
+                );
 
-            expect(view.editorView.dom.hasAttribute("data-placeholder")).toBe(
-                true
-            );
+            expect(hasPlaceholder).toBe(true);
         });
     });
 });
