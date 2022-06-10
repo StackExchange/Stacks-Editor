@@ -7,6 +7,7 @@ const config: PlaywrightTestConfig = {
     testMatch: "*.e2e.test.ts",
     forbidOnly: !!process.env.CI,
     retries: process.env.CI ? 2 : 0,
+    timeout: 120000, // Default is 30000. The webkit tests are slowwwww.
 
     webServer: {
         command: "npm start -- --port 8081 --no-open",
