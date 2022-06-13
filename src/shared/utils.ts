@@ -212,6 +212,21 @@ export function escapeHTML(
 }
 
 /**
+ * Returns a string containing the label and readable keyboard shortcut for button tooltips
+ * @param mapping Corresponding command mapping (keyboard shortcut)
+ */
+export function getShortcut(mapping: string): string {
+    if (!mapping.startsWith("Mod-")) {
+        return mapping;
+    }
+
+    return (
+        (/Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl") +
+        mapping.slice(3)
+    );
+}
+
+/**
  * Prefixes an event name to scope it to the editor
  * e.g. `view-change` becomes `StacksEditor:view-change`
  * @param eventName The event name to prefix
