@@ -1,5 +1,5 @@
 import { EditorState } from "prosemirror-state";
-import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
+import { DecorationSet, EditorView } from "prosemirror-view";
 import { insertLinkCommand } from "../../../src/rich-text/commands";
 import { linkTooltipPlugin } from "../../../src/rich-text/plugins/link-editor";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
@@ -21,9 +21,7 @@ function getRenderedDecoration(
     editorView?: EditorView
 ): HTMLElement {
     const decorations = getDecorations(state);
-    const decoration = decorations.find(
-        state.selection.from
-    )[0] as Decoration<unknown>;
+    const decoration = decorations.find(state.selection.from)[0];
     expect(decoration).toBeDefined();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
