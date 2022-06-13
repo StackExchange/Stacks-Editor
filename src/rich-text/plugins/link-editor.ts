@@ -223,7 +223,7 @@ class LinkTooltip {
                 // cancel all events coming from inside this widget
                 stopEvent: () => true,
             }
-        ) as Decoration<unknown>;
+        );
 
         return DecorationSet.create(newState.doc, [decoration]);
     }
