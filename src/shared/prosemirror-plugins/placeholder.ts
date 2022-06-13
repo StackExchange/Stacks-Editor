@@ -8,7 +8,7 @@ function showPlaceholder(content: Node) {
     const allowPlaceholder =
         name === "paragraph" ||
         name === "heading" ||
-        firstChild.attrs.params === "markdown";
+        (firstChild.attrs.params === "markdown" && !firstChild.attrs.markup);
     // TODO check for image upload placeholder
     return (
         !content.textContent && allowPlaceholder && firstChild.childCount === 0
