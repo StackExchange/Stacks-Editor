@@ -101,6 +101,10 @@ export function toggleBlockType(
     };
 }
 
+/**
+ * Gets the start position of all lines inside code_block nodes in the current selection
+ * @param state The current EditorState
+ */
 function getCodeBlockLinesWithinSelection(state: EditorState): number[] {
     const { from, to } = state.selection;
     const lineStartIndentPos: number[] = [];
@@ -144,11 +148,12 @@ export function indentCodeBlockLinesCommand(
 ): boolean {
     const linesToIndent = getCodeBlockLinesWithinSelection(state);
     const lineCount = linesToIndent.length;
-    let t = state.tr;
 
-    if (lineCount > 0) {
+    if (lineCount > 0 && dispatch) {
+        let t = state.tr;
         const { from, to } = state.selection;
 
+        // indent each line in reverse order so that we don't alter the lines' start positions
         linesToIndent.reverse().forEach((pos) => {
             t = t.insertText("\t", pos);
         });
@@ -160,10 +165,11 @@ export function indentCodeBlockLinesCommand(
                 to + lineCount
             )
         );
+
+        dispatch(t);
     }
 
-    dispatch(t);
-    return true;
+    return lineCount > 0;
 }
 
 /**
@@ -175,9 +181,9 @@ export function deindentCodeBlockLinesCommand(
 ): boolean {
     const linesToIndent = getCodeBlockLinesWithinSelection(state);
     const lineCount = linesToIndent.length;
-    let t = state.tr;
 
-    if (lineCount > 0) {
+    if (lineCount > 0 && dispatch) {
+        let t = state.tr;
         const { from, to } = state.selection;
         let deindentedLinesCount = 0;
 
@@ -197,10 +203,11 @@ export function deindentCodeBlockLinesCommand(
                 to - deindentedLinesCount
             )
         );
+
+        dispatch(t);
     }
 
-    dispatch(t);
-    return true;
+    return lineCount > 0;
 }
 
 export function insertHorizontalRuleCommand(
