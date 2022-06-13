@@ -34,7 +34,9 @@ module.exports = {
             // enable a subset of jest rules in e2e test files, since the syntax is similar-ish
             files: ["**/*.e2e.test.ts"],
             extends: ["plugin:jest/recommended"],
-            rules: {},
+            rules: {
+                "jest/no-standalone-expect": "off",
+            },
         },
     ],
 };
