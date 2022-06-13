@@ -214,8 +214,7 @@ export function escapeHTML(
 
 /**
  * Returns a string containing the label and readable keyboard shortcut for button tooltips
- * @param label The type to toggle to
- * @param mapping? Corresponding command mapping (keyboard shortcut)
+ * @param mapping Corresponding command mapping (keyboard shortcut)
  */
 export function getShortcut(mapping: string): string {
     if (!mapping.startsWith("Mod-")) {
