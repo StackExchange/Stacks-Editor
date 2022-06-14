@@ -193,7 +193,7 @@ function setBlockType(
  * Returns any block formatting characters (plus trailing space) at the very start of the passed text
  * @param text The text to check for leading block characters
  */
-function matchLeadingBlockCharacters(text: string) {
+export function matchLeadingBlockCharacters(text: string) {
     // TODO this might be too aggressive... remove based on a whitelist instead?
     // TODO HACK assumes all block types are non-letter characters followed by a single space
     // Match ordered lists prefixes
