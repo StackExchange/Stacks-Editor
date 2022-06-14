@@ -196,7 +196,15 @@ function setBlockType(
 function matchLeadingBlockCharacters(text: string) {
     // TODO this might be too aggressive... remove based on a whitelist instead?
     // TODO HACK assumes all block types are non-letter characters followed by a single space
-    return /^[^a-zA-Z]+\s{1}(?=[a-zA-Z_*[!]|$)/.exec(text)?.[0] || "";
+    // Match ordered lists prefixes
+    let match = /^(\d+)\.\s/.exec(text)?.[0];
+
+    // If text is not an ordered list block, check for other block types
+    if (!match) {
+        match = /^[^a-zA-Z0-9]+\s{1}(?=[a-zA-Z0-9_*[!]|$)+/.exec(text)?.[0];
+    }
+
+    return match || "";
 }
 
 /**
