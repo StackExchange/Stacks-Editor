@@ -1,0 +1,20 @@
+{% layout "layout.html" %} {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+
+<textarea id="content" class="d-none">
+Here's a plugin that adds mermaid graph support
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+
+^ Look at that sweet graph!
+</textarea>
+
+<h1>Plugin Playground</h1>
+<div id="example-1" class="js-plugins-enabled"></div>
+{% endblock %}

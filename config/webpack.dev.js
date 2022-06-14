@@ -66,6 +66,9 @@ module.exports = (env, argv) => {
                     },
                 },
             },
+            performance: {
+                hints: false,
+            },
         }),
         merge(common(env, argv), {
             target: "webworker",

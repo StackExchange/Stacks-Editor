@@ -4,15 +4,15 @@ import {
     MarkdownSerializerState,
 } from "prosemirror-markdown";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
-import { error } from "../shared/logger";
-import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
+import { error } from "./logger";
+import { ExternalEditorPlugin } from "./external-editor-plugin";
 import {
     selfClosingElements,
     supportedTagAttributes,
     TagType,
-} from "../shared/html-helpers";
+} from "./html-helpers";
 import { normalizeReference } from "markdown-it/lib/common/utils";
-import { richTextSchema } from "./schema";
+import { richTextSchema } from "../rich-text/schema";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<

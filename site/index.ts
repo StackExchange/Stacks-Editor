@@ -4,6 +4,7 @@ import type { StacksEditor, StacksEditorOptions } from "../src";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
+import { samplePlugin } from "./sample-plugin";
 import "./site.less";
 
 function domReady(callback: (e: Event) => void) {
@@ -151,6 +152,7 @@ domReady(() => {
     const content = document.querySelector<HTMLTextAreaElement>("#content");
     const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
+    const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -207,6 +209,7 @@ domReady(() => {
             },
             imageUpload: imageUploadOptions,
             externalPlugins: [StackSnippetsPlugin],
+            TODO_plugins2: enableSamplePlugin ? [samplePlugin] : [],
         };
 
         const editorInstance = new StacksEditor(place, content.value, options);

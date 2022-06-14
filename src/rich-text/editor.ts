@@ -30,7 +30,7 @@ import {
 import { createMenu } from "./commands";
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
-import { stackOverflowMarkdownSerializer } from "./markdown-serializer";
+import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
@@ -44,6 +44,7 @@ import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
 import { richTextSchema } from "./schema";
 import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
+import { ApiProvider } from "../shared/editor-plugin";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -58,10 +59,16 @@ export class RichTextEditor extends BaseView {
     private options: RichTextOptions;
     private markdownSerializer: MarkdownSerializer;
     private externalPlugins: ExternalEditorPlugin;
+    private apiProvider: ApiProvider; // TODO
 
     constructor(target: Node, content: string, options: RichTextOptions = {}) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
+
+        this.apiProvider = new ApiProvider(
+            this.options.TODO_plugins2,
+            this.options
+        );
 
         this.externalPlugins = collapseExternalPlugins(
             this.options.externalPlugins
@@ -111,8 +118,13 @@ export class RichTextEditor extends BaseView {
                     ],
                 }),
                 nodeViews: {
-                    code_block(node: ProseMirrorNode) {
-                        return new CodeBlockView(node);
+                    code_block: (node, view, getPos) => {
+                        return new CodeBlockView(
+                            node,
+                            view,
+                            getPos,
+                            this.apiProvider.codeblockProcessors
+                        );
                     },
                     image(
                         node: ProseMirrorNode,
