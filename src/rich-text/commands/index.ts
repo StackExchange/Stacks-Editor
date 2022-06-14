@@ -153,6 +153,9 @@ export function indentCodeBlockLinesCommand(
         let t = state.tr;
         const { from, to } = state.selection;
 
+        const fromIsCodeBlock =
+            state.selection.$from.node().type.name === "code_block";
+
         // indent each line in reverse order so that we don't alter the lines' start positions
         linesToIndent.reverse().forEach((pos) => {
             t = t.insertText("\t", pos);
@@ -161,7 +164,7 @@ export function indentCodeBlockLinesCommand(
         t.setSelection(
             TextSelection.create(
                 state.apply(t).doc,
-                from + lineCount,
+                fromIsCodeBlock ? from + 1 : from,
                 to + lineCount
             )
         );
@@ -186,6 +189,8 @@ export function deindentCodeBlockLinesCommand(
         let t = state.tr;
         const { from, to } = state.selection;
         let deindentedLinesCount = 0;
+        const fromIsCodeBlock =
+            state.selection.$from.node().type.name === "code_block";
 
         linesToIndent.reverse().forEach((pos) => {
             const canDeindent = state.doc.textBetween(pos, pos + 1) === "\t";
@@ -199,7 +204,7 @@ export function deindentCodeBlockLinesCommand(
         t.setSelection(
             TextSelection.create(
                 state.apply(t).doc,
-                from - deindentedLinesCount,
+                fromIsCodeBlock && deindentedLinesCount ? from - 1 : from,
                 to - deindentedLinesCount
             )
         );
