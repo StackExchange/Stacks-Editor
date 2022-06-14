@@ -120,7 +120,7 @@ describe("rich text editor view", () => {
             const richEditorView = richView(markdown);
 
             const preElement = richEditorView.dom.querySelector("pre");
-            const expectedCodeHtml = `<code class="content-dom">console.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
+            const expectedCodeHtml = `<code class="content-dom"><span class="hljs-built_in">console</span>.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
             expect(preElement.innerHTML).toEqual(normalize(expectedCodeHtml));
         });
     });

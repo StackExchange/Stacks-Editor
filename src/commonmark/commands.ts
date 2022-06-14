@@ -18,6 +18,7 @@ import {
     showImageUploader,
 } from "../shared/prosemirror-plugins/image-upload";
 import type { CommonViewOptions } from "../shared/view";
+import { getShortcut } from "../shared/utils";
 import { Schema } from "prosemirror-model";
 import { undo, redo } from "prosemirror-history";
 
@@ -712,22 +713,38 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "toggleHeading",
                 command: headerCommand,
-                dom: makeMenuIcon("Header", "Heading", "heading-btn"),
+                dom: makeMenuIcon(
+                    "Header",
+                    `Heading (${getShortcut("Mod-h")})`,
+                    "heading-btn"
+                ),
             },
             {
                 key: "togglBold",
                 command: boldCommand,
-                dom: makeMenuIcon("Bold", "Bold", "bold-btn"),
+                dom: makeMenuIcon(
+                    "Bold",
+                    `Bold (${getShortcut("Mod-b")})`,
+                    "bold-btn"
+                ),
             },
             {
                 key: "toggleEmphasis",
                 command: emphasisCommand,
-                dom: makeMenuIcon("Italic", "Italic", "italic-btn"),
+                dom: makeMenuIcon(
+                    "Italic",
+                    `Italic (${getShortcut("Mod-i")})`,
+                    "italic-btn"
+                ),
             },
             {
                 key: "toggleCode",
                 command: inlineCodeCommand,
-                dom: makeMenuIcon("Code", "Inline code", "code-btn"),
+                dom: makeMenuIcon(
+                    "Code",
+                    `Inline Code (${getShortcut("Mod-k")})`,
+                    "code-btn"
+                ),
             },
             addIf(
                 {
@@ -745,19 +762,27 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "toggleLink",
                 command: insertLinkCommand,
-                dom: makeMenuIcon("Link", "Insert link", "insert-link-btn"),
+                dom: makeMenuIcon(
+                    "Link",
+                    `Link (${getShortcut("Mod-l")})`,
+                    "insert-link-btn"
+                ),
             },
             {
                 key: "toggleBlockquote",
                 command: blockquoteCommand,
-                dom: makeMenuIcon("Quote", "Blockquote", "blockquote-btn"),
+                dom: makeMenuIcon(
+                    "Quote",
+                    `Blockquote (${getShortcut("Ctrl-q")})`,
+                    "blockquote-btn"
+                ),
             },
             {
                 key: "insertCodeblock",
                 command: insertCodeblockCommand,
                 dom: makeMenuIcon(
                     "Codeblock",
-                    "Insert code block",
+                    `Code block (${getShortcut("Mod-m")})`,
                     "code-block-btn"
                 ),
             },
@@ -767,7 +792,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                     command: insertImageCommand,
                     dom: makeMenuIcon(
                         "Image",
-                        "Insert image",
+                        `Image (${getShortcut("Mod-g")})`,
                         "insert-image-btn"
                     ),
                 },
@@ -779,7 +804,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                     command: insertTableCommand,
                     dom: makeMenuIcon(
                         "Table",
-                        "Insert table",
+                        `Table (${getShortcut("Mod-e")})`,
                         "insert-table-btn"
                     ),
                 },
@@ -791,7 +816,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: orderedListCommand,
                 dom: makeMenuIcon(
                     "OrderedList",
-                    "Numbered list",
+                    `Numbered list (${getShortcut("Mod-o")})`,
                     "numbered-list-btn"
                 ),
             },
@@ -800,7 +825,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: unorderedListCommand,
                 dom: makeMenuIcon(
                     "UnorderedList",
-                    "Bulleted list",
+                    `Bulleted list (${getShortcut("Mod-u")})`,
                     "bullet-list-btn"
                 ),
             },
@@ -809,7 +834,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: insertHorizontalRuleCommand,
                 dom: makeMenuIcon(
                     "HorizontalRule",
-                    "Insert Horizontal rule",
+                    `Horizontal rule (${getShortcut("Mod-r")})`,
                     "horizontal-rule-btn"
                 ),
             },
