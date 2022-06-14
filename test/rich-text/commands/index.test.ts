@@ -558,7 +558,7 @@ describe("commands", () => {
                 indentCodeBlockLinesCommand
             );
 
-            expect(isValid).toBeTruthy();
+            expect(isValid).toBeFalsy();
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -760,7 +760,7 @@ describe("commands", () => {
                 deindentCodeBlockLinesCommand
             );
 
-            expect(isValid).toBeTruthy();
+            expect(isValid).toBeFalsy();
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
