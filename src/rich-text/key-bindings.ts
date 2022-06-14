@@ -36,6 +36,8 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
     const codeBlockKeymap = keymap({
         "Tab": indentCodeBlockLinesCommand,
         "Shift-Tab": deindentCodeBlockLinesCommand,
+        "Mod-]": indentCodeBlockLinesCommand,
+        "Mod-[": deindentCodeBlockLinesCommand,
     });
 
     const tableKeymap = keymap({
