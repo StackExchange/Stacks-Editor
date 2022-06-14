@@ -1,15 +1,22 @@
 import MarkdownIt from "markdown-it";
-import type OrderedMap from "orderedmap";
+import OrderedMap from "orderedmap";
 import { InputRule } from "prosemirror-inputrules";
 import { MarkdownParser, MarkdownSerializerState } from "prosemirror-markdown";
-import type { MarkSpec, Node, NodeSpec, SchemaSpec } from "prosemirror-model";
+import type {
+    MarkSpec,
+    Node,
+    NodeSpec,
+    Schema,
+    SchemaSpec,
+} from "prosemirror-model";
 import type { EditorState, Plugin } from "prosemirror-state";
 import { EditorProps } from "prosemirror-view";
-import { MarkdownSerializerNodes } from "./markdown-serializer";
+import {
+    MarkdownSerializerMarks,
+    MarkdownSerializerNodes,
+} from "./markdown-serializer";
 import { MenuCommand } from "./menu";
 import { View } from "./view";
-
-type TokenConfig = MarkdownParser["tokens"];
 
 export interface PluginSchemaSpec extends SchemaSpec {
     nodes: OrderedMap<NodeSpec>;
@@ -65,7 +72,7 @@ export interface EditorPlugin1<TOptions = unknown> {
     markdown?: {
         configureMarkdownIt?: (instance: MarkdownIt) => void;
         parser?: (options: TOptions) => {
-            tokens: { [key: string]: TokenConfig };
+            tokens: MarkdownParser["tokens"];
         };
         serializers?: (options: TOptions) => MarkdownSerializerNodes;
     };
@@ -87,8 +94,11 @@ type AddCodeBlockProcessorCallback = (
 type AlterSchemaCallback = (schema: PluginSchemaSpec) => PluginSchemaSpec;
 type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
 type MarkdownExtensionProps = {
-    parser: { tokens: { [key: string]: TokenConfig } };
-    serializers: MarkdownSerializerNodes;
+    parser: MarkdownParser["tokens"];
+    serializers: {
+        nodes: MarkdownSerializerNodes;
+        marks: MarkdownSerializerMarks;
+    };
 };
 
 export type EditorPlugin2<TOptions = unknown> = (
@@ -114,15 +124,29 @@ export interface EditorPluginApi {
     //TODO addHelpEntry(): void;
 }
 
-export class ApiProvider {
-    codeblockProcessors: {
+export class ExternalPluginProvider {
+    readonly codeblockProcessors: {
         [key: string]: (
             content: string,
             container: Element
         ) => void | Promise<void>;
     } = {};
 
+    readonly plugins = {
+        richText: [] as Plugin[],
+        commonmark: [] as Plugin[],
+    };
+
+    readonly markdownProps: MarkdownExtensionProps = {
+        parser: {},
+        serializers: {
+            nodes: {},
+            marks: {},
+        },
+    };
+
     private schemaCallbacks: AlterSchemaCallback[] = [];
+    private markdownItCallbacks: AlterMarkdownItCallback[] = [];
 
     constructor(plugins: EditorPlugin2[], opts: unknown) {
         if (plugins?.length) {
@@ -132,25 +156,68 @@ export class ApiProvider {
         }
     }
 
+    // TODO TYPES
+    getFinalizedSchema(schema: SchemaSpec): PluginSchemaSpec {
+        let alteredSchema: PluginSchemaSpec = {
+            nodes: OrderedMap.from(schema.nodes),
+            marks: OrderedMap.from(schema.marks),
+        };
+
+        for (const callback of this.schemaCallbacks) {
+            alteredSchema = callback(alteredSchema);
+        }
+
+        return alteredSchema;
+    }
+
+    alterMarkdownIt(instance: MarkdownIt): void {
+        for (const callback of this.markdownItCallbacks) {
+            callback(instance);
+        }
+    }
+
     private api() {
         return {
             addMenuBlock: (block: MenuBlock): void => {
                 throw new Error("Method not implemented.");
             },
 
-            addCommonmarkPlugin: (plugin: Plugin<any>): void => {
-                throw new Error("Method not implemented.");
+            addCommonmarkPlugin: (plugin: Plugin): void => {
+                this.plugins.commonmark.push(plugin);
             },
 
-            addRichTextPlugin: (plugin: Plugin<any>): void => {
-                throw new Error("Method not implemented.");
+            addRichTextPlugin: (plugin: Plugin): void => {
+                this.plugins.richText.push(plugin);
             },
 
             extendMarkdown: (
                 props: MarkdownExtensionProps,
                 callback: AlterMarkdownItCallback
             ): void => {
-                throw new Error("Method not implemented.");
+                if (props.parser) {
+                    this.markdownProps.parser = {
+                        ...this.markdownProps.parser,
+                        ...props.parser,
+                    };
+                }
+
+                if (props.serializers.nodes) {
+                    this.markdownProps.serializers.nodes = {
+                        ...this.markdownProps.serializers.nodes,
+                        ...props.serializers.nodes,
+                    };
+                }
+
+                if (props.serializers.marks) {
+                    this.markdownProps.serializers.marks = {
+                        ...this.markdownProps.serializers.marks,
+                        ...props.serializers.marks,
+                    };
+                }
+
+                if (callback) {
+                    this.markdownItCallbacks.push(callback);
+                }
             },
 
             extendSchema: (callback: AlterSchemaCallback): void => {

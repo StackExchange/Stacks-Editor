@@ -1,8 +1,29 @@
 {% layout "layout.html" %} {% block content %}
-<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script
+    async
+    src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"
+></script>
+<style>
+    .jse-furigana {
+        position: relative;
+        overflow: visible;
+        font-size: 0;
+    }
+
+    .jse-furigana::before {
+        content: attr(data-text);
+        white-space: nowrap;
+        font-size: var(--fs-fine);
+        position: absolute;
+        transform: translate(-75%, -75%);
+        color: var(--red-500);
+        user-select: none;
+        pointer-events: none;
+    }
+</style>
 
 <textarea id="content" class="d-none">
-Here's a plugin that adds mermaid graph support
+Here's a plugin that adds mermaid graph support:
 
 ```mermaid
 graph TD;
@@ -13,6 +34,12 @@ graph TD;
 ```
 
 ^ Look at that sweet graph!
+
+---
+
+And here's a plugin that (sorta) adds [Japanese.SE furigana support](https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807):
+
+`感``{かん}じる` renders as 感{かん}じる. すごい!
 </textarea>
 
 <h1>Plugin Playground</h1>

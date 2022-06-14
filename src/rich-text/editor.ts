@@ -1,6 +1,6 @@
 import { history } from "prosemirror-history";
 import { MarkdownSerializer } from "prosemirror-markdown";
-import { Node as ProseMirrorNode } from "prosemirror-model";
+import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
@@ -42,9 +42,9 @@ import { linkTooltipPlugin } from "./plugins/link-editor";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
-import { richTextSchema } from "./schema";
+import { richTextSchema, richTextSchemaSpec } from "./schema";
 import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
-import { ApiProvider } from "../shared/editor-plugin";
+import { ExternalPluginProvider } from "../shared/editor-plugin";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -58,24 +58,24 @@ export interface RichTextOptions extends CommonViewOptions {
 export class RichTextEditor extends BaseView {
     private options: RichTextOptions;
     private markdownSerializer: MarkdownSerializer;
-    private externalPlugins: ExternalEditorPlugin;
-    private apiProvider: ApiProvider; // TODO
+    //private externalPlugins: ExternalEditorPlugin;
+    private externalPluginProvider: ExternalPluginProvider; // TODO
 
     constructor(target: Node, content: string, options: RichTextOptions = {}) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
 
-        this.apiProvider = new ApiProvider(
+        this.externalPluginProvider = new ExternalPluginProvider(
             this.options.TODO_plugins2,
             this.options
         );
 
-        this.externalPlugins = collapseExternalPlugins(
-            this.options.externalPlugins
-        );
+        // this.externalPlugins = collapseExternalPlugins(
+        //     this.options.externalPlugins
+        // );
 
         this.markdownSerializer = stackOverflowMarkdownSerializer(
-            this.externalPlugins
+            this.externalPluginProvider
         );
 
         const doc = this.parseContent(content);
@@ -112,7 +112,7 @@ export class RichTextEditor extends BaseView {
                         tables,
                         codePasteHandler,
                         linkPasteHandler(this.options.parserFeatures),
-                        ...this.externalPlugins.plugins,
+                        ...this.externalPluginProvider.plugins.richText,
                         // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers
                         plainTextPasteHandler,
                     ],
@@ -123,7 +123,7 @@ export class RichTextEditor extends BaseView {
                             node,
                             view,
                             getPos,
-                            this.apiProvider.codeblockProcessors
+                            this.externalPluginProvider.codeblockProcessors
                         );
                     },
                     image(
@@ -142,7 +142,7 @@ export class RichTextEditor extends BaseView {
                     html_block_container: function (node: ProseMirrorNode) {
                         return new HtmlBlockContainer(node);
                     },
-                    ...this.externalPlugins.nodeViews,
+                    //...this.externalPlugins.nodeViews,
                 },
                 plugins: [],
             }
@@ -170,15 +170,14 @@ export class RichTextEditor extends BaseView {
     }
 
     parseContent(content: string): ProseMirrorNode {
-        const alteredSchema = combineSchemas(
-            richTextSchema,
-            this.externalPlugins?.schema
+        const alteredSchema = new Schema(
+            this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
         );
 
         const markdownParser = buildMarkdownParser(
             this.options.parserFeatures,
             alteredSchema,
-            this.externalPlugins
+            this.externalPluginProvider
         );
 
         let doc: ProseMirrorNode;

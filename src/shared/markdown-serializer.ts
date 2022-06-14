@@ -5,7 +5,6 @@ import {
 } from "prosemirror-markdown";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
 import { error } from "./logger";
-import { ExternalEditorPlugin } from "./external-editor-plugin";
 import {
     selfClosingElements,
     supportedTagAttributes,
@@ -13,13 +12,14 @@ import {
 } from "./html-helpers";
 import { normalizeReference } from "markdown-it/lib/common/utils";
 import { richTextSchema } from "../rich-text/schema";
+import { ExternalPluginProvider } from "./editor-plugin";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<
     typeof MarkdownSerializer
 >[0];
 
-type MarkdownSerializerMarks = ConstructorParameters<
+export type MarkdownSerializerMarks = ConstructorParameters<
     typeof MarkdownSerializer
 >[1];
 
@@ -629,13 +629,15 @@ const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
 
 // export our custom serializer using the extended nodes/marks taken from the default schema
 export const stackOverflowMarkdownSerializer = (
-    externalPlugin: ExternalEditorPlugin
+    externalPlugin: ExternalPluginProvider
 ): MarkdownSerializer =>
     new SOMarkdownSerializer(
         {
             ...defaultMarkdownSerializerNodes,
             ...customMarkdownSerializerNodes,
-            ...externalPlugin.markdownSerializers,
         },
-        customMarkdownSerializerMarks
+        {
+            ...customMarkdownSerializerMarks,
+            ...externalPlugin.markdownProps.serializers.marks,
+        }
     );

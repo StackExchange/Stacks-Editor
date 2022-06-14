@@ -89,7 +89,7 @@ export class CodeBlockView implements NodeView {
         view: EditorView,
         getPos: getPosParam
     ) {
-        if (!(rawLanguage in this.additionalProcessors)) {
+        if (!this.getProcessor(rawLanguage)) {
             return false;
         }
 
@@ -138,7 +138,8 @@ export class CodeBlockView implements NodeView {
     }
 
     private updateProcessor(rawLanguage: string, node: ProsemirrorNode) {
-        if (!(rawLanguage in this.additionalProcessors)) {
+        const processor = this.getProcessor(rawLanguage);
+        if (!processor) {
             return false;
         }
 
@@ -153,10 +154,7 @@ export class CodeBlockView implements NodeView {
         renderContainer.classList.toggle("d-none", isEditing);
 
         if (!isEditing) {
-            const resp = this.additionalProcessors[rawLanguage](
-                node.textContent,
-                renderContainer
-            );
+            const resp = processor(node.textContent, renderContainer);
 
             if (resp instanceof Promise) {
                 resp.catch((err) => {
@@ -167,5 +165,15 @@ export class CodeBlockView implements NodeView {
         }
 
         return true;
+    }
+
+    private getProcessor(rawLanguage: string) {
+        if (rawLanguage in this.additionalProcessors) {
+            return this.additionalProcessors[rawLanguage];
+        } else if ("*" in this.additionalProcessors) {
+            return this.additionalProcessors["*"];
+        }
+
+        return null;
     }
 }
