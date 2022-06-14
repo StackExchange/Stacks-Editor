@@ -4,7 +4,7 @@ import type { StacksEditor, StacksEditorOptions } from "../src";
 import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
-import { samplePlugin } from "./sample-plugin";
+import { samplePlugins } from "./sample-plugins";
 import "./site.less";
 
 function domReady(callback: (e: Event) => void) {
@@ -209,7 +209,7 @@ domReady(() => {
             },
             imageUpload: imageUploadOptions,
             externalPlugins: [StackSnippetsPlugin],
-            TODO_plugins2: enableSamplePlugin ? [samplePlugin] : [],
+            TODO_plugins2: enableSamplePlugin ? samplePlugins : [],
         };
 
         const editorInstance = new StacksEditor(place, content.value, options);

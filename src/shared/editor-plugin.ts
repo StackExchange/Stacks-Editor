@@ -80,6 +80,17 @@ export interface EditorPlugin1<TOptions = unknown> {
     //postProcess?: <T>(editor: AggregatedEditorPlugin<T>) => void;
 }
 
+type AddCodeBlockProcessorCallback = (
+    content: string,
+    container: Element
+) => void | Promise<void>;
+type AlterSchemaCallback = (schema: PluginSchemaSpec) => PluginSchemaSpec;
+type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
+type MarkdownExtensionProps = {
+    parser: { tokens: { [key: string]: TokenConfig } };
+    serializers: MarkdownSerializerNodes;
+};
+
 export type EditorPlugin2<TOptions = unknown> = (
     this: void,
     api: EditorPluginApi,
@@ -91,23 +102,19 @@ export interface EditorPluginApi {
     addCommonmarkPlugin(plugin: Plugin): void;
     addRichTextPlugin(plugin: Plugin): void;
     extendMarkdown(
-        callback: (instance: MarkdownIt) => {
-            parser: { tokens: { [key: string]: TokenConfig } };
-            serializers: MarkdownSerializerNodes;
-        }
+        props: MarkdownExtensionProps,
+        callback: AlterMarkdownItCallback
     ): void;
-    extendSchema(
-        callback: (schema: PluginSchemaSpec) => PluginSchemaSpec
-    ): void;
+    extendSchema(callback: AlterSchemaCallback): void;
     addCodeBlockProcessor(
         lang: "*" | string,
-        callback: (content: string, container: Element) => void | Promise<void>
+        callback: AddCodeBlockProcessorCallback
     ): void;
 
     //TODO addHelpEntry(): void;
 }
 
-export class ApiProvider implements EditorPluginApi {
+export class ApiProvider {
     codeblockProcessors: {
         [key: string]: (
             content: string,
@@ -115,49 +122,54 @@ export class ApiProvider implements EditorPluginApi {
         ) => void | Promise<void>;
     } = {};
 
+    private schemaCallbacks: AlterSchemaCallback[] = [];
+
     constructor(plugins: EditorPlugin2[], opts: unknown) {
         if (plugins?.length) {
             for (const plugin of plugins) {
-                plugin(this, opts);
+                plugin(this.api(), opts);
             }
         }
     }
 
-    addMenuBlock(block: MenuBlock): void {
-        throw new Error("Method not implemented.");
-    }
-    addCommonmarkPlugin(plugin: Plugin<any>): void {
-        throw new Error("Method not implemented.");
-    }
-    addRichTextPlugin(plugin: Plugin<any>): void {
-        throw new Error("Method not implemented.");
-    }
-    extendMarkdown(
-        callback: (instance: MarkdownIt) => {
-            parser: {
-                tokens: { tokens: { [key: string]: TokenConfig } };
-            };
-            serializers: MarkdownSerializerNodes;
-        }
-    ): void {
-        throw new Error("Method not implemented.");
-    }
-    extendSchema(
-        callback: (schema: PluginSchemaSpec) => PluginSchemaSpec
-    ): void {
-        throw new Error("Method not implemented.");
-    }
-    addCodeBlockProcessor(
-        lang: string,
-        callback: (content: string, container: Element) => void | Promise<void>
-    ): void {
-        if (lang in this.codeblockProcessors) {
-            // TODO too harsh?
-            throw new Error(
-                `Codeblock processor for language ${lang} already exists`
-            );
-        }
+    private api() {
+        return {
+            addMenuBlock: (block: MenuBlock): void => {
+                throw new Error("Method not implemented.");
+            },
 
-        this.codeblockProcessors[lang] = callback;
+            addCommonmarkPlugin: (plugin: Plugin<any>): void => {
+                throw new Error("Method not implemented.");
+            },
+
+            addRichTextPlugin: (plugin: Plugin<any>): void => {
+                throw new Error("Method not implemented.");
+            },
+
+            extendMarkdown: (
+                props: MarkdownExtensionProps,
+                callback: AlterMarkdownItCallback
+            ): void => {
+                throw new Error("Method not implemented.");
+            },
+
+            extendSchema: (callback: AlterSchemaCallback): void => {
+                this.schemaCallbacks.push(callback);
+            },
+
+            addCodeBlockProcessor: (
+                lang: string,
+                callback: AddCodeBlockProcessorCallback
+            ): void => {
+                if (lang in this.codeblockProcessors) {
+                    // TODO too harsh?
+                    throw new Error(
+                        `Codeblock processor for language ${lang} already exists`
+                    );
+                }
+
+                this.codeblockProcessors[lang] = callback;
+            },
+        };
     }
 }

@@ -8,7 +8,7 @@ declare global {
     }
 }
 
-export const samplePlugin: EditorPlugin2 = (api, options) => {
+const mermaidPlugin: EditorPlugin2 = (api) => {
     api.addCodeBlockProcessor("mermaid", (content, container) => {
         return new Promise<void>((resolve) => {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
@@ -21,3 +21,5 @@ export const samplePlugin: EditorPlugin2 = (api, options) => {
         });
     });
 };
+
+export const samplePlugins = [mermaidPlugin];
