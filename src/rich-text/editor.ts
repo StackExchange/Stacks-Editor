@@ -4,11 +4,6 @@ import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
-import {
-    collapseExternalPlugins,
-    combineSchemas,
-    ExternalEditorPlugin,
-} from "../shared/external-editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { error, log } from "../shared/logger";
 import { buildMarkdownParser } from "../shared/markdown-parser";
@@ -26,8 +21,9 @@ import {
     BaseView,
     CommonViewOptions,
     defaultParserFeatures,
+    EditorType,
 } from "../shared/view";
-import { createMenu } from "./commands";
+import { createMenuEntries } from "./commands";
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
 import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
@@ -42,9 +38,10 @@ import { linkTooltipPlugin } from "./plugins/link-editor";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
-import { richTextSchema, richTextSchemaSpec } from "./schema";
+import { richTextSchemaSpec } from "./schema";
 import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
 import { ExternalPluginProvider } from "../shared/editor-plugin";
+import { createMenuPlugin } from "../shared/menu";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -78,6 +75,16 @@ export class RichTextEditor extends BaseView {
             this.externalPluginProvider
         );
 
+        const menuEntries = this.externalPluginProvider.getFinalizedMenu(
+            createMenuEntries(this.options),
+            EditorType.RichText
+        );
+
+        const menu = createMenuPlugin(
+            menuEntries,
+            this.options.menuParentContainer
+        );
+
         const doc = this.parseContent(content);
 
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
@@ -93,7 +100,7 @@ export class RichTextEditor extends BaseView {
                     plugins: [
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
-                        createMenu(this.options),
+                        menu,
                         richTextInputRules(this.options.parserFeatures),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
                         CodeBlockHighlightPlugin(

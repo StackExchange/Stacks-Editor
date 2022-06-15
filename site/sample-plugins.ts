@@ -2,6 +2,7 @@ import type MarkdownIt from "markdown-it";
 import type StateInline from "markdown-it/lib/rules_inline/state_inline";
 import type Token from "markdown-it/lib/token";
 import type { EditorPlugin2 } from "../src/shared/editor-plugin";
+import { MenuCommand } from "../src/shared/menu";
 
 // NOTE: loaded from cdn in views/plugin.html
 declare global {
@@ -147,7 +148,54 @@ const japaneseSEPlugin: EditorPlugin2 = (api) => {
     });
 };
 
-export const samplePlugins = [mermaidPlugin, japaneseSEPlugin];
+// simple proof of concept that adds some menu items and plugins to the editor
+const sillyPlugin: EditorPlugin2 = (api) => {
+    const addSillyCharacterCommand =
+        (char: string): MenuCommand =>
+        (state, dispatch, view) => {
+            return false;
+        };
+
+    api.addMenuItems([
+        {
+            name: "silly",
+            priority: 100,
+            entries: [
+                {
+                    richText: null,
+                    commonmark: null,
+                    keybind: "Mod-Shift-1",
+
+                    label: "Silly",
+                    key: "silly-menu",
+
+                    children: [
+                        {
+                            key: "silly-menu-item-0",
+                            label: "🐸",
+                            richText: addSillyCharacterCommand("🐸"),
+                            commonmark: addSillyCharacterCommand("🐸"),
+                        },
+                        {
+                            key: "silly-menu-item-1",
+                            label: "🐶",
+                            richText: addSillyCharacterCommand("🐶"),
+                            commonmark: addSillyCharacterCommand("🐶"),
+                        },
+                        {
+                            key: "silly-menu-item-2",
+                            label: "🐱",
+                            richText: addSillyCharacterCommand("🐱"),
+                            commonmark: addSillyCharacterCommand("🐱"),
+                        },
+                    ],
+                },
+            ],
+        },
+    ]);
+};
+
+export const samplePlugins = [mermaidPlugin, japaneseSEPlugin, sillyPlugin];
 
 function findEndChar(
     state: StateInline,

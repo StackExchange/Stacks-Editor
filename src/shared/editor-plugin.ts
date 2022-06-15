@@ -1,22 +1,22 @@
 import MarkdownIt from "markdown-it";
 import OrderedMap from "orderedmap";
 import { InputRule } from "prosemirror-inputrules";
-import { MarkdownParser, MarkdownSerializerState } from "prosemirror-markdown";
-import type {
-    MarkSpec,
-    Node,
-    NodeSpec,
-    Schema,
-    SchemaSpec,
-} from "prosemirror-model";
+import { MarkdownParser } from "prosemirror-markdown";
+import type { MarkSpec, NodeSpec, SchemaSpec } from "prosemirror-model";
 import type { EditorState, Plugin } from "prosemirror-state";
 import { EditorProps } from "prosemirror-view";
 import {
     MarkdownSerializerMarks,
     MarkdownSerializerNodes,
 } from "./markdown-serializer";
-import { MenuCommand } from "./menu";
-import { View } from "./view";
+import {
+    makeMenuDropdown,
+    makeMenuIcon,
+    makeMenuSpacerEntry,
+    MenuCommand,
+    MenuCommandEntry,
+} from "./menu";
+import { EditorType, View } from "./view";
 
 export interface PluginSchemaSpec extends SchemaSpec {
     nodes: OrderedMap<NodeSpec>;
@@ -29,28 +29,29 @@ export interface Editor extends View {
 
 export type EventCallback = (event: Editor) => void;
 
-export interface MenuCommandEntryVariant {
+export interface MenuCommandExtended {
     active?: (state: EditorState) => boolean;
     visible?: (state: EditorState) => boolean;
     command: MenuCommand;
 }
 
-export interface MenuCommandEntry {
-    richText: MenuCommandEntryVariant | MenuCommand;
-    commonmark: MenuCommandEntryVariant | MenuCommand;
+export interface PluginMenuCommandEntry {
+    richText: MenuCommandExtended | MenuCommand;
+    commonmark: MenuCommandExtended | MenuCommand;
     keybind?: string;
 
-    dom: HTMLElement;
+    svg?: string;
+    label: string;
     key: string;
 
     // if this menu entry is a dropdown menu, it will have child items containing the actual commands
-    children?: MenuCommandEntry[];
+    children?: PluginMenuCommandEntry[];
 }
 
-export type MenuBlock = {
-    //name?: string;
-    //priority?: number;
-    entries: MenuCommandEntry[];
+export type PluginMenuBlock = {
+    name?: string;
+    priority?: number;
+    entries: PluginMenuCommandEntry[];
 };
 
 /** TODO DOCUMENT ALL ITEMS */
@@ -67,7 +68,7 @@ export interface EditorPlugin1<TOptions = unknown> {
         plugins?: Plugin[];
     };
 
-    menu?: (options: TOptions) => MenuBlock[];
+    menu?: (options: TOptions) => PluginMenuBlock[];
 
     markdown?: {
         configureMarkdownIt?: (instance: MarkdownIt) => void;
@@ -108,7 +109,7 @@ export type EditorPlugin2<TOptions = unknown> = (
 ) => void;
 
 export interface EditorPluginApi {
-    addMenuBlock(block: MenuBlock): void;
+    addMenuItems(items: PluginMenuBlock[]): void;
     addCommonmarkPlugin(plugin: Plugin): void;
     addRichTextPlugin(plugin: Plugin): void;
     extendMarkdown(
@@ -124,6 +125,7 @@ export interface EditorPluginApi {
     //TODO addHelpEntry(): void;
 }
 
+/** TODO DOCUMENT */
 export class ExternalPluginProvider {
     readonly codeblockProcessors: {
         [key: string]: (
@@ -144,6 +146,8 @@ export class ExternalPluginProvider {
             marks: {},
         },
     };
+
+    private menu: PluginMenuBlock[] = [];
 
     private schemaCallbacks: AlterSchemaCallback[] = [];
     private markdownItCallbacks: AlterMarkdownItCallback[] = [];
@@ -176,10 +180,96 @@ export class ExternalPluginProvider {
         }
     }
 
+    // TODO refactor menu to use MenuBlocks
+    getFinalizedMenu(
+        menu: MenuCommandEntry[],
+        editorType: EditorType
+    ): MenuCommandEntry[] {
+        const ret = [...menu];
+
+        // TODO merge blocks based on name and sort by priority, lazily going to assume all are unique for the MVP
+        for (const block of this.menu) {
+            if (ret.length) {
+                ret.push(makeMenuSpacerEntry());
+            }
+
+            const entries = this.convertMenuCommandEntries(
+                block.entries,
+                editorType
+            );
+
+            ret.push(...entries);
+        }
+
+        return ret;
+    }
+
+    private convertMenuCommandEntries(
+        entries: PluginMenuCommandEntry[],
+        editorType: EditorType
+    ): MenuCommandEntry[] {
+        const ret: MenuCommandEntry[] = [];
+
+        if (!entries?.length) {
+            return [];
+        }
+
+        for (const entry of entries) {
+            let commandEntry: MenuCommandEntry = {
+                command: null,
+                visible: null,
+                active: null,
+                dom: null,
+                key: entry.key,
+                children: this.convertMenuCommandEntries(
+                    entry.children,
+                    editorType
+                ),
+            };
+
+            const command =
+                editorType === EditorType.RichText
+                    ? entry.richText
+                    : entry.commonmark;
+
+            // check for an extended vs simple command
+            if (command) {
+                commandEntry = {
+                    ...commandEntry,
+                    ...("command" in command ? command : { command }),
+                };
+            }
+
+            if (entry.children?.length) {
+                commandEntry = makeMenuDropdown(
+                    entry.svg,
+                    entry.label,
+                    commandEntry.key,
+                    commandEntry.visible,
+                    commandEntry.active,
+                    ...commandEntry.children
+                );
+            } else {
+                commandEntry.dom = makeMenuIcon(
+                    entry.svg,
+                    entry.label,
+                    commandEntry.key,
+                    []
+                );
+            }
+
+            // TODO add keybind and update the dom label properly
+            ret.push(commandEntry);
+        }
+
+        return ret;
+    }
+
     private api() {
         return {
-            addMenuBlock: (block: MenuBlock): void => {
-                throw new Error("Method not implemented.");
+            addMenuItems: (items: PluginMenuBlock[]): void => {
+                // TODO deep merge after refactoring the menu
+                this.menu.push(...items);
             },
 
             addCommonmarkPlugin: (plugin: Plugin): void => {
