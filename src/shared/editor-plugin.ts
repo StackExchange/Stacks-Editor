@@ -71,7 +71,7 @@ export type MarkdownExtensionProps = {
     };
 };
 
-export interface ExternalPluginProvider {
+export interface IExternalPluginProvider {
     // TODO DEEP READONLY
     readonly codeblockProcessors: {
         [key: string]: (
@@ -89,8 +89,8 @@ export interface ExternalPluginProvider {
     // TODO DEEP READONLY
     readonly markdownProps: MarkdownExtensionProps;
 
-    // TODO READONLY
-    nodeViews: EditorProps["nodeViews"];
+    // TODO DEEP READONLY
+    readonly nodeViews: EditorProps["nodeViews"];
 
     // TODO TYPES
     getFinalizedSchema(schema: SchemaSpec): PluginSchemaSpec;
@@ -106,19 +106,16 @@ export interface ExternalPluginProvider {
 }
 
 // TODO once we settle on a type, we can absorb the concrete version here
-export class ExternalPluginProvider implements ExternalPluginProvider {
-    // TODO DEEP READONLY
-    readonly codeblockProcessors: ExternalPluginProvider["codeblockProcessors"] =
+export class ExternalPluginProvider implements IExternalPluginProvider {
+    private _codeblockProcessors: IExternalPluginProvider["codeblockProcessors"] =
         {};
 
-    // TODO DEEP READONLY
-    readonly plugins: ExternalPluginProvider["plugins"] = {
+    private _plugins: IExternalPluginProvider["plugins"] = {
         richText: [],
         commonmark: [],
     };
 
-    // TODO DEEP READONLY
-    readonly markdownProps: ExternalPluginProvider["markdownProps"] = {
+    private _markdownProps: IExternalPluginProvider["markdownProps"] = {
         parser: {},
         serializers: {
             nodes: {},
@@ -126,8 +123,23 @@ export class ExternalPluginProvider implements ExternalPluginProvider {
         },
     };
 
-    // TODO READONLY
-    nodeViews: ExternalPluginProvider["nodeViews"] = {};
+    private _nodeViews: IExternalPluginProvider["nodeViews"] = {};
+
+    get codeblockProcessors() {
+        return Object.assign({}, this._codeblockProcessors);
+    }
+
+    get plugins() {
+        return this._plugins;
+    }
+
+    get markdownProps() {
+        return this._markdownProps;
+    }
+
+    get nodeViews() {
+        return this._nodeViews;
+    }
 
     protected menuCallbacks: AddMenuItemsCallback[] = [];
     protected schemaCallbacks: AlterSchemaCallback[] = [];
@@ -147,17 +159,23 @@ export class ExternalPluginProvider implements ExternalPluginProvider {
         });
 
         config.commonmark?.plugins?.forEach((plugin) => {
-            this.addCommonmarkPlugin(plugin);
+            this._plugins.commonmark.push(plugin);
         });
 
-        this.extendSchema(config.extendSchema, config.richText?.nodeViews);
+        this.schemaCallbacks.push(config.extendSchema);
+        if (config.richText?.nodeViews) {
+            this._nodeViews = {
+                ...this._nodeViews,
+                ...config.richText?.nodeViews,
+            };
+        }
 
         this.extendMarkdown(config.markdown, config.markdown?.alterMarkdownIt);
 
-        this.addMenuItems(config.menuItems);
+        this.menuCallbacks.push(config.menuItems);
 
         config.richText?.plugins?.forEach((plugin) => {
-            this.addRichTextPlugin(plugin);
+            this._plugins.richText.push(plugin);
         });
     }
 
@@ -219,39 +237,27 @@ export class ExternalPluginProvider implements ExternalPluginProvider {
         return ret;
     }
 
-    protected addMenuItems(callback: AddMenuItemsCallback): void {
-        this.menuCallbacks.push(callback);
-    }
-
-    protected addCommonmarkPlugin(plugin: Plugin): void {
-        this.plugins.commonmark.push(plugin);
-    }
-
-    protected addRichTextPlugin(plugin: Plugin): void {
-        this.plugins.richText.push(plugin);
-    }
-
     protected extendMarkdown(
         props: MarkdownExtensionProps,
         callback: AlterMarkdownItCallback
     ): void {
         if (props?.parser) {
-            this.markdownProps.parser = {
-                ...this.markdownProps.parser,
+            this._markdownProps.parser = {
+                ...this._markdownProps.parser,
                 ...props.parser,
             };
         }
 
         if (props?.serializers?.nodes) {
-            this.markdownProps.serializers.nodes = {
-                ...this.markdownProps.serializers.nodes,
+            this._markdownProps.serializers.nodes = {
+                ...this._markdownProps.serializers.nodes,
                 ...props.serializers.nodes,
             };
         }
 
         if (props?.serializers?.marks) {
-            this.markdownProps.serializers.marks = {
-                ...this.markdownProps.serializers.marks,
+            this._markdownProps.serializers.marks = {
+                ...this._markdownProps.serializers.marks,
                 ...props.serializers.marks,
             };
         }
@@ -261,31 +267,18 @@ export class ExternalPluginProvider implements ExternalPluginProvider {
         }
     }
 
-    protected extendSchema(
-        callback: AlterSchemaCallback,
-        nodeViews?: EditorProps["nodeViews"]
-    ): void {
-        this.schemaCallbacks.push(callback);
-        if (nodeViews) {
-            this.nodeViews = {
-                ...this.nodeViews,
-                ...nodeViews,
-            };
-        }
-    }
-
-    protected addCodeBlockProcessor(
+    private addCodeBlockProcessor(
         lang: string,
         callback: AddCodeBlockProcessorCallback
     ): void {
-        if (lang in this.codeblockProcessors) {
+        if (lang in this._codeblockProcessors) {
             // TODO too harsh?
             throw new Error(
                 `Codeblock processor for language ${lang} already exists`
             );
         }
 
-        this.codeblockProcessors[lang] = callback;
+        this._codeblockProcessors[lang] = callback;
     }
 
     private convertMenuCommandEntries(
