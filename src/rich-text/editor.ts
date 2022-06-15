@@ -173,7 +173,7 @@ export class RichTextEditor extends BaseView {
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
-            externalPlugins: [],
+            TODO_plugins2: [],
         };
     }
 

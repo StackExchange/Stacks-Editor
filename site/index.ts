@@ -1,7 +1,6 @@
 import "@stackoverflow/stacks";
 import packageJson from "../package.json";
 import type { StacksEditor, StacksEditorOptions } from "../src";
-import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { samplePlugins } from "./sample-plugins";
@@ -208,7 +207,6 @@ domReady(() => {
                 ],
             },
             imageUpload: imageUploadOptions,
-            externalPlugins: [StackSnippetsPlugin],
             TODO_plugins2: enableSamplePlugin ? samplePlugins : [],
         };
 

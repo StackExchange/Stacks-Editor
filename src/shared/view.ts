@@ -5,7 +5,6 @@ import type { Node } from "prosemirror-model";
 import type { EditorState } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import { EditorPlugin2 } from "./editor-plugin";
-import type { ExternalEditorPlugin } from "./external-editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { stackOverflowValidateLink } from "./utils";
 
@@ -36,8 +35,6 @@ export interface CommonViewOptions {
     /** Image uploader options */
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
-    externalPlugins?: ExternalEditorPlugin[];
-    /** TODO DOCUMENT */
     TODO_plugins2?: EditorPlugin2[];
 }
 
