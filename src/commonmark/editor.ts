@@ -2,6 +2,7 @@ import { history } from "prosemirror-history";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { ExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
 import {
@@ -32,6 +33,7 @@ export class CommonmarkEditor extends BaseView {
     constructor(
         target: Node,
         content: string,
+        pluginProvider: ExternalPluginProvider,
         options: CommonmarkOptions = {}
     ) {
         super();
@@ -59,6 +61,7 @@ export class CommonmarkEditor extends BaseView {
                             this.options.parserFeatures.validateLink
                         ),
                         readonlyPlugin(),
+                        ...pluginProvider.plugins.commonmark,
                     ],
                 }),
                 plugins: [],

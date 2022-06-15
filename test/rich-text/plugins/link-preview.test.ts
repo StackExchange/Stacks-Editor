@@ -1,14 +1,20 @@
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import { LinkPreviewProvider } from "../../../src/rich-text/plugins/link-preview";
+import { ExternalPluginProvider } from "../../../src/shared/editor-plugin";
 import "../../matchers";
 import { sleepAsync } from "../test-helpers";
 
 const textOnlyPreviewText = "text-only preview";
 
 function richView(markdownInput: string, provider?: LinkPreviewProvider) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {
-        linkPreviewProviders: [provider],
-    });
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdownInput,
+        new ExternalPluginProvider([], null),
+        {
+            linkPreviewProviders: [provider],
+        }
+    );
 }
 
 describe("link-preview", () => {

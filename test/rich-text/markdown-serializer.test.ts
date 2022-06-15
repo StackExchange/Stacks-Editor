@@ -1,10 +1,16 @@
 import { DOMParser } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { RichTextEditor } from "../../src/rich-text/editor";
+import { ExternalPluginProvider } from "../../src/shared/editor-plugin";
 import { crazyTestUrl } from "./test-helpers";
 
 function richView(markdownInput: string) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {});
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdownInput,
+        new ExternalPluginProvider([], null),
+        {}
+    );
 }
 
 /**

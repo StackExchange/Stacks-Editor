@@ -1,6 +1,7 @@
 import { CommonmarkEditor } from "../../src/commonmark/editor";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import { schema } from "prosemirror-markdown";
+import { ExternalPluginProvider } from "../../src/shared/editor-plugin";
 
 const target = document.createElement("div");
 const markdownRoundTripData = [
@@ -22,7 +23,11 @@ describe("commonmark editor view", () => {
     });
 
     it.each(markdownRoundTripData)("should not change markdown", (markdown) => {
-        const richView = new RichTextEditor(target, markdown);
+        const richView = new RichTextEditor(
+            target,
+            markdown,
+            new ExternalPluginProvider([], null)
+        );
 
         const markdownView = commonmarkView(richView.content);
 
@@ -59,7 +64,11 @@ describe("commonmark editor view", () => {
         it("should not change <hr> when switching back and forth", () => {
             const markdownInput = "<hr>";
             let markdownView = commonmarkView(markdownInput);
-            const richView = new RichTextEditor(target, markdownView.content);
+            const richView = new RichTextEditor(
+                target,
+                markdownView.content,
+                new ExternalPluginProvider([], null)
+            );
             markdownView = commonmarkView(richView.content);
 
             expect(markdownView.content).toEqual(markdownInput);
@@ -68,7 +77,11 @@ describe("commonmark editor view", () => {
         it("should keep newlines when switching back and forth", () => {
             const markdownInput = "<hr>\n\n";
             let markdownView = commonmarkView(markdownInput);
-            const richView = new RichTextEditor(target, markdownView.content);
+            const richView = new RichTextEditor(
+                target,
+                markdownView.content,
+                new ExternalPluginProvider([], null)
+            );
             markdownView = commonmarkView(richView.content);
 
             expect(markdownView.content).toEqual(markdownInput);
@@ -84,8 +97,11 @@ describe("commonmark editor view", () => {
 | also left  | **markdown** | also right |
 `;
 
-            const serializedTable = new RichTextEditor(target, markdown)
-                .content;
+            const serializedTable = new RichTextEditor(
+                target,
+                markdown,
+                new ExternalPluginProvider([], null)
+            ).content;
 
             const expectedSerializedMarkdown = `
 | Table | With | Alignments |
@@ -117,5 +133,9 @@ describe("commonmark editor view", () => {
 });
 
 function commonmarkView(markdown: string): CommonmarkEditor {
-    return new CommonmarkEditor(target, markdown);
+    return new CommonmarkEditor(
+        target,
+        markdown,
+        new ExternalPluginProvider([], null)
+    );
 }

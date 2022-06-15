@@ -1,4 +1,5 @@
 import { RichTextEditor } from "../../src/rich-text/editor";
+import { ExternalPluginProvider } from "../../src/shared/editor-plugin";
 import * as mdp from "../../src/shared/markdown-parser";
 import "../matchers";
 import { normalize } from "../test-helpers";
@@ -22,7 +23,12 @@ function editorDom(editorView: RichTextEditor): string {
 }
 
 function richView(markdownInput: string) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {});
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdownInput,
+        new ExternalPluginProvider([], null),
+        {}
+    );
 }
 
 describe("rich text editor view", () => {
@@ -323,7 +329,8 @@ _world_.
 
             const editor = new RichTextEditor(
                 document.createElement("div"),
-                "*This* is some **test** content"
+                "*This* is some **test** content",
+                new ExternalPluginProvider([], null)
             );
 
             // on a catastrophic crash, the raw string content gets

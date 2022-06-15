@@ -1,4 +1,5 @@
 import { EditorState } from "prosemirror-state";
+import { ExternalPluginProvider } from "../src/shared/editor-plugin";
 
 /**
  * Normalize HTML given as a string representation.

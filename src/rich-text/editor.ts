@@ -57,14 +57,16 @@ export class RichTextEditor extends BaseView {
     private markdownSerializer: MarkdownSerializer;
     private externalPluginProvider: ExternalPluginProvider;
 
-    constructor(target: Node, content: string, options: RichTextOptions = {}) {
+    constructor(
+        target: Node,
+        content: string,
+        pluginProvider: ExternalPluginProvider,
+        options: RichTextOptions = {}
+    ) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
 
-        this.externalPluginProvider = new ExternalPluginProvider(
-            this.options.editorPlugins,
-            this.options
-        );
+        this.externalPluginProvider = pluginProvider;
 
         // this.externalPlugins = collapseExternalPlugins(
         //     this.options.externalPlugins

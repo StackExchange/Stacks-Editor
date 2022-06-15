@@ -1,6 +1,7 @@
 import { ImageView } from "../../../src/rich-text/node-views/image";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { RichTextEditor } from "../../../src/rich-text/editor";
+import { ExternalPluginProvider } from "../../../src/shared/editor-plugin";
 
 jest.useFakeTimers();
 
@@ -15,7 +16,8 @@ describe("image node views", () => {
 
     const richView = new RichTextEditor(
         document.createElement("div"),
-        "![some image](https://example.com/initial.png 'some title')"
+        "![some image](https://example.com/initial.png 'some title')",
+        new ExternalPluginProvider([], null)
     );
 
     it("should render image node as image tag", () => {

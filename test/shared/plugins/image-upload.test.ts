@@ -13,6 +13,7 @@ import "../../matchers";
 import { getSelectedText } from "../../test-helpers";
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
+import { ExternalPluginProvider } from "../../../src/shared/editor-plugin";
 
 let pluginContainer: Element;
 let view: RichTextEditor;
@@ -526,7 +527,12 @@ function richTextView(
     markdown: string,
     containerFn: () => Element
 ): RichTextEditor {
-    return new RichTextEditor(document.createElement("div"), markdown, {
-        pluginParentContainer: containerFn,
-    });
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdown,
+        new ExternalPluginProvider([], null),
+        {
+            pluginParentContainer: containerFn,
+        }
+    );
 }
