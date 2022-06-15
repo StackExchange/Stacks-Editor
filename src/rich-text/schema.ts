@@ -537,13 +537,14 @@ Object.entries(nodes).forEach(([k, node]) => {
     node.attrs = attrs;
 });
 
+/** The complete schema spec used by the rich-text editor */
 export const richTextSchemaSpec: SchemaSpec = {
     nodes: nodes,
     marks: marks,
 };
 
 /** The complete schema used by the rich-text editor
- * @deprecated ?
+ * @deprecated All consumers should instead get the schema from EditorState
  */
 export const richTextSchema = new Schema(richTextSchemaSpec);
 

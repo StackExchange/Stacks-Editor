@@ -1,10 +1,7 @@
 import type { Node, Schema } from "prosemirror-model";
 import { EditorState, Plugin } from "prosemirror-state";
 import { DecorationSet, Decoration } from "prosemirror-view";
-import type {
-    EditorPlugin,
-    PluginMenuBlock,
-} from "../../src/shared/editor-plugin";
+import { EditorPlugin, EditorPluginSpec } from "../../src";
 import type { MenuCommand } from "../../src/shared/menu";
 
 const sillyEffectPlugin = new Plugin<{ decorations: DecorationSet }>({
@@ -61,7 +58,7 @@ function getCurrentEffectNode(state: EditorState) {
     return currentEffectNode;
 }
 
-function addMenuItems(schema: Schema): PluginMenuBlock[] {
+const addMenuItems: EditorPluginSpec["menuItems"] = function (schema: Schema) {
     const addSillyEffectRichCommand =
         (char: string): MenuCommand =>
         (state, dispatch) => {
@@ -142,7 +139,7 @@ function addMenuItems(schema: Schema): PluginMenuBlock[] {
             ],
         },
     ];
-}
+};
 
 // simple proof of concept plugin showcasing custom menu items and ProseMirror plugins
 export const sillyPlugin: EditorPlugin = () => ({

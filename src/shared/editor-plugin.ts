@@ -15,26 +15,21 @@ import {
     MenuCommand,
     MenuCommandEntry,
 } from "./menu";
-import { EditorType, View } from "./view";
+import { EditorType } from "./view";
 
-export interface PluginSchemaSpec extends SchemaSpec {
+/**  */
+interface PluginSchemaSpec extends SchemaSpec {
     nodes: OrderedMap<NodeSpec>;
     marks: OrderedMap<MarkSpec>;
 }
 
-export interface Editor extends View {
-    readonly editorTarget: Element;
-}
-
-export type EventCallback = (event: Editor) => void;
-
-export interface MenuCommandExtended {
+interface MenuCommandExtended {
     active?: (state: EditorState) => boolean;
     visible?: (state: EditorState) => boolean;
     command: MenuCommand;
 }
 
-export interface PluginMenuCommandEntry {
+interface PluginMenuCommandEntry {
     richText: MenuCommandExtended | MenuCommand;
     commonmark: MenuCommandExtended | MenuCommand;
     keybind?: string;
@@ -47,41 +42,70 @@ export interface PluginMenuCommandEntry {
     children?: PluginMenuCommandEntry[];
 }
 
-export type PluginMenuBlock = {
+interface PluginMenuBlock {
     name?: string;
     priority?: number;
     entries: PluginMenuCommandEntry[];
-};
+}
 
-export type AddCodeBlockProcessorCallback = (
+type AddCodeBlockProcessorCallback = (
     content: string,
     container: Element
 ) => void | Promise<void>;
-export type AlterSchemaCallback = (
-    schema: PluginSchemaSpec
-) => PluginSchemaSpec;
-export type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
-export type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
+type AlterSchemaCallback = (schema: PluginSchemaSpec) => PluginSchemaSpec;
+type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
 
-export type MarkdownExtensionProps = {
+/**
+ * Callback to add new menu entries to the editor's menu.
+ * @param {Schema} schema The fully-initialized editor schema, including nodes from plugins
+ */
+type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
+
+interface MarkdownExtensionProps {
+    /**
+     * Parsers for prosemirror-markdown
+     * @see {@type import("prosemirror-markdown").MarkdownParser["tokens"]}
+     */
     parser: MarkdownParser["tokens"];
+    /**
+     * Serializers for prosemirror-markdown
+     * @see {@type import("prosemirror-markdown").MarkdownSerializer}
+     */
     serializers: {
         nodes: MarkdownSerializerNodes;
         marks: MarkdownSerializerMarks;
     };
-};
+}
 
-/** TODO DOCUMENT ALL ITEMS */
+/**
+ * Complete spec for creating an editor plugin
+ * @experimental
+ */
 export interface EditorPluginSpec {
+    /** Rich-text editor extensions */
     richText?: {
+        /**
+         * NodeViews to add to the rich-text editor
+         * @see {@type {import("prosemirror-view").EditorProps["nodeViews"]}}
+         */
         nodeViews?: EditorProps["nodeViews"];
+        /**
+         * ProseMirror plugins to add to the rich-text editor
+         * @see {@type {import("prosemirror-state").EditorStateConfig["plugins"]}}
+         */
         plugins?: Plugin[];
     };
 
+    /** Commonmark editor extensions */
     commonmark?: {
+        /**
+         * ProseMirror plugins to add to the commonmark editor
+         * @see {@type {import("prosemirror-state").EditorStateConfig["plugins"]}}
+         */
         plugins?: Plugin[];
     };
 
+    /** {@inheritDoc AddMenuItemsCallback} */
     menuItems?: AddMenuItemsCallback;
 
     markdown?: MarkdownExtensionProps & {
@@ -97,10 +121,18 @@ export interface EditorPluginSpec {
     }[];
 }
 
+/**
+ * A plugin that extends the editor based on the spec provided
+ * @experimental
+ */
 export type EditorPlugin<TOptions = unknown> = (
     options: TOptions
 ) => EditorPluginSpec;
 
+/**
+ * Aggregates and provides plugins to comsuming editors
+ * @internal
+ */
 export interface IExternalPluginProvider {
     // TODO DEEP READONLY
     readonly codeblockProcessors: {
@@ -135,7 +167,10 @@ export interface IExternalPluginProvider {
     ): MenuCommandEntry[];
 }
 
-// TODO once we settle on a type, we can absorb the concrete version here
+/**
+ * {@inheritDoc IExternalPluginProvider}
+ * @internal
+ */
 export class ExternalPluginProvider implements IExternalPluginProvider {
     private _codeblockProcessors: IExternalPluginProvider["codeblockProcessors"] =
         {};
