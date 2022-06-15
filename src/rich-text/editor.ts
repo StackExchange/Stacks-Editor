@@ -40,8 +40,8 @@ import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
 import { richTextSchemaSpec } from "./schema";
 import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
-import { ExternalPluginProvider } from "../shared/editor-plugin";
 import { createMenuPlugin } from "../shared/menu";
+import { ExternalPluginProvider } from "../shared/editor-plugin";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -55,15 +55,14 @@ export interface RichTextOptions extends CommonViewOptions {
 export class RichTextEditor extends BaseView {
     private options: RichTextOptions;
     private markdownSerializer: MarkdownSerializer;
-    //private externalPlugins: ExternalEditorPlugin;
-    private externalPluginProvider: ExternalPluginProvider; // TODO
+    private externalPluginProvider: ExternalPluginProvider;
 
     constructor(target: Node, content: string, options: RichTextOptions = {}) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
 
         this.externalPluginProvider = new ExternalPluginProvider(
-            this.options.TODO_plugins2,
+            this.options.editorPlugins,
             this.options
         );
 
@@ -173,7 +172,7 @@ export class RichTextEditor extends BaseView {
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
-            TODO_plugins2: [],
+            editorPlugins: [],
         };
     }
 

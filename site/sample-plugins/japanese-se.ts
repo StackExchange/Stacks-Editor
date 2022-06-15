@@ -3,100 +3,44 @@
 // TODO might be worth implementing this in the same manner as e.g. mathjax
 
 import type MarkdownIt from "markdown-it";
+import type ParserInline from "markdown-it/lib/parser_inline";
 import type StateInline from "markdown-it/lib/rules_inline/state_inline";
 import type Token from "markdown-it/lib/token";
-import type { EditorPlugin2 } from "../../src/shared/editor-plugin";
+import { EditorPlugin } from "../../src";
 
-// NOTE: functionality taken from https://cdn.sstatic.net/Js/third-party/japanese-l-u.js
-export const japaneseSEPlugin: EditorPlugin2 = (api) => {
-    api.extendMarkdown(
-        {
-            parser: {
-                jse_furigana: {
-                    mark: "jse_furigana",
-                    getAttrs: (token: Token) => {
-                        return {
-                            text: token.content,
-                            markup: token.attrGet("markup"),
-                        };
-                    },
+// NOTE: functionality heavily inspired by https://cdn.sstatic.net/Js/third-party/japanese-l-u.js
+export const japaneseSEPlugin: EditorPlugin = () => ({
+    markdown: {
+        parser: {
+            jse_furigana: {
+                mark: "jse_furigana",
+                getAttrs: (token: Token) => {
+                    return {
+                        text: token.content,
+                        markup: token.attrGet("markup"),
+                    };
                 },
             },
-            serializers: {
-                nodes: {},
-                marks: {
-                    jse_furigana: {
-                        open: (_, mark) => mark.attrs.markup as string,
-                        close: (_, mark) => {
-                            const markup = mark.attrs.markup as string;
-                            return markup === "{" ? "}" : "】";
-                        },
+        },
+        serializers: {
+            nodes: {},
+            marks: {
+                jse_furigana: {
+                    open: (_, mark) => mark.attrs.markup as string,
+                    close: (_, mark) => {
+                        const markup = mark.attrs.markup as string;
+                        return markup === "{" ? "}" : "】";
                     },
                 },
             },
         },
-        (mdit) => {
+        alterMarkdownIt: (mdit) => {
             mdit.use((md: MarkdownIt) => {
-                md.inline.ruler.push("jse", function jse(state, silent) {
-                    const startCharCode = state.src.charCodeAt(state.pos);
-
-                    // quick fail on first character
-                    if (
-                        startCharCode !== 0x7b /* { */ &&
-                        startCharCode !== 0x3010 /* 【 */
-                    ) {
-                        return false;
-                    }
-
-                    const endCharCode =
-                        startCharCode === 0x7b /* { */
-                            ? 0x7d /* } */
-                            : 0x3011; /* 】 */
-
-                    const endCharPos = findEndChar(
-                        state,
-                        state.pos + 1,
-                        false,
-                        startCharCode,
-                        endCharCode
-                    );
-
-                    if (endCharPos < 0) {
-                        return false;
-                    }
-
-                    if (!silent) {
-                        const totalContent = state.src.slice(
-                            state.pos,
-                            endCharPos + 1
-                        );
-                        const text = totalContent.slice(1, -1);
-
-                        let token = state.push("jse_furigana_open", "span", 1);
-                        token.attrSet(
-                            "markup",
-                            String.fromCharCode(startCharCode)
-                        );
-                        token.content = text;
-
-                        token = state.push("text", "", 0);
-                        token.content = text;
-
-                        token = state.push("jse_furigana_close", "span", -1);
-                        token.attrSet(
-                            "markup",
-                            String.fromCharCode(endCharCode)
-                        );
-                    }
-
-                    state.pos = endCharPos + 1;
-                    return true;
-                });
+                md.inline.ruler.push("jse", mdJSEPlugin);
             });
-        }
-    );
-
-    api.extendSchema((schema) => {
+        },
+    },
+    extendSchema: (schema) => {
         schema.marks = schema.marks.addToEnd("jse_furigana", {
             attrs: {
                 text: { default: "" },
@@ -122,8 +66,8 @@ export const japaneseSEPlugin: EditorPlugin2 = (api) => {
         });
 
         return schema;
-    });
-};
+    },
+});
 
 function findEndChar(
     state: StateInline,
@@ -175,3 +119,45 @@ function findEndChar(
 
     return labelEnd;
 }
+
+const mdJSEPlugin: ParserInline.RuleInline = function (state, silent) {
+    const startCharCode = state.src.charCodeAt(state.pos);
+
+    // quick fail on first character
+    if (startCharCode !== 0x7b /* { */ && startCharCode !== 0x3010 /* 【 */) {
+        return false;
+    }
+
+    const endCharCode =
+        startCharCode === 0x7b /* { */ ? 0x7d /* } */ : 0x3011; /* 】 */
+
+    const endCharPos = findEndChar(
+        state,
+        state.pos + 1,
+        false,
+        startCharCode,
+        endCharCode
+    );
+
+    if (endCharPos < 0) {
+        return false;
+    }
+
+    if (!silent) {
+        const totalContent = state.src.slice(state.pos, endCharPos + 1);
+        const text = totalContent.slice(1, -1);
+
+        let token = state.push("jse_furigana_open", "span", 1);
+        token.attrSet("markup", String.fromCharCode(startCharCode));
+        token.content = text;
+
+        token = state.push("text", "", 0);
+        token.content = text;
+
+        token = state.push("jse_furigana_close", "span", -1);
+        token.attrSet("markup", String.fromCharCode(endCharCode));
+    }
+
+    state.pos = endCharPos + 1;
+    return true;
+};

@@ -53,15 +53,17 @@ export type PluginMenuBlock = {
     entries: PluginMenuCommandEntry[];
 };
 
-type AddCodeBlockProcessorCallback = (
+export type AddCodeBlockProcessorCallback = (
     content: string,
     container: Element
 ) => void | Promise<void>;
-type AlterSchemaCallback = (schema: PluginSchemaSpec) => PluginSchemaSpec;
-type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
-type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
+export type AlterSchemaCallback = (
+    schema: PluginSchemaSpec
+) => PluginSchemaSpec;
+export type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
+export type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
 
-type MarkdownExtensionProps = {
+export type MarkdownExtensionProps = {
     parser: MarkdownParser["tokens"];
     serializers: {
         nodes: MarkdownSerializerNodes;
@@ -69,90 +71,54 @@ type MarkdownExtensionProps = {
     };
 };
 
-/** TODO DOCUMENT ALL ITEMS */
-export interface EditorPluginSpec<TOptions = unknown> {
-    //optionDefaults?: DeepRequired<TOptions>; // TODO make Required
-
-    richText?: {
-        nodeViews?: EditorProps["nodeViews"];
-        plugins?: Plugin[];
-        //inputRules?: InputRule[];
-    };
-
-    commonmark?: {
-        plugins?: Plugin[];
-    };
-
-    menuItems?: AddMenuItemsCallback;
-
-    markdown?: MarkdownExtensionProps & {
-        alterMarkdownIt?: AlterMarkdownItCallback;
-    };
-
-    // TODO warn devs that they need to (at minimum) add a serializer as well?
-    extendSchema?: AlterSchemaCallback;
-
-    codeBlockProcessor?: {
-        lang: "*" | string;
-        callback: AddCodeBlockProcessorCallback;
-    };
-
-    // events?: {
-    //     onEnable?: EventCallback;
-    //     onDisable?: EventCallback;
-    // };
-
-    //postProcess?: <T>(editor: AggregatedEditorPlugin<T>) => void;
-}
-
-export type EditorPlugin1<TOptions = unknown> =
-    () => EditorPluginSpec<TOptions>;
-
-export type EditorPlugin2<TOptions = unknown> = (
-    this: void,
-    api: EditorPluginApi,
-    options: TOptions
-) => void;
-
-export interface EditorPluginApi {
-    addMenuItems(callback: AddMenuItemsCallback): void;
-    addCommonmarkPlugin(plugin: Plugin): void;
-    addRichTextPlugin(plugin: Plugin): void;
-    extendMarkdown(
-        props: MarkdownExtensionProps,
-        callback: AlterMarkdownItCallback
-    ): void;
-    // TODO warn devs that they need to (at minimum) add a serializer as well?
-    extendSchema(
-        callback: AlterSchemaCallback,
-        nodeViews?: EditorProps["nodeViews"]
-    ): void;
-    addCodeBlockProcessor(
-        lang: "*" | string,
-        callback: AddCodeBlockProcessorCallback
-    ): void;
-
-    //TODO addHelpEntry(): void;
-}
-
-/** TODO DOCUMENT */
-export class ExternalPluginProvider {
+export interface ExternalPluginProvider {
     // TODO DEEP READONLY
     readonly codeblockProcessors: {
         [key: string]: (
             content: string,
             container: Element
         ) => void | Promise<void>;
-    } = {};
-
-    // TODO DEEP READONLY
-    readonly plugins = {
-        richText: [] as Plugin[],
-        commonmark: [] as Plugin[],
     };
 
     // TODO DEEP READONLY
-    readonly markdownProps: MarkdownExtensionProps = {
+    readonly plugins: {
+        richText: Plugin[];
+        commonmark: Plugin[];
+    };
+
+    // TODO DEEP READONLY
+    readonly markdownProps: MarkdownExtensionProps;
+
+    // TODO READONLY
+    nodeViews: EditorProps["nodeViews"];
+
+    // TODO TYPES
+    getFinalizedSchema(schema: SchemaSpec): PluginSchemaSpec;
+
+    alterMarkdownIt(instance: MarkdownIt): void;
+
+    // TODO refactor menu to use MenuBlocks
+    getFinalizedMenu(
+        menu: MenuCommandEntry[],
+        editorType: EditorType,
+        schema: Schema
+    ): MenuCommandEntry[];
+}
+
+// TODO once we settle on a type, we can absorb the concrete version here
+export class ExternalPluginProvider implements ExternalPluginProvider {
+    // TODO DEEP READONLY
+    readonly codeblockProcessors: ExternalPluginProvider["codeblockProcessors"] =
+        {};
+
+    // TODO DEEP READONLY
+    readonly plugins: ExternalPluginProvider["plugins"] = {
+        richText: [],
+        commonmark: [],
+    };
+
+    // TODO DEEP READONLY
+    readonly markdownProps: ExternalPluginProvider["markdownProps"] = {
         parser: {},
         serializers: {
             nodes: {},
@@ -161,18 +127,38 @@ export class ExternalPluginProvider {
     };
 
     // TODO READONLY
-    nodeViews: EditorProps["nodeViews"] = {};
+    nodeViews: ExternalPluginProvider["nodeViews"] = {};
 
-    private menuCallbacks: AddMenuItemsCallback[] = [];
-    private schemaCallbacks: AlterSchemaCallback[] = [];
-    private markdownItCallbacks: AlterMarkdownItCallback[] = [];
+    protected menuCallbacks: AddMenuItemsCallback[] = [];
+    protected schemaCallbacks: AlterSchemaCallback[] = [];
+    protected markdownItCallbacks: AlterMarkdownItCallback[] = [];
 
-    constructor(plugins: EditorPlugin2[], opts: unknown) {
+    constructor(plugins: EditorPlugin[], options: unknown) {
         if (plugins?.length) {
             for (const plugin of plugins) {
-                plugin(this.api(), opts);
+                this.applyConfig(plugin(options));
             }
         }
+    }
+
+    private applyConfig(config: EditorPluginSpec) {
+        config.codeBlockProcessors?.forEach(({ lang, callback }) => {
+            this.addCodeBlockProcessor(lang, callback);
+        });
+
+        config.commonmark?.plugins?.forEach((plugin) => {
+            this.addCommonmarkPlugin(plugin);
+        });
+
+        this.extendSchema(config.extendSchema, config.richText?.nodeViews);
+
+        this.extendMarkdown(config.markdown, config.markdown?.alterMarkdownIt);
+
+        this.addMenuItems(config.menuItems);
+
+        config.richText?.plugins?.forEach((plugin) => {
+            this.addRichTextPlugin(plugin);
+        });
     }
 
     // TODO TYPES
@@ -183,7 +169,9 @@ export class ExternalPluginProvider {
         };
 
         for (const callback of this.schemaCallbacks) {
-            alteredSchema = callback(alteredSchema);
+            if (callback) {
+                alteredSchema = callback(alteredSchema);
+            }
         }
 
         return alteredSchema;
@@ -191,7 +179,9 @@ export class ExternalPluginProvider {
 
     alterMarkdownIt(instance: MarkdownIt): void {
         for (const callback of this.markdownItCallbacks) {
-            callback(instance);
+            if (callback) {
+                callback(instance);
+            }
         }
     }
 
@@ -205,6 +195,10 @@ export class ExternalPluginProvider {
 
         // TODO merge blocks based on name and sort by priority, lazily going to assume all are unique for the MVP
         for (const callback of this.menuCallbacks) {
+            if (!callback) {
+                continue;
+            }
+
             // TODO menu will take care of this instead
             if (ret.length) {
                 ret.push(makeMenuSpacerEntry());
@@ -223,6 +217,75 @@ export class ExternalPluginProvider {
         }
 
         return ret;
+    }
+
+    protected addMenuItems(callback: AddMenuItemsCallback): void {
+        this.menuCallbacks.push(callback);
+    }
+
+    protected addCommonmarkPlugin(plugin: Plugin): void {
+        this.plugins.commonmark.push(plugin);
+    }
+
+    protected addRichTextPlugin(plugin: Plugin): void {
+        this.plugins.richText.push(plugin);
+    }
+
+    protected extendMarkdown(
+        props: MarkdownExtensionProps,
+        callback: AlterMarkdownItCallback
+    ): void {
+        if (props?.parser) {
+            this.markdownProps.parser = {
+                ...this.markdownProps.parser,
+                ...props.parser,
+            };
+        }
+
+        if (props?.serializers?.nodes) {
+            this.markdownProps.serializers.nodes = {
+                ...this.markdownProps.serializers.nodes,
+                ...props.serializers.nodes,
+            };
+        }
+
+        if (props?.serializers?.marks) {
+            this.markdownProps.serializers.marks = {
+                ...this.markdownProps.serializers.marks,
+                ...props.serializers.marks,
+            };
+        }
+
+        if (callback) {
+            this.markdownItCallbacks.push(callback);
+        }
+    }
+
+    protected extendSchema(
+        callback: AlterSchemaCallback,
+        nodeViews?: EditorProps["nodeViews"]
+    ): void {
+        this.schemaCallbacks.push(callback);
+        if (nodeViews) {
+            this.nodeViews = {
+                ...this.nodeViews,
+                ...nodeViews,
+            };
+        }
+    }
+
+    protected addCodeBlockProcessor(
+        lang: string,
+        callback: AddCodeBlockProcessorCallback
+    ): void {
+        if (lang in this.codeblockProcessors) {
+            // TODO too harsh?
+            throw new Error(
+                `Codeblock processor for language ${lang} already exists`
+            );
+        }
+
+        this.codeblockProcessors[lang] = callback;
     }
 
     private convertMenuCommandEntries(
@@ -285,77 +348,44 @@ export class ExternalPluginProvider {
 
         return ret;
     }
-
-    private api() {
-        return {
-            addMenuItems: (callback: AddMenuItemsCallback): void => {
-                this.menuCallbacks.push(callback);
-            },
-
-            addCommonmarkPlugin: (plugin: Plugin): void => {
-                this.plugins.commonmark.push(plugin);
-            },
-
-            addRichTextPlugin: (plugin: Plugin): void => {
-                this.plugins.richText.push(plugin);
-            },
-
-            extendMarkdown: (
-                props: MarkdownExtensionProps,
-                callback: AlterMarkdownItCallback
-            ): void => {
-                if (props.parser) {
-                    this.markdownProps.parser = {
-                        ...this.markdownProps.parser,
-                        ...props.parser,
-                    };
-                }
-
-                if (props.serializers.nodes) {
-                    this.markdownProps.serializers.nodes = {
-                        ...this.markdownProps.serializers.nodes,
-                        ...props.serializers.nodes,
-                    };
-                }
-
-                if (props.serializers.marks) {
-                    this.markdownProps.serializers.marks = {
-                        ...this.markdownProps.serializers.marks,
-                        ...props.serializers.marks,
-                    };
-                }
-
-                if (callback) {
-                    this.markdownItCallbacks.push(callback);
-                }
-            },
-
-            extendSchema: (
-                callback: AlterSchemaCallback,
-                nodeViews?: EditorProps["nodeViews"]
-            ): void => {
-                this.schemaCallbacks.push(callback);
-                if (nodeViews) {
-                    this.nodeViews = {
-                        ...this.nodeViews,
-                        ...nodeViews,
-                    };
-                }
-            },
-
-            addCodeBlockProcessor: (
-                lang: string,
-                callback: AddCodeBlockProcessorCallback
-            ): void => {
-                if (lang in this.codeblockProcessors) {
-                    // TODO too harsh?
-                    throw new Error(
-                        `Codeblock processor for language ${lang} already exists`
-                    );
-                }
-
-                this.codeblockProcessors[lang] = callback;
-            },
-        };
-    }
 }
+
+/** TODO DOCUMENT ALL ITEMS */
+export interface EditorPluginSpec {
+    //optionDefaults?: DeepRequired<TOptions>; // TODO make Required
+
+    richText?: {
+        nodeViews?: EditorProps["nodeViews"];
+        plugins?: Plugin[];
+        //inputRules?: InputRule[];
+    };
+
+    commonmark?: {
+        plugins?: Plugin[];
+    };
+
+    menuItems?: AddMenuItemsCallback;
+
+    markdown?: MarkdownExtensionProps & {
+        alterMarkdownIt?: AlterMarkdownItCallback;
+    };
+
+    // TODO warn devs that they need to (at minimum) add a serializer as well?
+    extendSchema?: AlterSchemaCallback;
+
+    codeBlockProcessors?: {
+        lang: "*" | string;
+        callback: AddCodeBlockProcessorCallback;
+    }[];
+
+    // events?: {
+    //     onEnable?: EventCallback;
+    //     onDisable?: EventCallback;
+    // };
+
+    //postProcess?: <T>(editor: AggregatedEditorPlugin<T>) => void;
+}
+
+export type EditorPlugin<TOptions = unknown> = (
+    options: TOptions
+) => EditorPluginSpec;

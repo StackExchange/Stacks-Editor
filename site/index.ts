@@ -207,7 +207,7 @@ domReady(() => {
                 ],
             },
             imageUpload: imageUploadOptions,
-            TODO_plugins2: enableSamplePlugin ? samplePlugins : [],
+            editorPlugins: enableSamplePlugin ? samplePlugins : [],
         };
 
         const editorInstance = new StacksEditor(place, content.value, options);
