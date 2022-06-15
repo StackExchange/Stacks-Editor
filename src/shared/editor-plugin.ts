@@ -1,6 +1,5 @@
 import MarkdownIt from "markdown-it";
 import OrderedMap from "orderedmap";
-import { InputRule } from "prosemirror-inputrules";
 import { MarkdownParser } from "prosemirror-markdown";
 import type { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
 import type { EditorState, Plugin } from "prosemirror-state";
@@ -54,31 +53,49 @@ export type PluginMenuBlock = {
     entries: PluginMenuCommandEntry[];
 };
 
+type AddCodeBlockProcessorCallback = (
+    content: string,
+    container: Element
+) => void | Promise<void>;
+type AlterSchemaCallback = (schema: PluginSchemaSpec) => PluginSchemaSpec;
+type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
+type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
+
+type MarkdownExtensionProps = {
+    parser: MarkdownParser["tokens"];
+    serializers: {
+        nodes: MarkdownSerializerNodes;
+        marks: MarkdownSerializerMarks;
+    };
+};
+
 /** TODO DOCUMENT ALL ITEMS */
-export interface EditorPlugin1<TOptions = unknown> {
+export interface EditorPluginSpec<TOptions = unknown> {
     //optionDefaults?: DeepRequired<TOptions>; // TODO make Required
 
-    richText?: (options: TOptions) => {
+    richText?: {
         nodeViews?: EditorProps["nodeViews"];
         plugins?: Plugin[];
-        inputRules?: InputRule[];
+        //inputRules?: InputRule[];
     };
 
-    commonmark?: (options: TOptions) => {
+    commonmark?: {
         plugins?: Plugin[];
     };
 
-    menu?: (options: TOptions) => PluginMenuBlock[];
+    menuItems?: AddMenuItemsCallback;
 
-    markdown?: {
-        configureMarkdownIt?: (instance: MarkdownIt) => void;
-        parser?: (options: TOptions) => {
-            tokens: MarkdownParser["tokens"];
-        };
-        serializers?: (options: TOptions) => MarkdownSerializerNodes;
+    markdown?: MarkdownExtensionProps & {
+        alterMarkdownIt?: AlterMarkdownItCallback;
     };
 
-    schema?: (schema: PluginSchemaSpec) => PluginSchemaSpec;
+    // TODO warn devs that they need to (at minimum) add a serializer as well?
+    extendSchema?: AlterSchemaCallback;
+
+    codeBlockProcessor?: {
+        lang: "*" | string;
+        callback: AddCodeBlockProcessorCallback;
+    };
 
     // events?: {
     //     onEnable?: EventCallback;
@@ -88,20 +105,8 @@ export interface EditorPlugin1<TOptions = unknown> {
     //postProcess?: <T>(editor: AggregatedEditorPlugin<T>) => void;
 }
 
-type AddCodeBlockProcessorCallback = (
-    content: string,
-    container: Element
-) => void | Promise<void>;
-type AlterSchemaCallback = (schema: PluginSchemaSpec) => PluginSchemaSpec;
-type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
-type MarkdownExtensionProps = {
-    parser: MarkdownParser["tokens"];
-    serializers: {
-        nodes: MarkdownSerializerNodes;
-        marks: MarkdownSerializerMarks;
-    };
-};
-type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
+export type EditorPlugin1<TOptions = unknown> =
+    () => EditorPluginSpec<TOptions>;
 
 export type EditorPlugin2<TOptions = unknown> = (
     this: void,
