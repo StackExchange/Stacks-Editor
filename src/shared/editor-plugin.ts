@@ -2,7 +2,7 @@ import MarkdownIt from "markdown-it";
 import OrderedMap from "orderedmap";
 import { InputRule } from "prosemirror-inputrules";
 import { MarkdownParser } from "prosemirror-markdown";
-import type { MarkSpec, NodeSpec, SchemaSpec } from "prosemirror-model";
+import type { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
 import type { EditorState, Plugin } from "prosemirror-state";
 import { EditorProps } from "prosemirror-view";
 import {
@@ -101,6 +101,7 @@ type MarkdownExtensionProps = {
         marks: MarkdownSerializerMarks;
     };
 };
+type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
 
 export type EditorPlugin2<TOptions = unknown> = (
     this: void,
@@ -109,14 +110,18 @@ export type EditorPlugin2<TOptions = unknown> = (
 ) => void;
 
 export interface EditorPluginApi {
-    addMenuItems(items: PluginMenuBlock[]): void;
+    addMenuItems(callback: AddMenuItemsCallback): void;
     addCommonmarkPlugin(plugin: Plugin): void;
     addRichTextPlugin(plugin: Plugin): void;
     extendMarkdown(
         props: MarkdownExtensionProps,
         callback: AlterMarkdownItCallback
     ): void;
-    extendSchema(callback: AlterSchemaCallback): void;
+    // TODO warn devs that they need to (at minimum) add a serializer as well?
+    extendSchema(
+        callback: AlterSchemaCallback,
+        nodeViews?: EditorProps["nodeViews"]
+    ): void;
     addCodeBlockProcessor(
         lang: "*" | string,
         callback: AddCodeBlockProcessorCallback
@@ -127,6 +132,7 @@ export interface EditorPluginApi {
 
 /** TODO DOCUMENT */
 export class ExternalPluginProvider {
+    // TODO DEEP READONLY
     readonly codeblockProcessors: {
         [key: string]: (
             content: string,
@@ -134,11 +140,13 @@ export class ExternalPluginProvider {
         ) => void | Promise<void>;
     } = {};
 
+    // TODO DEEP READONLY
     readonly plugins = {
         richText: [] as Plugin[],
         commonmark: [] as Plugin[],
     };
 
+    // TODO DEEP READONLY
     readonly markdownProps: MarkdownExtensionProps = {
         parser: {},
         serializers: {
@@ -147,8 +155,10 @@ export class ExternalPluginProvider {
         },
     };
 
-    private menu: PluginMenuBlock[] = [];
+    // TODO READONLY
+    nodeViews: EditorProps["nodeViews"] = {};
 
+    private menuCallbacks: AddMenuItemsCallback[] = [];
     private schemaCallbacks: AlterSchemaCallback[] = [];
     private markdownItCallbacks: AlterMarkdownItCallback[] = [];
 
@@ -183,22 +193,28 @@ export class ExternalPluginProvider {
     // TODO refactor menu to use MenuBlocks
     getFinalizedMenu(
         menu: MenuCommandEntry[],
-        editorType: EditorType
+        editorType: EditorType,
+        schema: Schema
     ): MenuCommandEntry[] {
         const ret = [...menu];
 
         // TODO merge blocks based on name and sort by priority, lazily going to assume all are unique for the MVP
-        for (const block of this.menu) {
+        for (const callback of this.menuCallbacks) {
+            // TODO menu will take care of this instead
             if (ret.length) {
                 ret.push(makeMenuSpacerEntry());
             }
 
-            const entries = this.convertMenuCommandEntries(
-                block.entries,
-                editorType
-            );
+            const blocks = callback(schema);
+            for (const block of blocks) {
+                const entries = this.convertMenuCommandEntries(
+                    block.entries,
+                    editorType
+                );
 
-            ret.push(...entries);
+                // TODO deep merge after migrating menu
+                ret.push(...entries);
+            }
         }
 
         return ret;
@@ -267,9 +283,8 @@ export class ExternalPluginProvider {
 
     private api() {
         return {
-            addMenuItems: (items: PluginMenuBlock[]): void => {
-                // TODO deep merge after refactoring the menu
-                this.menu.push(...items);
+            addMenuItems: (callback: AddMenuItemsCallback): void => {
+                this.menuCallbacks.push(callback);
             },
 
             addCommonmarkPlugin: (plugin: Plugin): void => {
@@ -310,8 +325,17 @@ export class ExternalPluginProvider {
                 }
             },
 
-            extendSchema: (callback: AlterSchemaCallback): void => {
+            extendSchema: (
+                callback: AlterSchemaCallback,
+                nodeViews?: EditorProps["nodeViews"]
+            ): void => {
                 this.schemaCallbacks.push(callback);
+                if (nodeViews) {
+                    this.nodeViews = {
+                        ...this.nodeViews,
+                        ...nodeViews,
+                    };
+                }
             },
 
             addCodeBlockProcessor: (

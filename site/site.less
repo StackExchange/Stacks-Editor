@@ -2,6 +2,8 @@
 @import (reference) "@stackoverflow/stacks/lib/css/exports/constants-type";
 @import (reference) "@stackoverflow/stacks/lib/css/exports/constants-colors";
 @import (reference) "@stackoverflow/stacks/lib/css/exports/constants-helpers";
+@import (reference) "@stackoverflow/stacks/lib/css/base/internals";
+@import (reference) "@stackoverflow/stacks/lib/css/atomic/misc";
 
 @import "~@stackoverflow/stacks/dist/css/stacks.css";
 
@@ -14,4 +16,123 @@
 
 .icon-bg.iconLogoGlyphXSm {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/LogoGlyphXSm.svg");
+}
+
+.icon-bg.iconHandRock {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/HandRock.svg");
+}
+
+.icon-bg.iconTada {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Tada.svg");
+}
+
+.icon-bg.iconHundred {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Hundred.svg");
+}
+
+.icon-bg.iconWave {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Wave.svg");
+}
+
+.silly-effect--🎉::after {
+    content: "";
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    .bg-confetti-animated;
+}
+
+.silly-effect--💯 {
+    color: white;
+    text-shadow: 1px 1px 1px black;
+    padding: var(--su4);
+    background: linear-gradient(
+            to right,
+            rgba(255, 0, 0, 1) 0%,
+            rgba(255, 154, 0, 1) 10%,
+            rgba(208, 222, 33, 1) 20%,
+            rgba(79, 220, 74, 1) 30%,
+            rgba(63, 218, 216, 1) 40%,
+            rgba(47, 201, 226, 1) 50%,
+            rgba(28, 127, 238, 1) 60%,
+            rgba(95, 21, 242, 1) 70%,
+            rgba(186, 12, 248, 1) 80%,
+            rgba(251, 7, 217, 1) 90%,
+            rgba(255, 0, 0, 1) 100%
+        )
+        0 0/200% 100%;
+    animation: rainbow 2s linear infinite;
+    position: relative;
+}
+
+.silly-effect--👋 {
+    animation: wave 1.5s ease 0s infinite normal forwards;
+}
+
+.silly-effect__effect {
+    position: relative;
+}
+
+.silly-effect__effect::after {
+    content: attr(data-effect);
+    position: absolute;
+    opacity: 0;
+    top: 0;
+    left: 0;
+    animation: popFade 0.5s ease-in-out;
+}
+
+@keyframes rainbow {
+    to {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes wave {
+    0%,
+    100% {
+        transform: translateX(0%);
+    }
+
+    15% {
+        transform: rotate(-5deg);
+    }
+
+    30% {
+        transform: rotate(5deg);
+    }
+
+    45% {
+        transform: rotate(-4.5deg);
+    }
+
+    60% {
+        transform: rotate(4.5deg);
+    }
+
+    75% {
+        transform: rotate(-1deg);
+    }
+}
+
+@keyframes popFade {
+    0% {
+        opacity: 1;
+        top: 0;
+        left: 0;
+    }
+
+    25% {
+        top: -100%;
+        left: 100%;
+    }
+
+    100% {
+        opacity: 0;
+        top: 0%;
+        left: 200%;
+    }
 }

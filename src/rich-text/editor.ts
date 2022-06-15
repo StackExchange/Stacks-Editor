@@ -75,17 +75,18 @@ export class RichTextEditor extends BaseView {
             this.externalPluginProvider
         );
 
+        const doc = this.parseContent(content);
+
         const menuEntries = this.externalPluginProvider.getFinalizedMenu(
             createMenuEntries(this.options),
-            EditorType.RichText
+            EditorType.RichText,
+            doc.type.schema
         );
 
         const menu = createMenuPlugin(
             menuEntries,
             this.options.menuParentContainer
         );
-
-        const doc = this.parseContent(content);
 
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
@@ -149,7 +150,7 @@ export class RichTextEditor extends BaseView {
                     html_block_container: function (node: ProseMirrorNode) {
                         return new HtmlBlockContainer(node);
                     },
-                    //...this.externalPlugins.nodeViews,
+                    ...this.externalPluginProvider.nodeViews,
                 },
                 plugins: [],
             }
