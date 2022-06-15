@@ -1,13 +1,11 @@
-// simple proof of concept that adds furigana support from https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807
-// due to the fact that we cannot directly alter the contenteditable content, we have to make these some sort of node/mark...
-// TODO might be worth implementing this in the same manner as e.g. mathjax
-
 import type MarkdownIt from "markdown-it";
 import type ParserInline from "markdown-it/lib/parser_inline";
 import type StateInline from "markdown-it/lib/rules_inline/state_inline";
 import type Token from "markdown-it/lib/token";
-import { EditorPlugin } from "../../src";
+import type { EditorPlugin } from "../../src";
 
+// simple proof of concept that adds furigana support from https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807
+// due to the fact that we cannot directly alter the contenteditable content, we have to make these a node or mark
 // NOTE: functionality heavily inspired by https://cdn.sstatic.net/Js/third-party/japanese-l-u.js
 export const japaneseSEPlugin: EditorPlugin = () => ({
     markdown: {

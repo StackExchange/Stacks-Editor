@@ -1,10 +1,12 @@
 import type { Node, Schema } from "prosemirror-model";
 import { EditorState, Plugin } from "prosemirror-state";
 import { DecorationSet, Decoration } from "prosemirror-view";
-import { EditorPlugin, PluginMenuBlock } from "../../src/shared/editor-plugin";
+import type {
+    EditorPlugin,
+    PluginMenuBlock,
+} from "../../src/shared/editor-plugin";
 import type { MenuCommand } from "../../src/shared/menu";
 
-// this would likely be better served as a NodeView, but I'm testing _plugins_ here
 const sillyEffectPlugin = new Plugin<{ decorations: DecorationSet }>({
     state: {
         init() {
@@ -43,37 +45,6 @@ const sillyEffectPlugin = new Plugin<{ decorations: DecorationSet }>({
         },
     },
 });
-
-const spec: ReturnType<EditorPlugin> = {
-    extendSchema: (schema) => {
-        schema.nodes = schema.nodes.addToEnd("silly_effect", {
-            content: "block+",
-            group: "block",
-            attrs: {
-                effect: { default: "🎉" },
-            },
-            toDOM: (node) => {
-                return [
-                    "div",
-                    {
-                        class: `silly-effect silly-effect--${
-                            node.attrs.effect as string
-                        }`,
-                    },
-                    0,
-                ];
-            },
-        });
-
-        return schema;
-    },
-
-    menuItems: addMenuItems,
-
-    richText: {
-        plugins: [sillyEffectPlugin],
-    },
-};
 
 function getCurrentEffectNode(state: EditorState) {
     const { from, to } = state.selection;
@@ -173,4 +144,34 @@ function addMenuItems(schema: Schema): PluginMenuBlock[] {
     ];
 }
 
-export const sillyPlugin: EditorPlugin = (_) => spec;
+// simple proof of concept plugin showcasing custom menu items and ProseMirror plugins
+export const sillyPlugin: EditorPlugin = () => ({
+    extendSchema: (schema) => {
+        schema.nodes = schema.nodes.addToEnd("silly_effect", {
+            content: "block+",
+            group: "block",
+            attrs: {
+                effect: { default: "🎉" },
+            },
+            toDOM: (node) => {
+                return [
+                    "div",
+                    {
+                        class: `silly-effect silly-effect--${
+                            node.attrs.effect as string
+                        }`,
+                    },
+                    0,
+                ];
+            },
+        });
+
+        return schema;
+    },
+
+    menuItems: addMenuItems,
+
+    richText: {
+        plugins: [sillyEffectPlugin],
+    },
+});
