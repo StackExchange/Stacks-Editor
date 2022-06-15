@@ -71,6 +71,36 @@ export type MarkdownExtensionProps = {
     };
 };
 
+/** TODO DOCUMENT ALL ITEMS */
+export interface EditorPluginSpec {
+    richText?: {
+        nodeViews?: EditorProps["nodeViews"];
+        plugins?: Plugin[];
+    };
+
+    commonmark?: {
+        plugins?: Plugin[];
+    };
+
+    menuItems?: AddMenuItemsCallback;
+
+    markdown?: MarkdownExtensionProps & {
+        alterMarkdownIt?: AlterMarkdownItCallback;
+    };
+
+    // TODO warn devs that they need to (at minimum) add a serializer as well?
+    extendSchema?: AlterSchemaCallback;
+
+    codeBlockProcessors?: {
+        lang: "*" | string;
+        callback: AddCodeBlockProcessorCallback;
+    }[];
+}
+
+export type EditorPlugin<TOptions = unknown> = (
+    options: TOptions
+) => EditorPluginSpec;
+
 export interface IExternalPluginProvider {
     // TODO DEEP READONLY
     readonly codeblockProcessors: {
@@ -342,43 +372,3 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         return ret;
     }
 }
-
-/** TODO DOCUMENT ALL ITEMS */
-export interface EditorPluginSpec {
-    //optionDefaults?: DeepRequired<TOptions>; // TODO make Required
-
-    richText?: {
-        nodeViews?: EditorProps["nodeViews"];
-        plugins?: Plugin[];
-        //inputRules?: InputRule[];
-    };
-
-    commonmark?: {
-        plugins?: Plugin[];
-    };
-
-    menuItems?: AddMenuItemsCallback;
-
-    markdown?: MarkdownExtensionProps & {
-        alterMarkdownIt?: AlterMarkdownItCallback;
-    };
-
-    // TODO warn devs that they need to (at minimum) add a serializer as well?
-    extendSchema?: AlterSchemaCallback;
-
-    codeBlockProcessors?: {
-        lang: "*" | string;
-        callback: AddCodeBlockProcessorCallback;
-    }[];
-
-    // events?: {
-    //     onEnable?: EventCallback;
-    //     onDisable?: EventCallback;
-    // };
-
-    //postProcess?: <T>(editor: AggregatedEditorPlugin<T>) => void;
-}
-
-export type EditorPlugin<TOptions = unknown> = (
-    options: TOptions
-) => EditorPluginSpec;

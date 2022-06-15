@@ -5,6 +5,7 @@ import { EditorView } from "prosemirror-view";
 import { ExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
+import { createMenuPlugin } from "../shared/menu";
 import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
@@ -20,6 +21,7 @@ import {
     BaseView,
     CommonViewOptions,
     defaultParserFeatures,
+    EditorType,
 } from "../shared/view";
 import { createMenu } from "./commands";
 import { allKeymaps } from "./key-bindings";
@@ -39,6 +41,17 @@ export class CommonmarkEditor extends BaseView {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
+        const menuEntries = pluginProvider.getFinalizedMenu(
+            createMenu(this.options),
+            EditorType.Commonmark,
+            commonmarkSchema
+        );
+
+        const menu = createMenuPlugin(
+            menuEntries,
+            this.options.menuParentContainer
+        );
+
         this.editorView = new EditorView(
             (node: HTMLElement) => {
                 node.classList.add(...(this.options.classList || []));
@@ -51,7 +64,7 @@ export class CommonmarkEditor extends BaseView {
                     plugins: [
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
-                        createMenu(this.options),
+                        menu,
                         CodeBlockHighlightPlugin(null),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
