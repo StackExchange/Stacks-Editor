@@ -83,23 +83,71 @@ export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
-    const nodeCheck = nodeTypeActive(nodeType, attrs);
-    const setBlockTypeCommand = setBlockType(nodeType, attrs);
-
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
+
         // if the node is set, toggle it off
         if (nodeCheck(state)) {
             return setToTextCommand(state, dispatch);
         }
 
+        const setBlockTypeCommand = setBlockType(nodeType, attrs);
         return setBlockTypeCommand(state, (t) => {
             if (dispatch) {
                 // when adding a block node, make sure the user can navigate past it
-                t = insertParagraphIfAtDocEnd(t);
-                dispatch(t);
+                dispatch(insertParagraphIfAtDocEnd(t));
             }
         });
     };
+}
+
+/**
+ * Creates a command that toggles heading and cycles through heading levels
+ * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
+ * @internal
+ */
+export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
+    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeType = schema.nodes.heading;
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
+        const headingLevel = getHeadingLevel(state);
+
+        // if the node is a heading and is either level 6 or matches the current level, toggle it off
+        if (
+            nodeCheck(state) &&
+            (headingLevel === 6 || headingLevel === attrs?.level)
+        ) {
+            return setToTextCommand(state, dispatch);
+        }
+
+        const updatedAttrs = !attrs?.level
+            ? { ...attrs, level: headingLevel + 1 }
+            : attrs;
+        const setBlockTypeCommand = setBlockType(nodeType, updatedAttrs);
+        return setBlockTypeCommand(state, (t) => {
+            if (dispatch) {
+                // when adding a block node, make sure the user can navigate past it
+                dispatch(insertParagraphIfAtDocEnd(t));
+            }
+        });
+    };
+}
+
+/**
+ * Returns the first heading level of the current selection
+ * @param state The current editor state
+ */
+function getHeadingLevel(state: EditorState): number {
+    const { from, to } = state.selection;
+    let level = 0;
+    state.doc.nodesBetween(from, to, (node) => {
+        if (node.type.name === "heading") {
+            level = node.attrs.level as number;
+            return true;
+        }
+    });
+
+    return level;
 }
 
 export function insertHorizontalRuleCommand(
@@ -329,21 +377,21 @@ const headingDropdown = () =>
 
         dropdownItem(
             "Heading 1",
-            toggleBlockType(schema.nodes.heading, { level: 1 }),
+            toggleHeadingLevel({ level: 1 }),
             "h1-btn",
             nodeTypeActive(schema.nodes.heading, { level: 1 }),
             ["fs-body3", "mt8"]
         ),
         dropdownItem(
             "Heading 2",
-            toggleBlockType(schema.nodes.heading, { level: 2 }),
+            toggleHeadingLevel({ level: 2 }),
             "h2-btn",
             nodeTypeActive(schema.nodes.heading, { level: 2 }),
             ["fs-body2"]
         ),
         dropdownItem(
             "Heading 3",
-            toggleBlockType(schema.nodes.heading, { level: 3 }),
+            toggleHeadingLevel({ level: 3 }),
             "h3-btn",
             nodeTypeActive(schema.nodes.heading, { level: 3 }),
             ["fs-body1"]
