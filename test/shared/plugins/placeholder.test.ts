@@ -1,13 +1,13 @@
 import { CommonmarkEditor } from "../../../src/commonmark/editor";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 
-const target = document.createElement("div");
-
 function commonmarkView(
     markdown: string,
     placeholderText: string
 ): CommonmarkEditor {
-    return new CommonmarkEditor(target, markdown, { placeholderText });
+    return new CommonmarkEditor(document.createElement("div"), markdown, {
+        placeholderText,
+    });
 }
 
 function richView(markdownInput: string, placeholderText: string) {
