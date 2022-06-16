@@ -9,7 +9,7 @@ import {
     richTextImageUpload,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
 import "../../matchers";
-import { getSelectedText } from "../../test-helpers";
+import { externalPluginProvider, getSelectedText } from "../../test-helpers";
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
 import { testRichTextSchema } from "../../rich-text/test-helpers";
@@ -529,7 +529,12 @@ function richTextView(
     markdown: string,
     containerFn: () => Element
 ): RichTextEditor {
-    return new RichTextEditor(document.createElement("div"), markdown, {
-        pluginParentContainer: containerFn,
-    });
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdown,
+        externalPluginProvider(),
+        {
+            pluginParentContainer: containerFn,
+        }
+    );
 }

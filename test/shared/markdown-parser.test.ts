@@ -5,6 +5,7 @@ import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
 import "../matchers";
 import { testRichTextSchema } from "../rich-text/test-helpers";
+import { externalPluginProvider } from "../test-helpers";
 
 // mark features as required to ensure our tests have all the features set
 const features: Required<CommonmarkParserFeatures> = {
@@ -19,7 +20,7 @@ const features: Required<CommonmarkParserFeatures> = {
     validateLink: stackOverflowValidateLink,
 };
 
-const markdownParser = buildMarkdownParser(features, testRichTextSchema, null);
+const markdownParser = buildMarkdownParser(features, testRichTextSchema, externalPluginProvider());
 
 describe("SOMarkdownParser", () => {
     describe("html support", () => {
@@ -211,7 +212,7 @@ console.log("test");
             const mdParserWithoutTagLinks = buildMarkdownParser(
                 {},
                 testRichTextSchema,
-                null
+                externalPluginProvider()
             );
             const doc = mdParserWithoutTagLinks.parse("[tag:python]");
 
@@ -348,7 +349,7 @@ console.log("test");
                     validateLink: (url) => /www.example.com/.test(url),
                 },
                 testRichTextSchema,
-                null
+                externalPluginProvider()
             );
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = mdParser

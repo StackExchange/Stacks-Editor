@@ -1,4 +1,4 @@
-import { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
+import { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
 import { _t } from "../shared/localization";
 
 //TODO this relies on Stacks classes, should we abstract?

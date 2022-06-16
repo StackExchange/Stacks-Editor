@@ -14,6 +14,10 @@ import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { toggleReadonly } from "../shared/prosemirror-plugins/readonly";
 import { _t } from "../shared/localization";
+import {
+    IExternalPluginProvider,
+    ShimExternalPluginProvider,
+} from "../shared/editor-plugin";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -48,6 +52,8 @@ export class StacksEditor implements View {
     private options: StacksEditorOptions;
     /** An internal-only, randomly generated id for selector targeting */
     private internalId: string;
+    /** Singleton instance of a plugin provider that is passed to backing views */
+    private pluginProvider: IExternalPluginProvider;
 
     private static readonly READONLY_CLASSES = ["s-input__readonly"];
 
@@ -67,6 +73,9 @@ export class StacksEditor implements View {
         this.target.appendChild(this.innerTarget);
 
         this.setupPluginContainer();
+
+        // TODO pass in plugins to the provider once the real one is written
+        this.pluginProvider = new ShimExternalPluginProvider();
 
         this.setBackingView(this.options.defaultView, content);
     }
@@ -259,12 +268,14 @@ export class StacksEditor implements View {
             this.backingView = new RichTextEditor(
                 this.innerTarget,
                 content,
+                this.pluginProvider,
                 deepMerge(this.options, this.options.richTextOptions)
             );
         } else if (type === EditorType.Commonmark) {
             this.backingView = new CommonmarkEditor(
                 this.innerTarget,
                 content,
+                this.pluginProvider,
                 deepMerge(this.options, this.options.commonmarkOptions)
             );
         } else {

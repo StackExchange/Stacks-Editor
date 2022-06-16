@@ -4,11 +4,6 @@ import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
-import {
-    collapseExternalPlugins,
-    combineSchemas,
-    ExternalEditorPlugin,
-} from "../shared/external-editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { error, log } from "../shared/logger";
 import { buildMarkdownParser } from "../shared/markdown-parser";
@@ -26,8 +21,8 @@ import {
     BaseView,
     CommonViewOptions,
     defaultParserFeatures,
+    EditorType,
 } from "../shared/view";
-import { createMenu } from "./commands";
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
 import { stackOverflowMarkdownSerializer } from "./markdown-serializer";
@@ -43,8 +38,11 @@ import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
-import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
 import { richTextSchemaSpec } from "./schema";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
+import { IExternalPluginProvider } from "../shared/editor-plugin";
+import { createMenuPlugin } from "../shared/menu";
+import { createMenuEntries } from "./commands";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -59,33 +57,55 @@ export class RichTextEditor extends BaseView {
     private options: RichTextOptions;
     private markdownSerializer: MarkdownSerializer;
     private markdownParser: MarkdownParser;
-    private externalPlugins: ExternalEditorPlugin;
     private finalizedSchema: Schema;
+    private externalPluginProvider: IExternalPluginProvider;
 
-    constructor(target: Node, content: string, options: RichTextOptions = {}) {
+    constructor(
+        target: Node,
+        content: string,
+        pluginProvider: IExternalPluginProvider,
+        options: RichTextOptions = {}
+    ) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
-
-        this.externalPlugins = collapseExternalPlugins(
-            this.options.externalPlugins
-        );
+        this.externalPluginProvider = pluginProvider;
 
         this.markdownSerializer = stackOverflowMarkdownSerializer(
-            this.externalPlugins
+            this.externalPluginProvider
         );
 
-        this.finalizedSchema = combineSchemas(
-            new Schema(richTextSchemaSpec),
-            this.externalPlugins?.schema
+        this.finalizedSchema = new Schema(
+            this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
         );
 
         this.markdownParser = buildMarkdownParser(
             this.options.parserFeatures,
             this.finalizedSchema,
-            this.externalPlugins
+            this.externalPluginProvider
+        );
+
+        this.finalizedSchema = new Schema(
+            this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
+        );
+
+        this.markdownParser = buildMarkdownParser(
+            this.options.parserFeatures,
+            this.finalizedSchema,
+            this.externalPluginProvider
         );
 
         const doc = this.parseContent(content);
+
+        const menuEntries = this.externalPluginProvider.getFinalizedMenu(
+            createMenuEntries(this.finalizedSchema, this.options),
+            EditorType.RichText,
+            doc.type.schema
+        );
+
+        const menu = createMenuPlugin(
+            menuEntries,
+            this.options.menuParentContainer
+        );
 
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
@@ -103,7 +123,7 @@ export class RichTextEditor extends BaseView {
                             this.finalizedSchema,
                             this.options.parserFeatures
                         ),
-                        createMenu(this.finalizedSchema, this.options),
+                        menu,
                         richTextInputRules(
                             this.finalizedSchema,
                             this.options.parserFeatures
@@ -127,7 +147,7 @@ export class RichTextEditor extends BaseView {
                         tables,
                         codePasteHandler,
                         linkPasteHandler(this.options.parserFeatures),
-                        ...this.externalPlugins.plugins,
+                        ...this.externalPluginProvider.plugins.richText,
                         // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers
                         plainTextPasteHandler,
                     ],
@@ -152,7 +172,7 @@ export class RichTextEditor extends BaseView {
                     html_block_container: function (node: ProseMirrorNode) {
                         return new HtmlBlockContainer(node);
                     },
-                    ...this.externalPlugins.nodeViews,
+                    ...this.externalPluginProvider.nodeViews,
                 },
                 plugins: [],
             }
