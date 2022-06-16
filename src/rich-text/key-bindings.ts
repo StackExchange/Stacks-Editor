@@ -28,7 +28,6 @@ import {
     moveSelectionAfterTableCommand,
     insertTableCommand,
     exitInclusiveMarkCommand,
-    toggleBlockType,
     toggleHeadingLevel,
 } from "./commands";
 
