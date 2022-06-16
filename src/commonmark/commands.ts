@@ -192,15 +192,16 @@ function setBlockType(
 /**
  * Returns any block formatting characters (plus trailing space) at the very start of the passed text
  * @param text The text to check for leading block characters
+ * @internal
  */
 export function matchLeadingBlockCharacters(text: string) {
     // TODO this might be too aggressive... remove based on a whitelist instead?
-    // Match ordered lists prefixes
-    let match = /^(\d+)\.\s/.exec(text)?.[0];
+    // Match ordered list markers; see https://spec.commonmark.org/0.30/#ordered-list-marker
+    let match = /^(\d+)(?:\.|\))\s/.exec(text)?.[0];
 
     // If text is not an ordered list block, check for other block types
     if (!match) {
-        // TODO HACK assumes all non-orderedd list block types are non-letter characters followed by a single space
+        // TODO HACK assumes all non-ordered list block types are non-letter characters followed by a single space
         match = /^[^a-zA-Z0-9]+\s{1}(?=[a-zA-Z0-9_*[!]|$)+/.exec(text)?.[0];
     }
 

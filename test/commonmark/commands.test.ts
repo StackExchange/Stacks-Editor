@@ -530,17 +530,23 @@ some text`;
 
             expect(command).toBe("");
         });
+
         it("return ordered list leading characters", () => {
-            const command =
-                commands.matchLeadingBlockCharacters("23. -ol item");
+            let command = commands.matchLeadingBlockCharacters("23. -ol item");
 
             expect(command).toBe("23. ");
+
+            command = commands.matchLeadingBlockCharacters("23) -ol item");
+
+            expect(command).toBe("23) ");
         });
+
         it("return unordered list leading characters", () => {
             const command = commands.matchLeadingBlockCharacters("- 1 ul item");
 
             expect(command).toBe("- ");
         });
+
         it("return heading leading characters", () => {
             const command =
                 commands.matchLeadingBlockCharacters("## Heading level 2");
