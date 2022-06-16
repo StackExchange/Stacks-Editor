@@ -199,6 +199,7 @@ domReady(() => {
                     },
                 },
             },
+            placeholderText: "This is placeholder text, so start typing…",
             richTextOptions: {
                 linkPreviewProviders: [
                     ExampleTextOnlyLinkPreviewProvider,

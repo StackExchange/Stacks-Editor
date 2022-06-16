@@ -521,4 +521,37 @@ some text`;
             });
         });
     });
+
+    describe("matchLeadingBlockCharacters", () => {
+        it("return no leading characters", () => {
+            const command = commands.matchLeadingBlockCharacters(
+                "42 shouldn't be returned"
+            );
+
+            expect(command).toBe("");
+        });
+
+        it("return ordered list leading characters", () => {
+            let command = commands.matchLeadingBlockCharacters("23. -ol item");
+
+            expect(command).toBe("23. ");
+
+            command = commands.matchLeadingBlockCharacters("23) -ol item");
+
+            expect(command).toBe("23) ");
+        });
+
+        it("return unordered list leading characters", () => {
+            const command = commands.matchLeadingBlockCharacters("- 1 ul item");
+
+            expect(command).toBe("- ");
+        });
+
+        it("return heading leading characters", () => {
+            const command =
+                commands.matchLeadingBlockCharacters("## Heading level 2");
+
+            expect(command).toBe("## ");
+        });
+    });
 });

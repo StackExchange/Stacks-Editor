@@ -15,6 +15,8 @@ export interface CommonViewOptions {
     editorHelpLink?: string;
     /** The features to allow/disallow on the markdown parser */
     parserFeatures?: CommonmarkParserFeatures;
+    /** The placeholder text for an empty editor */
+    placeholderText?: string;
     /**
      * Function to get the container to place the menu bar;
      * defaults to returning this editor's target's parentNode

@@ -30,6 +30,7 @@ import {
     exitInclusiveMarkCommand,
     indentCodeBlockLinesCommand,
     deindentCodeBlockLinesCommand,
+    toggleHeadingLevel,
 } from "./commands";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
@@ -72,7 +73,7 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         ...bindLetterKeymap("Ctrl-g", insertImageCommand),
         ...bindLetterKeymap("Mod-o", wrapIn(schema.nodes.ordered_list)),
         ...bindLetterKeymap("Mod-u", wrapIn(schema.nodes.bullet_list)),
-        ...bindLetterKeymap("Mod-h", setBlockType(schema.nodes.heading)),
+        ...bindLetterKeymap("Mod-h", toggleHeadingLevel()),
         ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
         // users expect to be able to leave certain blocks/marks using the arrow keys

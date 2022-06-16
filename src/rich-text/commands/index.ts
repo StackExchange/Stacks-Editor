@@ -25,6 +25,7 @@ import {
 } from "../../shared/prosemirror-plugins/image-upload";
 import { richTextSchema as schema } from "../schema";
 import type { CommonViewOptions } from "../../shared/view";
+import { getShortcut } from "../../shared/utils";
 import { LINK_TOOLTIP_KEY } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
@@ -82,20 +83,51 @@ export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
-    const nodeCheck = nodeTypeActive(nodeType, attrs);
-    const setBlockTypeCommand = setBlockType(nodeType, attrs);
-
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
+
         // if the node is set, toggle it off
         if (nodeCheck(state)) {
             return setToTextCommand(state, dispatch);
         }
 
+        const setBlockTypeCommand = setBlockType(nodeType, attrs);
         return setBlockTypeCommand(state, (t) => {
             if (dispatch) {
                 // when adding a block node, make sure the user can navigate past it
-                t = insertParagraphIfAtDocEnd(t);
-                dispatch(t);
+                dispatch(insertParagraphIfAtDocEnd(t));
+            }
+        });
+    };
+}
+
+/**
+ * Creates a command that toggles heading and cycles through heading levels
+ * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
+ * @internal
+ */
+export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
+    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeType = schema.nodes.heading;
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
+        const headingLevel = getHeadingLevel(state);
+
+        // if the node is a heading and is either level 6 or matches the current level, toggle it off
+        if (
+            nodeCheck(state) &&
+            (headingLevel === 6 || headingLevel === attrs?.level)
+        ) {
+            return setToTextCommand(state, dispatch);
+        }
+
+        const updatedAttrs = !attrs?.level
+            ? { ...attrs, level: headingLevel + 1 }
+            : attrs;
+        const setBlockTypeCommand = setBlockType(nodeType, updatedAttrs);
+        return setBlockTypeCommand(state, (t) => {
+            if (dispatch) {
+                // when adding a block node, make sure the user can navigate past it
+                dispatch(insertParagraphIfAtDocEnd(t));
             }
         });
     };
@@ -213,6 +245,23 @@ export function deindentCodeBlockLinesCommand(
     }
 
     return lineCount > 0;
+}
+
+/**
+ * Returns the first heading level of the current selection
+ * @param state The current editor state
+ */
+function getHeadingLevel(state: EditorState): number {
+    const { from, to } = state.selection;
+    let level = 0;
+    state.doc.nodesBetween(from, to, (node) => {
+        if (node.type.name === "heading") {
+            level = node.attrs.level as number;
+            return true;
+        }
+    });
+
+    return level;
 }
 
 export function insertHorizontalRuleCommand(
@@ -435,28 +484,28 @@ const tableDropdown = () =>
 const headingDropdown = () =>
     makeMenuDropdown(
         "Header",
-        "Header",
+        `Heading (${getShortcut("Mod-h")})`,
         "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
 
         dropdownItem(
             "Heading 1",
-            toggleBlockType(schema.nodes.heading, { level: 1 }),
+            toggleHeadingLevel({ level: 1 }),
             "h1-btn",
             nodeTypeActive(schema.nodes.heading, { level: 1 }),
             ["fs-body3", "mt8"]
         ),
         dropdownItem(
             "Heading 2",
-            toggleBlockType(schema.nodes.heading, { level: 2 }),
+            toggleHeadingLevel({ level: 2 }),
             "h2-btn",
             nodeTypeActive(schema.nodes.heading, { level: 2 }),
             ["fs-body2"]
         ),
         dropdownItem(
             "Heading 3",
-            toggleBlockType(schema.nodes.heading, { level: 3 }),
+            toggleHeadingLevel({ level: 3 }),
             "h3-btn",
             nodeTypeActive(schema.nodes.heading, { level: 3 }),
             ["fs-body1"]
@@ -470,19 +519,31 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "toggleBold",
                 command: toggleMark(schema.marks.strong),
-                dom: makeMenuIcon("Bold", "Bold", "bold-btn"),
+                dom: makeMenuIcon(
+                    "Bold",
+                    `Bold (${getShortcut("Mod-b")})`,
+                    "bold-btn"
+                ),
                 active: markActive(schema.marks.strong),
             },
             {
                 key: "toggleEmphasis",
                 command: toggleMark(schema.marks.em),
-                dom: makeMenuIcon("Italic", "Italic", "italic-btn"),
+                dom: makeMenuIcon(
+                    "Italic",
+                    `Italic (${getShortcut("Mod-i")})`,
+                    "italic-btn"
+                ),
                 active: markActive(schema.marks.em),
             },
             {
                 key: "toggleCode",
                 command: toggleMark(schema.marks.code),
-                dom: makeMenuIcon("Code", "Inline code", "code-btn"),
+                dom: makeMenuIcon(
+                    "Code",
+                    `Inline Code (${getShortcut("Mod-k")})`,
+                    "code-btn"
+                ),
                 active: markActive(schema.marks.code),
             },
             addIf(
@@ -502,25 +563,41 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "toggleLink",
                 command: insertLinkCommand,
-                dom: makeMenuIcon("Link", "Link selection", "insert-link-btn"),
+                dom: makeMenuIcon(
+                    "Link",
+                    `Link (${getShortcut("Mod-l")})`,
+                    "insert-link-btn"
+                ),
             },
             {
                 key: "toggleBlockquote",
                 command: toggleWrapIn(schema.nodes.blockquote),
-                dom: makeMenuIcon("Quote", "Blockquote", "blockquote-btn"),
+                dom: makeMenuIcon(
+                    "Quote",
+                    `Blockquote (${getShortcut("Ctrl-q")})`,
+                    "blockquote-btn"
+                ),
                 active: nodeTypeActive(schema.nodes.blockquote),
             },
             {
                 key: "toggleCodeblock",
                 command: toggleBlockType(schema.nodes.code_block),
-                dom: makeMenuIcon("Codeblock", "Code block", "code-block-btn"),
+                dom: makeMenuIcon(
+                    "Codeblock",
+                    `Code block (${getShortcut("Mod-m")})`,
+                    "code-block-btn"
+                ),
                 active: nodeTypeActive(schema.nodes.code_block),
             },
             addIf(
                 {
                     key: "insertImage",
                     command: insertImageCommand,
-                    dom: makeMenuIcon("Image", "Image", "insert-image-btn"),
+                    dom: makeMenuIcon(
+                        "Image",
+                        `Image (${getShortcut("Mod-g")})`,
+                        "insert-image-btn"
+                    ),
                 },
                 !!options.imageUpload?.handler
             ),
@@ -528,7 +605,11 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertTable",
                     command: insertTableCommand,
-                    dom: makeMenuIcon("Table", "Table", "insert-table-btn"),
+                    dom: makeMenuIcon(
+                        "Table",
+                        `Table (${getShortcut("Mod-e")})`,
+                        "insert-table-btn"
+                    ),
                     visible: (state: EditorState) => !inTable(state.selection),
                 },
                 options.parserFeatures.tables
@@ -540,7 +621,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleWrapIn(schema.nodes.ordered_list),
                 dom: makeMenuIcon(
                     "OrderedList",
-                    "Numbered list",
+                    `Numbered list (${getShortcut("Mod-o")})`,
                     "numbered-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.ordered_list),
@@ -550,7 +631,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: toggleWrapIn(schema.nodes.bullet_list),
                 dom: makeMenuIcon(
                     "UnorderedList",
-                    "Bulleted list",
+                    `Bulleted list (${getShortcut("Mod-u")})`,
                     "bullet-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.bullet_list),
@@ -560,7 +641,7 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 command: insertHorizontalRuleCommand,
                 dom: makeMenuIcon(
                     "HorizontalRule",
-                    "Horizontal rule",
+                    `Horizontal rule (${getShortcut("Mod-r")})`,
                     "horizontal-rule-btn"
                 ),
             },
@@ -568,17 +649,23 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "undo",
                 command: undo,
-                dom: makeMenuIcon("Undo", "Undo", "undo-btn", [
-                    "sm:d-inline-block",
-                ]),
+                dom: makeMenuIcon(
+                    "Undo",
+                    `Undo (${getShortcut("Mod-z")})`,
+                    "undo-btn",
+                    ["sm:d-inline-block"]
+                ),
                 visible: () => false,
             },
             {
                 key: "redo",
                 command: redo,
-                dom: makeMenuIcon("Refresh", "Redo", "redo-btn", [
-                    "sm:d-inline-block",
-                ]),
+                dom: makeMenuIcon(
+                    "Refresh",
+                    `Redo (${getShortcut("Mod-y")})`,
+                    "redo-btn",
+                    ["sm:d-inline-block"]
+                ),
                 visible: () => false,
             },
             makeMenuSpacerEntry(),
