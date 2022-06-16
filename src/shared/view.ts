@@ -8,6 +8,13 @@ import type { ExternalEditorPlugin } from "./external-editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { stackOverflowValidateLink } from "./utils";
 
+/** Describes each distinct editor type the StacksEditor handles */
+export enum EditorType {
+    RichText,
+    Commonmark,
+}
+
+/** Describes the options that are common to all view types */
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
     classList?: string[];

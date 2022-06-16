@@ -9,19 +9,13 @@ import {
     dispatchEditorEvent,
     generateRandomId,
 } from "../shared/utils";
-import { View, CommonViewOptions, BaseView } from "../shared/view";
+import { View, CommonViewOptions, BaseView, EditorType } from "../shared/view";
 import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { toggleReadonly } from "../shared/prosemirror-plugins/readonly";
 import { _t } from "../shared/localization";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
-
-/** Describes each distinct editor type the StacksEditor handles */
-export enum EditorType {
-    RichText,
-    Commonmark,
-}
 
 /**
  * StacksEditor options that are passed to both editors
