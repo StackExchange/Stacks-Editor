@@ -38,7 +38,7 @@ export function placeholderPlugin(placeholder: string): Plugin {
             apply: (tr) => createPlaceholderDecoration(tr.doc, placeholder),
         },
         props: {
-            decorations(state) {
+            decorations(this: Plugin<DecorationSet>, state) {
                 return this.getState(state);
             },
         },
