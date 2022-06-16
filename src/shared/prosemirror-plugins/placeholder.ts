@@ -2,6 +2,10 @@ import { Node } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
 
+/**
+ * Whether to show the placeholder, given the contents of the document
+ * @param content The root document node
+ */
 function showPlaceholder(content: Node) {
     const { firstChild } = content;
     const { name } = firstChild.type;
@@ -15,6 +19,11 @@ function showPlaceholder(content: Node) {
     );
 }
 
+/**
+ * Creates a placeholder decoration on the document's first child
+ * @param doc The root document node
+ * @param placeholder The placeholder text
+ */
 function createPlaceholderDecoration(doc: Node, placeholder: string) {
     if (showPlaceholder(doc)) {
         const $pos = doc.resolve(1);
@@ -28,7 +37,6 @@ function createPlaceholderDecoration(doc: Node, placeholder: string) {
     return null;
 }
 
-// TODO write a test for this
 /** Plugin that adds placeholder text to the editor when it's empty */
 export function placeholderPlugin(placeholder: string): Plugin {
     return new Plugin<DecorationSet>({
