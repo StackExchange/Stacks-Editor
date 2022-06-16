@@ -1,7 +1,7 @@
 import { CommonmarkEditor } from "../../src/commonmark/editor";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import { schema } from "prosemirror-markdown";
-import { ExternalPluginProvider } from "../../src/shared/editor-plugin";
+import { externalPluginProvider } from "../test-helpers";
 
 const target = document.createElement("div");
 const markdownRoundTripData = [
@@ -26,7 +26,7 @@ describe("commonmark editor view", () => {
         const richView = new RichTextEditor(
             target,
             markdown,
-            new ExternalPluginProvider([], null)
+            externalPluginProvider()
         );
 
         const markdownView = commonmarkView(richView.content);
@@ -67,7 +67,7 @@ describe("commonmark editor view", () => {
             const richView = new RichTextEditor(
                 target,
                 markdownView.content,
-                new ExternalPluginProvider([], null)
+                externalPluginProvider()
             );
             markdownView = commonmarkView(richView.content);
 
@@ -80,7 +80,7 @@ describe("commonmark editor view", () => {
             const richView = new RichTextEditor(
                 target,
                 markdownView.content,
-                new ExternalPluginProvider([], null)
+                externalPluginProvider()
             );
             markdownView = commonmarkView(richView.content);
 
@@ -100,7 +100,7 @@ describe("commonmark editor view", () => {
             const serializedTable = new RichTextEditor(
                 target,
                 markdown,
-                new ExternalPluginProvider([], null)
+                externalPluginProvider()
             ).content;
 
             const expectedSerializedMarkdown = `
@@ -133,9 +133,5 @@ describe("commonmark editor view", () => {
 });
 
 function commonmarkView(markdown: string): CommonmarkEditor {
-    return new CommonmarkEditor(
-        target,
-        markdown,
-        new ExternalPluginProvider([], null)
-    );
+    return new CommonmarkEditor(target, markdown, externalPluginProvider());
 }

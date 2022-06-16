@@ -2,7 +2,7 @@ import { history } from "prosemirror-history";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { ExternalPluginProvider } from "../shared/editor-plugin";
+import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
 import { createMenuPlugin } from "../shared/menu";
@@ -24,7 +24,7 @@ import {
     defaultParserFeatures,
     EditorType,
 } from "../shared/view";
-import { createMenu } from "./commands";
+import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
 
@@ -36,14 +36,14 @@ export class CommonmarkEditor extends BaseView {
     constructor(
         target: Node,
         content: string,
-        pluginProvider: ExternalPluginProvider,
+        pluginProvider: IExternalPluginProvider,
         options: CommonmarkOptions = {}
     ) {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
         const menuEntries = pluginProvider.getFinalizedMenu(
-            createMenu(this.options),
+            createMenuEntries(this.options),
             EditorType.Commonmark,
             commonmarkSchema
         );

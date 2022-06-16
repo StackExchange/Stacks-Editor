@@ -39,3 +39,10 @@ export function getSelectedText(state: EditorState): string {
 
     return state.doc.textBetween(from, to);
 }
+
+/**
+ * Returns a mocked external plugin provider for testing
+ */
+export function externalPluginProvider() {
+    return new ExternalPluginProvider([], null);
+}

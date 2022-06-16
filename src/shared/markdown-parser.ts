@@ -2,7 +2,7 @@ import MarkdownIt from "markdown-it/lib";
 import Token from "markdown-it/lib/token";
 import { defaultMarkdownParser, MarkdownParser } from "prosemirror-markdown";
 import { NodeType, Schema } from "prosemirror-model";
-import { ExternalPluginProvider } from "./editor-plugin";
+import { IExternalPluginProvider } from "./editor-plugin";
 import { log } from "./logger";
 import { hardbreak_markup } from "./markdown-it/hardbreak-markup";
 import { html } from "./markdown-it/html";
@@ -249,7 +249,7 @@ class SOMarkdownIt extends MarkdownIt {
 export function buildMarkdownParser(
     features: CommonmarkParserFeatures,
     schema: Schema,
-    externalPlugins: ExternalPluginProvider
+    externalPluginProvider: IExternalPluginProvider
 ): SOMarkdownParser {
     if (!features) {
         throw "Cannot build markdown parser without passed features.";
@@ -305,10 +305,10 @@ export function buildMarkdownParser(
     // ensure we can tell the difference between the different types of hardbreaks
     defaultMarkdownItInstance.use(hardbreak_markup);
 
-    externalPlugins.alterMarkdownIt(defaultMarkdownItInstance);
+    externalPluginProvider.alterMarkdownIt(defaultMarkdownItInstance);
 
     return new SOMarkdownParser(schema, defaultMarkdownItInstance, {
         ...customMarkdownParserTokens,
-        ...externalPlugins.markdownProps.parser,
+        ...externalPluginProvider?.markdownProps.parser,
     });
 }

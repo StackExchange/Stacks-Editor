@@ -4,8 +4,11 @@ import {
     insertHorizontalRuleCommand,
     toggleHeadingLevel,
 } from "../../../src/rich-text/commands";
-import { richTextSchema } from "../../../src/rich-text/schema";
-import { applySelection, createState } from "../test-helpers";
+import {
+    applySelection,
+    createState,
+    testRichTextSchema,
+} from "../test-helpers";
 import "../../matchers";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
@@ -389,8 +392,8 @@ describe("commands", () => {
 
     describe("exitMarkCommand", () => {
         it("all exitable marks should also be inclusive: true", () => {
-            Object.keys(richTextSchema.marks).forEach((markName) => {
-                const mark = richTextSchema.marks[markName];
+            Object.keys(testRichTextSchema.marks).forEach((markName) => {
+                const mark = testRichTextSchema.marks[markName];
 
                 try {
                     // require exitable marks to be explicitly marked as inclusive

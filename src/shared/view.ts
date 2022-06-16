@@ -14,6 +14,7 @@ export enum EditorType {
     Commonmark,
 }
 
+/** Describes the options that are common to all view types */
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
     classList?: string[];

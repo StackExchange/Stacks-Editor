@@ -1,7 +1,12 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
-import { Mark, MarkType, NodeType } from "prosemirror-model";
-import { EditorState, TextSelection, Transaction } from "prosemirror-state";
+import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
+import {
+    EditorState,
+    Plugin,
+    TextSelection,
+    Transaction,
+} from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
@@ -18,7 +23,6 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { richTextSchema as schema } from "../schema";
 import type { CommonViewOptions } from "../../shared/view";
 import { getShortcut } from "../../shared/utils";
 import { LINK_TOOLTIP_KEY } from "../plugins/link-editor";
@@ -66,9 +70,6 @@ function toggleWrapIn(nodeType: NodeType) {
     };
 }
 
-/** Command to set a block type to a paragraph (plain text) */
-const setToTextCommand = setBlockType(schema.nodes.paragraph);
-
 /**
  * Creates a command that toggles the NodeType of the current node to the passed type
  * @param nodeType The type to toggle to
@@ -83,7 +84,7 @@ export function toggleBlockType(
 
         // if the node is set, toggle it off
         if (nodeCheck(state)) {
-            return setToTextCommand(state, dispatch);
+            return setBlockType(state.schema.nodes.paragraph)(state, dispatch);
         }
 
         const setBlockTypeCommand = setBlockType(nodeType, attrs);
@@ -103,7 +104,7 @@ export function toggleBlockType(
  */
 export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
-        const nodeType = schema.nodes.heading;
+        const nodeType = state.schema.nodes.heading;
         const nodeCheck = nodeTypeActive(nodeType, attrs);
         const headingLevel = getHeadingLevel(state);
 
@@ -112,7 +113,7 @@ export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
             nodeCheck(state) &&
             (headingLevel === 6 || headingLevel === attrs?.level)
         ) {
-            return setToTextCommand(state, dispatch);
+            return setBlockType(state.schema.nodes.paragraph)(state, dispatch);
         }
 
         const updatedAttrs = !attrs?.level
@@ -149,7 +150,7 @@ export function insertHorizontalRuleCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (inTable(state.selection)) {
+    if (inTable(state.schema, state.selection)) {
         return false;
     }
 
@@ -163,15 +164,15 @@ export function insertHorizontalRuleCommand(
     const isAtBeginning = state.tr.selection.from === 1;
 
     let tr = state.tr.replaceSelectionWith(
-        schema.nodes.horizontal_rule.create()
+        state.schema.nodes.horizontal_rule.create()
     );
 
     if (isAtBeginning) {
-        tr = tr.insert(0, schema.nodes.paragraph.create());
+        tr = tr.insert(0, state.schema.nodes.paragraph.create());
     }
 
     if (isAtEnd) {
-        tr = tr.insert(tr.selection.to, schema.nodes.paragraph.create());
+        tr = tr.insert(tr.selection.to, state.schema.nodes.paragraph.create());
     }
 
     dispatch(tr);
@@ -221,7 +222,10 @@ export function insertLinkCommand(
         };
     }
 
-    return toggleMark(schema.marks.link, { href: linkUrl })(state, dispatch);
+    return toggleMark(state.schema.marks.link, { href: linkUrl })(
+        state,
+        dispatch
+    );
 }
 
 /**
@@ -332,7 +336,7 @@ const tableDropdown = () =>
         "Table",
         "Edit table",
         "table-dropdown",
-        (state: EditorState) => inTable(state.selection),
+        (state: EditorState) => inTable(state.schema, state.selection),
         () => false,
 
         dropdownSection("Column", "columnSection"),
@@ -362,7 +366,7 @@ const tableDropdown = () =>
         )
     );
 
-const headingDropdown = () =>
+const headingDropdown = (schema: Schema) =>
     makeMenuDropdown(
         "Header",
         `Heading (${getShortcut("Mod-h")})`,
@@ -394,9 +398,10 @@ const headingDropdown = () =>
     );
 
 export const createMenuEntries = (
+    schema: Schema,
     options: CommonViewOptions
 ): MenuCommandEntry[] => [
-    headingDropdown(),
+    headingDropdown(schema),
     {
         key: "toggleBold",
         command: toggleMark(schema.marks.strong),
@@ -483,7 +488,8 @@ export const createMenuEntries = (
                 `Table (${getShortcut("Mod-e")})`,
                 "insert-table-btn"
             ),
-            visible: (state: EditorState) => !inTable(state.selection),
+            visible: (state: EditorState) =>
+                !inTable(state.schema, state.selection),
         },
         options.parserFeatures.tables
     ),

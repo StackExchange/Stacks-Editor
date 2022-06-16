@@ -1,8 +1,7 @@
 import { RichTextEditor } from "../../src/rich-text/editor";
-import { ExternalPluginProvider } from "../../src/shared/editor-plugin";
 import * as mdp from "../../src/shared/markdown-parser";
 import "../matchers";
-import { normalize } from "../test-helpers";
+import { externalPluginProvider, normalize } from "../test-helpers";
 
 // mock the markdown-parser for testing
 jest.mock("../../src/shared/markdown-parser");
@@ -26,7 +25,7 @@ function richView(markdownInput: string) {
     return new RichTextEditor(
         document.createElement("div"),
         markdownInput,
-        new ExternalPluginProvider([], null),
+        externalPluginProvider(),
         {}
     );
 }
@@ -330,7 +329,7 @@ _world_.
             const editor = new RichTextEditor(
                 document.createElement("div"),
                 "*This* is some **test** content",
-                new ExternalPluginProvider([], null)
+                externalPluginProvider()
             );
 
             // on a catastrophic crash, the raw string content gets

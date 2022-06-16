@@ -8,13 +8,13 @@ import {
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
+import { Schema } from "prosemirror-model";
 import {
     liftListItem,
     sinkListItem,
     splitListItem,
 } from "prosemirror-schema-list";
 import type { Plugin } from "prosemirror-state";
-import { richTextSchema as schema } from "./schema";
 import { bindLetterKeymap } from "../shared/utils";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import {
@@ -31,7 +31,10 @@ import {
     toggleHeadingLevel,
 } from "./commands";
 
-export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
+export function allKeymaps(
+    schema: Schema,
+    parserFeatures: CommonmarkParserFeatures
+): Plugin[] {
     const tableKeymap = keymap({
         ...bindLetterKeymap("Mod-e", insertTableCommand),
         "Mod-Enter": moveSelectionAfterTableCommand,

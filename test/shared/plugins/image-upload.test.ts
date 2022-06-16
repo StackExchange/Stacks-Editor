@@ -8,12 +8,11 @@ import {
     commonmarkImageUpload,
     richTextImageUpload,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
-import { richTextSchema } from "../../../src/rich-text/schema";
 import "../../matchers";
-import { getSelectedText } from "../../test-helpers";
+import { externalPluginProvider, getSelectedText } from "../../test-helpers";
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
-import { ExternalPluginProvider } from "../../../src/shared/editor-plugin";
+import { testRichTextSchema } from "../../rich-text/test-helpers";
 
 let pluginContainer: Element;
 let view: RichTextEditor;
@@ -170,12 +169,13 @@ describe("image upload plugin", () => {
                         Promise.resolve("https://www.example.com/image"),
                     wrapImagesInLinks: optionSet,
                 },
-                stackOverflowValidateLink
+                stackOverflowValidateLink,
+                testRichTextSchema
             );
 
             const view = new EditorView(document.createElement("div"), {
                 state: EditorState.create({
-                    schema: richTextSchema,
+                    schema: testRichTextSchema,
                     plugins: [plugin],
                 }),
                 plugins: [],
@@ -268,12 +268,13 @@ describe("image upload plugin", () => {
                         Promise.resolve("https://www.example.com/image"),
                     embedImagesAsLinks: optionSet,
                 },
-                stackOverflowValidateLink
+                stackOverflowValidateLink,
+                testRichTextSchema
             );
 
             const view = new EditorView(document.createElement("div"), {
                 state: EditorState.create({
-                    schema: richTextSchema,
+                    schema: testRichTextSchema,
                     plugins: [plugin],
                 }),
                 plugins: [],
@@ -369,12 +370,13 @@ describe("image upload plugin", () => {
                     },
                     allowExternalUrls: true,
                 },
-                stackOverflowValidateLink
+                stackOverflowValidateLink,
+                testRichTextSchema
             );
 
             const view = new EditorView(document.createElement("div"), {
                 state: EditorState.create({
-                    schema: richTextSchema,
+                    schema: testRichTextSchema,
                     plugins: [plugin],
                 }),
                 plugins: [],
@@ -530,7 +532,7 @@ function richTextView(
     return new RichTextEditor(
         document.createElement("div"),
         markdown,
-        new ExternalPluginProvider([], null),
+        externalPluginProvider(),
         {
             pluginParentContainer: containerFn,
         }
