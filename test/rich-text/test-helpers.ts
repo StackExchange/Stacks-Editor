@@ -1,4 +1,4 @@
-import { DOMParser, Node, Slice } from "prosemirror-model";
+import { DOMParser, Node, Schema, Slice } from "prosemirror-model";
 import {
     EditorState,
     Plugin,
@@ -6,8 +6,11 @@ import {
     Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { richTextSchemaSpec } from "../../src/rich-text/schema";
 import { MenuCommand } from "../../src/shared/menu";
-import { richTextSchema } from "../../src/rich-text/schema";
+
+/** Consistent schema to test against */
+export const testRichTextSchema = new Schema(richTextSchemaSpec);
 
 /**
  * Url to use when testing (de)serialization that contains special encodings/other pitfalls and
@@ -36,7 +39,7 @@ export function parseHtmlToDoc(
     // NOTE: tests only, no XSS danger
     // eslint-disable-next-line no-unsanitized/property
     container.innerHTML = htmlContent;
-    const parser = DOMParser.fromSchema(richTextSchema);
+    const parser = DOMParser.fromSchema(testRichTextSchema);
 
     return asSlice ? parser.parseSlice(container) : parser.parse(container);
 }
@@ -48,7 +51,7 @@ export function createState(
 ): EditorState {
     return EditorState.create({
         doc: parseHtmlToDoc(htmlContent, false),
-        schema: richTextSchema,
+        schema: testRichTextSchema,
         plugins: plugins,
     });
 }

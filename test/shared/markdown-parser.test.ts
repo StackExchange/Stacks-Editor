@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import type { Mark } from "prosemirror-model";
+import { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
-import { richTextSchema } from "../../src/rich-text/schema";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
 import "../matchers";
+import { testRichTextSchema } from "../rich-text/test-helpers";
 
 // mark features as required to ensure our tests have all the features set
 const features: Required<CommonmarkParserFeatures> = {
@@ -19,7 +19,7 @@ const features: Required<CommonmarkParserFeatures> = {
     validateLink: stackOverflowValidateLink,
 };
 
-const markdownParser = buildMarkdownParser(features, richTextSchema, null);
+const markdownParser = buildMarkdownParser(features, testRichTextSchema, null);
 
 describe("SOMarkdownParser", () => {
     describe("html support", () => {
@@ -210,7 +210,7 @@ console.log("test");
         it("should not parse tag links", () => {
             const mdParserWithoutTagLinks = buildMarkdownParser(
                 {},
-                richTextSchema,
+                testRichTextSchema,
                 null
             );
             const doc = mdParserWithoutTagLinks.parse("[tag:python]");
@@ -347,7 +347,7 @@ console.log("test");
                     // only allow links from www.example.com
                     validateLink: (url) => /www.example.com/.test(url),
                 },
-                richTextSchema,
+                testRichTextSchema,
                 null
             );
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
