@@ -73,6 +73,7 @@ function findInput(form: HTMLFormElement, inputName: string): HTMLInputElement {
 
 function prosemirrorNode(attrs: ProsemirrorNode["attrs"]): ProsemirrorNode {
     const node = new ProsemirrorNode();
+    // @ts-expect-error TODO
     node.attrs = attrs;
     return node;
 }

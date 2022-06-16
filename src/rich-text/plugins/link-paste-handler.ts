@@ -1,11 +1,11 @@
 import { Plugin, EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Node, Schema } from "prosemirror-model";
+import { Node } from "prosemirror-model";
 import { CommonmarkParserFeatures } from "../../shared/view";
 
 function isInlineCode(state: EditorState): boolean {
     const { from, $from, to, empty } = state.selection;
-    const schema = state.schema as Schema;
+    const schema = state.schema;
     if (!empty) {
         return state.doc.rangeHasMark(from, to, schema.marks.code);
     }
@@ -72,7 +72,7 @@ export const linkPasteHandler = (features: CommonmarkParserFeatures) =>
                         }
                     }
 
-                    const schema = view.state.schema as Schema;
+                    const schema = view.state.schema;
                     const linkAttrs = {
                         href: link,
                         markup: linkText === link ? "linkify" : null,

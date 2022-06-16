@@ -275,6 +275,7 @@ console.log("test");
             "mailto:test@example.com",
             "ftp://example.com/path/to/file",
         ])("should autolink valid links (%s)", (input) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toBe("paragraph");
             expect(doc.content[0].content).toHaveLength(1);
@@ -289,6 +290,7 @@ console.log("test");
             "test@example.com",
             "127.0.0.1",
         ])("should not autolink invalid links (%s)", (input) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toBe("paragraph");
             expect(doc.content[0].content).toHaveLength(1);
@@ -304,6 +306,7 @@ console.log("test");
             ["1. test1\n1. test2", true],
             ["1. test1\n\n1. test2", false],
         ])("should parse tight/loose lists", (input, isTight) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toContain("_list");
             expect(doc.content[0].attrs.tight).toBe(isTight);
@@ -323,6 +326,7 @@ console.log("test");
         it.each(referenceLinkData)(
             "should add reference attributes to reference links",
             (input, type, label) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const doc = markdownParser.parse(input).toJSON();
                 expect(doc.content[0].type).toBe("paragraph");
                 expect(doc.content[0].content).toHaveLength(1);
@@ -346,6 +350,7 @@ console.log("test");
                 richTextSchema,
                 null
             );
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = mdParser
                 .parse(
                     "[foo](www.example.com/test1) [bar](www.notexample.com/test2)"

@@ -80,7 +80,7 @@ describe("spoiler-toggle plugin", () => {
         );
 
         // go ahead and toggle the spoiler on (not testing this; tested above)
-        state = applySelection(state, 6);
+        state = applySelection(state, 7);
 
         // apply a transaction manually that changes the doc / positioning of the node, but not the selection
         let tr = state.tr;
