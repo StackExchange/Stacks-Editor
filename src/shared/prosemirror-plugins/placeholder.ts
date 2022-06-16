@@ -1,23 +1,6 @@
 import { Node } from "prosemirror-model";
-import { Plugin } from "prosemirror-state";
+import { Plugin, PluginKey } from "prosemirror-state";
 import { Decoration, DecorationSet } from "prosemirror-view";
-
-/**
- * Whether to show the placeholder, given the contents of the document
- * @param content The root document node
- */
-function showPlaceholder(content: Node) {
-    const { firstChild } = content;
-    const { name } = firstChild.type;
-    const allowPlaceholder =
-        name === "paragraph" ||
-        name === "heading" ||
-        (firstChild.attrs.params === "markdown" && !firstChild.attrs.markup);
-    // TODO check for image upload placeholder
-    return (
-        !content.textContent && allowPlaceholder && firstChild.childCount === 0
-    );
-}
 
 /**
  * Creates a placeholder decoration on the document's first child
@@ -25,8 +8,14 @@ function showPlaceholder(content: Node) {
  * @param placeholder The placeholder text
  */
 function createPlaceholderDecoration(doc: Node, placeholder: string) {
-    if (!showPlaceholder(doc)) {
-        return null;
+    // TODO check for image upload placeholder
+    const showPlaceholder =
+        !doc.textContent &&
+        doc.childCount === 1 &&
+        doc.firstChild.childCount === 0;
+
+    if (!showPlaceholder) {
+        return DecorationSet.empty;
     }
 
     const $pos = doc.resolve(1);
@@ -39,11 +28,22 @@ function createPlaceholderDecoration(doc: Node, placeholder: string) {
 
 /** Plugin that adds placeholder text to the editor when it's empty */
 export function placeholderPlugin(placeholder: string): Plugin {
+    if (!placeholder.trim()) {
+        return new Plugin({});
+    }
+
     return new Plugin<DecorationSet>({
+        key: new PluginKey("placeholder"),
         state: {
             init: (_, state) =>
                 createPlaceholderDecoration(state.doc, placeholder),
-            apply: (tr) => createPlaceholderDecoration(tr.doc, placeholder),
+            apply: (tr, value) => {
+                if (!tr.docChanged) {
+                    return value.map(tr.mapping, tr.doc);
+                }
+
+                return createPlaceholderDecoration(tr.doc, placeholder);
+            },
         },
         props: {
             decorations(this: Plugin<DecorationSet>, state) {
