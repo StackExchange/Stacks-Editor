@@ -28,7 +28,7 @@ function createPlaceholderDecoration(doc: Node, placeholder: string) {
 
 /** Plugin that adds placeholder text to the editor when it's empty */
 export function placeholderPlugin(placeholder: string): Plugin {
-    if (!placeholder.trim()) {
+    if (!placeholder?.trim()) {
         return new Plugin({});
     }
 
