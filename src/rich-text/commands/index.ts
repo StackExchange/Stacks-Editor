@@ -104,6 +104,7 @@ export function toggleBlockType(
 /**
  * Creates a command that toggles heading and cycles through heading levels
  * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
+ * @internal
  */
 export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
