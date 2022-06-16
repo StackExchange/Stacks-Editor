@@ -25,16 +25,16 @@ function showPlaceholder(content: Node) {
  * @param placeholder The placeholder text
  */
 function createPlaceholderDecoration(doc: Node, placeholder: string) {
-    if (showPlaceholder(doc)) {
-        const $pos = doc.resolve(1);
-        return DecorationSet.create(doc, [
-            Decoration.node($pos.before(), $pos.after(), {
-                "data-placeholder": placeholder,
-            }),
-        ]);
+    if (!showPlaceholder(doc)) {
+        return null;
     }
 
-    return null;
+    const $pos = doc.resolve(1);
+    return DecorationSet.create(doc, [
+        Decoration.node($pos.before(), $pos.after(), {
+            "data-placeholder": placeholder,
+        }),
+    ]);
 }
 
 /** Plugin that adds placeholder text to the editor when it's empty */
@@ -53,7 +53,11 @@ export function placeholderPlugin(placeholder: string): Plugin {
         view(view) {
             view.dom.setAttribute("aria-placeholder", placeholder);
 
-            return {};
+            return {
+                destroy() {
+                    view.dom.removeAttribute("aria-placeholder");
+                },
+            };
         },
     });
 }
