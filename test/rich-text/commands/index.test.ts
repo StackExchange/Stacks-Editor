@@ -2,7 +2,7 @@ import { EditorState, Transaction } from "prosemirror-state";
 import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
-    toggleBlockType,
+    toggleHeadingLevel,
 } from "../../../src/rich-text/commands";
 import { richTextSchema } from "../../../src/rich-text/schema";
 import { applySelection, createState } from "../test-helpers";
@@ -39,7 +39,7 @@ function executeTransaction(
 }
 
 describe("commands", () => {
-    describe("toggleBlockType", () => {
+    describe("toggleHeadingLevel", () => {
         it.todo("should insert a paragraph at the end of the doc");
         it.todo("should not insert a paragraph at the end of the doc");
 
@@ -53,7 +53,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading, { level: 1 })
+                toggleHeadingLevel({ level: 1 })
             );
 
             expect(isValid).toBeTruthy();
@@ -78,7 +78,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading, { level: 1 })
+                toggleHeadingLevel({ level: 1 })
             );
 
             expect(isValid).toBeTruthy();
@@ -111,7 +111,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleBlockType(richTextSchema.nodes.heading, { level: 2 })
+                toggleHeadingLevel({ level: 2 })
             );
 
             expect(isValid).toBeTruthy();
@@ -129,6 +129,63 @@ describe("commands", () => {
                     {
                         "type.name": "paragraph",
                         "childCount": 0,
+                    },
+                ],
+            });
+        });
+
+        it("switch heading to next level when no level is passed", () => {
+            const state = applySelection(
+                createState("<h1>heading</h1>", []),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("heading");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleHeadingLevel()
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                content: [
+                    {
+                        "type.name": "heading",
+                        "attrs": {
+                            level: 2,
+                            markup: "",
+                        },
+                        "childCount": 1,
+                    },
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 0,
+                    },
+                ],
+            });
+        });
+
+        it("should toggle last heading level (h6)", () => {
+            const state = applySelection(
+                createState("<h6>heading</h6>", []),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            expect(resolvedNode.node().type.name).toBe("heading");
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleHeadingLevel()
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "childCount": 1,
                     },
                 ],
             });
