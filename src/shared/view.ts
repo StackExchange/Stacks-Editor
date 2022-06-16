@@ -1,7 +1,7 @@
 // NOTE: It is important that these are all `type` only imports!
 // This keeps code that relies on this file from accidentally introducing cyclical dependencies
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
-import type { Schema, Node } from "prosemirror-model";
+import type { Node } from "prosemirror-model";
 import type { EditorState } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import type { ExternalEditorPlugin } from "./external-editor-plugin";
@@ -15,6 +15,8 @@ export interface CommonViewOptions {
     editorHelpLink?: string;
     /** The features to allow/disallow on the markdown parser */
     parserFeatures?: CommonmarkParserFeatures;
+    /** The placeholder text for an empty editor */
+    placeholderText?: string;
     /**
      * Function to get the container to place the menu bar;
      * defaults to returning this editor's target's parentNode
@@ -147,6 +149,6 @@ export abstract class BaseView implements View {
 }
 
 export interface PluginView {
-    update?(view: EditorView<Schema>, prevState?: EditorState<Schema>): void;
+    update?(view: EditorView, prevState?: EditorState): void;
     destroy?(): void;
 }

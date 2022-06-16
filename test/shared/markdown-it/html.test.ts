@@ -182,6 +182,13 @@ describe("html markdown-it plugin", () => {
             expect(tokens[1].children[1].type).toBe("html_inline");
             expect(tokens[1].children[1].content).toBe("</em>");
         });
+
+        it("should only transform inline html all on the same line", () => {
+            const markdown = `<sub>\ntest\n</sub>`;
+            const tokens = instance.parse(markdown, {});
+            expect(tokens).toHaveLength(1);
+            expect(tokens[0].type).toBe("html_block");
+        });
     });
 
     describe("html_block", () => {

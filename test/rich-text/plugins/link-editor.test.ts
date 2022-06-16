@@ -1,4 +1,3 @@
-import { Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { DecorationSet, EditorView } from "prosemirror-view";
 import { insertLinkCommand } from "../../../src/rich-text/commands";
@@ -10,7 +9,7 @@ const tooltipPlugin = linkTooltipPlugin({
     validateLink: stackOverflowValidateLink,
 });
 
-function getDecorations(state: EditorState<Schema>) {
+function getDecorations(state: EditorState) {
     const pState = state.plugins[0].getState(state) as {
         decorations: DecorationSet;
     };

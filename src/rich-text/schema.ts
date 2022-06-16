@@ -1,11 +1,13 @@
-import { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
+import { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
 import { _t } from "../shared/localization";
 
 //TODO this relies on Stacks classes, should we abstract?
 
 /** Base rich-text schema; heavily inspired by prosemirror-markdown's schema */
 
-const nodes: SchemaSpec["nodes"] = {
+const nodes: {
+    [name: string]: NodeSpec;
+} = {
     doc: {
         content: "block+",
     },
@@ -434,7 +436,9 @@ const nodes: SchemaSpec["nodes"] = {
     },
 };
 
-const marks: SchemaSpec["marks"] = {
+const marks: {
+    [name: string]: MarkSpec;
+} = {
     em: {
         parseDOM: [
             { tag: "i" },

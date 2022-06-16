@@ -8,6 +8,8 @@ import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
 } from "../shared/prosemirror-plugins/image-upload";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
+import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import {
     editableCheck,
     readonlyPlugin,
@@ -38,7 +40,7 @@ export class CommonmarkEditor extends BaseView {
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                node.classList.add(...this.options.classList);
+                node.classList.add(...(this.options.classList || []));
                 target.appendChild(node);
             },
             {
@@ -50,11 +52,14 @@ export class CommonmarkEditor extends BaseView {
                         ...allKeymaps(this.options.parserFeatures),
                         createMenu(this.options),
                         CodeBlockHighlightPlugin(null),
-                        commonmarkImageUpload(
-                            this.options.imageUpload,
-                            this.options.parserFeatures.validateLink,
+                        interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
+                        commonmarkImageUpload(
+                            this.options.imageUpload,
+                            this.options.parserFeatures.validateLink
+                        ),
+                        placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
                     ],
                 }),
@@ -74,6 +79,7 @@ export class CommonmarkEditor extends BaseView {
             editorHelpLink: null,
             menuParentContainer: null,
             parserFeatures: defaultParserFeatures,
+            placeholderText: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },

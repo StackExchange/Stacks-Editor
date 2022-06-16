@@ -1,6 +1,6 @@
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Slice, Node, Schema } from "prosemirror-model";
+import { Slice, Node } from "prosemirror-model";
 
 /**
  * Detects if code was pasted into the document and returns the text if true
@@ -74,7 +74,7 @@ export const codePasteHandler = new Plugin({
             if (selectedNode.type.name === "code_block") {
                 view.dispatch(view.state.tr.insertText(codeData));
             } else {
-                const schema = view.state.schema as Schema;
+                const schema = view.state.schema;
                 const node: Node = schema.node(
                     "code_block",
                     {},

@@ -7,7 +7,7 @@ import { escapeHTML, generateRandomId } from "../../shared/utils";
 type getPosParam = boolean | (() => number);
 
 export class ImageView implements NodeView {
-    dom?: Node | null;
+    dom: Node | null;
     img: HTMLImageElement;
     popover: HTMLElement;
     form: HTMLFormElement;
