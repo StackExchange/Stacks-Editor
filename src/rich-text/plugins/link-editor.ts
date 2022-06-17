@@ -268,6 +268,7 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
 /** The plugin key the image uploader plugin is tied to */
 const LINK_EDITOR_KEY = new LinkEditorPluginKey();
 
+/** Manages the decorations necessary for drawing the link editor tooltip */
 class LinkTooltip {
     private content: HTMLElement;
     private href: string;

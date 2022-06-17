@@ -197,20 +197,47 @@ export function insertLinkCommand(
     dispatch: (tr: Transaction) => void,
     view: EditorView
 ): boolean {
-    let linkUrl: string = null;
-
     // never actually toggle the mark, as that is done in the link editor
     // we do want to *pretend* to, as toggleMark checks for validity
-    const valid = toggleMark(state.schema.marks.link, { href: linkUrl })(
+    const valid = toggleMark(state.schema.marks.link, { href: null })(
         state,
         null
     );
 
     if (dispatch && valid) {
-        const selectedText =
-            state.selection.content().content.firstChild?.textContent ?? null;
-        const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
-        linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
+        let selectedText: string;
+        let linkUrl: string;
+
+        // if selection is empty, but inside link mark, use the link url/text from it
+        if (state.selection.empty && state.selection.$anchor.textOffset) {
+            const $anchor = state.selection.$anchor;
+            const currentTextNode = $anchor.parent.child($anchor.index());
+            const mark = currentTextNode.marks.find(
+                (m) => m.type === state.schema.marks.link
+            );
+            if (mark) {
+                selectedText = currentTextNode.text;
+                linkUrl = mark.attrs.href as string;
+
+                // expand the selection so we're editing the entire link
+                const pos = $anchor.pos;
+                dispatch(
+                    state.tr.setSelection(
+                        TextSelection.create(
+                            state.doc,
+                            pos - $anchor.textOffset,
+                            pos - $anchor.textOffset + selectedText.length
+                        )
+                    )
+                );
+            }
+        } else {
+            selectedText =
+                state.selection.content().content.firstChild?.textContent ??
+                null;
+            const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
+            linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
+        }
 
         showLinkEditor(view, linkUrl, selectedText);
     }
