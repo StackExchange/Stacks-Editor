@@ -76,7 +76,7 @@
         "webpack-merge": "^5.8.0"
     },
     "dependencies": {
-        "@stackoverflow/stacks": "^1.1.0",
+        "@stackoverflow/stacks": "^1.2.0",
         "@stackoverflow/stacks-icons": "^2.27.0",
         "@types/markdown-it": "12.2.3",
         "markdown-it": "^13.0.1",
@@ -87,7 +87,7 @@
         "prosemirror-inputrules": "^1.2.0",
         "prosemirror-keymap": "^1.2.0",
         "prosemirror-markdown": "^1.9.1",
-        "prosemirror-model": "^1.18.0",
+        "prosemirror-model": "^1.18.1",
         "prosemirror-schema-basic": "^1.2.0",
         "prosemirror-schema-list": "^1.2.0",
         "prosemirror-state": "^1.4.0",
