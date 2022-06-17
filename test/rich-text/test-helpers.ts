@@ -1,4 +1,4 @@
-import { DOMParser, Node, Slice } from "prosemirror-model";
+import { DOMParser, Node, Schema, Slice } from "prosemirror-model";
 import {
     EditorState,
     Plugin,

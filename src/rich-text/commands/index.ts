@@ -18,7 +18,9 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
+import { getShortcut } from "../../shared/utils";
 import type { CommonViewOptions } from "../../shared/view";
+import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
     insertTableColumnAfterCommand,
@@ -30,8 +32,6 @@ import {
     removeColumnCommand,
     removeRowCommand,
 } from "./tables";
-import { showLinkEditor } from "../plugins/link-editor";
-import { getShortcut } from "../../shared/utils";
 
 export * from "./tables";
 

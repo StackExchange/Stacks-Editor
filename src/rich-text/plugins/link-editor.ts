@@ -3,13 +3,13 @@ import { Mark } from "prosemirror-model";
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { _t } from "../../shared/localization";
-import { StatefulPlugin } from "../../shared/prosemirror-plugins/plugin-extensions";
-import { escapeHTML, generateRandomId } from "../../shared/utils";
-import { CommonmarkParserFeatures, PluginView } from "../../shared/view";
 import {
     ManagedInterfaceKey,
     PluginInterfaceView,
 } from "../../shared/prosemirror-plugins/interface-manager";
+import { StatefulPlugin } from "../../shared/prosemirror-plugins/plugin-extensions";
+import { escapeHTML, generateRandomId } from "../../shared/utils";
+import { CommonmarkParserFeatures, PluginView } from "../../shared/view";
 
 export class LinkEditor extends PluginInterfaceView<
     LinkEditorPluginState,
