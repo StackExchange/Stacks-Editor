@@ -17,42 +17,79 @@ import {
 } from "./menu";
 import { EditorType } from "./view";
 
-/**  */
+/** A more tightly scoped version of @type {SchemaSpec} so plugins can predictibly update the schema */
 interface PluginSchemaSpec extends SchemaSpec {
     nodes: OrderedMap<NodeSpec>;
     marks: OrderedMap<MarkSpec>;
 }
 
+/** A more powerful command variant for @type {PluginMenuCommandEntry} */
 interface MenuCommandExtended {
+    /**
+     * Whether the menu item should be highlighted as "active" or not.
+     * Most commonly used to indicate that the selection contains a node/mark of the command's type
+     */
     active?: (state: EditorState) => boolean;
+    /** Whether the menu item should be visible or not */
     visible?: (state: EditorState) => boolean;
+    /** The actual command this entry triggers */
     command: MenuCommand;
 }
 
 interface PluginMenuCommandEntry {
+    /** The command to execute when in rich-text mode */
     richText: MenuCommandExtended | MenuCommand;
+    /** The command to execute when in commonmark mode */
     commonmark: MenuCommandExtended | MenuCommand;
+    /** The keyboard shortcut to attach this command to */
     keybind?: string;
 
+    /**
+     * The name of the svg icon to use
+     * TODO This is added as a class - this is likely to change in the near future
+     */
     svg?: string;
+    /** The text to show in the entry's tooltip */
     label: string;
+    /** The unique id used to reference this entry */
     key: string;
 
-    // if this menu entry is a dropdown menu, it will have child items containing the actual commands
+    /**
+     * The child entries for this entry.
+     * Setting this will create a dropdown, ignoring the richText and commonmark command entries
+     * */
     children?: PluginMenuCommandEntry[];
 }
 
+/** Describes a visual "block"/grouping of menu items */
 interface PluginMenuBlock {
+    /**
+     * The key that describes this block.
+     * Blocks added by all plugins are merged by key.
+     */
     name?: string;
+    /** The priority of the block - lower values get placed first visually */
     priority?: number;
+    /** The menu entries for this block */
     entries: PluginMenuCommandEntry[];
 }
 
+/** Describes the callback for when a codeblock processor is initialized */
 type AddCodeBlockProcessorCallback = (
     content: string,
     container: Element
 ) => void | Promise<void>;
+/**
+ * Describes the callback to extend a schema
+ * @param schema The schema to extend
+ * @returns The finalized, extended schema
+ */
 type AlterSchemaCallback = (schema: PluginSchemaSpec) => PluginSchemaSpec;
+/**
+ * Describes the callback to extend markdown-it.
+ * This method *mutates* the passed markdown-it instance, so it should be used with care
+ * @param instance The markdown-it instance to alter
+ */
 type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
 
 /**
@@ -61,6 +98,7 @@ type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
  */
 type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
 
+/** Describes the properties that can be used for extending commonmark support in the editor */
 interface MarkdownExtensionProps {
     /**
      * Parsers for prosemirror-markdown
@@ -108,14 +146,21 @@ export interface EditorPluginSpec {
     /** {@inheritDoc AddMenuItemsCallback} */
     menuItems?: AddMenuItemsCallback;
 
+    /** Commonmark syntax and editor node parsing/serialization extensions */
     markdown?: MarkdownExtensionProps & {
         alterMarkdownIt?: AlterMarkdownItCallback;
     };
 
     // TODO warn devs that they need to (at minimum) add a serializer as well?
+    /** Callback for extending the rich-text editor's schema */
     extendSchema?: AlterSchemaCallback;
 
+    /** Processors to add for overwriting the rich-text display of specific codeblock languages */
     codeBlockProcessors?: {
+        /**
+         * The language this processor applies to.
+         * A value of `*` applies to all languages when a more specific processor is not found
+         */
         lang: "*" | string;
         callback: AddCodeBlockProcessorCallback;
     }[];
@@ -135,6 +180,7 @@ export type EditorPlugin<TOptions = unknown> = (
  */
 export interface IExternalPluginProvider {
     // TODO DEEP READONLY
+    /** All aggregated codeblockProcessors */
     readonly codeblockProcessors: {
         [key: string]: (
             content: string,
@@ -143,23 +189,40 @@ export interface IExternalPluginProvider {
     };
 
     // TODO DEEP READONLY
+    /** All aggregated plugins */
     readonly plugins: {
         richText: Plugin[];
         commonmark: Plugin[];
     };
 
     // TODO DEEP READONLY
+    /** All aggregated markdownProps */
     readonly markdownProps: MarkdownExtensionProps;
 
     // TODO DEEP READONLY
+    /** All aggregated nodeViews */
     readonly nodeViews: EditorProps["nodeViews"];
 
     // TODO TYPES
+    /**
+     * Gets the final, aggregated schema
+     * @param schema The schema to extend
+     */
     getFinalizedSchema(schema: SchemaSpec): PluginSchemaSpec;
 
+    /**
+     * Mutates the markdown-it instance to add any additional plugins
+     * @param instance The markdown-it instance to alter
+     */
     alterMarkdownIt(instance: MarkdownIt): void;
 
     // TODO refactor menu to use MenuBlocks
+    /**
+     * Gets the final, aggregated menu
+     * @param menu The menu to extend
+     * @param editorType The current editor type
+     * @param schema The finalized schema
+     */
     getFinalizedMenu(
         menu: MenuCommandEntry[],
         editorType: EditorType,
@@ -190,18 +253,22 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
 
     private _nodeViews: IExternalPluginProvider["nodeViews"] = {};
 
+    /** {@inheritDoc IExternalPluginProvider.codeblockProcessors} */
     get codeblockProcessors() {
         return Object.assign({}, this._codeblockProcessors);
     }
 
+    /** {@inheritDoc IExternalPluginProvider.plugins} */
     get plugins() {
         return this._plugins;
     }
 
+    /** {@inheritDoc IExternalPluginProvider.markdownProps} */
     get markdownProps() {
         return this._markdownProps;
     }
 
+    /** {@inheritDoc IExternalPluginProvider.nodeViews} */
     get nodeViews() {
         return this._nodeViews;
     }
@@ -218,33 +285,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         }
     }
 
-    private applyConfig(config: EditorPluginSpec) {
-        config.codeBlockProcessors?.forEach(({ lang, callback }) => {
-            this.addCodeBlockProcessor(lang, callback);
-        });
-
-        config.commonmark?.plugins?.forEach((plugin) => {
-            this._plugins.commonmark.push(plugin);
-        });
-
-        this.schemaCallbacks.push(config.extendSchema);
-        if (config.richText?.nodeViews) {
-            this._nodeViews = {
-                ...this._nodeViews,
-                ...config.richText?.nodeViews,
-            };
-        }
-
-        this.extendMarkdown(config.markdown, config.markdown?.alterMarkdownIt);
-
-        this.menuCallbacks.push(config.menuItems);
-
-        config.richText?.plugins?.forEach((plugin) => {
-            this._plugins.richText.push(plugin);
-        });
-    }
-
-    // TODO TYPES
+    /** {@inheritDoc IExternalPluginProvider.getFinalizedSchema} */
     getFinalizedSchema(schema: SchemaSpec): PluginSchemaSpec {
         let alteredSchema: PluginSchemaSpec = {
             nodes: OrderedMap.from(schema.nodes),
@@ -260,6 +301,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         return alteredSchema;
     }
 
+    /** {@inheritDoc IExternalPluginProvider.alterMarkdownIt} */
     alterMarkdownIt(instance: MarkdownIt): void {
         for (const callback of this.markdownItCallbacks) {
             if (callback) {
@@ -269,6 +311,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
     }
 
     // TODO refactor menu to use MenuBlocks
+    /** {@inheritDoc IExternalPluginProvider.getFinalizedMenu} */
     getFinalizedMenu(
         menu: MenuCommandEntry[],
         editorType: EditorType,
@@ -302,7 +345,35 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         return ret;
     }
 
-    protected extendMarkdown(
+    /** Applies the config of a single plugin to this provider */
+    private applyConfig(config: EditorPluginSpec) {
+        config.codeBlockProcessors?.forEach(({ lang, callback }) => {
+            this.addCodeBlockProcessor(lang, callback);
+        });
+
+        config.commonmark?.plugins?.forEach((plugin) => {
+            this._plugins.commonmark.push(plugin);
+        });
+
+        this.schemaCallbacks.push(config.extendSchema);
+        if (config.richText?.nodeViews) {
+            this._nodeViews = {
+                ...this._nodeViews,
+                ...config.richText?.nodeViews,
+            };
+        }
+
+        this.extendMarkdown(config.markdown, config.markdown?.alterMarkdownIt);
+
+        this.menuCallbacks.push(config.menuItems);
+
+        config.richText?.plugins?.forEach((plugin) => {
+            this._plugins.richText.push(plugin);
+        });
+    }
+
+    /** Applies the markdownProps of a config to this provider */
+    private extendMarkdown(
         props: MarkdownExtensionProps,
         callback: AlterMarkdownItCallback
     ): void {
@@ -332,6 +403,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         }
     }
 
+    /** Applies the codeblockProcessors of a config to this provider */
     private addCodeBlockProcessor(
         lang: string,
         callback: AddCodeBlockProcessorCallback
@@ -346,6 +418,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         this._codeblockProcessors[lang] = callback;
     }
 
+    /** Converts a PluginMenuCommandEntry to a regular MenuCommandEntry */
     private convertMenuCommandEntries(
         entries: PluginMenuCommandEntry[],
         editorType: EditorType
