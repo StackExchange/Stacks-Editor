@@ -18,6 +18,25 @@
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/LogoGlyphXSm.svg");
 }
 
+// SAMPLE-PLUGINS
+
+.jse-furigana {
+    position: relative;
+    overflow: visible;
+    font-size: 0;
+}
+
+.jse-furigana::before {
+    content: attr(data-text);
+    white-space: nowrap;
+    font-size: var(--fs-fine);
+    position: absolute;
+    transform: translate(-75%, -75%);
+    color: var(--red-500);
+    user-select: none;
+    pointer-events: none;
+}
+
 .icon-bg.iconHandRock {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/HandRock.svg");
 }

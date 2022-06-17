@@ -3,24 +3,6 @@
     async
     src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"
 ></script>
-<style>
-    .jse-furigana {
-        position: relative;
-        overflow: visible;
-        font-size: 0;
-    }
-
-    .jse-furigana::before {
-        content: attr(data-text);
-        white-space: nowrap;
-        font-size: var(--fs-fine);
-        position: absolute;
-        transform: translate(-75%, -75%);
-        color: var(--red-500);
-        user-select: none;
-        pointer-events: none;
-    }
-</style>
 
 <textarea id="content" class="d-none">
 Here's a plugin that adds mermaid graph support:
