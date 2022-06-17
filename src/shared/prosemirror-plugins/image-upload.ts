@@ -487,7 +487,7 @@ export class ImageUploader extends PluginInterfaceView<
                     null,
                     null,
                     (spec: NodeSpec) => spec.id == id
-                ) as Decoration<unknown>[];
+                );
                 const pos = found.length ? found[0].from : null;
 
                 // If the content around the placeholder has been deleted, drop the image
@@ -686,10 +686,9 @@ function imageUploaderPlaceholderPlugin(
                         metadata.add.pos,
                         createPlaceholder(),
                         {
-                            // @ts-expect-error TODO types might be wrong on this one
                             id: metadata.add.id,
                         }
-                    ) as Decoration<unknown>;
+                    );
                     returnValue.decorations = set.add(tr.doc, [deco]);
                 } else if (metadata.remove) {
                     returnValue.decorations = set.remove(

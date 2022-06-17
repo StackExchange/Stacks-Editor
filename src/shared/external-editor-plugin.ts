@@ -4,7 +4,7 @@ import type { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
 import { ContentMatch, NodeType } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
 import type { EditorProps } from "prosemirror-view";
-import type { MarkdownSerializerNodes } from "../rich-text/markdown-serializer";
+import type { MarkdownSerializerNodes } from "./markdown-serializer";
 import type { MenuCommandEntry } from "./menu";
 import { deepMerge } from "./utils";
 

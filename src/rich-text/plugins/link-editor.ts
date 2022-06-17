@@ -4,7 +4,6 @@ import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { _t } from "../../shared/localization";
 import { StatefulPlugin } from "../../shared/prosemirror-plugins/plugin-extensions";
-import { richTextSchema as schema } from "../schema";
 import { escapeHTML, generateRandomId } from "../../shared/utils";
 import { CommonmarkParserFeatures, PluginView } from "../../shared/view";
 import {
@@ -141,7 +140,7 @@ export class LinkEditor extends PluginInterfaceView<
         }
 
         const text = this.textInput.value || href;
-        const node = schema.text(text, []);
+        const node = view.state.schema.text(text, []);
 
         // set the text first, inheriting all marks
         let tr = view.state.tr.replaceSelectionWith(node, true);
@@ -159,14 +158,14 @@ export class LinkEditor extends PluginInterfaceView<
         tr = tr.removeMark(
             tr.selection.from,
             tr.selection.to,
-            schema.marks.link
+            view.state.schema.marks.link
         );
 
         // add our link mark back onto the selection
         tr = tr.addMark(
             tr.selection.from,
             tr.selection.to,
-            schema.marks.link.create({ href })
+            view.state.schema.marks.link.create({ href })
         );
 
         view.dispatch(tr);
@@ -419,7 +418,7 @@ class LinkTooltip {
                 // cancel all events coming from inside this widget
                 stopEvent: () => true,
             }
-        ) as Decoration<unknown>;
+        );
 
         return DecorationSet.create(newState.doc, [decoration]);
     }
@@ -440,12 +439,13 @@ class LinkTooltip {
     private isLink(state: EditorState): boolean {
         const { from, $from, to, empty } = state.selection;
         if (!empty) {
-            return state.doc.rangeHasMark(from, to, schema.marks.link);
+            return state.doc.rangeHasMark(from, to, state.schema.marks.link);
         }
 
         return (
-            schema.marks.link.isInSet(state.storedMarks || $from.marks()) !==
-            undefined
+            state.schema.marks.link.isInSet(
+                state.storedMarks || $from.marks()
+            ) !== undefined
         );
     }
 
@@ -514,12 +514,14 @@ class LinkTooltip {
         if (empty) {
             return $from
                 .marks()
-                .filter((mark) => mark.type === schema.marks.link);
+                .filter((mark) => mark.type === state.schema.marks.link);
         }
         if (to > from) {
             state.doc.nodesBetween(from, to, (node) => {
                 linkMarks.push(
-                    node.marks.filter((mark) => mark.type === schema.marks.link)
+                    node.marks.filter(
+                        (mark) => mark.type === state.schema.marks.link
+                    )
                 );
             });
         }
@@ -542,7 +544,10 @@ class LinkTooltip {
                 state = view.state;
             }
 
-            toggleMark(schema.marks.link)(state, view.dispatch.bind(view));
+            toggleMark(view.state.schema.marks.link)(
+                state,
+                view.dispatch.bind(view)
+            );
         };
 
         this.editListener = () => {

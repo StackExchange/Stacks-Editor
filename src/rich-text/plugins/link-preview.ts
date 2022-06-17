@@ -144,7 +144,7 @@ function generateRecentPreviewDecorations(
     doc: ProsemirrorNode,
     recentlyUpdated: FetchLinkPreviewResult[]
 ) {
-    const linkPreviewDecorations: Decoration<unknown>[] = [];
+    const linkPreviewDecorations: Decoration[] = [];
 
     recentlyUpdated.forEach((n) => {
         if (!n.isTextOnly && n.content) {
@@ -188,7 +188,7 @@ function insertLinkPreview(pos: number, content: Node | null) {
 
     return Decoration.widget(pos, placeholder, {
         side: -1,
-    }) as Decoration<unknown>;
+    });
 }
 
 /**

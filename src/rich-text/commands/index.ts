@@ -31,6 +31,7 @@ import {
     removeRowCommand,
 } from "./tables";
 import { showLinkEditor } from "../plugins/link-editor";
+import { getShortcut } from "../../shared/utils";
 
 export * from "./tables";
 
@@ -200,7 +201,10 @@ export function insertLinkCommand(
 
     // never actually toggle the mark, as that is done in the link editor
     // we do want to *pretend* to, as toggleMark checks for validity
-    const valid = toggleMark(schema.marks.link, { href: linkUrl })(state, null);
+    const valid = toggleMark(state.schema.marks.link, { href: linkUrl })(
+        state,
+        null
+    );
 
     if (dispatch && valid) {
         const selectedText =

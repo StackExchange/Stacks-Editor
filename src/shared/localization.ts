@@ -38,7 +38,6 @@ export const defaultStrings = {
         upload_error_unsupported_format:
             "Please select an image (jpeg, png, gif) to upload" as string,
         uploaded_image_preview_alt: "uploaded image preview" as string,
-        default_image_alt_text: "enter image description here" as string,
     },
 } as const;
 
