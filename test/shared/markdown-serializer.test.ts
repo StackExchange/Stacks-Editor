@@ -2,7 +2,7 @@ import { DOMParser } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import { externalPluginProvider } from "../test-helpers";
-import { crazyTestUrl } from "./test-helpers";
+import { crazyTestUrl } from "../rich-text/test-helpers";
 
 function richView(markdownInput: string) {
     return new RichTextEditor(

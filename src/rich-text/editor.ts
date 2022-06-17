@@ -25,7 +25,7 @@ import {
 } from "../shared/view";
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
-import { stackOverflowMarkdownSerializer } from "./markdown-serializer";
+import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";

@@ -7,7 +7,7 @@ import { EditorProps } from "prosemirror-view";
 import {
     MarkdownSerializerMarks,
     MarkdownSerializerNodes,
-} from "../rich-text/markdown-serializer";
+} from "./markdown-serializer";
 import { MenuCommandEntry } from "./menu";
 import { EditorType } from "./view";
 
