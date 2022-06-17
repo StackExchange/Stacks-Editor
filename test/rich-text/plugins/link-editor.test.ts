@@ -1,5 +1,5 @@
 import { EditorState, Transaction } from "prosemirror-state";
-import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
+import { DecorationSet, EditorView } from "prosemirror-view";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import {
     hideLinkEditor,
@@ -11,6 +11,7 @@ import { stackOverflowValidateLink } from "../../../src/shared/utils";
 import { applySelection, createState, createView } from "../test-helpers";
 import "../../matchers";
 import { interfaceManagerPlugin } from "../../../src/shared/prosemirror-plugins/interface-manager";
+import { externalPluginProvider } from "../../test-helpers";
 
 const editorPlugin = linkEditorPlugin({
     validateLink: stackOverflowValidateLink,
@@ -30,9 +31,7 @@ function getDecorations(state: EditorState) {
 function getRenderedDecoration(editorView: EditorView): HTMLElement {
     const state = editorView.state;
     const decorations = getDecorations(state);
-    const decoration = decorations.find(
-        state.selection.from
-    )[0] as Decoration<unknown>;
+    const decoration = decorations.find(state.selection.from)[0];
     expect(decoration).toBeDefined();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
@@ -177,6 +176,8 @@ describe("link-editor", () => {
                 expect(formValue(updatedUploadContainer, "text")).toBe(
                     "link text"
                 );
+
+                return true;
             });
 
             // simulate clicking the button
@@ -279,6 +280,8 @@ describe("link-editor", () => {
                 // the decoration should be hidden now
                 renderedDeco = getRenderedDecoration(view);
                 expect(renderedDeco).toBe(DecorationSet.empty);
+
+                return true;
             });
 
             // simulate clicking the button
@@ -342,9 +345,14 @@ function richTextView(
     markdown: string,
     containerFn: () => Element
 ): RichTextEditor {
-    return new RichTextEditor(document.createElement("div"), markdown, {
-        pluginParentContainer: containerFn,
-    });
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdown,
+        externalPluginProvider(),
+        {
+            pluginParentContainer: containerFn,
+        }
+    );
 }
 
 // TODO DOCUMENT
