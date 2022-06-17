@@ -1,6 +1,10 @@
-import { EditorState, Plugin, Transaction } from "prosemirror-state";
+import {
+    EditorState,
+    Plugin,
+    PluginView,
+    Transaction,
+} from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import type { PluginView } from "./view";
 import { docChanged, generateRandomId } from "./utils";
 
 /** NoOp to use in place of missing commands */

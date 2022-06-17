@@ -3,10 +3,11 @@ import {
     EditorState,
     Transaction,
     TextSelection,
+    PluginView,
 } from "prosemirror-state";
 import { NodeSpec, Schema } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import { CommonmarkParserFeatures, PluginView } from "../view";
+import { CommonmarkParserFeatures } from "../view";
 import { StatefulPlugin } from "./plugin-extensions";
 import { escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";

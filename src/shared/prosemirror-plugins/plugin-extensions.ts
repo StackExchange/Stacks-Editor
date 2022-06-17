@@ -5,8 +5,8 @@ import {
     Transaction,
     StateField,
     EditorState,
+    PluginView,
 } from "prosemirror-state";
-import { PluginView } from "../view";
 import { EditorView } from "prosemirror-view";
 import { log } from "../logger";
 
