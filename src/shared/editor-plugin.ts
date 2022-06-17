@@ -41,8 +41,8 @@ interface PluginMenuCommandEntry {
     richText: MenuCommandExtended | MenuCommand;
     /** The command to execute when in commonmark mode */
     commonmark: MenuCommandExtended | MenuCommand;
-    /** The keyboard shortcut to attach this command to */
-    keybind?: string;
+    /** The keyboard shortcut to attach this command to TODO */
+    //keybind?: string;
 
     /**
      * The name of the svg icon to use
