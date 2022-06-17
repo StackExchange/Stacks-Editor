@@ -4,14 +4,14 @@ import {
     MarkdownSerializerState,
 } from "prosemirror-markdown";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
-import { error } from "../shared/logger";
+import { error } from "./logger";
 import {
     selfClosingElements,
     supportedTagAttributes,
     TagType,
 } from "./html-helpers";
 import { normalizeReference } from "markdown-it/lib/common/utils";
-import { IExternalPluginProvider } from "../shared/editor-plugin";
+import { IExternalPluginProvider } from "./editor-plugin";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<
