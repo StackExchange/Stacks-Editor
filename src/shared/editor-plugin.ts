@@ -3,7 +3,7 @@ import OrderedMap from "orderedmap";
 import { MarkdownParser } from "prosemirror-markdown";
 import { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
 import { Plugin } from "prosemirror-state";
-import { EditorProps, NodeViewConstructor } from "prosemirror-view";
+import { EditorProps } from "prosemirror-view";
 import {
     MarkdownSerializerMarks,
     MarkdownSerializerNodes,
@@ -84,13 +84,11 @@ export class ShimExternalPluginProvider implements IExternalPluginProvider {
     nodeViews = {};
 
     getFinalizedSchema(schema: SchemaSpec): PluginSchemaSpec {
-        return {
-            nodes: OrderedMap.from(schema.nodes),
-            marks: OrderedMap.from(schema.marks),
-        };
+        // TODO this is not right, but it's temporary so... ¯\_(ツ)_/¯
+        return schema as PluginSchemaSpec;
     }
 
-    alterMarkdownIt(instance: MarkdownIt): void {
+    alterMarkdownIt(): void {
         /* noop */
     }
 

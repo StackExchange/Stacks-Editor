@@ -20,7 +20,11 @@ const features: Required<CommonmarkParserFeatures> = {
     validateLink: stackOverflowValidateLink,
 };
 
-const markdownParser = buildMarkdownParser(features, testRichTextSchema, externalPluginProvider());
+const markdownParser = buildMarkdownParser(
+    features,
+    testRichTextSchema,
+    externalPluginProvider()
+);
 
 describe("SOMarkdownParser", () => {
     describe("html support", () => {

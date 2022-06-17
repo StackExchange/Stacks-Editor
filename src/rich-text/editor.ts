@@ -84,16 +84,6 @@ export class RichTextEditor extends BaseView {
             this.externalPluginProvider
         );
 
-        this.finalizedSchema = new Schema(
-            this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
-        );
-
-        this.markdownParser = buildMarkdownParser(
-            this.options.parserFeatures,
-            this.finalizedSchema,
-            this.externalPluginProvider
-        );
-
         const doc = this.parseContent(content);
 
         const menuEntries = this.externalPluginProvider.getFinalizedMenu(

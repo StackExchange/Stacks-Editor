@@ -1,12 +1,7 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
-import {
-    EditorState,
-    Plugin,
-    TextSelection,
-    Transaction,
-} from "prosemirror-state";
+import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
