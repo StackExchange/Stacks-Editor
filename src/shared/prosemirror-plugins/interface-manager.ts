@@ -1,6 +1,6 @@
+import { PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { dispatchEditorEvent } from "../utils";
-import { PluginView } from "../view";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
 
 /**
