@@ -71,11 +71,16 @@ export class RichTextEditor extends BaseView {
 
         this.externalPluginProvider = pluginProvider;
 
+        this.markdownSerializer = stackOverflowMarkdownSerializer(
+            this.externalPluginProvider
+        );
+
         this.finalizedSchema = new Schema(
             this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
         );
-
-        this.markdownSerializer = stackOverflowMarkdownSerializer(
+        this.markdownParser = buildMarkdownParser(
+            this.options.parserFeatures,
+            this.finalizedSchema,
             this.externalPluginProvider
         );
 
