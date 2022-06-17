@@ -1,7 +1,7 @@
 import { RichTextEditor } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
 import "../matchers";
-import { normalize } from "../test-helpers";
+import { externalPluginProvider, normalize } from "../test-helpers";
 
 // mock the markdown-parser for testing
 jest.mock("../../src/shared/markdown-parser");
@@ -22,7 +22,12 @@ function editorDom(editorView: RichTextEditor): string {
 }
 
 function richView(markdownInput: string) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {});
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdownInput,
+        externalPluginProvider(),
+        {}
+    );
 }
 
 describe("rich text editor view", () => {
@@ -120,7 +125,7 @@ describe("rich text editor view", () => {
             const richEditorView = richView(markdown);
 
             const preElement = richEditorView.dom.querySelector("pre");
-            const expectedCodeHtml = `<code class="content-dom">console.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
+            const expectedCodeHtml = `<code class="content-dom"><span class="hljs-built_in">console</span>.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
             expect(preElement.innerHTML).toEqual(normalize(expectedCodeHtml));
         });
     });
@@ -323,7 +328,8 @@ _world_.
 
             const editor = new RichTextEditor(
                 document.createElement("div"),
-                "*This* is some **test** content"
+                "*This* is some **test** content",
+                externalPluginProvider()
             );
 
             // on a catastrophic crash, the raw string content gets

@@ -4,13 +4,12 @@ import {
     Transaction,
     TextSelection,
 } from "prosemirror-state";
-import { NodeSpec } from "prosemirror-model";
+import { NodeSpec, Schema } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { CommonmarkParserFeatures, PluginView } from "../view";
 import { StatefulPlugin } from "./plugin-extensions";
 import { escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
-import { richTextSchema } from "../../rich-text/schema";
 import { ManagedInterfaceKey, PluginInterfaceView } from "./interface-manager";
 
 /**
@@ -766,7 +765,8 @@ const INTERFACE_KEY = new ManagedInterfaceKey<ImageUploadState>(
  */
 export function richTextImageUpload(
     uploadOptions: ImageUploadOptions,
-    validateLink: CommonmarkParserFeatures["validateLink"]
+    validateLink: CommonmarkParserFeatures["validateLink"],
+    schema: Schema
 ): Plugin {
     return imageUploaderPlaceholderPlugin(
         uploadOptions,
@@ -777,12 +777,12 @@ export function richTextImageUpload(
             const marks =
                 uploadOptions.wrapImagesInLinks ||
                 uploadOptions.embedImagesAsLinks
-                    ? [richTextSchema.marks.link.create({ href: url })]
+                    ? [schema.marks.link.create({ href: url })]
                     : null;
 
             const imgNode = uploadOptions.embedImagesAsLinks
-                ? richTextSchema.text(defaultAltText, marks)
-                : richTextSchema.nodes.image.create(
+                ? schema.text(defaultAltText, marks)
+                : schema.nodes.image.create(
                       { src: url, alt: defaultAltText },
                       null,
                       marks

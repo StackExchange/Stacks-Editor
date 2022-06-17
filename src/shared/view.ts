@@ -4,10 +4,16 @@
 import type { Node } from "prosemirror-model";
 import type { EditorState } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
-import type { ExternalEditorPlugin } from "./external-editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { stackOverflowValidateLink } from "./utils";
 
+/** Describes each distinct editor type the StacksEditor handles */
+export enum EditorType {
+    RichText,
+    Commonmark,
+}
+
+/** Describes the options that are common to all view types */
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
     classList?: string[];
@@ -15,6 +21,8 @@ export interface CommonViewOptions {
     editorHelpLink?: string;
     /** The features to allow/disallow on the markdown parser */
     parserFeatures?: CommonmarkParserFeatures;
+    /** The placeholder text for an empty editor */
+    placeholderText?: string;
     /**
      * Function to get the container to place the menu bar;
      * defaults to returning this editor's target's parentNode
@@ -29,7 +37,7 @@ export interface CommonViewOptions {
     /** Image uploader options */
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
-    externalPlugins?: ExternalEditorPlugin[];
+    externalPlugins?: unknown[];
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */

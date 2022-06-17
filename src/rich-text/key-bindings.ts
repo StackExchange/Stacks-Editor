@@ -8,13 +8,13 @@ import {
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
+import { Schema } from "prosemirror-model";
 import {
     liftListItem,
     sinkListItem,
     splitListItem,
 } from "prosemirror-schema-list";
 import type { Plugin } from "prosemirror-state";
-import { richTextSchema as schema } from "./schema";
 import { bindLetterKeymap } from "../shared/utils";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import {
@@ -28,9 +28,13 @@ import {
     moveSelectionAfterTableCommand,
     insertTableCommand,
     exitInclusiveMarkCommand,
+    toggleHeadingLevel,
 } from "./commands";
 
-export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
+export function allKeymaps(
+    schema: Schema,
+    parserFeatures: CommonmarkParserFeatures
+): Plugin[] {
     const tableKeymap = keymap({
         ...bindLetterKeymap("Mod-e", insertTableCommand),
         "Mod-Enter": moveSelectionAfterTableCommand,
@@ -63,7 +67,7 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         ...bindLetterKeymap("Ctrl-g", insertImageCommand),
         ...bindLetterKeymap("Mod-o", wrapIn(schema.nodes.ordered_list)),
         ...bindLetterKeymap("Mod-u", wrapIn(schema.nodes.bullet_list)),
-        ...bindLetterKeymap("Mod-h", setBlockType(schema.nodes.heading)),
+        ...bindLetterKeymap("Mod-h", toggleHeadingLevel()),
         ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
         // users expect to be able to leave certain blocks/marks using the arrow keys
