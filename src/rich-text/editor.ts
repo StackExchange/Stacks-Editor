@@ -4,18 +4,13 @@ import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
-import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { error, log } from "../shared/logger";
 import { buildMarkdownParser } from "../shared/markdown-parser";
-import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
-import { createMenuPlugin } from "../shared/menu";
 import {
     defaultImageUploadHandler,
     richTextImageUpload,
 } from "../shared/prosemirror-plugins/image-upload";
-import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
-import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import {
     editableCheck,
     readonlyPlugin,
@@ -28,21 +23,26 @@ import {
     defaultParserFeatures,
     EditorType,
 } from "../shared/view";
-import { createMenuEntries } from "./commands";
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
+import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
 import { codePasteHandler } from "./plugins/code-paste-handler";
-import { linkEditorPlugin } from "./plugins/link-editor";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
+import { linkEditorPlugin } from "./plugins/link-editor";
+import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
 import { richTextSchemaSpec } from "./schema";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
+import { IExternalPluginProvider } from "../shared/editor-plugin";
+import { createMenuPlugin } from "../shared/menu";
+import { createMenuEntries } from "./commands";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
