@@ -212,6 +212,11 @@
     & [data-placeholder] {
         position: relative;
 
+        // ensures markdown placeholder wraps expectedly
+        &.markdown {
+            overflow: visible;
+        }
+
         &::before {
             color: var(--fc-light);
             position: absolute;
