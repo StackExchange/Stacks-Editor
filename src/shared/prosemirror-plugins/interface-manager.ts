@@ -1,4 +1,4 @@
-import { PluginView } from "prosemirror-state";
+import { EditorState, PluginView, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { dispatchEditorEvent } from "../utils";
 import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
@@ -13,6 +13,7 @@ interface ManagedInterfaceState {
 
 /** The state of the interface manager meta-plugin */
 interface InterfaceManagerState {
+    dom: HTMLElement;
     /** The currently shown interface or null if no interface is shown */
     currentlyShown: ManagedInterfaceKey<ManagedInterfaceState> | null;
     /** Getter to fetch the plugin container from the view's DOM */
@@ -21,7 +22,7 @@ interface InterfaceManagerState {
 
 /** The data properties that can be passed into show/hideInterface for state overriding */
 type InterfaceData<T extends ManagedInterfaceState> = Partial<
-    Omit<T, "shouldShow">
+    Omit<T, "shouldShow" | "dom">
 >;
 
 /**
@@ -41,52 +42,55 @@ class MainInterfaceManagerKey extends StatefulPluginKey<InterfaceManagerState> {
      * @param data Any data to attach to the transaction's metadata
      * @returns true if the interface was shown, false if there was no state change
      */
-    showInterface<T extends ManagedInterfaceState>(
-        view: EditorView,
+    showInterfaceTr<T extends ManagedInterfaceState>(
+        viewState: EditorState,
         toShow: ManagedInterfaceKey<T>,
         data: InterfaceData<T>
-    ): boolean {
+    ): Transaction {
         // even though the TS types forbid this, it could still be passed in
         if (data && "shouldShow" in data) {
             delete (data as unknown as { shouldShow: boolean })["shouldShow"];
         }
 
         const state: T = {
-            ...toShow.getState(view.state),
+            ...toShow.getState(viewState),
             ...data,
         };
 
         // check validity
         if (!this.checkIfValid(state, true)) {
-            return false;
+            return null;
         }
 
-        // hide existing TODO batch transactions?
-        this.hideCurrentInterface(view);
+        // hide existing
+        let tr = this.hideCurrentInterfaceTr(viewState) || viewState.tr;
 
         // dispatch cancelable event and return early if canceled
-        if (this.dispatchCancelableEvent(view, `${toShow.name}-show`, state)) {
-            return false;
+        if (
+            this.dispatchCancelableEvent(
+                viewState,
+                `${toShow.name}-show`,
+                state
+            )
+        ) {
+            return null;
         }
 
         // dispatch transaction for managed plugin
-        let tr = view.state.tr;
         tr = toShow.setMeta(tr, {
             ...state,
             shouldShow: true,
         } as T);
 
         // set metadata for this plugin
-        const { containerGetter } = this.getState(view.state);
+        const { containerGetter, dom } = this.getState(viewState);
         tr = this.setMeta(tr, {
+            dom,
             currentlyShown: toShow,
             containerGetter,
         });
 
-        // dispatch transaction
-        view.dispatch(tr);
-
-        return true;
+        return tr;
     }
 
     /**
@@ -96,64 +100,72 @@ class MainInterfaceManagerKey extends StatefulPluginKey<InterfaceManagerState> {
      * @param data Any data to attach to the transaction's metadata
      * @returns true if the interface was hidden, false if there was no state change
      */
-    hideInterface<T extends ManagedInterfaceState>(
-        view: EditorView,
+    hideInterfaceTr<T extends ManagedInterfaceState>(
+        viewState: EditorState,
         toHide: ManagedInterfaceKey<T>,
         data: InterfaceData<T>
-    ): boolean {
+    ): Transaction {
         // even though the TS types forbid this, it could still be passed in
         if (data && "shouldShow" in data) {
             delete (data as unknown as { shouldShow: boolean })["shouldShow"];
         }
 
         const state: T = {
-            ...toHide.getState(view.state),
+            ...toHide.getState(viewState),
             ...data,
         };
 
         // check validity
         if (!this.checkIfValid(state, false)) {
-            return false;
+            return null;
         }
 
         // dispatch cancelable event and return early if canceled
-        if (this.dispatchCancelableEvent(view, `${toHide.name}-hide`, state)) {
-            return false;
+        if (
+            this.dispatchCancelableEvent(
+                viewState,
+                `${toHide.name}-hide`,
+                state
+            )
+        ) {
+            return null;
         }
 
         // dispatch transaction for managed plugin
-        let tr = view.state.tr;
+        let tr = viewState.tr;
         tr = toHide.setMeta(tr, {
             ...state,
             shouldShow: false,
         } as T);
 
         // set metadata for this plugin
-        const { containerGetter } = this.getState(view.state);
+        const { containerGetter, dom } = this.getState(viewState);
         tr = this.setMeta(tr, {
+            dom,
             currentlyShown: null,
             containerGetter,
         });
 
-        // dispatch transaction
-        view.dispatch(tr);
-
-        return true;
+        return tr;
     }
 
-    hideCurrentInterface(view: EditorView): boolean {
-        const { currentlyShown } = this.getState(view.state);
+    hideCurrentInterfaceTr(viewState: EditorState): Transaction {
+        const { currentlyShown } = this.getState(viewState);
 
         if (!currentlyShown) {
-            return true;
+            return null;
         }
 
-        return this.hideInterface(view, currentlyShown, {
+        return this.hideInterfaceTr(viewState, currentlyShown, {
             shouldShow: false,
         });
     }
 
-    // TODO CLEANUP
+    /**
+     * Checks if the the requested state change is valid
+     * @param state The current plugin state
+     * @param checkingIsShown Whether the state is being checked for being shown
+     */
     private checkIfValid<T extends ManagedInterfaceState>(
         state: Partial<T>,
         checkingIsShown: boolean
@@ -168,12 +180,19 @@ class MainInterfaceManagerKey extends StatefulPluginKey<InterfaceManagerState> {
         }
     }
 
+    /**
+     * Dispatches an event to the editor view's DOM that can be canceled
+     * @param state The current editor state
+     * @param eventName The unprefixed name of the event to dispatch
+     * @param data The current plugin state
+     */
     private dispatchCancelableEvent<T>(
-        view: EditorView,
+        state: EditorState,
         eventName: string,
         data: T
     ): boolean {
-        return !dispatchEditorEvent(view.dom, eventName, data);
+        const dom = this.getState(state).dom;
+        return !dispatchEditorEvent(dom, eventName, data);
     }
 }
 
@@ -211,8 +230,8 @@ export class ManagedInterfaceKey<
      * @param data Optional data to attach to the transaction's metadata
      * @returns True if the interface was shown, false if there was no state change
      */
-    showInterface(view: EditorView, data?: InterfaceData<T>): boolean {
-        return MAIN_INTERFACE_MANAGER_KEY.showInterface(view, this, data);
+    showInterfaceTr(state: EditorState, data?: InterfaceData<T>): Transaction {
+        return MAIN_INTERFACE_MANAGER_KEY.showInterfaceTr(state, this, data);
     }
 
     /**
@@ -221,8 +240,8 @@ export class ManagedInterfaceKey<
      * @param data Optional data to attach to the transaction's metadata
      * @returns True if the interface was hidden, false if there was no state change
      */
-    hideInterface(view: EditorView, data?: InterfaceData<T>): boolean {
-        return MAIN_INTERFACE_MANAGER_KEY.hideInterface(view, this, data);
+    hideInterfaceTr(state: EditorState, data?: InterfaceData<T>): Transaction {
+        return MAIN_INTERFACE_MANAGER_KEY.hideInterfaceTr(state, this, data);
     }
 }
 
@@ -244,6 +263,7 @@ export function interfaceManagerPlugin(
         key: MAIN_INTERFACE_MANAGER_KEY,
         state: {
             init: () => ({
+                dom: null,
                 currentlyShown: null,
                 containerGetter,
             }),
@@ -258,12 +278,28 @@ export function interfaceManagerPlugin(
             handleKeyDown: (view: EditorView, event: KeyboardEvent) => {
                 // if the ESC key is pressed, then hide the interface
                 if (event.key === "Escape") {
-                    MAIN_INTERFACE_MANAGER_KEY.hideCurrentInterface(view);
+                    const tr =
+                        MAIN_INTERFACE_MANAGER_KEY.hideCurrentInterfaceTr(
+                            view.state
+                        );
+                    if (tr) {
+                        view.dispatch(tr);
+                    }
                 }
 
                 // don't stop the event from propagating
                 return false;
             },
+        },
+        view: (editorView: EditorView) => {
+            editorView.dispatch(
+                MAIN_INTERFACE_MANAGER_KEY.setMeta(editorView.state.tr, {
+                    dom: editorView.dom,
+                    currentlyShown: null,
+                    containerGetter,
+                })
+            );
+            return {};
         },
     });
 }
@@ -323,18 +359,18 @@ export abstract class PluginInterfaceView<
     }
 
     /** Helper wrapper around this key's @see {@link ManagedInterfaceKey.showInterface} */
-    protected tryShowInterface(
-        view: EditorView,
+    protected tryShowInterfaceTr(
+        state: EditorState,
         data?: InterfaceData<TData>
-    ): boolean {
-        return this.key.showInterface(view, data);
+    ): Transaction {
+        return this.key.showInterfaceTr(state, data);
     }
 
     /** Helper wrapper around this key's @see {@link ManagedInterfaceKey.hideInterface} */
-    protected tryHideInterface(
-        view: EditorView,
+    protected tryHideInterfaceTr(
+        state: EditorState,
         data?: InterfaceData<TData>
-    ): boolean {
-        return this.key.hideInterface(view, data);
+    ): Transaction {
+        return this.key.hideInterfaceTr(state, data);
     }
 }

@@ -6,6 +6,7 @@ import {
     StateField,
     EditorState,
     PluginView,
+    EditorStateConfig,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { log } from "../logger";
@@ -18,11 +19,7 @@ interface StatefulPluginStateField<
     TThis extends StatefulPlugin<T> = StatefulPlugin<T>
 > extends StateField<T> {
     /** @inheritdoc */
-    init(
-        this: TThis,
-        config: { [key: string]: unknown },
-        instance: EditorState
-    ): T;
+    init(this: TThis, config: EditorStateConfig, instance: EditorState): T;
     /** @inheritdoc */
     apply(
         this: TThis,
@@ -36,7 +33,7 @@ interface StatefulPluginStateField<
     /** @inheritdoc */
     fromJSON?: (
         this: TThis,
-        config: { [key: string]: unknown },
+        config: EditorStateConfig,
         value: unknown,
         state: EditorState
     ) => T;
