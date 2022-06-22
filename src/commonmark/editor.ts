@@ -6,6 +6,7 @@ import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
 import { createMenuPlugin } from "../shared/menu";
+import { createPreviewPlugin } from "./plugins/preview";
 import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
@@ -32,6 +33,7 @@ export type CommonmarkOptions = CommonViewOptions;
 
 export class CommonmarkEditor extends BaseView {
     private options: CommonmarkOptions;
+    private externalPluginProvider: IExternalPluginProvider;
 
     constructor(
         target: Node,
@@ -41,6 +43,7 @@ export class CommonmarkEditor extends BaseView {
     ) {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
+        this.externalPluginProvider = pluginProvider;
 
         const menuEntries = pluginProvider.getFinalizedMenu(
             createMenuEntries(this.options),
@@ -66,6 +69,10 @@ export class CommonmarkEditor extends BaseView {
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
                         menu,
+                        createPreviewPlugin(
+                            this.options.previewParentContainer,
+                            this.externalPluginProvider
+                        ),
                         CodeBlockHighlightPlugin(null),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
@@ -93,6 +100,7 @@ export class CommonmarkEditor extends BaseView {
             // set to null to disable by default
             editorHelpLink: null,
             menuParentContainer: null,
+            previewParentContainer: null,
             parserFeatures: defaultParserFeatures,
             placeholderText: null,
             imageUpload: {

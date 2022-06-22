@@ -253,6 +253,11 @@
         max-width: 100%;
     }
 
+    &.s-markdown-preview {
+        img {
+            pointer-events: none;
+        }
+    }
     // set the children of spoilers visible so we can edit them
     &.s-prose .spoiler * {
         visibility: visible;
@@ -305,7 +310,7 @@
 }
 
 // overrides for only when the editor is readonly
-.ProseMirror[contenteditable="false"] {
+.ProseMirror[contenteditable="false"]:not(.s-markdown-preview) {
     // dim the content on pre/code since their text color is unaffected
     pre,
     code {

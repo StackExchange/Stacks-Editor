@@ -221,6 +221,15 @@ export class StacksEditor implements View {
         const menuContainerFn = () => menuTarget;
         this.options.menuParentContainer = menuContainerFn;
 
+        // create specific area for the editor menu
+        const previewTarget = document.createElement("div");
+        previewTarget.className = "py16";
+        this.target.appendChild(previewTarget);
+
+        // set the editors' preview containers to be the combo container
+        const previewContainerFn = () => previewTarget;
+        this.options.previewParentContainer = previewContainerFn;
+
         // create a specific area for the editor plugins
         const pluginTarget = document.createElement("div");
         this.pluginContainer.appendChild(pluginTarget);

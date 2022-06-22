@@ -29,6 +29,11 @@ export interface CommonViewOptions {
      */
     menuParentContainer?: (view: EditorView) => Element;
     /**
+     * Function to get the container to place the markdown preview;
+     * defaults to returning this editor's target's parentNode
+     */
+    previewParentContainer?: (view: EditorView) => Element;
+    /**
      * TODO need both this AND menuParentContainer?
      * Function to get the container to place any floating plugins;
      * defaults to returning this editor's target's parentNode
