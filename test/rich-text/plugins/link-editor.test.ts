@@ -8,7 +8,13 @@ import {
     showLinkEditor,
 } from "../../../src/rich-text/plugins/link-editor";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
-import { applySelection, createState, createView } from "../test-helpers";
+import {
+    applySelection,
+    cleanupPasteSupport,
+    createState,
+    createView,
+    setupPasteSupport,
+} from "../test-helpers";
 import "../../matchers";
 import { interfaceManagerPlugin } from "../../../src/shared/prosemirror-plugins/interface-manager";
 import { externalPluginProvider } from "../../test-helpers";
@@ -154,7 +160,7 @@ describe("link-editor", () => {
             expect(inputContainer.classList).not.toContain("has-error");
         });
 
-        it("should prefill fields when a link is edited via the tooltip", async () => {
+        it("should prefill fields when a link is edited via the tooltip", () => {
             view = richTextView(
                 "[link text](https://www.example.com)",
                 () => pluginContainer
@@ -164,7 +170,11 @@ describe("link-editor", () => {
                 applySelection(view.editorView.state, 1)
             );
 
-            await onViewDispatch(view.editorView, () => {
+            const promise = onViewDispatch(view.editorView, (_, tr) => {
+                if (!tr || !tr.getMeta("LinkEditor$")) {
+                    return false;
+                }
+
                 const updatedUploadContainer =
                     pluginContainer.querySelector<HTMLFormElement>(
                         "form.js-link-editor"
@@ -184,7 +194,9 @@ describe("link-editor", () => {
             const renderedDeco = getRenderedDecoration(view.editorView);
             renderedDeco
                 .querySelector<HTMLButtonElement>(".js-link-tooltip-edit")
-                .click();
+                .dispatchEvent(new Event("mousedown"));
+
+            return promise;
         });
 
         it.todo(
@@ -253,14 +265,16 @@ describe("link-editor", () => {
             expect(decorations).not.toEqual(DecorationSet.empty);
         });
 
-        it("should edit on button click", async () => {
+        it("should edit on button click", () => {
             const pluginContainer = document.createElement("div");
             const state = applySelection(
                 createState(
                     `<p>test<a href="https://www.example.com">link</a></p>`,
                     [
                         interfaceManagerPlugin(() => pluginContainer),
-                        linkEditorPlugin({}),
+                        linkEditorPlugin({
+                            validateLink: () => true,
+                        }),
                     ]
                 ),
                 5
@@ -271,27 +285,34 @@ describe("link-editor", () => {
             expect(pluginContainer.parentElement).toBeNull();
 
             // intercept the dispatch
-            await onViewDispatch(view, () => {
+            const promise = onViewDispatch(view, (newView, tr) => {
+                if (!tr || !tr.getMeta("LinkEditor$")) {
+                    return false;
+                }
+
                 // this should open the editor interface
                 const updatedUploadContainer =
-                    view.dom.querySelector(".js-link-editor");
+                    pluginContainer.querySelector(".js-link-editor");
                 expect(updatedUploadContainer).toBeTruthy();
 
                 // the decoration should be hidden now
-                renderedDeco = getRenderedDecoration(view);
-                expect(renderedDeco).toBe(DecorationSet.empty);
+                const decos = getDecorations(newView.state);
+                expect(decos).toBe(DecorationSet.empty);
 
                 return true;
             });
 
             // simulate clicking the button
-            let renderedDeco = getRenderedDecoration(view);
+            const renderedDeco = getRenderedDecoration(view);
             renderedDeco
                 .querySelector<HTMLButtonElement>(".js-link-tooltip-edit")
-                .click();
+                .dispatchEvent(new Event("mousedown"));
+
+            return promise;
         });
 
         it("should delete on button click", () => {
+            setupPasteSupport();
             const pluginContainer = document.createElement("div");
             const state = applySelection(
                 createState(
@@ -308,7 +329,7 @@ describe("link-editor", () => {
             const view = createView(state);
 
             const promise = onViewDispatch(view, (newView, tr) => {
-                if (tr) {
+                if (!tr) {
                     return false;
                 }
 
@@ -317,25 +338,25 @@ describe("link-editor", () => {
                 );
 
                 expect(currentNode.isText).toBe(true);
-                expect(currentNode.text).toBe("link");
+                expect(currentNode.text).toBe("testlink");
                 expect(currentNode.marks).toHaveLength(0);
 
                 // the decoration should be hidden now
-                renderedDeco = getRenderedDecoration(newView);
+                const decos = getDecorations(newView.state);
 
-                expect(renderedDeco).toBe(DecorationSet.empty);
+                expect(decos).toBe(DecorationSet.empty);
 
                 return true;
             });
 
             expect(pluginContainer.parentElement).toBeNull();
 
-            let renderedDeco = getRenderedDecoration(view);
+            const renderedDeco = getRenderedDecoration(view);
             renderedDeco
                 .querySelector<HTMLButtonElement>(".js-link-tooltip-remove")
                 .dispatchEvent(new Event("mousedown"));
 
-            return promise;
+            return promise.then(() => cleanupPasteSupport());
         });
     });
 });
@@ -378,5 +399,5 @@ function onViewDispatch(
 }
 
 function formValue(form: HTMLFormElement, name: string) {
-    return (form[name] as HTMLInputElement).value;
+    return form.querySelector<HTMLInputElement>(`[name="${name}"]`).value;
 }

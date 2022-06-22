@@ -93,7 +93,10 @@ export class LinkEditor extends PluginInterfaceView<
         this.viewContainer.addEventListener("reset", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            this.tryHideInterface(view);
+            const tr = this.tryHideInterfaceTr(view.state);
+            if (tr) {
+                view.dispatch(tr);
+            }
         });
 
         this.hrefInput.addEventListener("input", (e) => {
@@ -192,16 +195,18 @@ export class LinkEditor extends PluginInterfaceView<
                 this.textInput.value = state.text;
             }
 
-            if (this.tryShowInterface(view)) {
-                LINK_EDITOR_KEY.forceHideTooltip(
-                    view.state,
-                    view.dispatch.bind(view)
-                );
+            let tr = this.tryShowInterfaceTr(view.state);
+            if (tr) {
+                tr = LINK_EDITOR_KEY.forceHideTooltipTr(view.state.apply(tr));
+                view.dispatch(tr);
             }
             this.hrefInput.focus();
         } else {
             this.resetEditor();
-            this.tryHideInterface(view);
+            const tr = this.tryHideInterfaceTr(view.state);
+            if (tr) {
+                view.dispatch(tr);
+            }
         }
     }
 
@@ -246,22 +251,16 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
      * Force the link tooltip to hide - useful e.g. when the entire editor is losing
      * focus and we want to make sure the tooltip disappears, too
      */
-    forceHideTooltip(
-        state: EditorState,
-        dispatch: (tr: Transaction) => void
-    ): void {
+    forceHideTooltipTr(state: EditorState): Transaction {
         const meta = this.getState(state);
 
         // if the tooltip is not showing, just return
         if (meta.decorations === DecorationSet.empty) {
-            return;
+            return state.tr;
         }
 
         meta.forceHideTooltip = true;
-        const tr = this.setMeta(state.tr, meta);
-
-        // immediately dispatch
-        dispatch(tr);
+        return this.setMeta(state.tr, meta);
     }
 }
 
@@ -395,7 +394,7 @@ class LinkTooltip {
         newState: EditorState
     ): DecorationSet {
         // if we're forced to hide the decorations, don't even attempt to create them
-        if ("forceHide" in value && value.forceHideTooltip) {
+        if ("forceHideTooltip" in value && value.forceHideTooltip) {
             return DecorationSet.empty;
         }
 
@@ -545,9 +544,8 @@ class LinkTooltip {
             let state = view.state;
 
             if (view.state.selection.empty) {
-                // TODO chain the double dispatch!
-                view.dispatch(this.expandSelection(state, view.state.tr));
-                state = view.state;
+                const tr = this.expandSelection(state, state.tr);
+                state = view.state.apply(tr);
             }
 
             toggleMark(view.state.schema.marks.link)(
@@ -557,17 +555,25 @@ class LinkTooltip {
         };
 
         this.editListener = () => {
+            let tr = view.state.tr;
             if (view.state.selection.empty) {
-                // TODO chain the double dispatch!
-                view.dispatch(this.expandSelection(view.state, view.state.tr));
+                tr = this.expandSelection(view.state, view.state.tr);
             }
 
-            const { from, to } = view.state.selection;
-            const text = view.state.doc.textBetween(from, to);
-            const href = this.findMarksInSelection(view.state)[0].attrs
+            const state = view.state.apply(tr);
+            const { from, to } = state.selection;
+            const text = state.doc.textBetween(from, to);
+            const href = this.findMarksInSelection(state)[0].attrs
                 .href as string;
 
-            showLinkEditor(view, href, text); // TODO
+            tr =
+                LINK_EDITOR_KEY.showInterfaceTr(state, {
+                    forceHideTooltip: true,
+                    url: href,
+                    text,
+                }) || tr;
+
+            view.dispatch(tr);
         };
     }
 }
@@ -630,9 +636,8 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
 
                     // if the editor blurs, but NOT because of the tooltip, hide the tooltip
                     if (!view.hasFocus() && !linkTooltip.hasFocus(e)) {
-                        LINK_EDITOR_KEY.forceHideTooltip(
-                            view.state,
-                            view.dispatch.bind(view)
+                        view.dispatch(
+                            LINK_EDITOR_KEY.forceHideTooltipTr(view.state)
                         );
                     }
 
@@ -652,16 +657,24 @@ export function showLinkEditor(
     url?: string,
     text?: string
 ): void {
-    LINK_EDITOR_KEY.showInterface(view, {
+    const tr = LINK_EDITOR_KEY.showInterfaceTr(view.state, {
         url,
         text,
     });
+
+    if (tr) {
+        view.dispatch(tr);
+    }
 }
 
 // TODO DOCUMENT
 export function hideLinkEditor(view: EditorView): void {
-    LINK_EDITOR_KEY.hideInterface(view, {
+    const tr = LINK_EDITOR_KEY.hideInterfaceTr(view.state, {
         url: null,
         text: null,
     });
+
+    if (tr) {
+        view.dispatch(tr);
+    }
 }

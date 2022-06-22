@@ -292,7 +292,12 @@ export function interfaceManagerPlugin(
             },
             handleClick(view: EditorView) {
                 // if the editor is clicked, then hide the interface
-                MAIN_INTERFACE_MANAGER_KEY.hideCurrentInterface(view);
+                const tr = MAIN_INTERFACE_MANAGER_KEY.hideCurrentInterfaceTr(
+                    view.state
+                );
+                if (tr) {
+                    view.dispatch(tr);
+                }
                 return false;
             },
         },
