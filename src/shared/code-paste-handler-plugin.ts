@@ -73,10 +73,13 @@ export const codePasteHandler = (editorType: EditorType) =>
 
                 const selectedNode = view.state.selection.$from.node();
 
+                if (isMarkdown) {
+                    codeData = `\n\`\`\`\n${codeData}\n\`\`\``;
+                }
+
                 // if we're pasting into a code_block, just paste the text
                 // otherwise, create a code_block and paste into that instead
-                if (selectedNode.type.name === "code_block" || isMarkdown) {
-                    codeData = `\n\`\`\`\n${codeData}\n\`\`\``;
+                if (selectedNode.type.name === "code_block") {
                     view.dispatch(view.state.tr.insertText(codeData));
                 } else {
                     const schema = view.state.schema;
