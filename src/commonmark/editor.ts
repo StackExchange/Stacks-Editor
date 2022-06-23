@@ -77,7 +77,7 @@ export class CommonmarkEditor extends BaseView {
                         ),
                         placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
-                        codePasteHandler,
+                        codePasteHandler(EditorType.Commonmark),
                         ...pluginProvider.plugins.commonmark,
                     ],
                 }),

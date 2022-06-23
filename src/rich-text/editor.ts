@@ -135,7 +135,7 @@ export class RichTextEditor extends BaseView {
                         readonlyPlugin(),
                         spoilerToggle,
                         tables,
-                        codePasteHandler,
+                        codePasteHandler(EditorType.RichText),
                         linkPasteHandler(this.options.parserFeatures),
                         ...this.externalPluginProvider.plugins.richText,
                         // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers

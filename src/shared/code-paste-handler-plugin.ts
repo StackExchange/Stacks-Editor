@@ -1,6 +1,8 @@
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Slice, Node } from "prosemirror-model";
+import { EditorType as EditorTypeName } from "./view";
+import type { EditorType } from "./view";
 
 /**
  * Detects if code was pasted into the document and returns the text if true
@@ -46,46 +48,48 @@ export function getDetectedCode(clipboardData: DataTransfer): string | null {
 }
 
 /** Plugin that auto-detects if code was pasted and handles it specifically */
-export const codePasteHandler = new Plugin({
-    props: {
-        handlePaste(view: EditorView, event: ClipboardEvent, slice: Slice) {
-            let codeData: string;
+export const codePasteHandler = (editorType: EditorType) =>
+    new Plugin({
+        props: {
+            handlePaste(view: EditorView, event: ClipboardEvent, slice: Slice) {
+                let codeData: string;
 
-            // if the schema parser already detected a code block, just use that
-            if (
-                slice.content.childCount === 1 &&
-                slice.content.child(0).type.name === "code_block"
-            ) {
-                codeData = slice.content.child(0).textContent;
-            } else {
-                codeData = getDetectedCode(event.clipboardData);
-            }
+                const isMarkdown = editorType === EditorTypeName.Commonmark;
+                // if the schema parser already detected a code block, just use that
+                if (
+                    slice.content.childCount === 1 &&
+                    slice.content.child(0).type.name === "code_block"
+                ) {
+                    codeData = slice.content.child(0).textContent;
+                } else {
+                    codeData = getDetectedCode(event.clipboardData);
+                }
 
-            if (!codeData) {
-                return false;
-            }
+                if (!codeData) {
+                    return false;
+                }
 
-            // TODO can we do some basic formatting?
+                // TODO can we do some basic formatting?
 
-            const selectedNode = view.state.selection.$from.node();
+                const selectedNode = view.state.selection.$from.node();
 
-            // if we're pasting into a code_block, just paste the text
-            // otherwise, create a code_block and paste into that instead
-            if (selectedNode.type.name === "code_block") {
-                codeData = `\n\`\`\`\n${codeData}\n\`\`\``;
-                view.dispatch(view.state.tr.insertText(codeData));
-            } else {
-                const schema = view.state.schema;
-                const node: Node = schema.node(
-                    "code_block",
-                    {},
-                    schema.text(codeData)
-                );
+                // if we're pasting into a code_block, just paste the text
+                // otherwise, create a code_block and paste into that instead
+                if (selectedNode.type.name === "code_block" || isMarkdown) {
+                    codeData = `\n\`\`\`\n${codeData}\n\`\`\``;
+                    view.dispatch(view.state.tr.insertText(codeData));
+                } else {
+                    const schema = view.state.schema;
+                    const node: Node = schema.node(
+                        "code_block",
+                        {},
+                        schema.text(codeData)
+                    );
 
-                view.dispatch(view.state.tr.replaceSelectionWith(node));
-            }
+                    view.dispatch(view.state.tr.replaceSelectionWith(node));
+                }
 
-            return true;
+                return true;
+            },
         },
-    },
-});
+    });
