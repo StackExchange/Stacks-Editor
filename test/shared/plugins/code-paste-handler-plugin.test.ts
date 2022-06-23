@@ -2,6 +2,7 @@ import {
     codePasteHandler,
     getDetectedCode,
 } from "../../../src/shared/code-paste-handler-plugin";
+import { EditorType } from "../../../src/shared/view";
 import "../../matchers";
 import "../../matchers";
 import {
@@ -12,7 +13,7 @@ import {
     DataTransferMock,
     dispatchPasteEvent,
     setupPasteSupport,
-} from "../test-helpers";
+} from "../../rich-text/test-helpers";
 
 const nonCodeTextData = ["not code", " nope", " still\tnope", "\n\nnada\n\n"];
 
@@ -98,7 +99,9 @@ describe("code-paste-handler", () => {
         it.each(nonCodeTextData)(
             "should handle pasting non-code text (%#)",
             (text) => {
-                const view = createView(createState("", [codePasteHandler]));
+                const view = createView(
+                    createState("", [codePasteHandler(EditorType.RichText)])
+                );
 
                 dispatchPasteEvent(view.dom, {
                     "text/plain": text,
@@ -134,7 +137,9 @@ describe("code-paste-handler", () => {
         it.each(codeTextData)(
             "should handle pasting code text (%#)",
             (text) => {
-                const view = createView(createState("", [codePasteHandler]));
+                const view = createView(
+                    createState("", [codePasteHandler(EditorType.RichText)])
+                );
 
                 dispatchPasteEvent(view.dom, {
                     "text/plain": text,
@@ -162,7 +167,7 @@ describe("code-paste-handler", () => {
             const view = createView(
                 createState(
                     `<pre data-params="lang-test"><code>existing code here</code></pre>`,
-                    [codePasteHandler]
+                    [codePasteHandler(EditorType.RichText)]
                 )
             );
 
@@ -195,7 +200,9 @@ describe("code-paste-handler", () => {
             const startIndex = startText.indexOf("START");
             const endIndex = startText.indexOf("END") + "END".length;
 
-            let state = createState(`<p>${startText}</p>`, [codePasteHandler]);
+            let state = createState(`<p>${startText}</p>`, [
+                codePasteHandler(EditorType.RichText),
+            ]);
             state = applySelection(state, startIndex, endIndex);
 
             const view = createView(state);
