@@ -30,7 +30,7 @@ import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
-import { codePasteHandler } from "./plugins/code-paste-handler";
+import { codePasteHandler } from "../shared/code-paste-handler-plugin";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
 import { linkTooltipPlugin } from "./plugins/link-editor";

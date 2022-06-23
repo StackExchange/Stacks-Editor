@@ -27,6 +27,7 @@ import {
 import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
+import { codePasteHandler } from "../shared/code-paste-handler-plugin";
 
 export type CommonmarkOptions = CommonViewOptions;
 
@@ -76,6 +77,7 @@ export class CommonmarkEditor extends BaseView {
                         ),
                         placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
+                        codePasteHandler,
                         ...pluginProvider.plugins.commonmark,
                     ],
                 }),

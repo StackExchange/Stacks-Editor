@@ -1,7 +1,7 @@
 import {
     codePasteHandler,
     getDetectedCode,
-} from "../../../src/rich-text/plugins/code-paste-handler";
+} from "../../../src/shared/code-paste-handler-plugin";
 import "../../matchers";
 import "../../matchers";
 import {
