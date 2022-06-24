@@ -3,14 +3,14 @@ import {
     EditorState,
     Transaction,
     TextSelection,
+    PluginView,
 } from "prosemirror-state";
-import { NodeSpec } from "prosemirror-model";
+import { NodeSpec, Schema } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import { CommonmarkParserFeatures, PluginView } from "../view";
+import { CommonmarkParserFeatures } from "../view";
 import { StatefulPlugin } from "./plugin-extensions";
 import { escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
-import { richTextSchema } from "../../rich-text/schema";
 import { ManagedInterfaceKey, PluginInterfaceView } from "./interface-manager";
 
 /**
@@ -219,7 +219,12 @@ export class ImageUploader extends PluginInterfaceView<
 
         this.uploadContainer
             .querySelector(".js-cancel-button")
-            .addEventListener("click", () => this.tryHideInterface(view));
+            .addEventListener("click", () => {
+                const tr = this.tryHideInterfaceTr(view.state);
+                if (tr) {
+                    view.dispatch(tr);
+                }
+            });
 
         this.uploadContainer
             .querySelector(".js-add-image")
@@ -450,7 +455,10 @@ export class ImageUploader extends PluginInterfaceView<
 
         void this.startImageUpload(view, file || externalUrl);
         this.resetUploader();
-        this.key.hideInterface(view);
+        const tr = this.tryHideInterfaceTr(view.state);
+        if (tr) {
+            view.dispatch(tr);
+        }
         view.focus();
     }
 
@@ -508,17 +516,18 @@ export class ImageUploader extends PluginInterfaceView<
             },
             () => {
                 // ON ERROR
-                // let the plugin know it can remove the upload decoration
-                view.dispatch(
-                    this.key.setMeta(view.state.tr, {
-                        remove: { id },
-                        shouldShow: false,
-                        file: null,
-                    })
-                );
 
                 // reshow the image uploader along with an error message
-                this.key.showInterface(view);
+                let tr = this.tryShowInterfaceTr(view.state) || view.state.tr;
+
+                // let the plugin know it can remove the upload decoration
+                tr = this.key.setMeta(tr, {
+                    remove: { id },
+                    shouldShow: false,
+                    file: null,
+                });
+
+                view.dispatch(tr);
                 this.showValidationError(
                     _t("image_upload.upload_error_generic"),
                     "error"
@@ -564,9 +573,13 @@ export class ImageUploader extends PluginInterfaceView<
  * @param view The current editor view
  */
 export function hideImageUploader(view: EditorView): void {
-    INTERFACE_KEY.hideInterface(view, {
+    const tr = INTERFACE_KEY.hideInterfaceTr(view.state, {
         file: null,
     });
+
+    if (tr) {
+        view.dispatch(tr);
+    }
 }
 
 /** Shows the image uploder
@@ -574,9 +587,13 @@ export function hideImageUploader(view: EditorView): void {
  * @param file The file to upload
  */
 export function showImageUploader(view: EditorView, file?: File): void {
-    INTERFACE_KEY.showInterface(view, {
+    const tr = INTERFACE_KEY.showInterfaceTr(view.state, {
         file: file || null,
     });
+
+    if (tr) {
+        view.dispatch(tr);
+    }
 }
 
 /** Checks if the image-upload functionality is enabled */
@@ -770,7 +787,8 @@ const INTERFACE_KEY = new ManagedInterfaceKey<ImageUploadState>(
  */
 export function richTextImageUpload(
     uploadOptions: ImageUploadOptions,
-    validateLink: CommonmarkParserFeatures["validateLink"]
+    validateLink: CommonmarkParserFeatures["validateLink"],
+    schema: Schema
 ): Plugin {
     return imageUploaderPlaceholderPlugin(
         uploadOptions,
@@ -781,12 +799,12 @@ export function richTextImageUpload(
             const marks =
                 uploadOptions.wrapImagesInLinks ||
                 uploadOptions.embedImagesAsLinks
-                    ? [richTextSchema.marks.link.create({ href: url })]
+                    ? [schema.marks.link.create({ href: url })]
                     : null;
 
             const imgNode = uploadOptions.embedImagesAsLinks
-                ? richTextSchema.text(defaultAltText, marks)
-                : richTextSchema.nodes.image.create(
+                ? schema.text(defaultAltText, marks)
+                : schema.nodes.image.create(
                       { src: url, alt: defaultAltText },
                       null,
                       marks

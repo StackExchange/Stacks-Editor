@@ -33,16 +33,14 @@ describe("interface-manager plugin", () => {
 
     describe("interfaceManagerPlugin", () => {
         it("should dispatch show event on child key show requests", () => {
-            const spy = jest.spyOn(view, "dispatch");
-            childKey1.showInterface(view);
+            const tr = childKey1.showInterfaceTr(view.state);
+            expect(tr).not.toBeNull();
 
-            expect(spy).toHaveBeenCalledTimes(1);
-
-            const tr = spy.mock.calls[0][0];
             const parentMetadata = tr.getMeta("interface-manager$") as unknown;
             const childMetadata = tr.getMeta(childKey1) as unknown;
 
             expect(parentMetadata).toEqual({
+                dom: expect.any(Element) as Element,
                 currentlyShown: childKey1,
                 containerGetter: expect.any(Function) as unknown,
             });
@@ -54,19 +52,19 @@ describe("interface-manager plugin", () => {
         });
 
         it("should dispatch hide event on child key hide requests", () => {
-            const spy = jest.spyOn(view, "dispatch");
             // show it once so we have something to hide
-            childKey1.showInterface(view);
+            let tr = childKey1.showInterfaceTr(view.state);
+            expect(tr).not.toBeNull();
 
             // now hide it
-            childKey1.hideInterface(view);
-            expect(spy).toHaveBeenCalledTimes(2);
+            tr = childKey1.hideInterfaceTr(view.state.apply(tr));
+            expect(tr).not.toBeNull();
 
-            const tr = spy.mock.calls[1][0];
             const parentMetadata = tr.getMeta("interface-manager$") as unknown;
             const childMetadata = tr.getMeta(childKey1) as unknown;
 
             expect(parentMetadata).toEqual({
+                dom: expect.any(Element) as Element,
                 currentlyShown: null,
                 containerGetter: expect.any(Function) as unknown,
             });
@@ -78,18 +76,16 @@ describe("interface-manager plugin", () => {
         });
 
         it("should dispatch hide event on child key show requests when a child is already showing", () => {
-            const spy = jest.spyOn(view, "dispatch");
-
             // send the first "show"
-            childKey1.showInterface(view);
-            expect(spy).toHaveBeenCalledTimes(1);
+            let tr = childKey1.showInterfaceTr(view.state);
+            expect(tr).not.toBeNull();
 
-            let tr = spy.mock.calls[0][0];
             let parentMetadata = tr.getMeta("interface-manager$") as unknown;
             let child1Metadata = tr.getMeta(childKey1) as unknown;
             let child2Metadata = tr.getMeta(childKey2) as unknown;
 
             expect(parentMetadata).toEqual({
+                dom: expect.any(Element) as Element,
                 currentlyShown: childKey1,
                 containerGetter: expect.any(Function) as unknown,
             });
@@ -102,19 +98,17 @@ describe("interface-manager plugin", () => {
             expect(child2Metadata).toBeUndefined();
 
             // send the second "show"
-            childKey2.showInterface(view);
+            tr = childKey2.showInterfaceTr(view.state.apply(tr));
+            expect(tr).not.toBeNull();
 
-            // show, hide, show
-            expect(spy).toHaveBeenCalledTimes(3);
-
-            // the hide transaction
-            tr = spy.mock.calls[1][0];
+            // should have the metadata from the hide transaction as well as the following show transaction
             parentMetadata = tr.getMeta("interface-manager$") as unknown;
             child1Metadata = tr.getMeta(childKey1) as unknown;
             child2Metadata = tr.getMeta(childKey2) as unknown;
 
             expect(parentMetadata).toEqual({
-                currentlyShown: null,
+                dom: expect.any(Element) as Element,
+                currentlyShown: childKey2,
                 containerGetter: expect.any(Function) as unknown,
             });
 
@@ -123,30 +117,14 @@ describe("interface-manager plugin", () => {
                 shouldShow: false,
             });
 
-            expect(child2Metadata).toBeUndefined();
-
-            // the following show transaction
-            tr = spy.mock.calls[2][0];
-            parentMetadata = tr.getMeta("interface-manager$") as unknown;
-            child1Metadata = tr.getMeta(childKey1) as unknown;
-            child2Metadata = tr.getMeta(childKey2) as unknown;
-
-            expect(parentMetadata).toEqual({
-                currentlyShown: childKey2,
-                containerGetter: expect.any(Function) as unknown,
-            });
-
-            expect(child1Metadata).toBeUndefined();
-
             expect(child2Metadata).toEqual({
                 arbitraryData: "bar",
                 shouldShow: true,
             });
         });
 
+        // TODO doesn't work currently...
         it("should allow cancelling via event.preventDefault", () => {
-            const spy = jest.spyOn(view, "dispatch");
-
             let shouldPreventDefault = true;
             let firedEvent: string = null;
             const callback = (e: CustomEvent) => {
@@ -163,55 +141,49 @@ describe("interface-manager plugin", () => {
             view.dom.addEventListener("StacksEditor:child1-hide", callback);
 
             // fire once with the action prevented
-            let result = childKey1.showInterface(view);
-            expect(result).toBe(false);
+            let result = childKey1.showInterfaceTr(view.state);
+            expect(result).toBeNull();
             expect(firedEvent).toBe("StacksEditor:child1-show");
-            expect(spy).toHaveBeenCalledTimes(0);
 
             // fire once with the action NOT prevented
             shouldPreventDefault = false;
             firedEvent = null;
-            result = childKey1.showInterface(view);
-            expect(result).toBe(true);
+            result = childKey1.showInterfaceTr(view.state);
+            expect(result).not.toBeNull();
             expect(firedEvent).toBe("StacksEditor:child1-show");
-            expect(spy).toHaveBeenCalledTimes(1);
 
             // now make sure hide fires as well, with the action prevented
             shouldPreventDefault = true;
             firedEvent = null;
-            result = childKey1.hideInterface(view);
-            expect(result).toBe(false);
+            result = childKey1.hideInterfaceTr(view.state.apply(result));
+            expect(result).toBeNull();
             expect(firedEvent).toBe("StacksEditor:child1-hide");
-            expect(spy).toHaveBeenCalledTimes(1);
         });
 
         it("should dispatch only when the state has changed", () => {
-            const spy = jest.spyOn(view, "dispatch");
+            let state = view.state;
 
             // hide an unshown view
-            let result = childKey1.hideInterface(view);
-            expect(result).toBe(false);
-            expect(spy).toHaveBeenCalledTimes(0);
+            let result = childKey1.hideInterfaceTr(state);
+            expect(result).toBeNull();
 
             // show an unshown view
-            result = childKey1.showInterface(view);
-            expect(result).toBe(true);
-            expect(spy).toHaveBeenCalledTimes(1);
+            result = childKey1.showInterfaceTr(state);
+            expect(result).not.toBeNull();
+            state = state.apply(result);
 
             // show a shown view
-            result = childKey1.showInterface(view);
-            expect(result).toBe(false);
-            expect(spy).toHaveBeenCalledTimes(1);
+            result = childKey1.showInterfaceTr(state);
+            expect(result).toBeNull();
 
             // hide a shown view
-            result = childKey1.hideInterface(view);
-            expect(result).toBe(true);
-            expect(spy).toHaveBeenCalledTimes(2);
+            result = childKey1.hideInterfaceTr(state);
+            expect(result).not.toBeNull();
         });
 
         it("should hide the currently shown child on ESC press", () => {
             const spy = jest.spyOn(view, "dispatch");
-            childKey1.showInterface(view);
+            view.dispatch(childKey1.showInterfaceTr(view.state));
 
             expect(spy).toHaveBeenCalledTimes(1);
 
@@ -219,6 +191,7 @@ describe("interface-manager plugin", () => {
             let parentMetadata = tr.getMeta("interface-manager$") as unknown;
 
             expect(parentMetadata).toEqual({
+                dom: expect.any(Element) as Element,
                 currentlyShown: childKey1,
                 containerGetter: expect.any(Function) as unknown,
             });
@@ -233,6 +206,7 @@ describe("interface-manager plugin", () => {
             parentMetadata = tr.getMeta("interface-manager$") as unknown;
 
             expect(parentMetadata).toEqual({
+                dom: expect.any(Element) as Element,
                 currentlyShown: null,
                 containerGetter: expect.any(Function) as unknown,
             });
@@ -241,10 +215,10 @@ describe("interface-manager plugin", () => {
 
     describe("PluginInterfaceView", () => {
         it("should build/teardown the container on show/hide", () => {
-            childKey1.showInterface(view);
+            view.dispatch(childKey1.showInterfaceTr(view.state));
             expect(pluginContainer.innerHTML).toBe(childKey1.name + "build");
 
-            childKey1.hideInterface(view);
+            view.dispatch(childKey1.hideInterfaceTr(view.state));
             expect(pluginContainer.innerHTML).toBe(
                 childKey1.name + "build" + childKey1.name + "destroy"
             );
@@ -263,31 +237,35 @@ describe("interface-manager plugin", () => {
         });
 
         it("should allow for overwriting state data on show/hide", () => {
-            expect(childKey1.getState(view.state)).toStrictEqual({
+            let state = view.state;
+
+            expect(childKey1.getState(state)).toStrictEqual({
                 arbitraryData: "foo",
                 shouldShow: false,
             });
 
-            childKey1.showInterface(view, {
+            let tr = childKey1.showInterfaceTr(state, {
                 arbitraryData: "foo1",
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error we want to pass this in anyways to ensure it is not taken into account
                 shouldShow: false, // NOTE: this one is overwritten by showInterface
             });
+            state = state.apply(tr);
 
-            expect(childKey1.getState(view.state)).toStrictEqual({
+            expect(childKey1.getState(state)).toStrictEqual({
                 arbitraryData: "foo1",
                 shouldShow: true,
             });
 
-            childKey1.hideInterface(view, {
+            tr = childKey1.hideInterfaceTr(state, {
                 arbitraryData: "foo2",
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-expect-error we want to pass this in anyways to ensure it is not taken into account
                 shouldShow: true, // NOTE: this one is overwritten by hideInterface
             });
+            state = state.apply(tr);
 
-            expect(childKey1.getState(view.state)).toStrictEqual({
+            expect(childKey1.getState(state)).toStrictEqual({
                 arbitraryData: "foo2",
                 shouldShow: false,
             });

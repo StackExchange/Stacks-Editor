@@ -2,8 +2,10 @@ import { history } from "prosemirror-history";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
+import { createMenuPlugin } from "../shared/menu";
 import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
@@ -20,8 +22,9 @@ import {
     BaseView,
     CommonViewOptions,
     defaultParserFeatures,
+    EditorType,
 } from "../shared/view";
-import { createMenu } from "./commands";
+import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
 
@@ -33,10 +36,22 @@ export class CommonmarkEditor extends BaseView {
     constructor(
         target: Node,
         content: string,
+        pluginProvider: IExternalPluginProvider,
         options: CommonmarkOptions = {}
     ) {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
+
+        const menuEntries = pluginProvider.getFinalizedMenu(
+            createMenuEntries(this.options),
+            EditorType.Commonmark,
+            commonmarkSchema
+        );
+
+        const menu = createMenuPlugin(
+            menuEntries,
+            this.options.menuParentContainer
+        );
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
@@ -50,7 +65,7 @@ export class CommonmarkEditor extends BaseView {
                     plugins: [
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
-                        createMenu(this.options),
+                        menu,
                         CodeBlockHighlightPlugin(null),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
@@ -61,6 +76,7 @@ export class CommonmarkEditor extends BaseView {
                         ),
                         placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
+                        ...pluginProvider.plugins.commonmark,
                     ],
                 }),
                 plugins: [],

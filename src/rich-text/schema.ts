@@ -1,4 +1,4 @@
-import { MarkSpec, NodeSpec, Schema } from "prosemirror-model";
+import { MarkSpec, NodeSpec } from "prosemirror-model";
 import { _t } from "../shared/localization";
 
 //TODO this relies on Stacks classes, should we abstract?
@@ -536,21 +536,11 @@ Object.entries(nodes).forEach(([k, node]) => {
     node.attrs = attrs;
 });
 
-/** The complete schema used by the rich-text editor */
-export const richTextSchema = new Schema({
+/** The complete schema spec used by the rich-text editor */
+export const richTextSchemaSpec = {
     nodes: nodes,
     marks: marks,
-});
-
-/** All nodes that are considered to be within a table */
-export const tableNodes = [
-    richTextSchema.nodes.table,
-    richTextSchema.nodes.table_head,
-    richTextSchema.nodes.table_body,
-    richTextSchema.nodes.table_row,
-    richTextSchema.nodes.table_cell,
-    richTextSchema.nodes.table_header,
-];
+};
 
 /**
  * Creates a generic html NodeSpec for a block html tag

@@ -2,12 +2,17 @@
 // This keeps code that relies on this file from accidentally introducing cyclical dependencies
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
 import type { Node } from "prosemirror-model";
-import type { EditorState } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
-import type { ExternalEditorPlugin } from "./external-editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { stackOverflowValidateLink } from "./utils";
 
+/** Describes each distinct editor type the StacksEditor handles */
+export enum EditorType {
+    RichText,
+    Commonmark,
+}
+
+/** Describes the options that are common to all view types */
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
     classList?: string[];
@@ -31,7 +36,7 @@ export interface CommonViewOptions {
     /** Image uploader options */
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
-    externalPlugins?: ExternalEditorPlugin[];
+    externalPlugins?: unknown[];
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
@@ -146,9 +151,4 @@ export abstract class BaseView implements View {
      * Serializes the current document's contents into a markdown string
      */
     abstract serializeContent(): string;
-}
-
-export interface PluginView {
-    update?(view: EditorView, prevState?: EditorState): void;
-    destroy?(): void;
 }

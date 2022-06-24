@@ -1,4 +1,5 @@
 import { EditorState } from "prosemirror-state";
+import { ShimExternalPluginProvider } from "../src/shared/editor-plugin";
 
 /**
  * Normalize HTML given as a string representation.
@@ -37,4 +38,11 @@ export function getSelectedText(state: EditorState): string {
     const { to, from } = state.selection;
 
     return state.doc.textBetween(from, to);
+}
+
+/**
+ * Returns a mocked external plugin provider for testing
+ */
+export function externalPluginProvider() {
+    return new ShimExternalPluginProvider();
 }

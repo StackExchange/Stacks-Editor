@@ -1,6 +1,7 @@
 import { CommonmarkEditor } from "../../../src/commonmark/editor";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import { placeholderPlugin } from "../../../src/shared/prosemirror-plugins/placeholder";
+import { externalPluginProvider } from "../../test-helpers";
 
 const PLACEHOLDER_TEXT = "This is a placeholder";
 
@@ -8,15 +9,25 @@ function commonmarkView(
     markdown: string,
     placeholderText: string
 ): CommonmarkEditor {
-    return new CommonmarkEditor(document.createElement("div"), markdown, {
-        placeholderText,
-    });
+    return new CommonmarkEditor(
+        document.createElement("div"),
+        markdown,
+        externalPluginProvider(),
+        {
+            placeholderText,
+        }
+    );
 }
 
 function richView(markdownInput: string, placeholderText: string) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {
-        placeholderText,
-    });
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdownInput,
+        externalPluginProvider(),
+        {
+            placeholderText,
+        }
+    );
 }
 
 describe("placeholder plugin", () => {
