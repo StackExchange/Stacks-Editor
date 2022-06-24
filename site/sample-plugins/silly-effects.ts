@@ -1,7 +1,7 @@
 import type { Node, Schema } from "prosemirror-model";
-import { EditorState, Plugin } from "prosemirror-state";
+import { type EditorState, Plugin } from "prosemirror-state";
 import { DecorationSet, Decoration } from "prosemirror-view";
-import { EditorPlugin, EditorPluginSpec } from "../../src";
+import type { EditorPlugin, EditorPluginSpec } from "../../src";
 import type { MenuCommand } from "../../src/shared/menu";
 
 const sillyEffectPlugin = new Plugin<{ decorations: DecorationSet }>({
