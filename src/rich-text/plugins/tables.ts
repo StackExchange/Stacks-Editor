@@ -1,6 +1,5 @@
 import { Plugin, PluginKey } from "prosemirror-state";
 import { Fragment, Slice, Node as ProsemirrorNode } from "prosemirror-model";
-import { richTextSchema } from "../schema";
 import { EditorView } from "prosemirror-view";
 import { inTable } from "../commands";
 
@@ -49,7 +48,7 @@ export const tables = new Plugin({
             event: ClipboardEvent,
             slice: Slice
         ): boolean {
-            if (inTable(view.state.selection)) {
+            if (inTable(view.state.schema, view.state.selection)) {
                 view.dispatch(view.state.tr.insertText(findCellContent(slice)));
                 return true;
             }
@@ -61,13 +60,12 @@ export const tables = new Plugin({
 
 function tablesToPlainText(fragment: Fragment): Fragment {
     const sanitized: ProsemirrorNode[] = [];
-
     fragment.forEach((node: ProsemirrorNode) => {
-        if (node.type === richTextSchema.nodes.table) {
+        if (node.type === node.type.schema.nodes.table) {
             sanitized.push(
-                richTextSchema.nodes.paragraph.createAndFill(
+                node.type.schema.nodes.paragraph.createAndFill(
                     {},
-                    richTextSchema.text(node.textContent)
+                    node.type.schema.text(node.textContent)
                 )
             );
         } else {

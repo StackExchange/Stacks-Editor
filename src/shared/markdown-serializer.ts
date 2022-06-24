@@ -4,22 +4,21 @@ import {
     MarkdownSerializerState,
 } from "prosemirror-markdown";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
-import { error } from "../shared/logger";
-import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
+import { error } from "./logger";
 import {
     selfClosingElements,
     supportedTagAttributes,
     TagType,
-} from "../shared/html-helpers";
+} from "./html-helpers";
 import { normalizeReference } from "markdown-it/lib/common/utils";
-import { richTextSchema } from "./schema";
+import { IExternalPluginProvider } from "./editor-plugin";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<
     typeof MarkdownSerializer
 >[0];
 
-type MarkdownSerializerMarks = ConstructorParameters<
+export type MarkdownSerializerMarks = ConstructorParameters<
     typeof MarkdownSerializer
 >[1];
 
@@ -340,10 +339,11 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
     },
 
     table(state, node) {
+        const schema = node.type.schema;
         function serializeTableHead(head: ProsemirrorNode) {
             let columnAlignments: string[] = [];
             head.forEach((headRow) => {
-                if (headRow.type === richTextSchema.nodes.table_row) {
+                if (headRow.type === schema.nodes.table_row) {
                     columnAlignments = serializeTableRow(headRow);
                 }
             });
@@ -366,7 +366,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
 
         function serializeTableBody(body: ProsemirrorNode) {
             body.forEach((bodyRow) => {
-                if (bodyRow.type === richTextSchema.nodes.table_row) {
+                if (bodyRow.type === schema.nodes.table_row) {
                     serializeTableRow(bodyRow);
                 }
             });
@@ -377,8 +377,8 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
             state.ensureNewLine();
             row.forEach((cell) => {
                 if (
-                    cell.type === richTextSchema.nodes.table_header ||
-                    cell.type === richTextSchema.nodes.table_cell
+                    cell.type === schema.nodes.table_header ||
+                    cell.type === schema.nodes.table_cell
                 ) {
                     const alignment = serializeTableCell(cell);
                     columnAlignment.push(alignment);
@@ -413,9 +413,9 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
         }
 
         node.forEach((table_child) => {
-            if (table_child.type === richTextSchema.nodes.table_head)
+            if (table_child.type === schema.nodes.table_head)
                 serializeTableHead(table_child);
-            if (table_child.type === richTextSchema.nodes.table_body)
+            if (table_child.type === schema.nodes.table_body)
                 serializeTableBody(table_child);
         });
 
@@ -629,13 +629,16 @@ const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
 
 // export our custom serializer using the extended nodes/marks taken from the default schema
 export const stackOverflowMarkdownSerializer = (
-    externalPlugin: ExternalEditorPlugin
+    externalPluginProvider: IExternalPluginProvider
 ): MarkdownSerializer =>
     new SOMarkdownSerializer(
         {
             ...defaultMarkdownSerializerNodes,
             ...customMarkdownSerializerNodes,
-            ...externalPlugin.markdownSerializers,
+            ...externalPluginProvider.markdownProps.serializers.nodes,
         },
-        customMarkdownSerializerMarks
+        {
+            ...customMarkdownSerializerMarks,
+            ...externalPluginProvider.markdownProps.serializers.marks,
+        }
     );

@@ -7,7 +7,6 @@ import {
     StatefulPlugin,
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
-import { richTextSchema as schema } from "../schema";
 import { escapeHTML, generateRandomId } from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 
@@ -171,7 +170,7 @@ class LinkTooltip {
         }
 
         // if we can toggle the mark and actually found an href to display, show the tooltip
-        if (toggleMark(schema.marks.link)(state) && this.href) {
+        if (toggleMark(state.schema.marks.link)(state) && this.href) {
             this.hideEditMode();
         }
 
@@ -243,12 +242,13 @@ class LinkTooltip {
     private isLink(state: EditorState): boolean {
         const { from, $from, to, empty } = state.selection;
         if (!empty) {
-            return state.doc.rangeHasMark(from, to, schema.marks.link);
+            return state.doc.rangeHasMark(from, to, state.schema.marks.link);
         }
 
         return (
-            schema.marks.link.isInSet(state.storedMarks || $from.marks()) !==
-            undefined
+            state.schema.marks.link.isInSet(
+                state.storedMarks || $from.marks()
+            ) !== undefined
         );
     }
 
@@ -353,12 +353,14 @@ class LinkTooltip {
         if (empty) {
             return $from
                 .marks()
-                .filter((mark) => mark.type === schema.marks.link);
+                .filter((mark) => mark.type === state.schema.marks.link);
         }
         if (to > from) {
             state.doc.nodesBetween(from, to, (node) => {
                 linkMarks.push(
-                    node.marks.filter((mark) => mark.type === schema.marks.link)
+                    node.marks.filter(
+                        (mark) => mark.type === state.schema.marks.link
+                    )
                 );
             });
         }
@@ -381,7 +383,10 @@ class LinkTooltip {
                 state = view.state;
             }
 
-            toggleMark(schema.marks.link)(state, view.dispatch.bind(view));
+            toggleMark(view.state.schema.marks.link)(
+                state,
+                view.dispatch.bind(view)
+            );
         };
 
         this.applyListener = () => {
@@ -420,7 +425,7 @@ class LinkTooltip {
             const tr = view.state.tr.addMark(
                 from,
                 to,
-                schema.marks.link.create({ href: this.link.href })
+                view.state.schema.marks.link.create({ href: this.link.href })
             );
 
             view.dispatch(tr);

@@ -1,5 +1,4 @@
 import { Transaction } from "prosemirror-state";
-import { richTextSchema as schema } from "../schema";
 
 /**
  * Returns a transaction that inserts a new paragraph if there is no node after the cursor.
@@ -24,7 +23,7 @@ export function insertParagraphIfAtDocEnd(
     const shouldInsertPara = currNodePos === lastChidPos;
 
     if (shouldInsertPara) {
-        const p = schema.nodes.paragraph.create(null);
+        const p = tr.doc.type.schema.nodes.paragraph.create(null);
         tr = tr.insert(tr.doc.content.size, p);
     }
 
