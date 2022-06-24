@@ -74,11 +74,16 @@ interface PluginMenuBlock {
     entries: PluginMenuCommandEntry[];
 }
 
-/** Describes the callback for when a codeblock processor is initialized */
+/**
+ * Describes the callback for when a codeblock processor is initialized
+ * @param content The plain text content of the codeblock
+ * @param container The element that the codeblock is being rendered into
+ * @returns True if the processor handled the codeblock, false otherwise
+ */
 type AddCodeBlockProcessorCallback = (
     content: string,
     container: Element
-) => void | Promise<void>;
+) => boolean;
 /**
  * Describes the callback to extend a schema
  * @param schema The schema to extend
@@ -155,7 +160,7 @@ export interface EditorPluginSpec {
     /** Callback for extending the rich-text editor's schema */
     extendSchema?: AlterSchemaCallback;
 
-    /** Processors to add for overwriting the rich-text display of specific codeblock languages */
+    /** Processors to add for extending the rich-text display of specific codeblock languages */
     codeBlockProcessors?: {
         /**
          * The language this processor applies to.
@@ -182,10 +187,7 @@ export interface IExternalPluginProvider {
     // TODO DEEP READONLY
     /** All aggregated codeblockProcessors */
     readonly codeblockProcessors: {
-        [key: string]: (
-            content: string,
-            container: Element
-        ) => void | Promise<void>;
+        [key: string]: AddCodeBlockProcessorCallback[];
     };
 
     // TODO DEEP READONLY
@@ -408,14 +410,11 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         lang: string,
         callback: AddCodeBlockProcessorCallback
     ): void {
-        if (lang in this._codeblockProcessors) {
-            // TODO too harsh?
-            throw new Error(
-                `Codeblock processor for language ${lang} already exists`
-            );
+        if (!(lang in this._codeblockProcessors)) {
+            this._codeblockProcessors[lang] = [];
         }
 
-        this._codeblockProcessors[lang] = callback;
+        this._codeblockProcessors[lang].push(callback);
     }
 
     /** Converts a PluginMenuCommandEntry to a regular MenuCommandEntry */

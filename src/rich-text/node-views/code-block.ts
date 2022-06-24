@@ -1,8 +1,8 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { EditorView, NodeView } from "prosemirror-view";
+import type { IExternalPluginProvider } from "../../shared/editor-plugin";
 import { getBlockLanguage } from "../../shared/highlighting/highlight-plugin";
 import { _t } from "../../shared/localization";
-import { error } from "../../shared/logger";
 import { escapeHTML, generateRandomId } from "../../shared/utils";
 
 type getPosParam = boolean | (() => number);
@@ -20,12 +20,7 @@ export class CodeBlockView implements NodeView {
         node: ProsemirrorNode,
         view: EditorView,
         getPos: getPosParam,
-        private additionalProcessors: {
-            [key: string]: (
-                content: string,
-                container: Element
-            ) => void | Promise<void>;
-        }
+        private additionalProcessors: IExternalPluginProvider["codeblockProcessors"]
     ) {
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
@@ -89,7 +84,7 @@ export class CodeBlockView implements NodeView {
         view: EditorView,
         getPos: getPosParam
     ) {
-        if (!this.getProcessor(rawLanguage)) {
+        if (!this.getProcessors(rawLanguage).length) {
             return false;
         }
 
@@ -111,7 +106,6 @@ export class CodeBlockView implements NodeView {
 
         this.contentDOM = this.dom.querySelector(".content-dom");
 
-        // TODO necessary?
         if (typeof getPos !== "function") {
             return;
         }
@@ -138,12 +132,13 @@ export class CodeBlockView implements NodeView {
     }
 
     private updateProcessor(rawLanguage: string, node: ProsemirrorNode) {
-        const processor = this.getProcessor(rawLanguage);
-        if (!processor) {
+        const processors = this.getProcessors(rawLanguage);
+        if (!processors.length) {
             return false;
         }
 
         const isEditing = !!node.attrs.isEditingProcessor;
+
         const renderContainer = this.dom.querySelector(
             ".js-processor-rendered-container"
         );
@@ -153,27 +148,37 @@ export class CodeBlockView implements NodeView {
             .classList.toggle("d-none", !isEditing);
         renderContainer.classList.toggle("d-none", isEditing);
 
-        if (!isEditing) {
-            const resp = processor(node.textContent, renderContainer);
+        // edit mode always "handles" the rendering
+        if (isEditing) {
+            return true;
+        }
 
-            if (resp instanceof Promise) {
-                resp.catch((err) => {
-                    // TODO show error to user?
-                    error("CodeBlockView.update", err);
-                });
+        let resp = false;
+
+        for (const processor of processors) {
+            resp = processor(node.textContent, renderContainer);
+
+            if (resp) {
+                break;
             }
         }
 
-        return true;
+        return resp;
     }
 
-    private getProcessor(rawLanguage: string) {
+    private getProcessors(rawLanguage: string) {
+        const processors = [];
+
+        // add in the language specific processors first
         if (rawLanguage in this.additionalProcessors) {
-            return this.additionalProcessors[rawLanguage];
-        } else if ("*" in this.additionalProcessors) {
-            return this.additionalProcessors["*"];
+            processors.push(...this.additionalProcessors[rawLanguage]);
         }
 
-        return null;
+        // followed by the generic processors
+        if ("*" in this.additionalProcessors) {
+            processors.push(...this.additionalProcessors["*"]);
+        }
+
+        return processors;
     }
 }
