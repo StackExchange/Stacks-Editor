@@ -104,7 +104,7 @@ type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
 type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
 
 /** Describes the properties that can be used for extending commonmark support in the editor */
-interface MarkdownExtensionProps {
+type MarkdownExtensionProps = {
     /**
      * Parsers for prosemirror-markdown
      * @see {@type import("prosemirror-markdown").MarkdownParser["tokens"]}
@@ -118,7 +118,7 @@ interface MarkdownExtensionProps {
         nodes: MarkdownSerializerNodes;
         marks: MarkdownSerializerMarks;
     };
-}
+};
 
 /**
  * Complete spec for creating an editor plugin
@@ -357,6 +357,10 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
             this._plugins.commonmark.push(plugin);
         });
 
+        config.richText?.plugins?.forEach((plugin) => {
+            this._plugins.richText.push(plugin);
+        });
+
         this.schemaCallbacks.push(config.extendSchema);
         if (config.richText?.nodeViews) {
             this._nodeViews = {
@@ -368,10 +372,6 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         this.extendMarkdown(config.markdown, config.markdown?.alterMarkdownIt);
 
         this.menuCallbacks.push(config.menuItems);
-
-        config.richText?.plugins?.forEach((plugin) => {
-            this._plugins.richText.push(plugin);
-        });
     }
 
     /** Applies the markdownProps of a config to this provider */
@@ -379,6 +379,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         props: MarkdownExtensionProps,
         callback: AlterMarkdownItCallback
     ): void {
+        // TODO sanitize input to ensure nodes/marks for added parsers and vice versa?
         if (props?.parser) {
             this._markdownProps.parser = {
                 ...this._markdownProps.parser,
