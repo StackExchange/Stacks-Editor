@@ -150,8 +150,14 @@ export class LinkEditor extends PluginInterfaceView<
         const text = this.textInput.value || href;
         const node = view.state.schema.text(text, []);
 
+        let tr =
+            this.tryHideInterfaceTr(view.state, {
+                url: null,
+                text: null,
+            }) || view.state.tr;
+
         // set the text first, inheriting all marks
-        let tr = view.state.tr.replaceSelectionWith(node, true);
+        tr = tr.replaceSelectionWith(node, true);
 
         // reselect the now unselected text
         tr = tr.setSelection(
@@ -177,8 +183,6 @@ export class LinkEditor extends PluginInterfaceView<
         );
 
         view.dispatch(tr);
-
-        hideLinkEditor(view);
     }
 
     update(view: EditorView): void {

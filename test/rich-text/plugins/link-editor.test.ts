@@ -58,12 +58,18 @@ function getRenderedDecoration(editorView: EditorView): HTMLElement {
 describe("link-editor", () => {
     describe("plugin view", () => {
         let pluginContainer: Element;
+        let menuContainer: Element;
         let view: RichTextEditor;
         let editor: LinkEditor;
 
         beforeEach(() => {
             pluginContainer = document.createElement("div");
-            view = richTextView("", () => pluginContainer);
+            menuContainer = document.createElement("div");
+            view = richTextView(
+                "",
+                () => pluginContainer,
+                () => menuContainer
+            );
             editor = new LinkEditor(view.editorView, stackOverflowValidateLink);
         });
 
@@ -199,11 +205,147 @@ describe("link-editor", () => {
             return promise;
         });
 
-        it.todo(
-            "should prefill fields when a link is edited via the menu command"
-        );
+        it("should prefill fields when a link is edited via the menu command", () => {
+            view = richTextView(
+                "[link text](https://www.example.com)",
+                () => pluginContainer,
+                () => menuContainer
+            );
 
-        it.todo("should show insert new links on save");
+            const promise = onViewDispatch(view.editorView, (_, tr) => {
+                if (!tr || !tr.getMeta("LinkEditor$")) {
+                    return false;
+                }
+
+                const updatedUploadContainer =
+                    pluginContainer.querySelector<HTMLFormElement>(
+                        "form.js-link-editor"
+                    );
+
+                expect(formValue(updatedUploadContainer, "href")).toBe(
+                    "https://www.example.com"
+                );
+                expect(formValue(updatedUploadContainer, "text")).toBe(
+                    "link text"
+                );
+
+                return true;
+            });
+
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 1)
+            );
+
+            menuContainer
+                .querySelector<HTMLButtonElement>(".js-insert-link-btn")
+                .click();
+
+            return promise;
+        });
+
+        it("should prefill fields when a link is inserted over selected text via the menu command", () => {
+            view = richTextView(
+                "test",
+                () => pluginContainer,
+                () => menuContainer
+            );
+
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 0, 5)
+            );
+
+            const promise = onViewDispatch(view.editorView, (_, tr) => {
+                if (!tr || !tr.getMeta("LinkEditor$")) {
+                    return false;
+                }
+
+                const updatedUploadContainer =
+                    pluginContainer.querySelector<HTMLFormElement>(
+                        "form.js-link-editor"
+                    );
+
+                expect(formValue(updatedUploadContainer, "href")).toBe("");
+                expect(formValue(updatedUploadContainer, "text")).toBe("test");
+
+                return true;
+            });
+
+            menuContainer
+                .querySelector<HTMLButtonElement>(".js-insert-link-btn")
+                .click();
+
+            return promise;
+        });
+
+        // TODO throws warning
+        it("should show insert new links on save", () => {
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 0)
+            );
+
+            const promise = onViewDispatch(view.editorView, (newView, tr) => {
+                if (!tr) {
+                    return false;
+                }
+
+                const meta = tr.getMeta("LinkEditor$") as {
+                    shouldShow: boolean;
+                };
+
+                // editor is shown
+                if (meta && meta.shouldShow) {
+                    const updatedUploadContainer =
+                        pluginContainer.querySelector<HTMLFormElement>(
+                            "form.js-link-editor"
+                        );
+
+                    // eslint-disable-next-line jest/no-conditional-expect
+                    expect(formValue(updatedUploadContainer, "href")).toBe("");
+                    // eslint-disable-next-line jest/no-conditional-expect
+                    expect(formValue(updatedUploadContainer, "text")).toBe("");
+
+                    // set the values, then submit the form
+                    setFormValue(
+                        updatedUploadContainer,
+                        "href",
+                        "https://www.example.com"
+                    );
+                    setFormValue(updatedUploadContainer, "text", "link text");
+                    updatedUploadContainer.submit();
+
+                    return false;
+                } else if (meta && !meta.shouldShow) {
+                    // editor is hidden (save was called)
+                    // eslint-disable-next-line jest/no-conditional-expect
+                    expect(newView.state.doc).toMatchNodeTree({
+                        content: [
+                            {
+                                content: [
+                                    {
+                                        "isText": true,
+                                        "text": "link text",
+                                        "marks.0.type.name": "link",
+                                        "marks.0.attrs.href":
+                                            "https://www.example.com",
+                                    },
+                                ],
+                            },
+                        ],
+                    });
+                    // TODO assert text selection
+
+                    return true;
+                }
+
+                return false;
+            });
+
+            menuContainer
+                .querySelector<HTMLButtonElement>(".js-insert-link-btn")
+                .click();
+
+            return promise;
+        });
 
         it.todo("should update existing links on save");
 
@@ -364,14 +506,16 @@ describe("link-editor", () => {
 // TODO use createView instead and add the plugin in!
 function richTextView(
     markdown: string,
-    containerFn: () => Element
+    pluginContainerFn: () => Element,
+    menuContainerFn?: () => Element
 ): RichTextEditor {
     return new RichTextEditor(
         document.createElement("div"),
         markdown,
         externalPluginProvider(),
         {
-            pluginParentContainer: containerFn,
+            pluginParentContainer: pluginContainerFn,
+            menuParentContainer: menuContainerFn,
         }
     );
 }
@@ -400,4 +544,9 @@ function onViewDispatch(
 
 function formValue(form: HTMLFormElement, name: string) {
     return form.querySelector<HTMLInputElement>(`[name="${name}"]`).value;
+}
+
+function setFormValue(form: HTMLFormElement, name: string, value: string) {
+    return (form.querySelector<HTMLInputElement>(`[name="${name}"]`).value =
+        value);
 }
