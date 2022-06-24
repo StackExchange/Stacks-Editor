@@ -460,6 +460,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(8);
+            expect(newState.selection.to).toBe(8);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -500,6 +504,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(11);
+            expect(newState.selection.to).toBe(11);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -540,6 +548,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(8);
+            expect(newState.selection.to).toBe(11);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -580,6 +592,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(8);
+            expect(newState.selection.to).toBe(22);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -620,6 +636,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeFalsy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(1);
+            expect(newState.selection.to).toBe(4);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -662,6 +682,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(10);
+            expect(newState.selection.to).toBe(10);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -702,6 +726,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(14);
+            expect(newState.selection.to).toBe(14);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -742,6 +770,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(10);
+            expect(newState.selection.to).toBe(14);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -782,6 +814,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(6);
+            expect(newState.selection.to).toBe(17);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
@@ -822,6 +858,10 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeFalsy();
+            // Test for expected new selection
+            expect(newState.selection.from).toBe(1);
+            expect(newState.selection.to).toBe(4);
+
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
                 "content": [
