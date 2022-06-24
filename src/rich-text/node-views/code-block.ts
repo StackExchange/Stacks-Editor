@@ -24,13 +24,9 @@ export class CodeBlockView implements NodeView {
     ) {
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
-
-        const rawLanguage = this.getLanguageFromBlock(node);
-        this.language = rawLanguage;
-
-        if (!this.renderProcessor(rawLanguage, node, view, getPos)) {
-            this.renderCodeBlock(rawLanguage);
-        }
+        this.render(view, getPos);
+        this.contentDOM = this.dom.querySelector(".content-dom");
+        this.update(node);
     }
 
     update(node: ProsemirrorNode): boolean {
@@ -41,57 +37,28 @@ export class CodeBlockView implements NodeView {
 
         const rawLanguage = this.getLanguageFromBlock(node);
 
-        if (!this.updateProcessor(rawLanguage, node)) {
+        const processorApplies = this.getValidProcessorResult(
+            rawLanguage,
+            node
+        );
+
+        if (processorApplies) {
+            this.updateProcessor(node, processorApplies);
+        } else {
             this.updateCodeBlock(rawLanguage);
         }
+
+        this.toggleView(!!processorApplies, !!node.attrs.isEditingProcessor);
 
         return true;
     }
 
-    private getLanguageFromBlock(node: ProsemirrorNode) {
-        let autodetectedLanguage = node.attrs
-            .detectedHighlightLanguage as string;
-
-        if (autodetectedLanguage) {
-            autodetectedLanguage = _t("nodes.codeblock_lang_auto", {
-                lang: autodetectedLanguage,
-            });
-        }
-
-        return autodetectedLanguage || getBlockLanguage(node);
-    }
-
-    private renderCodeBlock(rawLanguage: string) {
-        this.dom.innerHTML = escapeHTML`
-        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-300 js-language-indicator" contenteditable=false>${rawLanguage}</div>
-        <pre class="s-code-block"><code class="content-dom"></code></pre>
-                `;
-
-        this.contentDOM = this.dom.querySelector(".content-dom");
-    }
-
-    private updateCodeBlock(rawLanguage: string) {
-        if (this.language !== rawLanguage) {
-            this.dom.querySelector(".js-language-indicator").textContent =
-                rawLanguage;
-            this.language = rawLanguage;
-        }
-    }
-
-    private renderProcessor(
-        rawLanguage: string,
-        node: ProsemirrorNode,
-        view: EditorView,
-        getPos: getPosParam
-    ) {
-        if (!this.getProcessors(rawLanguage).length) {
-            return false;
-        }
-
+    private render(view: EditorView, getPos: getPosParam) {
         const randomId = generateRandomId();
 
         this.dom.innerHTML = escapeHTML`
-        <div class="d-flex ps-absolute t0 r0">
+        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-300 js-language-indicator" contenteditable=false></div>
+        <div class="d-flex ps-absolute t0 r0 js-processor-toggle">
             <label class="flex--item mr4" for="js-editor-toggle-${randomId}">
                 Edit
             </label>
@@ -100,9 +67,8 @@ export class CodeBlockView implements NodeView {
                 <div class="s-toggle-switch--indicator"></div>
             </div>
         </div>
-        <div class="js-processor-rendered-container"></div>
-        <pre class="s-code-block d-none js-processor-code"><code class="content-dom"></code></pre>
-        `;
+        <div class="d-none js-processor-view"></div>
+        <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
 
@@ -125,45 +91,74 @@ export class CodeBlockView implements NodeView {
                     })
                 );
             });
+    }
 
-        this.updateProcessor(rawLanguage, node);
+    private toggleView(showProcessor: boolean, showProcessorEdit: boolean) {
+        const toggle = (selector: string, show: boolean) =>
+            this.dom.querySelector(selector).classList.toggle("d-none", !show);
+
+        toggle(".js-code-view", !showProcessor || showProcessorEdit);
+        toggle(".js-processor-toggle", showProcessor);
+        toggle(".js-language-indicator", !showProcessor);
+        toggle(".js-processor-view", showProcessor && !showProcessorEdit);
+    }
+
+    private getLanguageFromBlock(node: ProsemirrorNode) {
+        let autodetectedLanguage = node.attrs
+            .detectedHighlightLanguage as string;
+
+        if (autodetectedLanguage) {
+            autodetectedLanguage = _t("nodes.codeblock_lang_auto", {
+                lang: autodetectedLanguage,
+            });
+        }
+
+        return autodetectedLanguage || getBlockLanguage(node);
+    }
+
+    private updateCodeBlock(rawLanguage: string) {
+        if (this.language !== rawLanguage) {
+            this.dom.querySelector(".js-language-indicator").textContent =
+                rawLanguage;
+            this.language = rawLanguage;
+        }
+    }
+
+    private updateProcessor(node: ProsemirrorNode, content: Element) {
+        const renderContainer = this.dom.querySelector(".js-processor-view");
+        const isEditing = !!node.attrs.isEditingProcessor;
+
+        this.dom
+            .querySelector(".js-code-view")
+            .classList.toggle("d-none", !isEditing);
+        renderContainer.classList.toggle("d-none", isEditing);
+        renderContainer.innerHTML = "";
+        renderContainer.append(...content.children);
 
         return true;
     }
 
-    private updateProcessor(rawLanguage: string, node: ProsemirrorNode) {
+    private getValidProcessorResult(
+        rawLanguage: string,
+        node: ProsemirrorNode
+    ): Element | null {
+        const renderContainer = document.createElement("div");
         const processors = this.getProcessors(rawLanguage);
         if (!processors.length) {
-            return false;
+            return null;
         }
 
-        const isEditing = !!node.attrs.isEditingProcessor;
-
-        const renderContainer = this.dom.querySelector(
-            ".js-processor-rendered-container"
-        );
-
-        this.dom
-            .querySelector(".js-processor-code")
-            .classList.toggle("d-none", !isEditing);
-        renderContainer.classList.toggle("d-none", isEditing);
-
-        // edit mode always "handles" the rendering
-        if (isEditing) {
-            return true;
-        }
-
-        let resp = false;
+        let appliedProcessor = false;
 
         for (const processor of processors) {
-            resp = processor(node.textContent, renderContainer);
+            appliedProcessor = processor(node.textContent, renderContainer);
 
-            if (resp) {
+            if (appliedProcessor) {
                 break;
             }
         }
 
-        return resp;
+        return appliedProcessor ? renderContainer : null;
     }
 
     private getProcessors(rawLanguage: string) {
