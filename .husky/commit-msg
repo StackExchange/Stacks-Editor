@@ -1,4 +1,7 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npx --no-install commitlint --edit $1
+# only run the commit message check if the commit is against the main branch
+if [[ $(git rev-parse --abbrev-ref HEAD) = main ]];
+then npx --no-install commitlint --edit $1;
+fi
