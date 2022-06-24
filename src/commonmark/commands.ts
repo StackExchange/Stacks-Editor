@@ -16,6 +16,7 @@ import type { CommonViewOptions } from "../shared/view";
 import { getShortcut } from "../shared/utils";
 import { Schema } from "prosemirror-model";
 import { undo, redo } from "prosemirror-history";
+import { _t } from "../shared/localization";
 
 /**
  * Shortcut binding that takes in a formatting string and returns a matching setBlockType command
@@ -719,21 +720,25 @@ export const createMenuEntries = (
         command: headerCommand,
         dom: makeMenuIcon(
             "Header",
-            `Heading (${getShortcut("Mod-h")})`,
+            _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-h") }),
             "heading-btn"
         ),
     },
     {
         key: "togglBold",
         command: boldCommand,
-        dom: makeMenuIcon("Bold", `Bold (${getShortcut("Mod-b")})`, "bold-btn"),
+        dom: makeMenuIcon(
+            "Bold",
+            _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
+            "bold-btn"
+        ),
     },
     {
         key: "toggleEmphasis",
         command: emphasisCommand,
         dom: makeMenuIcon(
             "Italic",
-            `Italic (${getShortcut("Mod-i")})`,
+            _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
             "italic-btn"
         ),
     },
@@ -742,7 +747,7 @@ export const createMenuEntries = (
         command: inlineCodeCommand,
         dom: makeMenuIcon(
             "Code",
-            `Inline Code (${getShortcut("Mod-k")})`,
+            _t("commands.inline_code", { shortcut: getShortcut("Mod-k") }),
             "code-btn"
         ),
     },
@@ -750,7 +755,11 @@ export const createMenuEntries = (
         {
             key: "toggleStrikethrough",
             command: strikethroughCommand,
-            dom: makeMenuIcon("Strikethrough", "Strikethrough", "strike-btn"),
+            dom: makeMenuIcon(
+                "Strikethrough",
+                _t("commands.strikethrough"),
+                "strike-btn"
+            ),
         },
         options.parserFeatures.extraEmphasis
     ),
@@ -760,7 +769,7 @@ export const createMenuEntries = (
         command: insertLinkCommand,
         dom: makeMenuIcon(
             "Link",
-            `Link (${getShortcut("Mod-l")})`,
+            _t("commands.link", { shortcut: getShortcut("Mod-l") }),
             "insert-link-btn"
         ),
     },
@@ -769,7 +778,7 @@ export const createMenuEntries = (
         command: blockquoteCommand,
         dom: makeMenuIcon(
             "Quote",
-            `Blockquote (${getShortcut("Ctrl-q")})`,
+            _t("commands.blockquote", { shortcut: getShortcut("Ctrl-q") }),
             "blockquote-btn"
         ),
     },
@@ -778,7 +787,7 @@ export const createMenuEntries = (
         command: insertCodeblockCommand,
         dom: makeMenuIcon(
             "Codeblock",
-            `Code block (${getShortcut("Mod-m")})`,
+            _t("commands.code_block", { shortcut: getShortcut("Mod-m") }),
             "code-block-btn"
         ),
     },
@@ -788,7 +797,7 @@ export const createMenuEntries = (
             command: insertImageCommand,
             dom: makeMenuIcon(
                 "Image",
-                `Image (${getShortcut("Mod-g")})`,
+                _t("commands.image", { shortcut: getShortcut("Mod-g") }),
                 "insert-image-btn"
             ),
         },
@@ -800,7 +809,7 @@ export const createMenuEntries = (
             command: insertTableCommand,
             dom: makeMenuIcon(
                 "Table",
-                `Table (${getShortcut("Mod-e")})`,
+                _t("commands.table_insert", { shortcut: getShortcut("Mod-e") }),
                 "insert-table-btn"
             ),
         },
@@ -812,7 +821,7 @@ export const createMenuEntries = (
         command: orderedListCommand,
         dom: makeMenuIcon(
             "OrderedList",
-            `Numbered list (${getShortcut("Mod-o")})`,
+            _t("commands.ordered_list", { shortcut: getShortcut("Mod-o") }),
             "numbered-list-btn"
         ),
     },
@@ -821,7 +830,7 @@ export const createMenuEntries = (
         command: unorderedListCommand,
         dom: makeMenuIcon(
             "UnorderedList",
-            `Bulleted list (${getShortcut("Mod-u")})`,
+            _t("commands.unordered_list", { shortcut: getShortcut("Mod-u") }),
             "bullet-list-btn"
         ),
     },
@@ -830,7 +839,7 @@ export const createMenuEntries = (
         command: insertHorizontalRuleCommand,
         dom: makeMenuIcon(
             "HorizontalRule",
-            `Horizontal rule (${getShortcut("Mod-r")})`,
+            _t("commands.horizontal_rule", { shortcut: getShortcut("Mod-r") }),
             "horizontal-rule-btn"
         ),
     },
@@ -838,16 +847,26 @@ export const createMenuEntries = (
     {
         key: "undo",
         command: undo,
-        dom: makeMenuIcon("Undo", "Undo", "undo-btn", ["sm:d-inline-block"]),
+        dom: makeMenuIcon(
+            "Undo",
+            _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
+            "undo-btn",
+            ["sm:d-inline-block"]
+        ),
         visible: () => false,
     },
     {
         key: "redo",
         command: redo,
-        dom: makeMenuIcon("Refresh", "Redo", "redo-btn", ["sm:d-inline-block"]),
+        dom: makeMenuIcon(
+            "Refresh",
+            _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
+            "redo-btn",
+            ["sm:d-inline-block"]
+        ),
         visible: () => false,
     },
     makeMenuSpacerEntry(),
     //TODO eventually this will mimic the "help" dropdown in the prod editor
-    makeMenuLinkEntry("Help", "Help", options.editorHelpLink),
+    makeMenuLinkEntry("Help", _t("commands.help"), options.editorHelpLink),
 ];

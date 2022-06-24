@@ -2,7 +2,6 @@
 // This keeps code that relies on this file from accidentally introducing cyclical dependencies
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
 import type { Node } from "prosemirror-model";
-import type { EditorState } from "prosemirror-state";
 import type { EditorView } from "prosemirror-view";
 import { EditorPlugin } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
@@ -153,9 +152,4 @@ export abstract class BaseView implements View {
      * Serializes the current document's contents into a markdown string
      */
     abstract serializeContent(): string;
-}
-
-export interface PluginView {
-    update?(view: EditorView, prevState?: EditorState): void;
-    destroy?(): void;
 }
