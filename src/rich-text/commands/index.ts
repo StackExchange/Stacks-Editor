@@ -138,7 +138,7 @@ function getCodeBlockLinesWithinSelection(state: EditorState): number[] {
             let lineStartPos = pos + 1;
             let lineEndPos;
 
-            node.textContent.split("\n").map((line) => {
+            node.textContent.split("\n").forEach((line) => {
                 lineEndPos = lineStartPos + line.length;
                 // Selection overlaps with line
                 const selectionIsWithinLine =
