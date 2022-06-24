@@ -165,6 +165,8 @@ function getCodeBlockLinesWithinSelection(state: EditorState): number[] {
 
 /**
  * Indents selected line(s) within a code block
+ * @param state The current EditorState
+ * @param dispatch The dispatch function used to trigger the transaction, set to "null" if you don't want to dispatch
  */
 export function indentCodeBlockLinesCommand(
     state: EditorState,
