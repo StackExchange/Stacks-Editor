@@ -320,28 +320,46 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         schema: Schema
     ): MenuCommandEntry[] {
         const ret = [...menu];
+        let aggBlocks: PluginMenuBlock[] = [];
 
-        // TODO merge blocks based on name and sort by priority, lazily going to assume all are unique for the MVP
+        // call each callback and aggregate the results
         for (const callback of this.menuCallbacks) {
             if (!callback) {
                 continue;
             }
 
+            const blocks = callback(schema);
+            for (const block of blocks) {
+                let existing = aggBlocks.find((b) => b.name === block.name);
+                if (!existing) {
+                    aggBlocks.push(block);
+                    existing = block;
+                } else {
+                    existing.entries.push(...block.entries);
+                }
+
+                // set the priority to the most recently declared if there are multiple
+                existing.priority = block.priority || 0;
+            }
+        }
+
+        // sort the blocks by their priority; higher priority first
+        aggBlocks = aggBlocks.sort((a, b) => b.priority - a.priority);
+
+        // add the blocks to the menu
+        for (const block of aggBlocks) {
             // TODO menu will take care of this instead
             if (ret.length) {
                 ret.push(makeMenuSpacerEntry());
             }
 
-            const blocks = callback(schema);
-            for (const block of blocks) {
-                const entries = this.convertMenuCommandEntries(
-                    block.entries,
-                    editorType
-                );
+            const entries = this.convertMenuCommandEntries(
+                block.entries,
+                editorType
+            );
 
-                // TODO deep merge after migrating menu
-                ret.push(...entries);
-            }
+            // TODO deep merge after migrating menu
+            ret.push(...entries);
         }
 
         return ret;

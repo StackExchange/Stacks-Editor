@@ -1,6 +1,8 @@
 import MarkdownIt from "markdown-it";
 import { Plugin } from "prosemirror-state";
+import { EditorType } from "../../src";
 import { ExternalPluginProvider } from "../../src/shared/editor-plugin";
+import { testRichTextSchema } from "../rich-text/test-helpers";
 
 const fake1 = <T>() => null as T;
 const fake2 = <T>() => null as T;
@@ -198,7 +200,36 @@ describe("editor-plugin", () => {
             });
         });
 
-        it.todo("should getFinalizedSchema");
+        it("should getFinalizedSchema", () => {
+            const provider = new ExternalPluginProvider(
+                [
+                    () => ({
+                        extendSchema: (schema) => {
+                            expect(schema.nodes.size).toBe(0);
+
+                            // add a new rule for the next to pick up
+                            schema.nodes = schema.nodes.addToEnd("node1", {});
+
+                            return schema;
+                        },
+                    }),
+                    () => ({
+                        extendSchema: (schema) => {
+                            expect(schema.nodes.size).toBe(1);
+                            expect(schema.nodes.get("node1")).toBeDefined();
+
+                            return schema;
+                        },
+                    }),
+                ],
+                null
+            );
+
+            provider.getFinalizedSchema({
+                nodes: {},
+                marks: {},
+            });
+        });
 
         it("should alterMarkdownIt", () => {
             const provider = new ExternalPluginProvider(
@@ -240,6 +271,100 @@ describe("editor-plugin", () => {
             provider.alterMarkdownIt(new MarkdownIt("zero"));
         });
 
-        it.todo("should getFinalizedMenu");
+        it("should getFinalizedMenu", () => {
+            const provider = new ExternalPluginProvider(
+                [
+                    () => ({
+                        menuItems: () => [
+                            {
+                                name: "block1",
+                                priority: Infinity,
+                                entries: [
+                                    {
+                                        key: "entry1",
+                                        richText: fake1,
+                                        commonmark: fake2,
+                                        label: "entry1",
+                                    },
+                                ],
+                            },
+                        ],
+                    }),
+                    () => ({
+                        menuItems: () => [
+                            {
+                                name: "block1",
+                                priority: -100,
+                                entries: [
+                                    {
+                                        key: "entry2",
+                                        richText: fake3,
+                                        commonmark: fake4,
+                                        label: "entry2",
+                                    },
+                                ],
+                            },
+                            {
+                                name: "block2",
+                                priority: 100,
+                                entries: [
+                                    {
+                                        key: "entry3",
+                                        richText: fake5,
+                                        commonmark: fake1,
+                                        label: "entry3",
+                                    },
+                                ],
+                            },
+                        ],
+                    }),
+                ],
+                null
+            );
+
+            let menu = provider.getFinalizedMenu(
+                [],
+                EditorType.Commonmark,
+                testRichTextSchema
+            );
+            expect(menu).toHaveLength(4);
+            expect(menu[0]).toMatchObject({
+                key: "entry3",
+                command: fake1,
+            });
+            expect(menu[1]).toMatchObject({
+                key: "spacer",
+            });
+            expect(menu[2]).toMatchObject({
+                key: "entry1",
+                command: fake2,
+            });
+            expect(menu[3]).toMatchObject({
+                key: "entry2",
+                command: fake4,
+            });
+
+            menu = provider.getFinalizedMenu(
+                [],
+                EditorType.RichText,
+                testRichTextSchema
+            );
+            expect(menu).toHaveLength(4);
+            expect(menu[0]).toMatchObject({
+                key: "entry3",
+                command: fake5,
+            });
+            expect(menu[1]).toMatchObject({
+                key: "spacer",
+            });
+            expect(menu[2]).toMatchObject({
+                key: "entry1",
+                command: fake1,
+            });
+            expect(menu[3]).toMatchObject({
+                key: "entry2",
+                command: fake3,
+            });
+        });
     });
 });
