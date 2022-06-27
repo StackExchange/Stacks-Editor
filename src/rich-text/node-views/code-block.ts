@@ -133,7 +133,7 @@ export class CodeBlockView implements NodeView {
             .classList.toggle("d-none", !isEditing);
         renderContainer.classList.toggle("d-none", isEditing);
         renderContainer.innerHTML = "";
-        renderContainer.append(...content.children);
+        renderContainer.append(...content.childNodes);
 
         return true;
     }
