@@ -179,19 +179,20 @@ export function indentCodeBlockLinesCommand(
         let t = state.tr;
         const { from, to } = state.selection;
 
+        const indentStr = "    ";
         const fromIsCodeBlock =
             state.selection.$from.node().type.name === "code_block";
 
         // indent each line in reverse order so that we don't alter the lines' start positions
         linesToIndent.reverse().forEach((pos) => {
-            t = t.insertText("\t", pos);
+            t = t.insertText(indentStr, pos);
         });
 
         t.setSelection(
             TextSelection.create(
                 state.apply(t).doc,
-                fromIsCodeBlock ? from + 1 : from,
-                to + lineCount
+                fromIsCodeBlock ? from + indentStr.length : from,
+                to + lineCount * indentStr.length
             )
         );
 
@@ -215,14 +216,17 @@ export function deindentCodeBlockLinesCommand(
         let t = state.tr;
         const { from, to } = state.selection;
         let deindentedLinesCount = 0;
+        const indentStr = "    ";
         const fromIsCodeBlock =
             state.selection.$from.node().type.name === "code_block";
 
         linesToIndent.reverse().forEach((pos) => {
-            const canDeindent = state.doc.textBetween(pos, pos + 1) === "\t";
+            const canDeindent =
+                state.doc.textBetween(pos, pos + indentStr.length) ===
+                indentStr;
 
             if (canDeindent) {
-                t = t.insertText("", pos, pos + 1);
+                t = t.insertText("", pos, pos + indentStr.length);
                 deindentedLinesCount++;
             }
         });
@@ -230,8 +234,10 @@ export function deindentCodeBlockLinesCommand(
         t.setSelection(
             TextSelection.create(
                 state.apply(t).doc,
-                fromIsCodeBlock && deindentedLinesCount ? from - 1 : from,
-                to - deindentedLinesCount
+                fromIsCodeBlock && deindentedLinesCount
+                    ? from - indentStr.length
+                    : from,
+                to - deindentedLinesCount * indentStr.length
             )
         );
 

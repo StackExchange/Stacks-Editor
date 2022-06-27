@@ -23,8 +23,8 @@ function getEndOfNode(state: EditorState, nodePos: number) {
     return from;
 }
 
-const indentionBaseState =
-    "<p>asdf</p><pre><code>in0\n\tin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0</code></pre>";
+const indentStr = "    ";
+const indentionBaseState = `<p>asdf</p><pre><code>in0\n${indentStr}in1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0</code></pre>`;
 /**
  * Applies a command to the state and expects the entire doc to resemble
  * `expected` and the selected text to resemble `expectedSelected`
@@ -460,8 +460,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(8);
-            expect(newState.selection.to).toBe(8);
+            expect(newState.selection.from).toBe(11);
+            expect(newState.selection.to).toBe(11);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -480,7 +480,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "\tin0\n\tin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `${indentStr}in0\n${indentStr}in1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -504,8 +504,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(11);
-            expect(newState.selection.to).toBe(11);
+            expect(newState.selection.from).toBe(14);
+            expect(newState.selection.to).toBe(14);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -524,7 +524,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "\tin0\n\tin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `${indentStr}in0\n${indentStr}in1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -548,8 +548,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(8);
-            expect(newState.selection.to).toBe(11);
+            expect(newState.selection.from).toBe(11);
+            expect(newState.selection.to).toBe(14);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -568,7 +568,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "\tin0\n\tin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `${indentStr}in0\n${indentStr}in1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -592,8 +592,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(8);
-            expect(newState.selection.to).toBe(22);
+            expect(newState.selection.from).toBe(11);
+            expect(newState.selection.to).toBe(31);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -612,7 +612,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "\tin0\n\t\tin1\n\t\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `${indentStr}in0\n${indentStr}${indentStr}in1\n${indentStr}${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -656,7 +656,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "in0\n\tin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `in0\n${indentStr}in1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -682,8 +682,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(10);
-            expect(newState.selection.to).toBe(10);
+            expect(newState.selection.from).toBe(7);
+            expect(newState.selection.to).toBe(7);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -702,7 +702,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "in0\nin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `in0\nin1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -726,8 +726,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(14);
-            expect(newState.selection.to).toBe(14);
+            expect(newState.selection.from).toBe(11);
+            expect(newState.selection.to).toBe(11);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -746,7 +746,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "in0\nin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `in0\nin1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -770,8 +770,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(10);
-            expect(newState.selection.to).toBe(14);
+            expect(newState.selection.from).toBe(7);
+            expect(newState.selection.to).toBe(11);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -790,7 +790,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "in0\nin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `in0\nin1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -814,8 +814,8 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             // Test for expected new selection
-            expect(newState.selection.from).toBe(6);
-            expect(newState.selection.to).toBe(17);
+            expect(newState.selection.from).toBe(3);
+            expect(newState.selection.to).toBe(11);
 
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -834,7 +834,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "in0\nin1\n\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `in0\nin1\n${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
@@ -878,7 +878,7 @@ describe("commands", () => {
                         "childCount": 1,
                         "content": [
                             {
-                                text: "in0\n\tin1\n\t\tin2\n\t\tin3\n\n\tin1\nin0",
+                                text: `in0\n${indentStr}in1\n${indentStr}${indentStr}in2\n${indentStr}${indentStr}in3\n\n${indentStr}in1\nin0`,
                             },
                         ],
                     },
