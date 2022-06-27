@@ -2,7 +2,6 @@ import { EditorState, Transaction } from "prosemirror-state";
 import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
-    toggleBlockType,
     indentCodeBlockLinesCommand,
     deindentCodeBlockLinesCommand,
     toggleHeadingLevel,
