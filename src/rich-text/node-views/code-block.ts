@@ -93,6 +93,7 @@ export class CodeBlockView implements NodeView {
             });
     }
 
+    /** Switches the view between editor mode and processor mode */
     private toggleView(showProcessor: boolean, showProcessorEdit: boolean) {
         const toggle = (selector: string, show: boolean) =>
             this.dom.querySelector(selector).classList.toggle("d-none", !show);
@@ -103,6 +104,7 @@ export class CodeBlockView implements NodeView {
         toggle(".js-processor-view", showProcessor && !showProcessorEdit);
     }
 
+    /** Gets the codeblock language from the node */
     private getLanguageFromBlock(node: ProsemirrorNode) {
         let autodetectedLanguage = node.attrs
             .detectedHighlightLanguage as string;
@@ -116,6 +118,7 @@ export class CodeBlockView implements NodeView {
         return autodetectedLanguage || getBlockLanguage(node);
     }
 
+    /** Updates the edit/code view */
     private updateCodeBlock(rawLanguage: string) {
         if (this.language !== rawLanguage) {
             this.dom.querySelector(".js-language-indicator").textContent =
@@ -124,6 +127,7 @@ export class CodeBlockView implements NodeView {
         }
     }
 
+    /** Updates the processor view */
     private updateProcessor(node: ProsemirrorNode, content: Element) {
         const renderContainer = this.dom.querySelector(".js-processor-view");
         const isEditing = !!node.attrs.isEditingProcessor;
@@ -138,6 +142,7 @@ export class CodeBlockView implements NodeView {
         return true;
     }
 
+    /** Checks all the processors to see if any apply */
     private getValidProcessorResult(
         rawLanguage: string,
         node: ProsemirrorNode
@@ -161,6 +166,7 @@ export class CodeBlockView implements NodeView {
         return appliedProcessor ? renderContainer : null;
     }
 
+    /** Gets all processors for the specified language string */
     private getProcessors(rawLanguage: string) {
         const processors = [];
 

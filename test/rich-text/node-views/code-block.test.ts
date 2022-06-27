@@ -1,7 +1,7 @@
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import { externalPluginProvider } from "../../test-helpers";
 import "../../matchers";
-import { sleepAsync } from "../test-helpers";
+import { applySelection } from "../test-helpers";
 
 describe("code-block", () => {
     let richText: RichTextEditor;
@@ -224,5 +224,75 @@ fallback
             richText.editorView.dom.querySelector(".js-processor-view");
         expect(processorEl.classList).not.toContain("d-none");
         expect(processorEl.textContent).toBe("👍");
+    });
+
+    it("should dynamically check for processor validity on code change", () => {
+        richText.content = `~~~
+fallbac
+~~~`;
+
+        // check the node type
+        expect(richText.editorView.state.doc).toMatchNodeTree({
+            "type.name": "doc",
+            "content": [
+                {
+                    "type.name": "code_block",
+                    "content": [
+                        {
+                            "type.name": "text",
+                            "text": "fallbac",
+                        },
+                    ],
+                    "attrs.params": "",
+                },
+            ],
+        });
+
+        // check that the processor is not applied
+        const processorToggle = richText.editorView.dom.querySelector(
+            ".js-processor-toggle"
+        );
+        expect(processorToggle.classList).toContain("d-none");
+
+        // type a "k" to make the processor valid
+        richText.editorView.updateState(
+            applySelection(richText.editorView.state, 7)
+        );
+        richText.editorView.dispatch(
+            richText.editorView.state.tr.insertText("k")
+        );
+
+        expect(richText.editorView.state.doc).toMatchNodeTree({
+            content: [
+                {
+                    "type.name": "code_block",
+                    "content": [
+                        {
+                            text: "fallback",
+                        },
+                    ],
+                },
+            ],
+        });
+
+        expect(processorToggle.classList).not.toContain("d-none");
+
+        // delete the "k" to make the processor invalid again
+        richText.editorView.dispatch(richText.editorView.state.tr.delete(8, 9));
+
+        expect(richText.editorView.state.doc).toMatchNodeTree({
+            content: [
+                {
+                    "type.name": "code_block",
+                    "content": [
+                        {
+                            text: "fallbac",
+                        },
+                    ],
+                },
+            ],
+        });
+
+        expect(processorToggle.classList).toContain("d-none");
     });
 });
