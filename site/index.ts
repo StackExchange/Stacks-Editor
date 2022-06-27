@@ -149,7 +149,6 @@ domReady(() => {
     const place = document.querySelector<HTMLElement>("#example-1");
     const place2 = document.querySelector<HTMLElement>("#example-2");
     const content = document.querySelector<HTMLTextAreaElement>("#content");
-    const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
     const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
 
@@ -184,7 +183,7 @@ domReady(() => {
             editorHelpLink: "#TODO",
             commonmarkOptions: {},
             parserFeatures: {
-                tables: enableTables,
+                tables: true,
                 tagLinks: {
                     allowNonAscii: false,
                     allowMetaTags: true,
