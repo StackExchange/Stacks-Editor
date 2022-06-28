@@ -15,8 +15,8 @@ import { EditorView } from "prosemirror-view";
 import { toggleReadonly } from "../shared/prosemirror-plugins/readonly";
 import { _t } from "../shared/localization";
 import {
+    ExternalPluginProvider,
     IExternalPluginProvider,
-    ShimExternalPluginProvider,
 } from "../shared/editor-plugin";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
@@ -74,8 +74,10 @@ export class StacksEditor implements View {
 
         this.setupPluginContainer();
 
-        // TODO pass in plugins to the provider once the real one is written
-        this.pluginProvider = new ShimExternalPluginProvider();
+        this.pluginProvider = new ExternalPluginProvider(
+            this.options.editorPlugins,
+            this.options
+        );
 
         this.setBackingView(this.options.defaultView, content);
     }

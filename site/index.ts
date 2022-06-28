@@ -3,6 +3,7 @@ import packageJson from "../package.json";
 import type { StacksEditor, StacksEditorOptions } from "../src";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
+import { samplePlugins } from "./sample-plugins";
 import "./site.less";
 
 function domReady(callback: (e: Event) => void) {
@@ -148,8 +149,8 @@ domReady(() => {
     const place = document.querySelector<HTMLElement>("#example-1");
     const place2 = document.querySelector<HTMLElement>("#example-2");
     const content = document.querySelector<HTMLTextAreaElement>("#content");
-    const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
+    const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -182,7 +183,7 @@ domReady(() => {
             editorHelpLink: "#TODO",
             commonmarkOptions: {},
             parserFeatures: {
-                tables: enableTables,
+                tables: true,
                 tagLinks: {
                     allowNonAscii: false,
                     allowMetaTags: true,
@@ -206,7 +207,7 @@ domReady(() => {
                 ],
             },
             imageUpload: imageUploadOptions,
-            externalPlugins: [],
+            editorPlugins: enableSamplePlugin ? samplePlugins : [],
         };
 
         const editorInstance = new StacksEditor(place, content.value, options);
