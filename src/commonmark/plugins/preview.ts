@@ -1,15 +1,22 @@
 import MarkdownIt from "markdown-it";
 import { Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-
+import { createDefaultMarkdownItInstance } from "../../shared/markdown-parser";
+import { CommonmarkParserFeatures } from "../../shared/view";
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
     renderer: MarkdownIt;
     prevTextContent: string;
 
-    constructor(view: EditorView, markdownIt?: MarkdownIt) {
+    constructor(
+        view: EditorView,
+        parserFeatures: CommonmarkParserFeatures,
+        markdownIt?: MarkdownIt
+    ) {
         this.dom = document.createElement("div");
-        this.renderer = markdownIt || new MarkdownIt();
+        this.dom.classList.add("s-prose");
+        this.renderer =
+            markdownIt || createDefaultMarkdownItInstance(parserFeatures);
         const { textContent } = view.state.doc;
         this.prevTextContent = textContent;
         // TODO do we need to sanitize this HTML or is that handled fine by the editor?
@@ -34,11 +41,16 @@ class PreviewView implements PluginView {
 
 export function createPreviewPlugin(
     containerFn: (view: EditorView) => Node,
+    parserFeatures: CommonmarkParserFeatures,
     markdownIt?: MarkdownIt
 ): Plugin {
     return new Plugin({
         view(editorView) {
-            const previewView = new PreviewView(editorView, markdownIt);
+            const previewView = new PreviewView(
+                editorView,
+                parserFeatures,
+                markdownIt
+            );
             containerFn =
                 containerFn ||
                 function (v) {

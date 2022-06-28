@@ -33,7 +33,6 @@ export type CommonmarkOptions = CommonViewOptions;
 
 export class CommonmarkEditor extends BaseView {
     private options: CommonmarkOptions;
-    private externalPluginProvider: IExternalPluginProvider;
 
     constructor(
         target: Node,
@@ -43,7 +42,6 @@ export class CommonmarkEditor extends BaseView {
     ) {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
-        this.externalPluginProvider = pluginProvider;
 
         const menuEntries = pluginProvider.getFinalizedMenu(
             createMenuEntries(this.options),
@@ -71,6 +69,7 @@ export class CommonmarkEditor extends BaseView {
                         menu,
                         createPreviewPlugin(
                             this.options.previewParentContainer,
+                            this.options.parserFeatures,
                             this.options.markdownRenderer
                         ),
                         CodeBlockHighlightPlugin(null),

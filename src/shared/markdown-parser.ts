@@ -243,18 +243,12 @@ class SOMarkdownIt extends MarkdownIt {
 }
 
 /**
- * Builds a custom markdown parser with the passed features toggled
+ * Creates a MarkdownIt instance with default properties
  * @param features The features to toggle on/off
  */
-export function buildMarkdownParser(
-    features: CommonmarkParserFeatures,
-    schema: Schema,
-    externalPluginProvider: IExternalPluginProvider
-): SOMarkdownParser {
-    if (!features) {
-        throw "Cannot build markdown parser without passed features.";
-    }
-
+export function createDefaultMarkdownItInstance(
+    features: CommonmarkParserFeatures
+): SOMarkdownIt {
     const defaultMarkdownItInstance = new SOMarkdownIt("default", {
         html: features.html, // we can allow the markdown parser to send through arbitrary HTML, but only because we're gonna whitelist it later
         linkify: true, // automatically link plain URLs
@@ -304,6 +298,24 @@ export function buildMarkdownParser(
 
     // ensure we can tell the difference between the different types of hardbreaks
     defaultMarkdownItInstance.use(hardbreak_markup);
+
+    return defaultMarkdownItInstance;
+}
+
+/**
+ * Builds a custom markdown parser with the passed features toggled
+ * @param features The features to toggle on/off
+ */
+export function buildMarkdownParser(
+    features: CommonmarkParserFeatures,
+    schema: Schema,
+    externalPluginProvider: IExternalPluginProvider
+): SOMarkdownParser {
+    if (!features) {
+        throw "Cannot build markdown parser without passed features.";
+    }
+
+    const defaultMarkdownItInstance = createDefaultMarkdownItInstance(features);
 
     externalPluginProvider.alterMarkdownIt(defaultMarkdownItInstance);
 
