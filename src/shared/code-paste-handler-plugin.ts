@@ -47,7 +47,10 @@ export function getDetectedCode(clipboardData: DataTransfer): string | null {
     return null;
 }
 
-/** Plugin that auto-detects if code was pasted and handles it specifically */
+/**
+ * Plugin that auto-detects if code was pasted and handles it specifically
+ * @param editorType The type of editor to set the view to
+ */
 export const codePasteHandler = (editorType: EditorType) =>
     new Plugin({
         props: {
