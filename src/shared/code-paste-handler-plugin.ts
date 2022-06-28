@@ -69,12 +69,14 @@ export const codePasteHandler = (editorType: EditorType) =>
                     return false;
                 }
 
+                const { $from } = view.state.selection;
                 // TODO can we do some basic formatting?
-
-                const selectedNode = view.state.selection.$from.node();
+                const selectedNode = $from.node();
 
                 if (isMarkdown) {
-                    codeData = `\n\`\`\`\n${codeData}\n\`\`\``;
+                    codeData = `${
+                        $from.pos === 1 ? "" : "\n"
+                    }\`\`\`\n${codeData}\n\`\`\`\n`;
                 }
 
                 // if we're pasting into a code_block, just paste the text
