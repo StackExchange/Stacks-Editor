@@ -94,7 +94,7 @@ class PreviewView implements PluginView {
             }
         );
 
-        this.update(view, null);
+        this.update(view, this.editorView.state);
     }
 
     // TODO implement sensible update on change
@@ -103,6 +103,15 @@ class PreviewView implements PluginView {
         if (!docChanged(prevState, view.state)) {
             return;
         }
+
+        const doc: ProseMirrorNode = this.markdownParser.parse(
+            view.state.doc.textContent
+        );
+        const newState = EditorState.create({
+            doc,
+            plugins: prevState.plugins,
+        });
+        this.editorView.updateState(newState);
     }
 
     destroy() {
@@ -128,9 +137,7 @@ export function createPreviewPlugin(
 
             const container = containerFn(editorView);
 
-            if (container.contains(editorView.dom)) {
-                container.insertBefore(previewView.dom, editorView.dom);
-            } else {
+            if (!container.contains(editorView.dom)) {
                 container.insertBefore(previewView.dom, container.firstChild);
             }
 
