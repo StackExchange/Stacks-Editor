@@ -3,6 +3,11 @@ import {
     getDetectedCode,
 } from "../../../src/shared/code-paste-handler-plugin";
 import { EditorType } from "../../../src/shared/view";
+import {
+    CommonmarkEditor,
+    CommonmarkOptions,
+} from "../../../src/commonmark/editor";
+import { externalPluginProvider } from "../../test-helpers";
 import "../../matchers";
 import "../../matchers";
 import {
@@ -28,6 +33,20 @@ const codeTextData = [
     `  `,
     `not code\n\t\nnot code`,
 ];
+
+const codeFence = `\`\`\``;
+
+function commonmarkView(
+    markdown: string,
+    options?: CommonmarkOptions
+): CommonmarkEditor {
+    return new CommonmarkEditor(
+        document.createElement("div"),
+        markdown,
+        externalPluginProvider(),
+        options
+    );
+}
 
 describe("code-paste-handler", () => {
     describe("getDetectedCode", () => {
@@ -96,8 +115,36 @@ describe("code-paste-handler", () => {
         beforeAll(setupPasteSupport);
         afterAll(cleanupPasteSupport);
 
+        // Commonmark
         it.each(nonCodeTextData)(
-            "should handle pasting non-code text (%#)",
+            "should handle pasting non-code text (%#) into commonmark editor",
+            (text) => {
+                const view = commonmarkView("");
+
+                dispatchPasteEvent(view.dom, {
+                    "text/plain": text,
+                });
+
+                expect(view.document.textContent).toBe(text);
+            }
+        );
+        it.each(codeTextData)(
+            "should handle pasting code text (%#) into commonmark editor",
+            (text) => {
+                const view = commonmarkView("");
+
+                dispatchPasteEvent(view.dom, {
+                    "text/plain": text,
+                });
+
+                const textOutput = `\`\`\`\n${text}\n\`\`\`\n`;
+                expect(view.document.textContent).toBe(textOutput);
+            }
+        );
+
+        // Rich-text
+        it.each(nonCodeTextData)(
+            "should handle pasting non-code text (%#) into rich-text editor",
             (text) => {
                 const view = createView(
                     createState("", [codePasteHandler(EditorType.RichText)])
@@ -135,7 +182,7 @@ describe("code-paste-handler", () => {
         );
 
         it.each(codeTextData)(
-            "should handle pasting code text (%#)",
+            "should handle pasting code text (%#) into rich-text editor",
             (text) => {
                 const view = createView(
                     createState("", [codePasteHandler(EditorType.RichText)])
