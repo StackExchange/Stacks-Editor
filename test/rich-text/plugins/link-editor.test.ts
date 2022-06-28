@@ -251,7 +251,7 @@ describe("link-editor", () => {
             );
 
             view.editorView.updateState(
-                applySelection(view.editorView.state, 0, 5)
+                applySelection(view.editorView.state, 0, 4)
             );
 
             const promise = onViewDispatch(view.editorView, (_, tr) => {
@@ -277,7 +277,6 @@ describe("link-editor", () => {
             return promise;
         });
 
-        // TODO throws warning
         it("should show insert new links on save", () => {
             view.editorView.updateState(
                 applySelection(view.editorView.state, 0)
