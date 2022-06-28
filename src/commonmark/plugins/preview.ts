@@ -1,117 +1,30 @@
-import { MarkdownParser } from "prosemirror-markdown";
-import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
-import { EditorState, Plugin, PluginView } from "prosemirror-state";
+import MarkdownIt from "markdown-it";
+import { Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { CodeBlockHighlightPlugin } from "../../shared/highlighting/highlight-plugin";
-import { interfaceManagerPlugin } from "../../shared/prosemirror-plugins/interface-manager";
-import { readonlyPlugin } from "../../shared/prosemirror-plugins/readonly";
-import { IExternalPluginProvider } from "../../shared/editor-plugin";
-import { docChanged } from "../../shared/utils";
-import { defaultParserFeatures } from "../../shared/view";
-import { CodeBlockView } from "../../rich-text/node-views/code-block";
-import {
-    HtmlBlock,
-    HtmlBlockContainer,
-} from "../../rich-text/node-views/html-block";
-import { ImageView } from "../../rich-text/node-views/image";
-import { richTextSchemaSpec } from "../../rich-text/schema";
-import { TagLink } from "../../rich-text/node-views/tag-link";
-import { spoilerToggle } from "../../rich-text/plugins/spoiler-toggle";
-import { buildMarkdownParser } from "../../shared/markdown-parser";
 
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
-    protected view: EditorView;
-    protected editorView: EditorView;
-    protected finalizedSchema: Schema;
-    protected markdownParser: MarkdownParser;
+    renderer: MarkdownIt;
+    prevTextContent: string;
 
-    constructor(
-        view: EditorView,
-        externalPluginProvider: IExternalPluginProvider
-    ) {
+    constructor(view: EditorView, markdownIt?: MarkdownIt) {
         this.dom = document.createElement("div");
-        this.finalizedSchema = new Schema(
-            externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
-        );
-        this.markdownParser = buildMarkdownParser(
-            defaultParserFeatures,
-            this.finalizedSchema,
-            externalPluginProvider
-        );
-
-        const doc: ProseMirrorNode = this.markdownParser.parse(
-            view.state.doc.textContent
-        );
-
-        this.editorView = new EditorView(
-            (node: HTMLElement) => {
-                node.classList.add("s-prose", "s-markdown-preview");
-                this.dom.appendChild(node);
-            },
-            {
-                editable: () => false,
-                state: EditorState.create({
-                    doc: doc,
-                    plugins: [
-                        // TODO do we need richTextInputRules?
-                        // TODO include sensible options on preview plugins, consider have options pass from main editor
-                        CodeBlockHighlightPlugin(null),
-                        interfaceManagerPlugin(null),
-                        readonlyPlugin(),
-                        spoilerToggle,
-                    ],
-                }),
-                nodeViews: {
-                    code_block: (node, view, getPos) => {
-                        return new CodeBlockView(
-                            node,
-                            view,
-                            getPos,
-                            externalPluginProvider.codeblockProcessors
-                        );
-                    },
-                    image(
-                        node: ProseMirrorNode,
-                        view: EditorView,
-                        getPos: () => number
-                    ) {
-                        return new ImageView(node, view, getPos);
-                    },
-                    tagLink(node: ProseMirrorNode) {
-                        return new TagLink(node, null);
-                    },
-                    html_block: function (node: ProseMirrorNode) {
-                        return new HtmlBlock(node);
-                    },
-                    html_block_container: function (node: ProseMirrorNode) {
-                        return new HtmlBlockContainer(node);
-                    },
-                    // TODO do we need externalPluginProvider?
-                    // ...this.externalPluginProvider.nodeViews,
-                },
-                plugins: [],
-            }
-        );
-
-        this.update(view, this.editorView.state);
+        this.renderer = markdownIt || new MarkdownIt();
+        const { textContent } = view.state.doc;
+        this.prevTextContent = textContent;
+        // TODO do we need to sanitize this HTML or is that handled fine by the editor?
+        // eslint-disable-next-line no-unsanitized/property
+        this.dom.innerHTML = this.renderer.render(this.prevTextContent);
+        this.update(view);
     }
 
-    // TODO implement sensible update on change
-    update(view: EditorView, prevState: EditorState) {
+    update(view: EditorView) {
         // if the doc/view hasn't changed, there's no work to do
-        if (!docChanged(prevState, view.state)) {
+        if (view.state.doc.textContent === this.prevTextContent) {
             return;
         }
-
-        const doc: ProseMirrorNode = this.markdownParser.parse(
-            view.state.doc.textContent
-        );
-        const newState = EditorState.create({
-            doc,
-            plugins: prevState.plugins,
-        });
-        this.editorView.updateState(newState);
+        // eslint-disable-next-line no-unsanitized/property
+        this.dom.innerHTML = this.renderer.render(view.state.doc.textContent);
     }
 
     destroy() {
@@ -121,14 +34,11 @@ class PreviewView implements PluginView {
 
 export function createPreviewPlugin(
     containerFn: (view: EditorView) => Node,
-    externalPluginProvider: IExternalPluginProvider
+    markdownIt?: MarkdownIt
 ): Plugin {
     return new Plugin({
         view(editorView) {
-            const previewView = new PreviewView(
-                editorView,
-                externalPluginProvider
-            );
+            const previewView = new PreviewView(editorView, markdownIt);
             containerFn =
                 containerFn ||
                 function (v) {

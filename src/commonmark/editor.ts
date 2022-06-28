@@ -71,7 +71,7 @@ export class CommonmarkEditor extends BaseView {
                         menu,
                         createPreviewPlugin(
                             this.options.previewParentContainer,
-                            this.externalPluginProvider
+                            this.options.markdownRenderer
                         ),
                         CodeBlockHighlightPlugin(null),
                         interfaceManagerPlugin(
@@ -101,12 +101,13 @@ export class CommonmarkEditor extends BaseView {
             // set to null to disable by default
             editorHelpLink: null,
             menuParentContainer: null,
-            previewParentContainer: null,
             parserFeatures: defaultParserFeatures,
             placeholderText: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
+            previewParentContainer: null,
+            markdownRenderer: null,
         };
     }
 
