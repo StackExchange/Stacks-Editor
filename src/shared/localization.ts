@@ -46,9 +46,14 @@ export const defaultStrings = {
         undo: shortcut("Undo"),
         unordered_list: shortcut("Bulleted list"),
     },
+    link_editor: {
+        cancel_button: "Cancel",
+        href_label: "Link URL",
+        save_button: "Save",
+        text_label: "Link text",
+        validation_error: "The entered URL is invalid.",
+    },
     link_tooltip: {
-        apply_button_text: "Apply" as string,
-        apply_button_title: "Apply new link" as string,
         edit_button_title: "Edit link" as string,
         remove_button_title: "Remove link" as string,
     },
@@ -61,6 +66,8 @@ export const defaultStrings = {
         spoiler_reveal_text: "Reveal spoiler" as string,
     },
     image_upload: {
+        default_image_alt_text: "enter image description here" as string,
+        external_url_validation_error: "The entered URL is invalid." as string,
         upload_error_file_too_big:
             "Your image is too large to upload (over 2 MiB)" as string,
         upload_error_generic:
@@ -68,7 +75,6 @@ export const defaultStrings = {
         upload_error_unsupported_format:
             "Please select an image (jpeg, png, gif) to upload" as string,
         uploaded_image_preview_alt: "uploaded image preview" as string,
-        default_image_alt_text: "enter image description here" as string,
     },
 } as const;
 

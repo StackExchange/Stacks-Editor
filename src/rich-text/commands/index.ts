@@ -18,9 +18,9 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
+import { getCurrentTextNode, getShortcut } from "../../shared/utils";
 import type { CommonViewOptions } from "../../shared/view";
-import { getShortcut } from "../../shared/utils";
-import { LINK_TOOLTIP_KEY } from "../plugins/link-editor";
+import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
     insertTableColumnAfterCommand,
@@ -198,30 +198,52 @@ export function insertLinkCommand(
     dispatch: (tr: Transaction) => void,
     view: EditorView
 ): boolean {
-    if (state.selection.empty) return false;
+    // never actually toggle the mark, as that is done in the link editor
+    // we do want to *pretend* to, as toggleMark checks for validity
+    const valid = toggleMark(state.schema.marks.link, { href: null })(
+        state,
+        null
+    );
 
-    let linkUrl = null;
+    if (dispatch && valid) {
+        let selectedText: string;
+        let linkUrl: string;
 
-    if (dispatch) {
-        const selectedText =
-            state.selection.content().content.firstChild?.textContent ?? null;
-        const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
-        linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
-
-        // wrap the dispatch function so that we can add additional transactions after toggleMark
-        const oldDispatch = dispatch;
-        dispatch = (tr) => {
-            oldDispatch(tr);
-            view.dispatch(
-                LINK_TOOLTIP_KEY.setEditMode(true, state, view.state.tr)
+        const $anchor = state.selection.$anchor;
+        // if selection is empty, but inside link mark, use the link url/text from it
+        if (state.selection.empty && $anchor.textOffset) {
+            const currentTextNode = getCurrentTextNode(state);
+            const mark = currentTextNode.marks.find(
+                (m) => m.type === state.schema.marks.link
             );
-        };
+            if (mark) {
+                selectedText = currentTextNode.text;
+                linkUrl = mark.attrs.href as string;
+
+                // expand the selection so we're editing the entire link
+                const pos = $anchor.pos;
+                dispatch(
+                    state.tr.setSelection(
+                        TextSelection.create(
+                            state.doc,
+                            pos - $anchor.textOffset,
+                            pos - $anchor.textOffset + selectedText.length
+                        )
+                    )
+                );
+            }
+        } else {
+            selectedText =
+                state.selection.content().content.firstChild?.textContent ??
+                null;
+            const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
+            linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
+        }
+
+        showLinkEditor(view, linkUrl, selectedText);
     }
 
-    return toggleMark(state.schema.marks.link, { href: linkUrl })(
-        state,
-        dispatch
-    );
+    return valid;
 }
 
 /**
