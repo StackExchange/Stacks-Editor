@@ -39,6 +39,7 @@ export interface CommonViewOptions {
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
     editorPlugins?: EditorPlugin[];
+    enableMarkdownPreview?: boolean;
     /**
      * Function to get the container to place the markdown preview;
      * defaults to returning this editor's target's parentNode

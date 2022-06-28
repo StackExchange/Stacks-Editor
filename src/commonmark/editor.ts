@@ -68,6 +68,7 @@ export class CommonmarkEditor extends BaseView {
                         ...allKeymaps(this.options.parserFeatures),
                         menu,
                         createPreviewPlugin(
+                            this.options.enableMarkdownPreview,
                             this.options.previewParentContainer,
                             this.options.parserFeatures,
                             this.options.markdownRenderer
@@ -105,6 +106,7 @@ export class CommonmarkEditor extends BaseView {
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
+            enableMarkdownPreview: false,
             previewParentContainer: null,
             markdownRenderer: null,
         };

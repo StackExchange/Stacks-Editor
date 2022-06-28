@@ -40,10 +40,15 @@ class PreviewView implements PluginView {
 }
 
 export function createPreviewPlugin(
+    enabled: boolean,
     containerFn: (view: EditorView) => Node,
     parserFeatures: CommonmarkParserFeatures,
     markdownIt?: MarkdownIt
 ): Plugin {
+    if (!enabled) {
+        return new Plugin({});
+    }
+
     return new Plugin({
         view(editorView) {
             const previewView = new PreviewView(
