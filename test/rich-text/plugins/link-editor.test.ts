@@ -7,7 +7,10 @@ import {
     linkEditorPlugin,
     showLinkEditor,
 } from "../../../src/rich-text/plugins/link-editor";
-import { stackOverflowValidateLink } from "../../../src/shared/utils";
+import {
+    getCurrentTextNode,
+    stackOverflowValidateLink,
+} from "../../../src/shared/utils";
 import {
     applySelection,
     cleanupPasteSupport,
@@ -166,7 +169,7 @@ describe("link-editor", () => {
             expect(inputContainer.classList).not.toContain("has-error");
         });
 
-        it("should prefill fields when a link is edited via the tooltip", () => {
+        it("should prefill fields when a link is edited via the tooltip", async () => {
             view = richTextView(
                 "[link text](https://www.example.com)",
                 () => pluginContainer
@@ -212,35 +215,28 @@ describe("link-editor", () => {
                 () => menuContainer
             );
 
-            const promise = onViewDispatch(view.editorView, (_, tr) => {
-                if (!tr || !tr.getMeta("LinkEditor$")) {
-                    return false;
-                }
-
-                const updatedUploadContainer =
-                    pluginContainer.querySelector<HTMLFormElement>(
-                        "form.js-link-editor"
-                    );
-
-                expect(formValue(updatedUploadContainer, "href")).toBe(
-                    "https://www.example.com"
-                );
-                expect(formValue(updatedUploadContainer, "text")).toBe(
-                    "link text"
-                );
-
-                return true;
-            });
-
             view.editorView.updateState(
                 applySelection(view.editorView.state, 1)
             );
 
-            menuContainer
-                .querySelector<HTMLButtonElement>(".js-insert-link-btn")
-                .click();
+            return onLinkEditorChange(view.editorView, menuContainer, {
+                onOpen: () => {
+                    const updatedUploadContainer =
+                        pluginContainer.querySelector<HTMLFormElement>(
+                            "form.js-link-editor"
+                        );
 
-            return promise;
+                    expect(formValue(updatedUploadContainer, "href")).toBe(
+                        "https://www.example.com"
+                    );
+                    expect(formValue(updatedUploadContainer, "text")).toBe(
+                        "link text"
+                    );
+
+                    return true;
+                },
+                onClose: null,
+            });
         });
 
         it("should prefill fields when a link is inserted over selected text via the menu command", () => {
@@ -254,53 +250,39 @@ describe("link-editor", () => {
                 applySelection(view.editorView.state, 0, 4)
             );
 
-            const promise = onViewDispatch(view.editorView, (_, tr) => {
-                if (!tr || !tr.getMeta("LinkEditor$")) {
-                    return false;
-                }
-
-                const updatedUploadContainer =
-                    pluginContainer.querySelector<HTMLFormElement>(
-                        "form.js-link-editor"
-                    );
-
-                expect(formValue(updatedUploadContainer, "href")).toBe("");
-                expect(formValue(updatedUploadContainer, "text")).toBe("test");
-
-                return true;
-            });
-
-            menuContainer
-                .querySelector<HTMLButtonElement>(".js-insert-link-btn")
-                .click();
-
-            return promise;
-        });
-
-        it("should show insert new links on save", () => {
-            view.editorView.updateState(
-                applySelection(view.editorView.state, 0)
-            );
-
-            const promise = onViewDispatch(view.editorView, (newView, tr) => {
-                if (!tr) {
-                    return false;
-                }
-
-                const meta = tr.getMeta("LinkEditor$") as {
-                    shouldShow: boolean;
-                };
-
-                // editor is shown
-                if (meta && meta.shouldShow) {
+            return onLinkEditorChange(view.editorView, menuContainer, {
+                onOpen: () => {
                     const updatedUploadContainer =
                         pluginContainer.querySelector<HTMLFormElement>(
                             "form.js-link-editor"
                         );
 
-                    // eslint-disable-next-line jest/no-conditional-expect
                     expect(formValue(updatedUploadContainer, "href")).toBe("");
-                    // eslint-disable-next-line jest/no-conditional-expect
+                    expect(formValue(updatedUploadContainer, "text")).toBe(
+                        "test"
+                    );
+
+                    return true;
+                },
+                onClose: null,
+            });
+        });
+
+        it("should show insert new links on save", () => {
+            const newLinkText = "link text";
+
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 0)
+            );
+
+            return onLinkEditorChange(view.editorView, menuContainer, {
+                onOpen: () => {
+                    const updatedUploadContainer =
+                        pluginContainer.querySelector<HTMLFormElement>(
+                            "form.js-link-editor"
+                        );
+
+                    expect(formValue(updatedUploadContainer, "href")).toBe("");
                     expect(formValue(updatedUploadContainer, "text")).toBe("");
 
                     // set the values, then submit the form
@@ -309,20 +291,19 @@ describe("link-editor", () => {
                         "href",
                         "https://www.example.com"
                     );
-                    setFormValue(updatedUploadContainer, "text", "link text");
+                    setFormValue(updatedUploadContainer, "text", newLinkText);
                     updatedUploadContainer.submit();
 
                     return false;
-                } else if (meta && !meta.shouldShow) {
-                    // editor is hidden (save was called)
-                    // eslint-disable-next-line jest/no-conditional-expect
+                },
+                onClose: (newView) => {
                     expect(newView.state.doc).toMatchNodeTree({
                         content: [
                             {
                                 content: [
                                     {
                                         "isText": true,
-                                        "text": "link text",
+                                        "text": newLinkText,
                                         "marks.0.type.name": "link",
                                         "marks.0.attrs.href":
                                             "https://www.example.com",
@@ -331,26 +312,156 @@ describe("link-editor", () => {
                             },
                         ],
                     });
-                    // TODO assert text selection
+
+                    // check that the entire link was highlighted
+                    const { from, to } = newView.state.selection;
+                    expect(from).toBe(1);
+                    expect(to).toBe(10);
+                    expect(newView.state.doc.textBetween(from, to)).toBe(
+                        newLinkText
+                    );
 
                     return true;
-                }
-
-                return false;
+                },
             });
-
-            menuContainer
-                .querySelector<HTMLButtonElement>(".js-insert-link-btn")
-                .click();
-
-            return promise;
         });
 
-        it.todo("should update existing links on save");
+        it("should update existing links on save", () => {
+            const newLinkText = "link text";
 
-        it.todo(
-            "should use the url as the link text when the text is not provided"
-        );
+            view = richTextView(
+                "[test](https://www.example.com)",
+                () => pluginContainer,
+                () => menuContainer
+            );
+
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 1)
+            );
+
+            const currentTextNode = getCurrentTextNode(view.editorView.state);
+
+            // check that the cursor is inside the link
+            expect(currentTextNode).toMatchNodeTree({
+                "isText": true,
+                "text": "test",
+                "marks.0.type.name": "link",
+                "marks.0.attrs.href": "https://www.example.com",
+            });
+
+            return onLinkEditorChange(view.editorView, menuContainer, {
+                onOpen: () => {
+                    const updatedUploadContainer =
+                        pluginContainer.querySelector<HTMLFormElement>(
+                            "form.js-link-editor"
+                        );
+
+                    expect(formValue(updatedUploadContainer, "href")).toBe(
+                        "https://www.example.com"
+                    );
+                    expect(formValue(updatedUploadContainer, "text")).toBe(
+                        "test"
+                    );
+
+                    // set the values, then submit the form
+                    setFormValue(
+                        updatedUploadContainer,
+                        "href",
+                        "https://www.example.org"
+                    );
+                    setFormValue(updatedUploadContainer, "text", newLinkText);
+                    updatedUploadContainer.submit();
+
+                    return false;
+                },
+                onClose: (newView) => {
+                    expect(newView.state.doc).toMatchNodeTree({
+                        content: [
+                            {
+                                content: [
+                                    {
+                                        "isText": true,
+                                        "text": newLinkText,
+                                        "marks.0.type.name": "link",
+                                        "marks.0.attrs.href":
+                                            "https://www.example.org",
+                                    },
+                                ],
+                            },
+                        ],
+                    });
+
+                    // check that the entire link was highlighted
+                    const { from, to } = newView.state.selection;
+                    expect(from).toBe(1);
+                    expect(to).toBe(10);
+                    expect(newView.state.doc.textBetween(from, to)).toBe(
+                        newLinkText
+                    );
+
+                    return true;
+                },
+            });
+        });
+
+        it("should use the url as the link text when the text is not provided", () => {
+            const newLinkText = "link text";
+
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 0)
+            );
+
+            return onLinkEditorChange(view.editorView, menuContainer, {
+                onOpen: () => {
+                    const updatedUploadContainer =
+                        pluginContainer.querySelector<HTMLFormElement>(
+                            "form.js-link-editor"
+                        );
+
+                    expect(formValue(updatedUploadContainer, "href")).toBe("");
+                    expect(formValue(updatedUploadContainer, "text")).toBe("");
+
+                    // set the values, then submit the form
+                    setFormValue(
+                        updatedUploadContainer,
+                        "href",
+                        "https://www.example.com"
+                    );
+                    setFormValue(updatedUploadContainer, "text", newLinkText);
+                    updatedUploadContainer.submit();
+
+                    return false;
+                },
+                onClose: (newView) => {
+                    // editor is hidden (save was called)
+                    expect(newView.state.doc).toMatchNodeTree({
+                        content: [
+                            {
+                                content: [
+                                    {
+                                        "isText": true,
+                                        "text": newLinkText,
+                                        "marks.0.type.name": "link",
+                                        "marks.0.attrs.href":
+                                            "https://www.example.com",
+                                    },
+                                ],
+                            },
+                        ],
+                    });
+
+                    // check that the entire link was highlighted
+                    const { from, to } = newView.state.selection;
+                    expect(from).toBe(1);
+                    expect(to).toBe(10);
+                    expect(newView.state.doc.textBetween(from, to)).toBe(
+                        newLinkText
+                    );
+
+                    return true;
+                },
+            });
+        });
 
         it.todo("should hide the tooltip when opened");
         it.todo("should show the tooltip when closed");
@@ -539,6 +650,41 @@ function onViewDispatch(
             },
         });
     });
+}
+
+function onLinkEditorChange(
+    view: EditorView,
+    menuContainer: Element,
+    callbacks: {
+        onOpen: (newView: EditorView, tr: Transaction) => boolean | null;
+        onClose: (newView: EditorView, tr: Transaction) => boolean | null;
+    }
+) {
+    const promise = onViewDispatch(view, (newView, tr) => {
+        if (!tr) {
+            return false;
+        }
+
+        const meta = tr.getMeta("LinkEditor$") as {
+            shouldShow: boolean;
+        };
+
+        // editor is shown
+        if (meta && meta.shouldShow) {
+            return callbacks.onOpen?.(newView, tr) || false;
+        } else if (meta && !meta.shouldShow) {
+            // editor is hidden (save was called)
+            return callbacks.onClose?.(newView, tr) || false;
+        }
+
+        return false;
+    });
+
+    menuContainer
+        .querySelector<HTMLButtonElement>(".js-insert-link-btn")
+        .click();
+
+    return promise;
 }
 
 function formValue(form: HTMLFormElement, name: string) {

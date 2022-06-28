@@ -18,7 +18,7 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { getShortcut } from "../../shared/utils";
+import { getCurrentTextNode, getShortcut } from "../../shared/utils";
 import type { CommonViewOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
@@ -209,10 +209,10 @@ export function insertLinkCommand(
         let selectedText: string;
         let linkUrl: string;
 
+        const $anchor = state.selection.$anchor;
         // if selection is empty, but inside link mark, use the link url/text from it
-        if (state.selection.empty && state.selection.$anchor.textOffset) {
-            const $anchor = state.selection.$anchor;
-            const currentTextNode = $anchor.parent.child($anchor.index());
+        if (state.selection.empty && $anchor.textOffset) {
+            const currentTextNode = getCurrentTextNode(state);
             const mark = currentTextNode.marks.find(
                 (m) => m.type === state.schema.marks.link
             );
