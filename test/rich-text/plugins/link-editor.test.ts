@@ -20,43 +20,11 @@ import {
 } from "../test-helpers";
 import "../../matchers";
 import { interfaceManagerPlugin } from "../../../src/shared/prosemirror-plugins/interface-manager";
-import { externalPluginProvider } from "../../test-helpers";
+import { externalPluginProvider, onViewDispatch } from "../../test-helpers";
 
 const editorPlugin = linkEditorPlugin({
     validateLink: stackOverflowValidateLink,
 });
-
-function getDecorations(state: EditorState) {
-    const pState = state.plugins
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error this isn't a public field, but I don't care
-        .find((p) => p.spec?.key?.name === "LinkEditor")
-        ?.getState(state) as {
-        decorations: DecorationSet;
-    };
-    return pState.decorations;
-}
-
-function getRenderedDecoration(editorView: EditorView): HTMLElement {
-    const state = editorView.state;
-    const decorations = getDecorations(state);
-    const decoration = decorations.find(state.selection.from)[0];
-    expect(decoration).toBeDefined();
-
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-    const pState = state.plugins[0].getState(state);
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore Oh snap, we're going off the grid!
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
-    const renderer = decoration["type"].toDOM.bind(pState.linkTooltip) as (
-        view: EditorView
-    ) => HTMLElement;
-
-    const view = editorView;
-
-    return renderer(view);
-}
 
 describe("link-editor", () => {
     describe("plugin view", () => {
@@ -462,13 +430,8 @@ describe("link-editor", () => {
                 },
             });
         });
-
-        it.todo("should hide the tooltip when opened");
-        it.todo("should show the tooltip when closed");
-        it.todo("should manipulate the cursor position on save");
     });
 
-    // TODO existing tests, rewrite to use helpers used above?
     describe("tooltip", () => {
         it("should not show with no cursor", () => {
             const state = createState(
@@ -613,7 +576,38 @@ describe("link-editor", () => {
     });
 });
 
-// TODO use createView instead and add the plugin in!
+function getDecorations(state: EditorState) {
+    const pState = state.plugins
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-expect-error this isn't a public field, but I don't care
+        .find((p) => p.spec?.key?.name === "LinkEditor")
+        ?.getState(state) as {
+        decorations: DecorationSet;
+    };
+    return pState.decorations;
+}
+
+function getRenderedDecoration(editorView: EditorView): HTMLElement {
+    const state = editorView.state;
+    const decorations = getDecorations(state);
+    const decoration = decorations.find(state.selection.from)[0];
+    expect(decoration).toBeDefined();
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const pState = state.plugins[0].getState(state);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore Oh snap, we're going off the grid!
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-call
+    const renderer = decoration["type"].toDOM.bind(pState.linkTooltip) as (
+        view: EditorView
+    ) => HTMLElement;
+
+    const view = editorView;
+
+    return renderer(view);
+}
+
 function richTextView(
     markdown: string,
     pluginContainerFn: () => Element,
@@ -628,28 +622,6 @@ function richTextView(
             menuParentContainer: menuContainerFn,
         }
     );
-}
-
-// TODO DOCUMENT
-function onViewDispatch(
-    view: EditorView,
-    callback: (newView: EditorView, tr: Transaction) => boolean
-) {
-    return new Promise<void>((resolve, reject) => {
-        view.setProps({
-            dispatchTransaction(this: EditorView, tr) {
-                try {
-                    const newState = this.state.apply(tr);
-                    this.updateState(newState);
-                    if (callback(this, tr)) {
-                        resolve();
-                    }
-                } catch (e) {
-                    reject(e);
-                }
-            },
-        });
-    });
 }
 
 function onLinkEditorChange(

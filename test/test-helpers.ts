@@ -1,4 +1,5 @@
-import { EditorState } from "prosemirror-state";
+import { EditorState, Transaction } from "prosemirror-state";
+import { EditorView } from "prosemirror-view";
 import {
     EditorPlugin,
     ExternalPluginProvider,
@@ -48,4 +49,31 @@ export function getSelectedText(state: EditorState): string {
  */
 export function externalPluginProvider(plugins?: EditorPlugin[]) {
     return new ExternalPluginProvider(plugins || [], null);
+}
+
+/**
+ * Intercepts the view's dispatch function after it is applied, then calls the callback with the new state and triggering transaction
+ * @param view The editor view to intercept
+ * @param callback The callback to call; returning false will prevent the promise from resolving
+ * @returns A promise that is resolved when the callback returns true
+ */
+export function onViewDispatch(
+    view: EditorView,
+    callback: (newView: EditorView, tr: Transaction) => boolean
+) {
+    return new Promise<void>((resolve, reject) => {
+        view.setProps({
+            dispatchTransaction(this: EditorView, tr) {
+                try {
+                    const newState = this.state.apply(tr);
+                    this.updateState(newState);
+                    if (callback(this, tr)) {
+                        resolve();
+                    }
+                } catch (e) {
+                    reject(e);
+                }
+            },
+        });
+    });
 }
