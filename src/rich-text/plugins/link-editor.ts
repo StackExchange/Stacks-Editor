@@ -21,8 +21,7 @@ export class LinkEditor extends PluginInterfaceView<
     LinkEditorPluginKey
 > {
     private validateLink: CommonmarkParserFeatures["validateLink"];
-    // TODO exposed for testing
-    viewContainer: Element;
+    private viewContainer: Element;
 
     private get hrefInput(): HTMLInputElement {
         return this.viewContainer.querySelector<HTMLInputElement>(
@@ -441,7 +440,6 @@ class LinkTooltip {
     }
 
     /**
-     * TODO abstract into utility/helper? Does something like this already exist?
      * Find out if the current selection contains a link mark
      * @param state The current editor state
      */
@@ -655,7 +653,12 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
         },
     });
 
-// TODO DOCUMENT
+/**
+ * Dispatches a transaction to show the link editor with the given url and text filled in
+ * @param view The current editor view
+ * @param url The value to prefill the url input with
+ * @param text The value to prefill the text input with
+ */
 export function showLinkEditor(
     view: EditorView,
     url?: string,
@@ -671,7 +674,10 @@ export function showLinkEditor(
     }
 }
 
-// TODO DOCUMENT
+/**
+ * Dispatches a transaction to hide the link editor
+ * @param view The current editor view
+ */
 export function hideLinkEditor(view: EditorView): void {
     const tr = LINK_EDITOR_KEY.hideInterfaceTr(view.state, {
         url: null,

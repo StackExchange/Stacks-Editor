@@ -45,7 +45,7 @@ describe("link-editor", () => {
         });
 
         it("should show link editor", () => {
-            expect(editor.viewContainer.parentElement).toBeNull();
+            expect(getViewContainer(editor).parentElement).toBeNull();
 
             showLinkEditor(view.editorView);
             editor.update(view.editorView);
@@ -60,7 +60,7 @@ describe("link-editor", () => {
             // see https://github.com/jsdom/jsdom/issues/2586#issuecomment-742593116
             document.body.appendChild(pluginContainer);
 
-            expect(editor.viewContainer.parentElement).toBeNull();
+            expect(getViewContainer(editor).parentElement).toBeNull();
 
             showLinkEditor(view.editorView);
             editor.update(view.editorView);
@@ -82,11 +82,11 @@ describe("link-editor", () => {
             hideLinkEditor(view.editorView);
             editor.update(view.editorView);
 
-            expect(editor.viewContainer.parentElement).toBeNull();
+            expect(getViewContainer(editor).parentElement).toBeNull();
         });
 
         it("should show error when failing link validation", () => {
-            expect(editor.viewContainer.parentElement).toBeNull();
+            expect(getViewContainer(editor).parentElement).toBeNull();
 
             showLinkEditor(view.editorView);
             editor.update(view.editorView);
@@ -106,7 +106,7 @@ describe("link-editor", () => {
         });
 
         it("should hide error when hiding editor", () => {
-            expect(editor.viewContainer.parentElement).toBeNull();
+            expect(getViewContainer(editor).parentElement).toBeNull();
 
             showLinkEditor(view.editorView);
             editor.update(view.editorView);
@@ -666,4 +666,10 @@ function formValue(form: HTMLFormElement, name: string) {
 function setFormValue(form: HTMLFormElement, name: string, value: string) {
     return (form.querySelector<HTMLInputElement>(`[name="${name}"]`).value =
         value);
+}
+
+function getViewContainer(editor: LinkEditor) {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error this isn't a public field, but I don't care
+    return editor.viewContainer;
 }
