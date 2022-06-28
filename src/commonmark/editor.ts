@@ -83,6 +83,7 @@ export class CommonmarkEditor extends BaseView {
                         ),
                         placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
+                        ...pluginProvider.plugins.commonmark,
                     ],
                 }),
                 plugins: [],

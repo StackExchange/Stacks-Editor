@@ -25,7 +25,7 @@ import {
 } from "../shared/view";
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
-import { stackOverflowMarkdownSerializer } from "./markdown-serializer";
+import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
@@ -68,6 +68,7 @@ export class RichTextEditor extends BaseView {
     ) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
+
         this.externalPluginProvider = pluginProvider;
 
         this.markdownSerializer = stackOverflowMarkdownSerializer(
@@ -77,7 +78,6 @@ export class RichTextEditor extends BaseView {
         this.finalizedSchema = new Schema(
             this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
         );
-
         this.markdownParser = buildMarkdownParser(
             this.options.parserFeatures,
             this.finalizedSchema,
@@ -143,8 +143,13 @@ export class RichTextEditor extends BaseView {
                     ],
                 }),
                 nodeViews: {
-                    code_block(node: ProseMirrorNode) {
-                        return new CodeBlockView(node);
+                    code_block: (node, view, getPos) => {
+                        return new CodeBlockView(
+                            node,
+                            view,
+                            getPos,
+                            this.externalPluginProvider.codeblockProcessors
+                        );
                     },
                     image(
                         node: ProseMirrorNode,
@@ -185,7 +190,7 @@ export class RichTextEditor extends BaseView {
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
-            externalPlugins: [],
+            editorPlugins: [],
         };
     }
 

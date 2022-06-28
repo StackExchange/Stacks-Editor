@@ -1,0 +1,31 @@
+{% layout "layout.html" %} {% block content %}
+<script
+    async
+    src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"
+></script>
+
+<textarea id="content" class="d-none">
+Here's a plugin that adds mermaid graph support:
+
+```mermaid
+graph TD;
+    A-->B;
+    A-->C;
+    B-->D;
+    C-->D;
+```
+
+^ Look at that sweet graph!
+
+---
+
+And here's a plugin that (sorta) adds [Japanese.SE furigana support](https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807):
+
+`感``{かん}じる` renders as 感{かん}じる. すごい!
+
+There's also a very silly plugin set in the 🤘 menu. Try it out!
+</textarea>
+
+<h1>Plugin Playground</h1>
+<div id="example-1" class="js-plugins-enabled"></div>
+{% endblock %}

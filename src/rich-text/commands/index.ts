@@ -32,6 +32,7 @@ import {
     removeColumnCommand,
     removeRowCommand,
 } from "./tables";
+import { _t } from "../../shared/localization";
 
 export * from "./tables";
 
@@ -329,33 +330,41 @@ export function exitInclusiveMarkCommand(
 const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
-        "Edit table",
+        _t("commands.table_edit"),
         "table-dropdown",
         (state: EditorState) => inTable(state.schema, state.selection),
         () => false,
 
         dropdownSection("Column", "columnSection"),
-        dropdownItem("Remove column", removeColumnCommand, "remove-column-btn"),
         dropdownItem(
-            "Insert column before",
+            _t("commands.table_column.remove"),
+            removeColumnCommand,
+            "remove-column-btn"
+        ),
+        dropdownItem(
+            _t("commands.table_column.insert_before"),
             insertTableColumnBeforeCommand,
             "insert-column-before-btn"
         ),
         dropdownItem(
-            "Insert column after",
+            _t("commands.table_column.insert_after"),
             insertTableColumnAfterCommand,
             "insert-column-after-btn"
         ),
 
         dropdownSection("Row", "rowSection"),
-        dropdownItem("Remove row", removeRowCommand, "remove-row-btn"),
         dropdownItem(
-            "Insert row before",
+            _t("commands.table_row.remove"),
+            removeRowCommand,
+            "remove-row-btn"
+        ),
+        dropdownItem(
+            _t("commands.table_row.insert_before"),
             insertTableRowBeforeCommand,
             "insert-row-before-btn"
         ),
         dropdownItem(
-            "Insert row after",
+            _t("commands.table_row.insert_after"),
             insertTableRowAfterCommand,
             "insert-row-after-btn"
         )
@@ -364,27 +373,26 @@ const tableDropdown = () =>
 const headingDropdown = (schema: Schema) =>
     makeMenuDropdown(
         "Header",
-        `Heading (${getShortcut("Mod-h")})`,
+        _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-h") }),
         "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
-
         dropdownItem(
-            "Heading 1",
+            _t("commands.heading.entry", { level: 1 }),
             toggleHeadingLevel({ level: 1 }),
             "h1-btn",
             nodeTypeActive(schema.nodes.heading, { level: 1 }),
             ["fs-body3", "mt8"]
         ),
         dropdownItem(
-            "Heading 2",
+            _t("commands.heading.entry", { level: 2 }),
             toggleHeadingLevel({ level: 2 }),
             "h2-btn",
             nodeTypeActive(schema.nodes.heading, { level: 2 }),
             ["fs-body2"]
         ),
         dropdownItem(
-            "Heading 3",
+            _t("commands.heading.entry", { level: 3 }),
             toggleHeadingLevel({ level: 3 }),
             "h3-btn",
             nodeTypeActive(schema.nodes.heading, { level: 3 }),
@@ -400,7 +408,11 @@ export const createMenuEntries = (
     {
         key: "toggleBold",
         command: toggleMark(schema.marks.strong),
-        dom: makeMenuIcon("Bold", `Bold (${getShortcut("Mod-b")})`, "bold-btn"),
+        dom: makeMenuIcon(
+            "Bold",
+            _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
+            "bold-btn"
+        ),
         active: markActive(schema.marks.strong),
     },
     {
@@ -408,7 +420,7 @@ export const createMenuEntries = (
         command: toggleMark(schema.marks.em),
         dom: makeMenuIcon(
             "Italic",
-            `Italic (${getShortcut("Mod-i")})`,
+            _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
             "italic-btn"
         ),
         active: markActive(schema.marks.em),
@@ -418,7 +430,7 @@ export const createMenuEntries = (
         command: toggleMark(schema.marks.code),
         dom: makeMenuIcon(
             "Code",
-            `Inline Code (${getShortcut("Mod-k")})`,
+            _t("commands.inline_code", { shortcut: getShortcut("Mod-k") }),
             "code-btn"
         ),
         active: markActive(schema.marks.code),
@@ -427,7 +439,11 @@ export const createMenuEntries = (
         {
             key: "toggleStrike",
             command: toggleMark(schema.marks.strike),
-            dom: makeMenuIcon("Strikethrough", "Strikethrough", "strike-btn"),
+            dom: makeMenuIcon(
+                "Strikethrough",
+                _t("commands.strikethrough"),
+                "strike-btn"
+            ),
             active: markActive(schema.marks.strike),
         },
         options.parserFeatures.extraEmphasis
@@ -438,7 +454,7 @@ export const createMenuEntries = (
         command: insertLinkCommand,
         dom: makeMenuIcon(
             "Link",
-            `Link (${getShortcut("Mod-l")})`,
+            _t("commands.link", { shortcut: getShortcut("Mod-l") }),
             "insert-link-btn"
         ),
     },
@@ -447,7 +463,7 @@ export const createMenuEntries = (
         command: toggleWrapIn(schema.nodes.blockquote),
         dom: makeMenuIcon(
             "Quote",
-            `Blockquote (${getShortcut("Ctrl-q")})`,
+            _t("commands.blockquote", { shortcut: getShortcut("Mod-q") }),
             "blockquote-btn"
         ),
         active: nodeTypeActive(schema.nodes.blockquote),
@@ -457,7 +473,7 @@ export const createMenuEntries = (
         command: toggleBlockType(schema.nodes.code_block),
         dom: makeMenuIcon(
             "Codeblock",
-            `Code block (${getShortcut("Mod-m")})`,
+            _t("commands.code_block", { shortcut: getShortcut("Mod-m") }),
             "code-block-btn"
         ),
         active: nodeTypeActive(schema.nodes.code_block),
@@ -468,7 +484,7 @@ export const createMenuEntries = (
             command: insertImageCommand,
             dom: makeMenuIcon(
                 "Image",
-                `Image (${getShortcut("Mod-g")})`,
+                _t("commands.image", { shortcut: getShortcut("Mod-g") }),
                 "insert-image-btn"
             ),
         },
@@ -480,7 +496,7 @@ export const createMenuEntries = (
             command: insertTableCommand,
             dom: makeMenuIcon(
                 "Table",
-                `Table (${getShortcut("Mod-e")})`,
+                _t("commands.table_insert", { shortcut: getShortcut("Mod-e") }),
                 "insert-table-btn"
             ),
             visible: (state: EditorState) =>
@@ -495,7 +511,7 @@ export const createMenuEntries = (
         command: toggleWrapIn(schema.nodes.ordered_list),
         dom: makeMenuIcon(
             "OrderedList",
-            `Numbered list (${getShortcut("Mod-o")})`,
+            _t("commands.ordered_list", { shortcut: getShortcut("Mod-o") }),
             "numbered-list-btn"
         ),
         active: nodeTypeActive(schema.nodes.ordered_list),
@@ -505,7 +521,7 @@ export const createMenuEntries = (
         command: toggleWrapIn(schema.nodes.bullet_list),
         dom: makeMenuIcon(
             "UnorderedList",
-            `Bulleted list (${getShortcut("Mod-u")})`,
+            _t("commands.unordered_list", { shortcut: getShortcut("Mod-u") }),
             "bullet-list-btn"
         ),
         active: nodeTypeActive(schema.nodes.bullet_list),
@@ -515,7 +531,7 @@ export const createMenuEntries = (
         command: insertHorizontalRuleCommand,
         dom: makeMenuIcon(
             "HorizontalRule",
-            `Horizontal rule (${getShortcut("Mod-r")})`,
+            _t("commands.horizontal_rule", { shortcut: getShortcut("Mod-r") }),
             "horizontal-rule-btn"
         ),
     },
@@ -525,7 +541,7 @@ export const createMenuEntries = (
         command: undo,
         dom: makeMenuIcon(
             "Undo",
-            `Undo (${getShortcut("Mod-z")})`,
+            _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
             "undo-btn",
             ["sm:d-inline-block"]
         ),
@@ -536,7 +552,7 @@ export const createMenuEntries = (
         command: redo,
         dom: makeMenuIcon(
             "Refresh",
-            `Redo (${getShortcut("Mod-y")})`,
+            _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
             "redo-btn",
             ["sm:d-inline-block"]
         ),
@@ -544,5 +560,5 @@ export const createMenuEntries = (
     },
     makeMenuSpacerEntry(),
     //TODO eventually this will mimic the "help" dropdown in the prod editor
-    makeMenuLinkEntry("Help", "Help", options.editorHelpLink),
+    makeMenuLinkEntry("Help", _t("commands.help"), options.editorHelpLink),
 ];

@@ -130,6 +130,10 @@ describe("commonmark editor view", () => {
             expect(view.content).toBe(content);
         }
     );
+
+    describe("external plugins", () => {
+        it.todo("should do all the things");
+    });
 });
 
 function commonmarkView(markdown: string): CommonmarkEditor {
