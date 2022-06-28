@@ -34,8 +34,6 @@ const codeTextData = [
     `not code\n\t\nnot code`,
 ];
 
-const codeFence = `\`\`\``;
-
 function commonmarkView(
     markdown: string,
     options?: CommonmarkOptions
