@@ -7,6 +7,7 @@ import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugi
 import { log } from "../shared/logger";
 import { createMenuPlugin } from "../shared/menu";
 import { createPreviewPlugin } from "./plugins/preview";
+import { commonmarkCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
@@ -83,6 +84,7 @@ export class CommonmarkEditor extends BaseView {
                         ),
                         placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
+                        commonmarkCodePasteHandler,
                         ...pluginProvider.plugins.commonmark,
                     ],
                 }),

@@ -30,10 +30,10 @@ import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
-import { codePasteHandler } from "./plugins/code-paste-handler";
+import { richTextCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
-import { linkTooltipPlugin } from "./plugins/link-editor";
+import { linkEditorPlugin } from "./plugins/link-editor";
 import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
@@ -125,7 +125,7 @@ export class RichTextEditor extends BaseView {
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
-                        linkTooltipPlugin(this.options.parserFeatures),
+                        linkEditorPlugin(this.options.parserFeatures),
                         placeholderPlugin(this.options.placeholderText),
                         richTextImageUpload(
                             this.options.imageUpload,
@@ -135,7 +135,7 @@ export class RichTextEditor extends BaseView {
                         readonlyPlugin(),
                         spoilerToggle,
                         tables,
-                        codePasteHandler,
+                        richTextCodePasteHandler,
                         linkPasteHandler(this.options.parserFeatures),
                         ...this.externalPluginProvider.plugins.richText,
                         // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers
