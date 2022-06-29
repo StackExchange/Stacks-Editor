@@ -151,6 +151,7 @@ domReady(() => {
     const content = document.querySelector<HTMLTextAreaElement>("#content");
     const enableImages = !place.classList.contains("js-images-disabled");
     const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
+    const enableMDPreview = place.classList.contains("js-md-preview-enabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -208,6 +209,7 @@ domReady(() => {
             },
             imageUpload: imageUploadOptions,
             editorPlugins: enableSamplePlugin ? samplePlugins : [],
+            enableMarkdownPreview: enableMDPreview,
         };
 
         const editorInstance = new StacksEditor(place, content.value, options);
