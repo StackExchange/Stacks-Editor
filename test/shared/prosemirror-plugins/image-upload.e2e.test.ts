@@ -61,7 +61,9 @@ test.describe.serial("inserting images", () => {
         });
         await expect(page.locator(addImageButtonSelector)).toBeDisabled();
 
-        await fileInput.setInputFiles("./test/shared/plugins/test-image.png");
+        await fileInput.setInputFiles(
+            "./test/shared/prosemirror-plugins/test-image.png"
+        );
 
         await expect(page.locator(imagePreviewSelector)).toBeVisible();
         await expect(page.locator(addImageButtonSelector)).toBeEnabled();
