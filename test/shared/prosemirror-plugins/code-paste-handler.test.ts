@@ -1,8 +1,7 @@
 import {
-    codePasteHandler,
-    getDetectedCode,
+    parseCodeFromEvent,
+    richTextCodePasteHandler,
 } from "../../../src/shared/prosemirror-plugins/code-paste-handler";
-import { EditorType } from "../../../src/shared/view";
 import {
     CommonmarkEditor,
     CommonmarkOptions,
@@ -47,10 +46,10 @@ function commonmarkView(
 }
 
 describe("code-paste-handler", () => {
-    describe("getDetectedCode", () => {
+    describe("parseCodeFromEvent", () => {
         it("should ignore empty data", () => {
             const data = new DataTransferMock({});
-            const code = getDetectedCode(data);
+            const code = parseCodeFromEvent(data);
             expect(code).toBeNull();
         });
 
@@ -58,7 +57,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/plain": text,
             });
-            const code = getDetectedCode(data);
+            const code = parseCodeFromEvent(data);
             expect(code).toBe(text);
         });
 
@@ -66,7 +65,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/plain": text,
             });
-            const code = getDetectedCode(data);
+            const code = parseCodeFromEvent(data);
             expect(code).toBeNull();
         });
 
@@ -74,7 +73,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/html": "<code>test</code>",
             });
-            const code = getDetectedCode(data);
+            const code = parseCodeFromEvent(data);
             expect(code).toBe("test");
         });
 
@@ -82,7 +81,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/html": "<pre><code>test</code></pre>",
             });
-            const code = getDetectedCode(data);
+            const code = parseCodeFromEvent(data);
             expect(code).toBe("test");
         });
 
@@ -90,7 +89,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/html": "<p>other stuff</p><code>test</code>",
             });
-            const code = getDetectedCode(data);
+            const code = parseCodeFromEvent(data);
             expect(code).toBeNull();
         });
 
@@ -103,7 +102,7 @@ describe("code-paste-handler", () => {
                 });
                 data.setData(ideDataFormat, "TODO");
 
-                const code = getDetectedCode(data);
+                const code = parseCodeFromEvent(data);
                 expect(code).toBe(codeText);
             }
         );
@@ -145,7 +144,7 @@ describe("code-paste-handler", () => {
             "should handle pasting non-code text (%#) into rich-text editor",
             (text) => {
                 const view = createView(
-                    createState("", [codePasteHandler(EditorType.RichText)])
+                    createState("", [richTextCodePasteHandler])
                 );
 
                 dispatchPasteEvent(view.dom, {
@@ -183,7 +182,7 @@ describe("code-paste-handler", () => {
             "should handle pasting code text (%#) into rich-text editor",
             (text) => {
                 const view = createView(
-                    createState("", [codePasteHandler(EditorType.RichText)])
+                    createState("", [richTextCodePasteHandler])
                 );
 
                 dispatchPasteEvent(view.dom, {
@@ -212,7 +211,7 @@ describe("code-paste-handler", () => {
             const view = createView(
                 createState(
                     `<pre data-params="lang-test"><code>existing code here</code></pre>`,
-                    [codePasteHandler(EditorType.RichText)]
+                    [richTextCodePasteHandler]
                 )
             );
 
@@ -246,7 +245,7 @@ describe("code-paste-handler", () => {
             const endIndex = startText.indexOf("END") + "END".length;
 
             let state = createState(`<p>${startText}</p>`, [
-                codePasteHandler(EditorType.RichText),
+                richTextCodePasteHandler,
             ]);
             state = applySelection(state, startIndex, endIndex);
 

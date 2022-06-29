@@ -1,26 +1,42 @@
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Slice, Node } from "prosemirror-model";
-import { EditorType as EditorTypeName } from "../view";
-import type { EditorType } from "../view";
+import { Slice, Node, DOMParser, Schema } from "prosemirror-model";
+import { richTextSchemaSpec } from "../../rich-text/schema";
+
+// create a static, mini schema for detecting code blocks in clipboard content
+const miniSchema = new Schema({
+    nodes: {
+        doc: richTextSchemaSpec.nodes.doc,
+        text: richTextSchemaSpec.nodes.text,
+        code_block: richTextSchemaSpec.nodes.code_block,
+    },
+});
+
+function getHtmlClipboardContent(clipboardData: DataTransfer) {
+    if (!clipboardData.types.includes("text/html")) {
+        return null;
+    }
+
+    return new global.DOMParser().parseFromString(
+        clipboardData.getData("text/html"),
+        "text/html"
+    );
+}
 
 /**
  * Detects if code was pasted into the document and returns the text if true
  * @param clipboardData The clipboardData from the ClipboardEvent
  */
-export function getDetectedCode(clipboardData: DataTransfer): string | null {
+function getDetectedCode(
+    clipboardData: DataTransfer,
+    htmlDoc: Document
+): string | null {
     // if we're loading a whole document, don't false positive if there's more than just code
-    const htmlContent = clipboardData.getData("text/html");
-    if (htmlContent && htmlContent.includes("<code>")) {
-        const allContent = new DOMParser().parseFromString(
-            htmlContent,
-            "text/html"
-        );
-        const codeBlock = allContent.querySelector("code");
-
-        return allContent.body.textContent.trim() !== codeBlock.textContent
+    const codeEl = htmlDoc?.querySelector("code");
+    if (htmlDoc && codeEl) {
+        return htmlDoc.body.textContent.trim() !== codeEl.textContent
             ? null
-            : codeBlock.textContent;
+            : codeEl.textContent;
     }
 
     const textContent = clipboardData.getData("text/plain");
@@ -48,56 +64,95 @@ export function getDetectedCode(clipboardData: DataTransfer): string | null {
 }
 
 /**
- * Plugin that auto-detects if code was pasted and handles it specifically
- * @param editorType The type of editor to set the view to
+ * Parses a code string from pasted text, based on multiple heuristics
+ * @param clipboardData The ClipboardEvent.clipboardData from the clipboard paste event
+ * @param doc Pre-parsed slice, if already available; otherwise the slice will be parsed from the clipboard's html data
+ * @internal
  */
-export const codePasteHandler = (editorType: EditorType) =>
-    new Plugin({
-        props: {
-            handlePaste(view: EditorView, event: ClipboardEvent, slice: Slice) {
-                let codeData: string;
+export function parseCodeFromEvent(
+    clipboardData: DataTransfer,
+    doc?: Slice | Node
+) {
+    let codeData: string;
 
-                const isMarkdown = editorType === EditorTypeName.Commonmark;
-                // if the schema parser already detected a code block, just use that
-                if (
-                    slice.content.childCount === 1 &&
-                    slice.content.child(0).type.name === "code_block"
-                ) {
-                    codeData = slice.content.child(0).textContent;
-                } else {
-                    codeData = getDetectedCode(event.clipboardData);
-                }
+    let htmlContent: Document | null = null;
+    if (!doc) {
+        htmlContent = getHtmlClipboardContent(clipboardData);
 
-                if (!codeData) {
-                    return false;
-                }
+        if (htmlContent) {
+            doc = DOMParser.fromSchema(miniSchema).parse(htmlContent);
+        }
+    }
 
-                const { $from } = view.state.selection;
-                // TODO can we do some basic formatting?
-                const selectedNode = $from.node();
+    // if the schema parser already detected a code block, just use that
+    if (
+        doc &&
+        doc.content.childCount === 1 &&
+        doc.content.child(0).type.name === "code_block"
+    ) {
+        codeData = doc.content.child(0).textContent;
+    } else {
+        // if not parsed above, parse here - this allows us to only run the parse when it is necessary
+        htmlContent ??= getHtmlClipboardContent(clipboardData);
+        codeData = getDetectedCode(clipboardData, htmlContent);
+    }
 
-                if (isMarkdown) {
-                    codeData = `${
-                        $from.pos === 1 ? "" : "\n"
-                    }\`\`\`\n${codeData}\n\`\`\`\n`;
-                }
+    if (!codeData) {
+        return null;
+    }
 
-                // if we're pasting into a code_block, just paste the text
-                // otherwise, create a code_block and paste into that instead
-                if (selectedNode.type.name === "code_block") {
-                    view.dispatch(view.state.tr.insertText(codeData));
-                } else {
-                    const schema = view.state.schema;
-                    const node: Node = schema.node(
-                        "code_block",
-                        {},
-                        schema.text(codeData)
-                    );
+    // TODO can we do some basic formatting?
 
-                    view.dispatch(view.state.tr.replaceSelectionWith(node));
-                }
+    return codeData;
+}
 
-                return true;
-            },
+export const richTextCodePasteHandler = new Plugin({
+    props: {
+        handlePaste(view: EditorView, event: ClipboardEvent, slice: Slice) {
+            // if we're pasting into an existing code block, don't bother checking for code
+            const schema = view.state.schema;
+            const codeblockType = schema.nodes.code_block;
+            const currNodeType = view.state.selection.$from.node().type;
+            if (currNodeType === codeblockType) {
+                return false;
+            }
+
+            const codeData = parseCodeFromEvent(event.clipboardData, slice);
+
+            if (!codeData) {
+                return false;
+            }
+
+            const node = codeblockType.createChecked({}, schema.text(codeData));
+            view.dispatch(view.state.tr.replaceSelectionWith(node));
+
+            return true;
         },
-    });
+    },
+});
+
+export const commonmarkCodePasteHandler = new Plugin({
+    props: {
+        handlePaste(view: EditorView, event: ClipboardEvent) {
+            // unlike the rich-text schema, the commonmark schema doesn't allow code_blocks in the root node
+            // so pass in a null slice so the code manually parses instead
+            let codeData = parseCodeFromEvent(event.clipboardData, null);
+
+            if (!codeData) {
+                return false;
+            }
+
+            const { $from } = view.state.selection;
+
+            // wrap the code in a markdown code fence
+            codeData = "```\n" + codeData + "\n```\n";
+
+            // add a newline if we're not at the beginning of the document
+            codeData = ($from.pos === 1 ? "" : "\n") + codeData;
+
+            view.dispatch(view.state.tr.insertText(codeData));
+
+            return true;
+        },
+    },
+});

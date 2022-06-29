@@ -30,7 +30,7 @@ import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
-import { codePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
+import { richTextCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
 import { linkEditorPlugin } from "./plugins/link-editor";
@@ -135,7 +135,7 @@ export class RichTextEditor extends BaseView {
                         readonlyPlugin(),
                         spoilerToggle,
                         tables,
-                        codePasteHandler(EditorType.RichText),
+                        richTextCodePasteHandler,
                         linkPasteHandler(this.options.parserFeatures),
                         ...this.externalPluginProvider.plugins.richText,
                         // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers

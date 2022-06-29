@@ -132,7 +132,11 @@ export class DataTransferMock implements DataTransfer {
     effectAllowed: DataTransfer["effectAllowed"];
     files: FileList;
     items: DataTransferItemList;
-    types: readonly string[];
+
+    get types() {
+        return Object.keys(this.data);
+    }
+
     clearData(): void {
         throw new Error("Method not implemented.");
     }
