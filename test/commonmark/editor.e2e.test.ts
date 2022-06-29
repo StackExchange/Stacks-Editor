@@ -7,6 +7,7 @@ import {
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
+const mdPreviewSelector = ".js-md-preview";
 
 test.describe.serial("markdown mode", () => {
     let page: Page;
@@ -41,5 +42,23 @@ test.describe.serial("markdown mode", () => {
             /is-selected/,
             { timeout: 1000 }
         );
+    });
+
+    test("shouldn't show preview by default", async () => {
+        await expect(page.locator(mdPreviewSelector)).toBeHidden({
+            timeout: 1000,
+        });
+    });
+
+    test("should render markdown preview", async () => {
+        // TODO not sure if this is a good idea.
+        // Since E2E tests are flakey locally, it's tough for me to determine the best way to test this.
+        await page.goto("/md-preview.html");
+
+        expect(
+            await page.$eval(mdPreviewSelector, (el) =>
+                el.innerHTML.includes("<h1>Here’s a thought</h1>")
+            )
+        ).toBe(true);
     });
 });

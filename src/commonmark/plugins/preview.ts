@@ -15,7 +15,7 @@ class PreviewView implements PluginView {
         markdownIt?: MarkdownIt
     ) {
         this.dom = document.createElement("div");
-        this.dom.classList.add("s-prose");
+        this.dom.classList.add("s-prose", "js-md-preview");
         this.renderer =
             markdownIt || createDefaultMarkdownItInstance(parserFeatures);
         const { textContent } = view.state.doc;
