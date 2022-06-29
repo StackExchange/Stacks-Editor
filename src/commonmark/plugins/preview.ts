@@ -3,6 +3,7 @@ import { Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { createDefaultMarkdownItInstance } from "../../shared/markdown-parser";
 import { CommonmarkParserFeatures } from "../../shared/view";
+
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
     renderer: MarkdownIt;
