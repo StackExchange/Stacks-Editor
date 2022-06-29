@@ -269,7 +269,7 @@ export class ImageUploader extends PluginInterfaceView<
     handleFileSelection(view: EditorView): void {
         this.resetImagePreview();
         const files = this.uploadField.files;
-        if (view.state.selection.$from.parent.inlineContent && files?.length) {
+        if (view.state.selection.$from.parent.inlineContent && files.length) {
             void this.showImagePreview(files[0]);
         }
     }
@@ -277,7 +277,7 @@ export class ImageUploader extends PluginInterfaceView<
     handleDrop(event: DragEvent, view: EditorView): void {
         this.resetImagePreview();
         const files = event.dataTransfer.files;
-        if (view.state.selection.$from.parent.inlineContent && files?.length) {
+        if (view.state.selection.$from.parent.inlineContent && files.length) {
             void this.showImagePreview(files[0]);
         }
     }
@@ -285,7 +285,7 @@ export class ImageUploader extends PluginInterfaceView<
     handlePaste(event: ClipboardEvent, view: EditorView): void {
         this.resetImagePreview();
         const files = event.clipboardData.files;
-        if (view.state.selection.$from.parent.inlineContent && files?.length) {
+        if (view.state.selection.$from.parent.inlineContent && files.length) {
             void this.showImagePreview(files[0]);
         }
     }
@@ -730,7 +730,7 @@ function imageUploaderPlaceholderPlugin(
 
                 if (
                     view.state.selection.$from.parent.inlineContent &&
-                    files?.length
+                    files.length
                 ) {
                     showImageUploader(view, files[0]);
                     return true;
@@ -743,7 +743,7 @@ function imageUploaderPlaceholderPlugin(
 
                 if (
                     view.state.selection.$from.parent.inlineContent &&
-                    files?.length
+                    files.length
                 ) {
                     showImageUploader(view, files[0]);
                     return true;
