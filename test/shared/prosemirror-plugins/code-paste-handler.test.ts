@@ -1,12 +1,8 @@
 import {
+    commonmarkCodePasteHandler,
     parseCodeFromEvent,
     richTextCodePasteHandler,
 } from "../../../src/shared/prosemirror-plugins/code-paste-handler";
-import {
-    CommonmarkEditor,
-    CommonmarkOptions,
-} from "../../../src/commonmark/editor";
-import { externalPluginProvider } from "../../test-helpers";
 import "../../matchers";
 import "../../matchers";
 import {
@@ -19,7 +15,7 @@ import {
     setupPasteSupport,
 } from "../../rich-text/test-helpers";
 
-const nonCodeTextData = ["not code", " nope", " still\tnope", "\n\nnada\n\n"];
+const nonCodeTextData = ["not code", " nope", " still\tnope"];
 
 const codeTextData = [
     `  code`,
@@ -32,18 +28,6 @@ const codeTextData = [
     `  `,
     `not code\n\t\nnot code`,
 ];
-
-function commonmarkView(
-    markdown: string,
-    options?: CommonmarkOptions
-): CommonmarkEditor {
-    return new CommonmarkEditor(
-        document.createElement("div"),
-        markdown,
-        externalPluginProvider(),
-        options
-    );
-}
 
 describe("code-paste-handler", () => {
     describe("parseCodeFromEvent", () => {
@@ -108,36 +92,9 @@ describe("code-paste-handler", () => {
         );
     });
 
-    describe("codePasteHandler plugin", () => {
+    describe("richTextCodePasteHandler plugin", () => {
         beforeAll(setupPasteSupport);
         afterAll(cleanupPasteSupport);
-
-        // Commonmark
-        it.each(nonCodeTextData)(
-            "should handle pasting non-code text (%#) into commonmark editor",
-            (text) => {
-                const view = commonmarkView("");
-
-                dispatchPasteEvent(view.dom, {
-                    "text/plain": text,
-                });
-
-                expect(view.document.textContent).toBe(text);
-            }
-        );
-        it.each(codeTextData)(
-            "should handle pasting code text (%#) into commonmark editor",
-            (text) => {
-                const view = commonmarkView("");
-
-                dispatchPasteEvent(view.dom, {
-                    "text/plain": text,
-                });
-
-                const textOutput = `\`\`\`\n${text}\n\`\`\`\n`;
-                expect(view.document.textContent).toBe(textOutput);
-            }
-        );
 
         // Rich-text
         it.each(nonCodeTextData)(
@@ -288,6 +245,106 @@ describe("code-paste-handler", () => {
                     },
                 ],
             });
+        });
+    });
+
+    describe("commonmarkCodePasteHandler plugin", () => {
+        beforeAll(setupPasteSupport);
+        afterAll(cleanupPasteSupport);
+
+        // Commonmark
+        it.each(nonCodeTextData)(
+            "should handle pasting non-code text (%#) into commonmark editor",
+            (text) => {
+                let state = createState("<p></p>", [
+                    commonmarkCodePasteHandler,
+                ]);
+                state = applySelection(state, 0);
+
+                const view = createView(state);
+
+                dispatchPasteEvent(view.dom, {
+                    "text/plain": text,
+                });
+
+                expect(view.state.doc.textContent).toBe(text);
+            }
+        );
+
+        it.each(codeTextData)(
+            "should handle pasting code text (%#) into commonmark editor",
+            (text) => {
+                let state = createState("<p></p>", [
+                    commonmarkCodePasteHandler,
+                ]);
+                state = applySelection(state, 0);
+
+                const view = createView(state);
+
+                dispatchPasteEvent(view.dom, {
+                    "text/plain": text,
+                });
+
+                const textOutput = `\`\`\`\n${text}\n\`\`\`\n`;
+                expect(view.state.doc.textContent).toBe(textOutput);
+            }
+        );
+
+        it("should prepend a newline when pasted in middle of text", () => {
+            let state = createState(`<p>test</p>`, [
+                commonmarkCodePasteHandler,
+            ]);
+            state = applySelection(state, 1);
+
+            const view = createView(state);
+
+            dispatchPasteEvent(view.dom, {
+                "text/plain": "\tcode",
+            });
+
+            expect(view.state.doc.textContent).toBe("t\n```\n\tcode\n```\nest");
+        });
+
+        it("should not prepend a newline when pasted at beginning", () => {
+            let state = createState(`<p>test</p>`, [
+                commonmarkCodePasteHandler,
+            ]);
+            state = applySelection(state, 0);
+
+            const view = createView(state);
+
+            dispatchPasteEvent(view.dom, {
+                "text/plain": "\tcode",
+            });
+
+            expect(view.state.doc.textContent).toBe("```\n\tcode\n```\ntest");
+        });
+
+        it("should replace selected text range", () => {
+            const startText =
+                "replace from START and all text until END and nothing more";
+            const replacingText = "\treplaced text";
+            const startIndex = startText.indexOf("START");
+            const endIndex = startText.indexOf("END") + "END".length;
+
+            let state = createState(`<p>${startText}</p>`, [
+                commonmarkCodePasteHandler,
+            ]);
+            state = applySelection(state, startIndex, endIndex);
+
+            const view = createView(state);
+
+            dispatchPasteEvent(view.dom, {
+                "text/plain": replacingText,
+            });
+
+            const expected = `${startText.slice(0, startIndex)}
+\`\`\`
+${replacingText}
+\`\`\`
+${startText.slice(endIndex)}`;
+
+            expect(view.state.doc.textContent).toBe(expected);
         });
     });
 });
