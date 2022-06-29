@@ -10,13 +10,9 @@ import {
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
-const insertLinkMenuItemSelector = ".js-insert-link-btn";
 const insertHeadingDropdownButtonSelector = `[id^="heading-dropdown-btn-"]`;
 const headingPopoverSelector = `[id^="heading-dropdown-popover-"]`;
 const insertH1ButtonSelector = "button[data-key='h1-btn']";
-
-const linkViewTooltipSelector = ".js-link-tooltip";
-const removeLinkSelector = ".js-link-tooltip-remove";
 
 const getMarkdownContent = async (page: Page) => {
     const wasMarkdownModeActive = await getIsMarkdown(page);
