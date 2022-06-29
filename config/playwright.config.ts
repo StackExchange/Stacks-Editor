@@ -6,7 +6,7 @@ const config: PlaywrightTestConfig = {
     testDir: path.join(__dirname, "..", "test"),
     testMatch: "*.e2e.test.ts",
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
+    retries: 0,
 
     webServer: {
         command: "npm start -- --port 8081 --no-open",
