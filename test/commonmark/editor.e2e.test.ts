@@ -1,9 +1,11 @@
 import { test, expect, Page } from "@playwright/test";
 import {
     clearEditor,
+    enterTextAsMarkdown,
     getIsMarkdown,
     menuSelector,
     switchMode,
+    typeText,
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
@@ -51,14 +53,28 @@ test.describe.serial("markdown mode", () => {
     });
 
     test("should render markdown preview", async () => {
-        // TODO not sure if this is a good idea.
-        // Since E2E tests are flakey locally, it's tough for me to determine the best way to test this.
         await page.goto("/md-preview.html");
 
         expect(
             await page.$eval(mdPreviewSelector, (el) =>
                 el.innerHTML.includes("<h1>Here’s a thought</h1>")
             )
-        ).toBe(true);
+        ).toBeTruthy();
+    });
+    test("should update the markdown preview on change", async () => {
+        await page.goto("/md-preview.html");
+        await enterTextAsMarkdown(
+            page,
+            "![an image](https://localhost/some-image)"
+        );
+        await switchMode(page, true);
+
+        expect(
+            await page.$eval(mdPreviewSelector, (el) =>
+                el.innerHTML.includes(
+                    '<img src="https://localhost/some-image" alt="an image">'
+                )
+            )
+        ).toBeTruthy();
     });
 });
