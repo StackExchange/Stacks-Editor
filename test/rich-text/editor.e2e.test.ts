@@ -10,13 +10,9 @@ import {
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
-const insertLinkMenuItemSelector = ".js-insert-link-btn";
 const insertHeadingDropdownButtonSelector = `[id^="heading-dropdown-btn-"]`;
 const headingPopoverSelector = `[id^="heading-dropdown-popover-"]`;
 const insertH1ButtonSelector = "button[data-key='h1-btn']";
-
-const linkViewTooltipSelector = ".js-link-tooltip";
-const removeLinkSelector = ".js-link-tooltip-remove";
 
 const getMarkdownContent = async (page: Page) => {
     const wasMarkdownModeActive = await getIsMarkdown(page);
@@ -249,81 +245,6 @@ test.describe.serial("rich-text mode", () => {
                     el.classList.contains("is-visible")
                 )
             ).toBe(false);
-        });
-    });
-
-    test.describe("editing links", () => {
-        test("should insert a link for selected text when clicking menu item", async () => {
-            await clearEditor(page);
-            await expect(page.locator(linkViewTooltipSelector)).toBeHidden({
-                timeout: 5000,
-            });
-
-            await typeText(page, "some link here");
-
-            // select some text
-            await page.keyboard.down("Shift");
-            await page.press(editorSelector, "ArrowLeft");
-            await page.press(editorSelector, "ArrowLeft");
-            await page.press(editorSelector, "ArrowLeft");
-            await page.keyboard.up("Shift");
-
-            await page.click(insertLinkMenuItemSelector);
-
-            await expect(page.locator(linkViewTooltipSelector)).toBeVisible();
-        });
-
-        test("should show link popover when selecting a link", async () => {
-            // enter a link in markdown mode and switch back to rich text mode
-            await enterTextAsMarkdown(
-                page,
-                "[a link](https://example.com/a-link)"
-            );
-
-            await expect(page.locator(linkViewTooltipSelector)).toBeHidden({
-                timeout: 5000,
-            });
-
-            await page.press(editorSelector, "ArrowRight");
-
-            await expect(page.locator(linkViewTooltipSelector)).toBeVisible();
-            await expect(page.locator(linkViewTooltipSelector)).toContainText(
-                "https://example.com/a-link"
-            );
-        });
-
-        test("should hide link popover when deselecting a link", async ({
-            browserName,
-        }) => {
-            test.fixme(
-                browserName === "firefox",
-                "ArrowLeft does not work for some reason"
-            );
-            await enterTextAsMarkdown(
-                page,
-                "[a link](https://example.com/a-link)"
-            );
-
-            await page.press(editorSelector, "ArrowRight"); // select link
-            await page.press(editorSelector, "ArrowLeft"); // and deselect again
-            await expect(page.locator(linkViewTooltipSelector)).toBeHidden({
-                timeout: 5000,
-            });
-        });
-
-        test("should remove link mark when clicking popover action", async () => {
-            await enterTextAsMarkdown(
-                page,
-                "[a link](https://example.com/a-link)"
-            );
-            expect(await getMarkdownContent(page)).toEqual(
-                "[a link](https://example.com/a-link)"
-            );
-
-            await page.press(editorSelector, "ArrowRight"); // select link
-            await page.click(removeLinkSelector);
-
-            expect(await getMarkdownContent(page)).toEqual("a link");
         });
     });
 });

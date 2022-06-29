@@ -93,6 +93,7 @@ const nodes: {
         attrs: {
             params: { default: "" },
             detectedHighlightLanguage: { default: "" },
+            isEditingProcessor: { default: false },
         },
         parseDOM: [
             {
