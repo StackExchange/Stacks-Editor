@@ -1,6 +1,6 @@
 import {
     commonmarkCodePasteHandler,
-    parseCodeFromEvent,
+    parseCodeFromPasteData,
     richTextCodePasteHandler,
 } from "../../../src/shared/prosemirror-plugins/code-paste-handler";
 import "../../matchers";
@@ -30,10 +30,10 @@ const codeTextData = [
 ];
 
 describe("code-paste-handler", () => {
-    describe("parseCodeFromEvent", () => {
+    describe("parseCodeFromPasteData", () => {
         it("should ignore empty data", () => {
             const data = new DataTransferMock({});
-            const code = parseCodeFromEvent(data);
+            const code = parseCodeFromPasteData(data);
             expect(code).toBeNull();
         });
 
@@ -41,7 +41,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/plain": text,
             });
-            const code = parseCodeFromEvent(data);
+            const code = parseCodeFromPasteData(data);
             expect(code).toBe(text);
         });
 
@@ -49,7 +49,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/plain": text,
             });
-            const code = parseCodeFromEvent(data);
+            const code = parseCodeFromPasteData(data);
             expect(code).toBeNull();
         });
 
@@ -57,7 +57,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/html": "<code>test</code>",
             });
-            const code = parseCodeFromEvent(data);
+            const code = parseCodeFromPasteData(data);
             expect(code).toBe("test");
         });
 
@@ -65,7 +65,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/html": "<pre><code>test</code></pre>",
             });
-            const code = parseCodeFromEvent(data);
+            const code = parseCodeFromPasteData(data);
             expect(code).toBe("test");
         });
 
@@ -73,7 +73,7 @@ describe("code-paste-handler", () => {
             const data = new DataTransferMock({
                 "text/html": "<p>other stuff</p><code>test</code>",
             });
-            const code = parseCodeFromEvent(data);
+            const code = parseCodeFromPasteData(data);
             expect(code).toBeNull();
         });
 
@@ -86,7 +86,7 @@ describe("code-paste-handler", () => {
                 });
                 data.setData(ideDataFormat, "TODO");
 
-                const code = parseCodeFromEvent(data);
+                const code = parseCodeFromPasteData(data);
                 expect(code).toBe(codeText);
             }
         );

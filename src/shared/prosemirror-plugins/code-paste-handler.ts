@@ -69,7 +69,7 @@ function getDetectedCode(
  * @param doc Pre-parsed slice, if already available; otherwise the slice will be parsed from the clipboard's html data
  * @internal
  */
-export function parseCodeFromEvent(
+export function parseCodeFromPasteData(
     clipboardData: DataTransfer,
     doc?: Slice | Node
 ) {
@@ -106,6 +106,7 @@ export function parseCodeFromEvent(
     return codeData;
 }
 
+/** Plugin for the rich-text editor that auto-detects if code was pasted and handles it specifically */
 export const richTextCodePasteHandler = new Plugin({
     props: {
         handlePaste(view: EditorView, event: ClipboardEvent, slice: Slice) {
@@ -117,7 +118,7 @@ export const richTextCodePasteHandler = new Plugin({
                 return false;
             }
 
-            const codeData = parseCodeFromEvent(event.clipboardData, slice);
+            const codeData = parseCodeFromPasteData(event.clipboardData, slice);
 
             if (!codeData) {
                 return false;
@@ -131,12 +132,13 @@ export const richTextCodePasteHandler = new Plugin({
     },
 });
 
+/** Plugin for the commonmark editor that auto-detects if code was pasted and handles it specifically */
 export const commonmarkCodePasteHandler = new Plugin({
     props: {
         handlePaste(view: EditorView, event: ClipboardEvent) {
             // unlike the rich-text schema, the commonmark schema doesn't allow code_blocks in the root node
             // so pass in a null slice so the code manually parses instead
-            let codeData = parseCodeFromEvent(event.clipboardData, null);
+            let codeData = parseCodeFromPasteData(event.clipboardData, null);
 
             if (!codeData) {
                 return false;
