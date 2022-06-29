@@ -1,7 +1,7 @@
 import {
     codePasteHandler,
     getDetectedCode,
-} from "../../../src/shared/code-paste-handler-plugin";
+} from "../../../src/shared/prosemirror-plugins/code-paste-handler";
 import { EditorType } from "../../../src/shared/view";
 import {
     CommonmarkEditor,

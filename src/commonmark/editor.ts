@@ -6,6 +6,7 @@ import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
 import { createMenuPlugin } from "../shared/menu";
+import { codePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
@@ -27,7 +28,6 @@ import {
 import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
-import { codePasteHandler } from "../shared/code-paste-handler-plugin";
 
 export type CommonmarkOptions = CommonViewOptions;
 

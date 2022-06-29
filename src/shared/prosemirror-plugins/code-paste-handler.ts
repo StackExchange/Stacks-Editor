@@ -1,8 +1,8 @@
 import { Plugin } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Slice, Node } from "prosemirror-model";
-import { EditorType as EditorTypeName } from "./view";
-import type { EditorType } from "./view";
+import { EditorType as EditorTypeName } from "../view";
+import type { EditorType } from "../view";
 
 /**
  * Detects if code was pasted into the document and returns the text if true
