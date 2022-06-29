@@ -250,5 +250,32 @@ test.describe.serial("rich-text mode", () => {
                 )
             ).toBe(false);
         });
+
+        test("should not show image popover when navigating with left/right arrow keys", async () => {
+            await enterTextAsMarkdown(
+                page,
+                "![an image](https://localhost/some-image)"
+            );
+
+            // move over the image from the left side
+            await page.keyboard.press("ArrowRight");
+            await page.keyboard.press("ArrowRight");
+
+            expect(
+                await page.$eval(imagePopoverSelector, (el) =>
+                    el.classList.contains("is-visible")
+                )
+            ).toBe(false);
+
+            // move over the image from the right side
+            await page.keyboard.press("ArrowLeft");
+            await page.keyboard.press("ArrowLeft");
+
+            expect(
+                await page.$eval(imagePopoverSelector, (el) =>
+                    el.classList.contains("is-visible")
+                )
+            ).toBe(false);
+        });
     });
 });
