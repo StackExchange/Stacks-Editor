@@ -39,6 +39,13 @@ class PreviewView implements PluginView {
     }
 }
 
+/**
+ * Callback function signature for all menu entries
+ * @param enabled Boolean to specify if preview should be created
+ * @param containerFn A function that returns the container to insert the plugin's UI into
+ * @param parserFeatures The features to enable/disable on the commonmark parser
+ * @param [markdownIt] A markdown-it instance to use for rendering
+ */
 export function createPreviewPlugin(
     enabled: boolean,
     containerFn: (view: EditorView) => Node,
