@@ -33,7 +33,7 @@ import { TagLink } from "./node-views/tag-link";
 import { codePasteHandler } from "../shared/code-paste-handler-plugin";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
-import { linkTooltipPlugin } from "./plugins/link-editor";
+import { linkEditorPlugin } from "./plugins/link-editor";
 import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
@@ -68,6 +68,7 @@ export class RichTextEditor extends BaseView {
     ) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
+
         this.externalPluginProvider = pluginProvider;
 
         this.markdownSerializer = stackOverflowMarkdownSerializer(
@@ -77,7 +78,6 @@ export class RichTextEditor extends BaseView {
         this.finalizedSchema = new Schema(
             this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
         );
-
         this.markdownParser = buildMarkdownParser(
             this.options.parserFeatures,
             this.finalizedSchema,
@@ -125,7 +125,7 @@ export class RichTextEditor extends BaseView {
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
-                        linkTooltipPlugin(this.options.parserFeatures),
+                        linkEditorPlugin(this.options.parserFeatures),
                         placeholderPlugin(this.options.placeholderText),
                         richTextImageUpload(
                             this.options.imageUpload,
@@ -143,8 +143,13 @@ export class RichTextEditor extends BaseView {
                     ],
                 }),
                 nodeViews: {
-                    code_block(node: ProseMirrorNode) {
-                        return new CodeBlockView(node);
+                    code_block: (node, view, getPos) => {
+                        return new CodeBlockView(
+                            node,
+                            view,
+                            getPos,
+                            this.externalPluginProvider.codeblockProcessors
+                        );
                     },
                     image(
                         node: ProseMirrorNode,
@@ -185,7 +190,7 @@ export class RichTextEditor extends BaseView {
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
-            externalPlugins: [],
+            editorPlugins: [],
         };
     }
 

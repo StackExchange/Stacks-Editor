@@ -3,6 +3,7 @@
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
 import type { Node } from "prosemirror-model";
 import type { EditorView } from "prosemirror-view";
+import { EditorPlugin } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { stackOverflowValidateLink } from "./utils";
 
@@ -36,7 +37,7 @@ export interface CommonViewOptions {
     /** Image uploader options */
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
-    externalPlugins?: unknown[];
+    editorPlugins?: EditorPlugin[];
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
