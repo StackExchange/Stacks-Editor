@@ -43,14 +43,15 @@ test.describe.serial("markdown mode", () => {
     });
 
     test("should select word on double click", async ({ page }) => {
-        await typeText(page, "this is a paragraph.", true);
+        await typeText(page, "paragraph here", true);
         await click(page, ".js-editor code >> text=paragraph", 2);
 
         const selectedText = await page.evaluate(() =>
             window.getSelection().toString()
         );
 
-        expect(selectedText).toEqual("paragraph");
+        // On some OSes (Windows 10 at least), the selection includes the trailing space
+        expect(selectedText).toMatch(/^paragraph\s?$/);
     });
 
     test("should select line on triple click", async ({ page }) => {
@@ -64,7 +65,9 @@ test.describe.serial("markdown mode", () => {
         const selectedText = await page.evaluate(() =>
             window.getSelection().toString()
         );
-        expect(selectedText).toEqual("# Heading 1");
+
+        // On some OSes (Windows 10 at least), the selection excludes the trailing newline
+        expect(selectedText).toMatch(/^# Heading 1\n?$/);
     });
 });
 
