@@ -245,9 +245,11 @@ class SOMarkdownIt extends MarkdownIt {
 /**
  * Creates a MarkdownIt instance with default properties
  * @param features The features to toggle on/off
+ * @param externalPluginProvider The external plugin provider TODO should not be optional
  */
 export function createDefaultMarkdownItInstance(
-    features: CommonmarkParserFeatures
+    features: CommonmarkParserFeatures,
+    externalPluginProvider?: IExternalPluginProvider
 ): SOMarkdownIt {
     const defaultMarkdownItInstance = new SOMarkdownIt("default", {
         html: features.html, // we can allow the markdown parser to send through arbitrary HTML, but only because we're gonna whitelist it later
@@ -299,25 +301,27 @@ export function createDefaultMarkdownItInstance(
     // ensure we can tell the difference between the different types of hardbreaks
     defaultMarkdownItInstance.use(hardbreak_markup);
 
+    // TODO should always exist, so remove the check once the param is made non-optional
+    externalPluginProvider?.alterMarkdownIt(defaultMarkdownItInstance);
+
     return defaultMarkdownItInstance;
 }
 
 /**
  * Builds a custom markdown parser with the passed features toggled
  * @param features The features to toggle on/off
+ * @param schema The finalized schema to use
+ * @param externalPluginProvider The external plugin provider to use
  */
 export function buildMarkdownParser(
     features: CommonmarkParserFeatures,
     schema: Schema,
     externalPluginProvider: IExternalPluginProvider
 ): SOMarkdownParser {
-    if (!features) {
-        throw "Cannot build markdown parser without passed features.";
-    }
-
-    const defaultMarkdownItInstance = createDefaultMarkdownItInstance(features);
-
-    externalPluginProvider.alterMarkdownIt(defaultMarkdownItInstance);
+    const defaultMarkdownItInstance = createDefaultMarkdownItInstance(
+        features,
+        externalPluginProvider
+    );
 
     return new SOMarkdownParser(schema, defaultMarkdownItInstance, {
         ...customMarkdownParserTokens,

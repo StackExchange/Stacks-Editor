@@ -43,7 +43,9 @@ export interface CommonmarkOptions extends CommonViewOptions {
         parentContainer?: (view: EditorView) => Element;
         /**
          * Custom renderer instance to use to render the markdown;
-         * defaults to the markdown-it instance used by this editor
+         * defaults to the markdown-it instance used by this editor;
+         * WARNING: The passed renderer will need to properly sanitize html,
+         * WE DO NOT PROVIDE ANY SANITIZATION FOR CUSTOM RENDERERS
          */
         renderer?: MarkdownIt;
     };
@@ -86,10 +88,8 @@ export class CommonmarkEditor extends BaseView {
                         ...allKeymaps(this.options.parserFeatures),
                         menu,
                         createPreviewPlugin(
-                            this.options.preview?.enabled,
-                            this.options.preview?.parentContainer,
-                            this.options.parserFeatures,
-                            this.options.preview?.renderer
+                            this.options.preview,
+                            this.options.parserFeatures
                         ),
                         CodeBlockHighlightPlugin(null),
                         interfaceManagerPlugin(
