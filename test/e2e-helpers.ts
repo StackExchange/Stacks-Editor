@@ -54,3 +54,22 @@ export async function enterTextAsMarkdown(page: Page, text: string) {
     await typeText(page, text);
     await switchMode(page, false);
 }
+
+/**
+ * When clicking inside the editor, the scrolling behavior in Page.click causes flakiness
+ * so we've rolled our own version of it
+ * @param page The page to use
+ * @param selector The element to click
+ * @param clickCount The number of times to click the element
+ */
+export async function clickEditorContent(
+    page: Page,
+    selector: string,
+    clickCount: number
+) {
+    const locator = page.locator(selector);
+    const bb = await locator.boundingBox();
+    await page.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2, {
+        clickCount,
+    });
+}
