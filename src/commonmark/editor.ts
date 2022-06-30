@@ -29,8 +29,25 @@ import {
 import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
+import type MarkdownIt from "markdown-it";
 
-export type CommonmarkOptions = CommonViewOptions;
+export interface CommonmarkOptions extends CommonViewOptions {
+    /** Settings for showing a static rendered preview of the editor's contents */
+    preview?: {
+        /** Whether the preview is enabled */
+        enabled: boolean;
+        /**
+         * Function to get the container to place the markdown preview;
+         * defaults to returning this editor's target's parentNode
+         */
+        parentContainer?: (view: EditorView) => Element;
+        /**
+         * Custom renderer instance to use to render the markdown;
+         * defaults to the markdown-it instance used by this editor
+         */
+        renderer?: MarkdownIt;
+    };
+}
 
 export class CommonmarkEditor extends BaseView {
     private options: CommonmarkOptions;
@@ -69,10 +86,10 @@ export class CommonmarkEditor extends BaseView {
                         ...allKeymaps(this.options.parserFeatures),
                         menu,
                         createPreviewPlugin(
-                            this.options.enableMarkdownPreview,
-                            this.options.previewParentContainer,
+                            this.options.preview?.enabled,
+                            this.options.preview?.parentContainer,
                             this.options.parserFeatures,
-                            this.options.markdownRenderer
+                            this.options.preview?.renderer
                         ),
                         CodeBlockHighlightPlugin(null),
                         interfaceManagerPlugin(
@@ -108,9 +125,11 @@ export class CommonmarkEditor extends BaseView {
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
-            enableMarkdownPreview: false,
-            previewParentContainer: null,
-            markdownRenderer: null,
+            preview: {
+                enabled: false,
+                parentContainer: null,
+                renderer: null,
+            },
         };
     }
 

@@ -181,7 +181,11 @@ domReady(() => {
     const options: StacksEditorOptions = {
         defaultView: getDefaultEditor(),
         editorHelpLink: "#TODO",
-        commonmarkOptions: {},
+        commonmarkOptions: {
+            preview: {
+                enabled: enableMDPreview,
+            },
+        },
         parserFeatures: {
             tables: true,
             tagLinks: {
@@ -205,7 +209,6 @@ domReady(() => {
         },
         imageUpload: imageUploadOptions,
         editorPlugins: enableSamplePlugin ? samplePlugins : [],
-        enableMarkdownPreview: enableMDPreview,
     };
 
     const editorInstance = new StacksEditor(place, content.value, options);

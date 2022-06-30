@@ -1,7 +1,6 @@
 // NOTE: It is important that these are all `type` only imports!
 // This keeps code that relies on this file from accidentally introducing cyclical dependencies
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
-import MarkdownIt from "markdown-it";
 import type { Node } from "prosemirror-model";
 import type { EditorView } from "prosemirror-view";
 import { EditorPlugin } from "./editor-plugin";
@@ -39,14 +38,6 @@ export interface CommonViewOptions {
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
     editorPlugins?: EditorPlugin[];
-    enableMarkdownPreview?: boolean;
-    /**
-     * Function to get the container to place the markdown preview;
-     * defaults to returning this editor's target's parentNode
-     */
-    previewParentContainer?: (view: EditorView) => Element;
-    /** Provide an instance of MarkdownIt for rendering the markdown preview */
-    markdownRenderer?: MarkdownIt;
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */

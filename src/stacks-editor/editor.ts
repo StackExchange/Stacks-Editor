@@ -230,7 +230,8 @@ export class StacksEditor implements View {
 
         // set the editors' preview containers to be the combo container
         const previewContainerFn = () => previewTarget;
-        this.options.previewParentContainer = previewContainerFn;
+        this.options.commonmarkOptions.preview.parentContainer =
+            previewContainerFn;
 
         // create a specific area for the editor plugins
         const pluginTarget = document.createElement("div");
