@@ -10,52 +10,27 @@ import {
 const boldMenuButtonSelector = ".js-bold-btn";
 
 test.describe.serial("markdown mode", () => {
-    let page: Page;
-    test.beforeAll(async ({ browser }) => {
-        page = await browser.newPage();
-        await page.goto("/");
+    test.beforeEach(async ({ page }) => {
+        await page.goto("/empty.html");
         await switchMode(page, true);
     });
-    test.afterAll(async () => {
+    test.afterEach(async ({ page }) => {
         await page.close();
     });
 
-    test("should show toggle switch", async () => {
+    test("should show toggle switch", async ({ page }) => {
         const isMarkdown = await getIsMarkdown(page);
 
         expect(isMarkdown).toBeTruthy();
     });
 
-    test("should render menu bar", async () => {
+    test("should render menu bar", async ({ page }) => {
         await expect(page.locator(menuSelector)).toBeVisible();
     });
 
-    test("should select word on double click", async () => {
-        await clearEditor(page);
-        await typeText(page, "paragraph here.");
-        await page.dblclick(".js-editor code");
-        const selectedText = await page.evaluate(() =>
-            window.getSelection().toString()
-        );
-        expect(selectedText).toEqual("paragraph");
-    });
-
-    test("should select line on triple click", async () => {
-        await clearEditor(page);
-        await typeText(
-            page,
-            "# Heading 1\n\n```\nconsole.log(window);\n```\n\n- list item 1\n- list item 2\n\nparagraph here."
-        );
-        await page.click(".js-editor .hljs-section", { clickCount: 3 });
-        const selectedText = await page.evaluate(() =>
-            window.getSelection().toString()
-        );
-        expect(selectedText).toEqual("# Heading 1\n");
-    });
-
-    test("should not highlight bold menu button after click", async () => {
-        await clearEditor(page);
-
+    test("should not highlight bold menu button after click", async ({
+        page,
+    }) => {
         await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(
             /is-selected/,
             { timeout: 1000 }
@@ -66,4 +41,38 @@ test.describe.serial("markdown mode", () => {
             { timeout: 1000 }
         );
     });
+
+    test("should select word on double click", async ({ page }) => {
+        await typeText(page, "this is a paragraph.", true);
+        await click(page, ".js-editor code >> text=paragraph", 2);
+
+        const selectedText = await page.evaluate(() =>
+            window.getSelection().toString()
+        );
+
+        expect(selectedText).toEqual("paragraph");
+    });
+
+    test("should select line on triple click", async ({ page }) => {
+        await clearEditor(page);
+        await typeText(
+            page,
+            "# Heading 1\n\n```\nconsole.log(window);\n```\n\n- list item 1\n- list item 2\n\nparagraph here."
+        );
+        await click(page, ".js-editor .hljs-section", 3);
+
+        const selectedText = await page.evaluate(() =>
+            window.getSelection().toString()
+        );
+        expect(selectedText).toEqual("# Heading 1");
+    });
 });
+
+/** The scrolling behavior in Page.click causes flakiness, so roll our own */
+async function click(page: Page, selector: string, clickCount: number) {
+    const locator = page.locator(selector);
+    const bb = await locator.boundingBox();
+    await page.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2, {
+        clickCount,
+    });
+}
