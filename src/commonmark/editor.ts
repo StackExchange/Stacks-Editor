@@ -45,7 +45,7 @@ export interface CommonmarkOptions extends CommonViewOptions {
          * Custom renderer instance to use to render the markdown;
          * defaults to the markdown-it instance used by this editor;
          * WARNING: The passed renderer will need to properly sanitize html,
-         * WE DO NOT PROVIDE ANY SANITIZATION FOR CUSTOM RENDERERS
+         * SANITIZATION IS NOT PROVIDED FOR CUSTOM RENDERERS
          */
         renderer?: MarkdownIt;
         /** The number of milliseconds to delay rendering between updates */
