@@ -1,10 +1,11 @@
-import { test, expect, Page } from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import {
     clearEditor,
     getIsMarkdown,
     menuSelector,
     typeText,
     switchMode,
+    clickEditorContent,
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
@@ -44,7 +45,7 @@ test.describe.serial("markdown mode", () => {
 
     test("should select word on double click", async ({ page }) => {
         await typeText(page, "paragraph here", true);
-        await click(page, ".js-editor code >> text=paragraph", 2);
+        await clickEditorContent(page, ".js-editor code >> text=paragraph", 2);
 
         const selectedText = await page.evaluate(() =>
             window.getSelection().toString()
@@ -60,7 +61,7 @@ test.describe.serial("markdown mode", () => {
             page,
             "# Heading 1\n\n```\nconsole.log(window);\n```\n\n- list item 1\n- list item 2\n\nparagraph here."
         );
-        await click(page, ".js-editor .hljs-section", 3);
+        await clickEditorContent(page, ".js-editor .hljs-section", 3);
 
         const selectedText = await page.evaluate(() =>
             window.getSelection().toString()
@@ -70,12 +71,3 @@ test.describe.serial("markdown mode", () => {
         expect(selectedText).toMatch(/^# Heading 1\n?$/);
     });
 });
-
-/** The scrolling behavior in Page.click causes flakiness, so roll our own */
-async function click(page: Page, selector: string, clickCount: number) {
-    const locator = page.locator(selector);
-    const bb = await locator.boundingBox();
-    await page.mouse.click(bb.x + bb.width / 2, bb.y + bb.height / 2, {
-        clickCount,
-    });
-}
