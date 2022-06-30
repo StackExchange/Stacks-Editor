@@ -7,9 +7,16 @@ import { docNodeChanged } from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 import type { CommonmarkOptions } from "../editor";
 
+/**
+ * The amount of time to delay rendering since the last render;
+ * Setting to a high value will result in less frequent renders as users type
+ */
+const PREVIEW_RENDER_DELAY = 1000;
+
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
-    renderer: MarkdownIt;
+    private renderer: MarkdownIt;
+    private renderTimeoutId: number | null = null;
 
     constructor(
         view: EditorView,
@@ -28,7 +35,7 @@ class PreviewView implements PluginView {
                 html: false,
             });
 
-        this.update(view);
+        this.renderPreview(view.state.doc.textContent);
     }
 
     update(view: EditorView, prevState?: EditorState) {
@@ -37,15 +44,30 @@ class PreviewView implements PluginView {
             return;
         }
 
-        // NOTE: This assumes that the renderer is properly sanitizing html;
-        // this is specified in the option docs @see CommonmarkOptions["preview"]
-        // eslint-disable-next-line no-unsanitized/property
-        this.dom.innerHTML = this.renderer.render(view.state.doc.textContent);
-        log("PreviewView.update", "Updated preview");
+        // if there is a render timeout already, clear it (essentially resetting the timeout)
+        if (this.renderTimeoutId) {
+            window.clearTimeout(this.renderTimeoutId);
+        }
+
+        // only render the preview after a delay
+        // this is to prevent too many renders while the user is typing
+        this.renderTimeoutId = window.setTimeout(() => {
+            log("PreviewView.update", "Updated preview");
+            this.renderPreview(view.state.doc.textContent);
+            this.renderTimeoutId = null;
+        }, PREVIEW_RENDER_DELAY);
     }
 
     destroy() {
         this.dom.remove();
+    }
+
+    /** Renders the preview using the passed markdown text */
+    private renderPreview(text: string) {
+        // NOTE: This assumes that the renderer is properly sanitizing html;
+        // this is specified in the option docs @see CommonmarkOptions["preview"]
+        // eslint-disable-next-line no-unsanitized/property
+        this.dom.innerHTML = this.renderer.render(text);
     }
 }
 
@@ -69,6 +91,7 @@ export function createPreviewPlugin(
                 parserFeatures,
                 previewOptions?.renderer
             );
+
             const containerFn =
                 previewOptions?.parentContainer ||
                 function (v) {
