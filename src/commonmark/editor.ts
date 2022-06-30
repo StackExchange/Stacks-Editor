@@ -48,6 +48,8 @@ export interface CommonmarkOptions extends CommonViewOptions {
          * WE DO NOT PROVIDE ANY SANITIZATION FOR CUSTOM RENDERERS
          */
         renderer?: MarkdownIt;
+        /** The number of milliseconds to delay rendering between updates */
+        renderDelayMs?: number;
     };
 }
 

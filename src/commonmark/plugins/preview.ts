@@ -11,29 +11,33 @@ import type { CommonmarkOptions } from "../editor";
  * The amount of time to delay rendering since the last render;
  * Setting to a high value will result in less frequent renders as users type
  */
-const PREVIEW_RENDER_DELAY = 1000;
+const DEFAULT_RENDER_DELAY_MS = 1000;
 
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
     private renderer: MarkdownIt;
     private renderTimeoutId: number | null = null;
+    private renderDelayMs: number;
 
     constructor(
         view: EditorView,
         parserFeatures: CommonmarkParserFeatures,
-        markdownIt?: MarkdownIt
+        previewOptions: CommonmarkOptions["preview"]
     ) {
         this.dom = document.createElement("div");
         this.dom.classList.add("s-prose", "js-md-preview");
         // TODO pass down the ExternalPluginProvider as well
         this.renderer =
-            markdownIt ||
+            previewOptions?.renderer ||
             createDefaultMarkdownItInstance({
                 ...parserFeatures,
                 // TODO until we handle proper html sanitizing in the renderer,
                 // we need to disable html entirely...
                 html: false,
             });
+
+        this.renderDelayMs =
+            previewOptions?.renderDelayMs || DEFAULT_RENDER_DELAY_MS;
 
         this.renderPreview(view.state.doc.textContent);
     }
@@ -49,13 +53,21 @@ class PreviewView implements PluginView {
             window.clearTimeout(this.renderTimeoutId);
         }
 
-        // only render the preview after a delay
-        // this is to prevent too many renders while the user is typing
-        this.renderTimeoutId = window.setTimeout(() => {
-            log("PreviewView.update", "Updated preview");
-            this.renderPreview(view.state.doc.textContent);
-            this.renderTimeoutId = null;
-        }, PREVIEW_RENDER_DELAY);
+        const text = view.state.doc.textContent;
+
+        if (this.renderDelayMs) {
+            // only render the preview after a delay
+            // this is to prevent too many renders while the user is typing
+            this.renderTimeoutId = window.setTimeout(() => {
+                this.renderPreview(text);
+                this.renderTimeoutId = null;
+            }, this.renderDelayMs);
+        } else {
+            // if there is no delay, just render
+            // there's typically no harm in setting a timeout with 0ms delay,
+            // but running immediately without deferring execution is easier to unit test
+            this.renderPreview(text);
+        }
     }
 
     destroy() {
@@ -64,6 +76,7 @@ class PreviewView implements PluginView {
 
     /** Renders the preview using the passed markdown text */
     private renderPreview(text: string) {
+        log("PreviewView.update", "Updated preview");
         // NOTE: This assumes that the renderer is properly sanitizing html;
         // this is specified in the option docs @see CommonmarkOptions["preview"]
         // eslint-disable-next-line no-unsanitized/property
@@ -89,7 +102,7 @@ export function createPreviewPlugin(
             const previewView = new PreviewView(
                 editorView,
                 parserFeatures,
-                previewOptions?.renderer
+                previewOptions
             );
 
             const containerFn =
