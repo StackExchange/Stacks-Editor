@@ -5,7 +5,6 @@ import {
     getIsMarkdown,
     menuSelector,
     switchMode,
-    typeText,
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
