@@ -1,14 +1,12 @@
 import { test, expect, Page } from "@playwright/test";
 import {
     clearEditor,
-    enterTextAsMarkdown,
     getIsMarkdown,
     menuSelector,
     switchMode,
 } from "../e2e-helpers";
 
 const boldMenuButtonSelector = ".js-bold-btn";
-const mdPreviewSelector = ".js-md-preview";
 
 test.describe.serial("markdown mode", () => {
     let page: Page;
@@ -43,37 +41,5 @@ test.describe.serial("markdown mode", () => {
             /is-selected/,
             { timeout: 1000 }
         );
-    });
-
-    test("shouldn't show preview by default", async () => {
-        await expect(page.locator(mdPreviewSelector)).toBeHidden({
-            timeout: 1000,
-        });
-    });
-
-    test("should render markdown preview", async () => {
-        await page.goto("/md-preview.html");
-
-        expect(
-            await page.$eval(mdPreviewSelector, (el) =>
-                el.innerHTML.includes("<h1>Here’s a thought</h1>")
-            )
-        ).toBeTruthy();
-    });
-    test("should update the markdown preview on change", async () => {
-        await page.goto("/md-preview.html");
-        await enterTextAsMarkdown(
-            page,
-            "![an image](https://localhost/some-image)"
-        );
-        await switchMode(page, true);
-
-        expect(
-            await page.$eval(mdPreviewSelector, (el) =>
-                el.innerHTML.includes(
-                    '<img src="https://localhost/some-image" alt="an image">'
-                )
-            )
-        ).toBeTruthy();
     });
 });
