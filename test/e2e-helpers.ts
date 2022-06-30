@@ -42,3 +42,15 @@ export async function typeText(
         ? await page.type(editorSelector, text)
         : await page.fill(editorSelector, text);
 }
+
+/**
+ * Clears the editor, switches to markdown mode, types the text as markdown and switches to rich text mode
+ * @param page The page to use
+ * @param text The text to type
+ */
+export async function enterTextAsMarkdown(page: Page, text: string) {
+    await clearEditor(page);
+    await switchMode(page, true);
+    await typeText(page, text);
+    await switchMode(page, false);
+}
