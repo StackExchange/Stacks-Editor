@@ -8,6 +8,7 @@ const miniSchema = new Schema({
     nodes: {
         doc: richTextSchemaSpec.nodes.doc,
         text: richTextSchemaSpec.nodes.text,
+        paragraph: richTextSchemaSpec.nodes.paragraph,
         code_block: richTextSchemaSpec.nodes.code_block,
     },
 });

@@ -271,6 +271,29 @@ describe("code-paste-handler", () => {
             }
         );
 
+        // Commonmark
+        it.each(nonCodeTextData)(
+            "should handle pasting non-code html (%#) into commonmark editor",
+            (text) => {
+                let state = createState("<p></p>", [
+                    commonmarkCodePasteHandler,
+                ]);
+                state = applySelection(state, 0);
+
+                const view = createView(state);
+
+                dispatchPasteEvent(view.dom, {
+                    "text/plain": text,
+                    "text/html": text,
+                });
+
+                // html serializing ignores the whitespace, so check the textContent without it
+                expect(view.state.doc.textContent).toBe(
+                    text.trim().replace("\t", " ")
+                );
+            }
+        );
+
         it.each(codeTextData)(
             "should handle pasting code text (%#) into commonmark editor",
             (text) => {
