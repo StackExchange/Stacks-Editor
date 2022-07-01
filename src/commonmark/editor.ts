@@ -6,6 +6,7 @@ import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
 import { createMenuPlugin } from "../shared/menu";
+import { createPreviewPlugin } from "./plugins/preview";
 import { commonmarkCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import {
     commonmarkImageUpload,
@@ -29,8 +30,29 @@ import {
 import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
+import type MarkdownIt from "markdown-it";
 
-export type CommonmarkOptions = CommonViewOptions;
+export interface CommonmarkOptions extends CommonViewOptions {
+    /** Settings for showing a static rendered preview of the editor's contents */
+    preview?: {
+        /** Whether the preview is enabled */
+        enabled: boolean;
+        /**
+         * Function to get the container to place the markdown preview;
+         * defaults to returning this editor's target's parentNode
+         */
+        parentContainer?: (view: EditorView) => Element;
+        /**
+         * Custom renderer instance to use to render the markdown;
+         * defaults to the markdown-it instance used by this editor;
+         * WARNING: The passed renderer will need to properly sanitize html,
+         * SANITIZATION IS NOT PROVIDED FOR CUSTOM RENDERERS
+         */
+        renderer?: MarkdownIt;
+        /** The number of milliseconds to delay rendering between updates */
+        renderDelayMs?: number;
+    };
+}
 
 export class CommonmarkEditor extends BaseView {
     private options: CommonmarkOptions;
@@ -68,6 +90,10 @@ export class CommonmarkEditor extends BaseView {
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
                         menu,
+                        createPreviewPlugin(
+                            this.options.preview,
+                            this.options.parserFeatures
+                        ),
                         CodeBlockHighlightPlugin(null),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
@@ -102,6 +128,11 @@ export class CommonmarkEditor extends BaseView {
             placeholderText: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,
+            },
+            preview: {
+                enabled: false,
+                parentContainer: null,
+                renderer: null,
             },
         };
     }
