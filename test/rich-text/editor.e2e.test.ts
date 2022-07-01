@@ -77,6 +77,7 @@ test.describe.serial("rich-text mode", () => {
             { timeout: 1000 }
         );
 
-        expect(await getMarkdownContent(page)).toEqual("# plain text");
+        // In some browsers (webkit at least), the markdown content includes the trailing newline
+        expect(await getMarkdownContent(page)).toMatch(/^# plain text\n?$/);
     });
 });
