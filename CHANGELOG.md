@@ -2,6 +2,24 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.6.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.5.1...v0.6.0) (2022-07-01)
+
+
+### Features
+
+* **commonmark-editor:** add basic static markdown preview support ([#146](https://github.com/StackExchange/Stacks-Editor/issues/146)) ([bb9f862](https://github.com/StackExchange/Stacks-Editor/commit/bb9f8626648109e2187626a17ed85e807fb43956)), closes [#115](https://github.com/StackExchange/Stacks-Editor/issues/115)
+* **commonmark-editor:** change copy behavior of commonmark content to be plain text instead of code ([485855d](https://github.com/StackExchange/Stacks-Editor/commit/485855db6ee8cda48f267a48cbaf6da2f4cde5b8))
+* **commonmark-editor:** detect and format pasted code like rich-text mode ([#147](https://github.com/StackExchange/Stacks-Editor/issues/147)) ([9d9841a](https://github.com/StackExchange/Stacks-Editor/commit/9d9841a9ee4dff30d7bc19196095c16517ed50e8)), closes [#135](https://github.com/StackExchange/Stacks-Editor/issues/135)
+* **editor-plugin:** add external plugin support ([#141](https://github.com/StackExchange/Stacks-Editor/issues/141)) ([aca011f](https://github.com/StackExchange/Stacks-Editor/commit/aca011f58d48c35bdf836ac9ff5f29f8af84eaf7))
+* **link-editor:** change link editor from a popover to a plugin pane ([#142](https://github.com/StackExchange/Stacks-Editor/issues/142)) ([3e4c847](https://github.com/StackExchange/Stacks-Editor/commit/3e4c84777c9ace43c2a83494a6071f6ceae389a6)), closes [#19](https://github.com/StackExchange/Stacks-Editor/issues/19)
+
+
+### Bug Fixes
+
+* **commonmark-editor:** fix commonmark editor treating all pasted html content as code ([6dc4556](https://github.com/StackExchange/Stacks-Editor/commit/6dc4556353fea70b340986381e58381c0ddaa105))
+* **commonmark-editor:** only select current paragraph on triple click ([#128](https://github.com/StackExchange/Stacks-Editor/issues/128)) ([7f1fa6c](https://github.com/StackExchange/Stacks-Editor/commit/7f1fa6cbeb12bf1a0ac2c9f476d82b6c5fe1b871)), closes [#27](https://github.com/StackExchange/Stacks-Editor/issues/27)
+* **commonmark-editor:** prevent placeholder clipping ([#144](https://github.com/StackExchange/Stacks-Editor/issues/144)) ([a3d0669](https://github.com/StackExchange/Stacks-Editor/commit/a3d0669a01d702c5c08e198ca80690a16f720f57))
+
 ### [0.5.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.5.0...v0.5.1) (2022-06-16)
 
 
