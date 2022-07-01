@@ -1,15 +1,11 @@
 import { EditorState, Plugin } from "prosemirror-state";
-import { EditorView } from "prosemirror-view";
 import { createPreviewPlugin } from "../../../src/commonmark/plugins/preview";
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { CodeStringParser } from "../../../src/shared/schema";
 import { createView } from "../../rich-text/test-helpers";
 
 // TODO add to test-helpers
-/**
- * Creates a state with the content optionally selected if selectFrom/To are passed
- * @param content the document content
- */
+/** Creates a bare commonmark state with only the passed plugins enabled */
 function createState(content: string, plugins: Plugin[]): EditorState {
     const doc =
         CodeStringParser.fromSchema(commonmarkSchema).parseCode(content);
@@ -23,7 +19,6 @@ function createState(content: string, plugins: Plugin[]): EditorState {
 
 describe("preview plugin", () => {
     let pluginContainer: Element;
-    let view: EditorView;
 
     it.each([
         {
@@ -54,11 +49,15 @@ describe("preview plugin", () => {
                 {}
             ),
         ]);
-        view = createView(state);
+
+        createView(state);
 
         const previewHTML =
             pluginContainer.querySelector(".js-md-preview").innerHTML;
 
         expect(previewHTML).toBe(expectedPreview);
     });
+
+    it.todo("should update the preview when the content changes");
+    it.todo("should delay the preview update each time the content changes");
 });
