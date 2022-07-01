@@ -1,21 +1,6 @@
-import { EditorState, Plugin } from "prosemirror-state";
 import { createPreviewPlugin } from "../../../src/commonmark/plugins/preview";
-import { commonmarkSchema } from "../../../src/commonmark/schema";
-import { CodeStringParser } from "../../../src/shared/schema";
 import { createView } from "../../rich-text/test-helpers";
-
-// TODO add to test-helpers
-/** Creates a bare commonmark state with only the passed plugins enabled */
-function createState(content: string, plugins: Plugin[]): EditorState {
-    const doc =
-        CodeStringParser.fromSchema(commonmarkSchema).parseCode(content);
-
-    return EditorState.create({
-        doc: doc,
-        plugins: plugins,
-        schema: commonmarkSchema,
-    });
-}
+import { createState } from "../test-helpers";
 
 describe("preview plugin", () => {
     let pluginContainer: Element;

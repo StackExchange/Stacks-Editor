@@ -31,6 +31,7 @@ import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
 import type MarkdownIt from "markdown-it";
+import { textCopyHandlerPlugin } from "./plugins/text-copy-handler";
 
 export interface CommonmarkOptions extends CommonViewOptions {
     /** Settings for showing a static rendered preview of the editor's contents */
@@ -106,6 +107,7 @@ export class CommonmarkEditor extends BaseView {
                         readonlyPlugin(),
                         tripleClickHandler,
                         commonmarkCodePasteHandler,
+                        textCopyHandlerPlugin,
                         ...pluginProvider.plugins.commonmark,
                     ],
                 }),
