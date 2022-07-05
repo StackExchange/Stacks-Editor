@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.6.0...v0.6.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* **options:** fix crash on startup when `preview` option is unset ([c692e17](https://github.com/StackExchange/Stacks-Editor/commit/c692e17aaa26ad0a1a7626f33617a2f9f4ac88ed)), closes [#149](https://github.com/StackExchange/Stacks-Editor/issues/149)
+
 ## [0.6.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.5.1...v0.6.0) (2022-07-01)
 
 
