@@ -147,6 +147,9 @@ export class StacksEditor implements View {
             parserFeatures: RichTextEditor.defaultOptions.parserFeatures,
             commonmarkOptions: {
                 classList: commonClasses,
+                preview: {
+                    enabled: false,
+                },
             },
             richTextOptions: {
                 classList: commonClasses,
