@@ -317,6 +317,8 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
     // TODO
     html_block(state, node) {
         state.write(node.attrs.content);
+        state.ensureNewLine();
+        state.write("\n");
     },
 
     // TODO
