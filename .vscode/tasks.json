@@ -1,0 +1,10 @@
+{
+    "version": "2.0.0",
+    "tasks": [{
+        "label": "serve",
+        "type": "shell",
+        "command": "webpack serve --env SUPPRESS_OPEN=1 --config config/webpack.dev.js",
+        "problemMatcher": [],
+        "isBackground": true,
+    }]
+}

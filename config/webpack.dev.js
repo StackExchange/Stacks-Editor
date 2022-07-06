@@ -30,7 +30,7 @@ module.exports = (env, argv) => {
                 ],
             },
             devServer: {
-                open: true,
+                open: env.SUPPRESS_OPEN != undefined ? false : true,
                 host:
                     // set the host to 0.0.0.0 by default so we can preview the demo on other devices in the same network
                     // NOTE: 0.0.0.0 doesn't work on Windows machines, so settle for localhost instead
