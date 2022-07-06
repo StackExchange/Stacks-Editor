@@ -33,6 +33,7 @@ import {
     removeRowCommand,
 } from "./tables";
 import { _t } from "../../shared/localization";
+import { insertRawTextCommand } from "../../commonmark/commands";
 
 export * from "./tables";
 
@@ -140,6 +141,31 @@ function getHeadingLevel(state: EditorState): number {
     });
 
     return level;
+}
+
+export function insertTagCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+): boolean {
+    if (inTable(state.schema, state.selection) || state.selection.empty) {
+        return false;
+    }
+
+    if (!dispatch) {
+        return true;
+    }
+
+    const selectedText =
+        state.selection.content().content.firstChild?.textContent;
+
+    const test = state.schema.nodes.tagLink.create({ tagName: selectedText });
+
+    let tr = state.tr;
+    tr = state.tr.replaceSelectionWith(test);
+
+    dispatch(tr);
+
+    return true;
 }
 
 export function insertHorizontalRuleCommand(
@@ -436,6 +462,16 @@ export const createMenuEntries = (
             "bold-btn"
         ),
         active: markActive(schema.marks.strong),
+    },
+    {
+        key: "insertTag",
+        command: insertTagCommand,
+        dom: makeMenuIcon(
+            "Tag",
+            _t("commands.tag", { shortcut: getShortcut("Ctrl-[") }),
+            "tag-btn"
+        ),
+        active: nodeTypeActive(schema.nodes.text),
     },
     {
         key: "toggleEmphasis",

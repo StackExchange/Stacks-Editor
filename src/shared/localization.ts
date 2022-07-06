@@ -19,6 +19,7 @@ export const defaultStrings = {
         bold: shortcut("Bold"),
         code_block: shortcut("Code block"),
         emphasis: shortcut("Italic"),
+        tag: shortcut("Tag"),
         heading: {
             dropdown: shortcut("Heading"),
             entry: ({ level }: { level: number }) => `Heading ${level}`,
