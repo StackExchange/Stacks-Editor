@@ -471,6 +471,27 @@ const overflowDropdown = (schema: Schema) =>
             "tag-btn",
             nodeTypeActive(schema.nodes.tagLink),
             ["fs-body1", "mt8"]
+        ),
+        dropdownItem(
+            _t("commands.spoiler", { shortcut: getShortcut("Mod-]") }),
+            toggleWrapIn(schema.nodes.spoiler),
+            "spoiler-btn",
+            nodeTypeActive(schema.nodes.spoiler),
+            ["fs-body1", "mt8"]
+        ),
+        dropdownItem(
+            _t("commands.sub", { shortcut: getShortcut("Mod-;") }),
+            toggleMark(schema.marks.sub),
+            "subscript-btn",
+            nodeTypeActive(schema.nodes.sub),
+            ["fs-body1", "mt8"]
+        ),
+        dropdownItem(
+            _t("commands.sup", { shortcut: getShortcut("Mod-:") }),
+            toggleMark(schema.marks.sup),
+            "superscript-btn",
+            nodeTypeActive(schema.nodes.sub),
+            ["fs-body1", "mt8"]
         )
     );
 
@@ -581,16 +602,6 @@ export const createMenuEntries = (
     ),
     overflowDropdown(schema),
     addIf(tableDropdown(), options.parserFeatures.tables),
-    // {
-    //     key: "toggleTag",
-    //     command: toggleTagCommand,
-    //     dom: makeMenuIcon(
-    //         "Tag",
-    //         _t("commands.tag", { shortcut: getShortcut("Ctrl-[") }),
-    //         "tag-btn"
-    //     ),
-    //     active: nodeTypeActive(schema.nodes.tagLink),
-    // },
     makeMenuSpacerEntry(),
     {
         key: "toggleOrderedList",

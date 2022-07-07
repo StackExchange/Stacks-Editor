@@ -29,6 +29,7 @@ import {
     insertTableCommand,
     exitInclusiveMarkCommand,
     toggleHeadingLevel,
+    toggleTagCommand,
 } from "./commands";
 
 export function allKeymaps(
@@ -70,6 +71,11 @@ export function allKeymaps(
         ...bindLetterKeymap("Mod-h", toggleHeadingLevel()),
         ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
+        ...bindLetterKeymap("Mod-[", toggleTagCommand),
+        ...bindLetterKeymap("Mod-]", wrapIn(schema.nodes.spoiler)),
+        ...bindLetterKeymap("Mod-;", toggleMark(schema.marks.sub)),
+        ...bindLetterKeymap("Mod-:", toggleMark(schema.marks.sup)),
+
         // users expect to be able to leave certain blocks/marks using the arrow keys
         "ArrowRight": exitInclusiveMarkCommand,
         "ArrowDown": exitCode,

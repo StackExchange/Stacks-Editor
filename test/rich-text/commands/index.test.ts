@@ -3,6 +3,7 @@ import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
     toggleHeadingLevel,
+    toggleTagCommand,
 } from "../../../src/rich-text/commands";
 import {
     applySelection,
@@ -214,15 +215,15 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeFalsy();
-            let constainsHr = false;
+            let containsTagLink = false;
 
             newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
-                constainsHr = node.type.name === "horizontal_rule";
+                containsTagLink = node.type.name === "horizontal_rule";
 
-                return !constainsHr;
+                return !containsTagLink;
             });
 
-            expect(constainsHr).toBeFalsy();
+            expect(containsTagLink).toBeFalsy();
         });
         it("should add paragraph after when inserted at the end of the doc", () => {
             let state = createState("asdf", []);
@@ -390,6 +391,62 @@ describe("commands", () => {
         });
     });
 
+    describe("toggleTagCommand", () => {
+        it("should not insert with no text selected", () => {
+            const state = createState("", []);
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagCommand
+            );
+
+            expect(isValid).toBeFalsy();
+            let containsTagLink = false;
+
+            newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
+                containsTagLink = node.type.name === "tagLink";
+
+                return !containsTagLink;
+            });
+
+            expect(containsTagLink).toBeFalsy();
+        });
+        it("should replace selected text with tagLink", () => {
+            let state = createState("this is my state", []);
+
+            state = applySelection(state, 5, 7); //"is"
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagCommand
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "this ",
+                            },
+                            {
+                                "type.name": "tagLink",
+                            },
+                            {
+                                isText: true,
+                                text: " my state",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+    });
+
     describe("exitMarkCommand", () => {
         it("all exitable marks should also be inclusive: true", () => {
             Object.keys(testRichTextSchema.marks).forEach((markName) => {
@@ -412,6 +469,8 @@ describe("commands", () => {
         it.each([
             [`middle of some text`, false],
             [`<em>cannot exit emphasis from anywhere</em>`, true],
+            [`<sup>cannot exit emphasis from anywhere</sup>`, true],
+            [`<sub>cannot exit emphasis from anywhere</sub>`, true],
             [`<code>cannot exit code from middle</code>`, false],
         ])("should not exit unexitable marks", (input, positionCursorAtEnd) => {
             let state = createState(input, []);
