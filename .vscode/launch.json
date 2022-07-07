@@ -5,7 +5,7 @@
     "version": "0.2.0",
     "configurations": [{
         "name": "Launch Chrome",
-        "type": "chrome",
+        "type": "pwa-chrome",
         "request": "launch",
         "url": "http://localhost:8080",
         "preLaunchTask": "serve",
