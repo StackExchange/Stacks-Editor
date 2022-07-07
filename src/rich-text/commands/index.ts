@@ -143,11 +143,11 @@ function getHeadingLevel(state: EditorState): number {
     return level;
 }
 
-export function insertTagCommand(
+export function toggleTagCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (inTable(state.schema, state.selection) || state.selection.empty) {
+    if (state.selection.empty) {
         return false;
     }
 
@@ -155,13 +155,24 @@ export function insertTagCommand(
         return true;
     }
 
-    const selectedText =
-        state.selection.content().content.firstChild?.textContent;
-
-    const test = state.schema.nodes.tagLink.create({ tagName: selectedText });
-
     let tr = state.tr;
-    tr = state.tr.replaceSelectionWith(test);
+    const nodeCheck = nodeTypeActive(state.schema.nodes.tagLink);
+    if (nodeCheck(state)) {
+        const selectedText = state.selection.content().content.firstChild.attrs[
+            "tagName"
+        ] as string;
+
+        tr = state.tr.replaceSelectionWith(state.schema.text(selectedText));
+    } else {
+        const selectedText =
+            state.selection.content().content.firstChild?.textContent;
+
+        const newTagNode = state.schema.nodes.tagLink.create({
+            tagName: selectedText,
+        });
+
+        tr = state.tr.replaceSelectionWith(newTagNode);
+    }
 
     dispatch(tr);
 
@@ -448,6 +459,22 @@ const headingDropdown = (schema: Schema) =>
         )
     );
 
+const overflowDropdown = (schema: Schema) =>
+    makeMenuDropdown(
+        "Overflow",
+        _t("commands.overflow"),
+        "overflow-dropdown",
+        () => true,
+        null,
+        dropdownItem(
+            _t("commands.tag", { level: 1 }),
+            toggleTagCommand,
+            "tag-btn",
+            nodeTypeActive(schema.nodes.tagLink),
+            ["fs-body3", "mt8"]
+        )
+    );
+
 export const createMenuEntries = (
     schema: Schema,
     options: CommonViewOptions
@@ -462,16 +489,6 @@ export const createMenuEntries = (
             "bold-btn"
         ),
         active: markActive(schema.marks.strong),
-    },
-    {
-        key: "insertTag",
-        command: insertTagCommand,
-        dom: makeMenuIcon(
-            "Tag",
-            _t("commands.tag", { shortcut: getShortcut("Ctrl-[") }),
-            "tag-btn"
-        ),
-        active: nodeTypeActive(schema.nodes.text),
     },
     {
         key: "toggleEmphasis",
@@ -493,6 +510,7 @@ export const createMenuEntries = (
         ),
         active: markActive(schema.marks.code),
     },
+
     addIf(
         {
             key: "toggleStrike",
@@ -562,7 +580,18 @@ export const createMenuEntries = (
         },
         options.parserFeatures.tables
     ),
+    overflowDropdown(schema),
     addIf(tableDropdown(), options.parserFeatures.tables),
+    // {
+    //     key: "toggleTag",
+    //     command: toggleTagCommand,
+    //     dom: makeMenuIcon(
+    //         "Tag",
+    //         _t("commands.tag", { shortcut: getShortcut("Ctrl-[") }),
+    //         "tag-btn"
+    //     ),
+    //     active: nodeTypeActive(schema.nodes.tagLink),
+    // },
     makeMenuSpacerEntry(),
     {
         key: "toggleOrderedList",

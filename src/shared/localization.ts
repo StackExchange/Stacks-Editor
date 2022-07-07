@@ -20,6 +20,7 @@ export const defaultStrings = {
         code_block: shortcut("Code block"),
         emphasis: shortcut("Italic"),
         tag: shortcut("Tag"),
+        overflow: shortcut("Overflow"),
         heading: {
             dropdown: shortcut("Heading"),
             entry: ({ level }: { level: number }) => `Heading ${level}`,
