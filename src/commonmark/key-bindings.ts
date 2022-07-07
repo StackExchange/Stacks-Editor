@@ -20,7 +20,6 @@ import type { CommonmarkParserFeatures } from "../shared/view";
 import { baseKeymap } from "prosemirror-commands";
 import type { Plugin } from "prosemirror-state";
 import { bindLetterKeymap } from "../shared/utils";
-import { toggleTagCommand } from "../rich-text/commands";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
     const commonmarkKeymap = keymap({
@@ -43,7 +42,6 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         ...bindLetterKeymap("Mod-m", insertCodeblockCommand),
         // selectAll selects the outermost node and messes up our other commands
         ...bindLetterKeymap("Mod-a", selectAllTextCommand),
-        ...bindLetterKeymap("Ctrl-[", toggleTagCommand),
     });
 
     const tableKeymap = keymap({
