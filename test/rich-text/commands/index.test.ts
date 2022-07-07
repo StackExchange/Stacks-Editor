@@ -215,15 +215,15 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeFalsy();
-            let containsTagLink = false;
+            let containsHr = false;
 
             newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
-                containsTagLink = node.type.name === "horizontal_rule";
+                containsHr = node.type.name === "horizontal_rule";
 
-                return !containsTagLink;
+                return !containsHr;
             });
 
-            expect(containsTagLink).toBeFalsy();
+            expect(containsHr).toBeFalsy();
         });
         it("should add paragraph after when inserted at the end of the doc", () => {
             let state = createState("asdf", []);

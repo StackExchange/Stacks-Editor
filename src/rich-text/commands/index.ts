@@ -464,7 +464,7 @@ const overflowDropdown = (schema: Schema) =>
         _t("commands.overflow"),
         "overflow-dropdown",
         () => true,
-        null,
+        () => false,
         dropdownItem(
             _t("commands.tag", { shortcut: getShortcut("Mod-[") }),
             toggleTagCommand,
@@ -483,14 +483,14 @@ const overflowDropdown = (schema: Schema) =>
             _t("commands.sub", { shortcut: getShortcut("Mod-;") }),
             toggleMark(schema.marks.sub),
             "subscript-btn",
-            nodeTypeActive(schema.nodes.sub),
+            markActive(schema.marks.sub),
             ["fs-body1", "mt8"]
         ),
         dropdownItem(
             _t("commands.sup", { shortcut: getShortcut("Mod-:") }),
             toggleMark(schema.marks.sup),
             "superscript-btn",
-            nodeTypeActive(schema.nodes.sub),
+            markActive(schema.marks.sup),
             ["fs-body1", "mt8"]
         )
     );
