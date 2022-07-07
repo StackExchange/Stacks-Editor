@@ -22,6 +22,7 @@
         "print-stats": "webpack --config config/webpack.prod.js --profile --json > stats.json",
         "lint:eslint": "eslint .",
         "lint:prettier": "prettier --check . --end-of-line auto",
+        "lint:prettier:fix": "prettier --check . --end-of-line auto --write",
         "release": "standard-version",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
         "prepare": "husky install"
