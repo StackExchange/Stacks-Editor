@@ -144,7 +144,7 @@ function sanitizeCodeBlockLangs(state: State) {
 }
 
 /**
- * Parses out `<!-- language: lang-* -->` and `<!-- langauge-all -->` comments and applies to the targeted code_block tokens
+ * Parses out `<!-- language: lang-* -->` and `<!-- language-all -->` comments and applies to the targeted code_block tokens
  * @param md
  */
 export function stackLanguageComments(md: MarkdownIt): void {

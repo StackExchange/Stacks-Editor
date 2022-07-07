@@ -52,7 +52,7 @@ type Language =
  * A mapping of all known language aliases to their proper definition name
  * @see https://meta.stackexchange.com/questions/184108/what-is-syntax-highlighting-and-how-does-it-work
  */
-const languageAliaises: { [key: string]: string } = {
+const languageAliases: { [key: string]: string } = {
     bsh: "bash", csh: "bash", sh: "bash",
     // TODO is cpp appropriate or is there a better c-like?
     c: "cpp", cc: "cpp", cxx: "cpp", cyc: "cpp", m: "cpp",
@@ -80,8 +80,8 @@ const languageAliaises: { [key: string]: string } = {
  * Attempts to dealias a language's name into a name we can load/register under
  * @param rawLanguage
  */
-function dealiasLangauge(rawLanguage: string): Language {
-    return (languageAliaises[rawLanguage] || rawLanguage) as Language;
+function dealiasLanguage(rawLanguage: string): Language {
+    return (languageAliases[rawLanguage] || rawLanguage) as Language;
 }
 
 /**
@@ -100,7 +100,7 @@ export function getBlockLanguage(
         rawInfoString.split(/\s/)[0].toLowerCase() || fallback || null;
 
     // attempt to dealias the language before sending out to the highlighter
-    return dealiasLangauge(rawLanguage);
+    return dealiasLanguage(rawLanguage);
 }
 
 /**

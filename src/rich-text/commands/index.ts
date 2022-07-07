@@ -247,7 +247,7 @@ export function insertLinkCommand(
 }
 
 /**
- * Creates an `active` method that returns true of the current selection is/contained in the current block type
+ * Creates an `active` method that returns true if the current selection is/contained in the current block type
  * @param nodeType The type of the node to check for
  * @param attrs? A key-value map of attributes that must be present on this node
  */

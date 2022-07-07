@@ -27,7 +27,7 @@ function dispatchInputAsync(view: EditorView, inputStr: string) {
     }
 
     // TODO HACK
-    // the above is triggered asyncronously via a dom observer,
+    // the above is triggered asynchronously via a dom observer,
     // so defer execution so it can finish and update the state
     return sleepAsync(0);
 }
