@@ -793,17 +793,17 @@ export function richTextImageUpload(
 
             const marks =
                 uploadOptions.wrapImagesInLinks ||
-                    uploadOptions.embedImagesAsLinks
+                uploadOptions.embedImagesAsLinks
                     ? [schema.marks.link.create({ href: url })]
                     : null;
 
             const imgNode = uploadOptions.embedImagesAsLinks
                 ? schema.text(defaultAltText, marks)
                 : schema.nodes.image.create(
-                    { src: url, alt: defaultAltText },
-                    null,
-                    marks
-                );
+                      { src: url, alt: defaultAltText },
+                      null,
+                      marks
+                  );
 
             return state.tr.replaceWith(pos, pos, imgNode);
         }

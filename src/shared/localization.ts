@@ -2,9 +2,9 @@ import type { PartialDeep } from "./utils";
 
 type Strings = {
     [key: string]:
-    | string
-    | ((params: Record<string, unknown>) => string)
-    | Strings;
+        | string
+        | ((params: Record<string, unknown>) => string)
+        | Strings;
 };
 
 /** Curried helper method that wraps a i18n method for menu entries w/ shortcuts */
