@@ -90,7 +90,7 @@ test.describe.serial("rich-text inputrules", () => {
         // invalid followed by valid
         ["__nope_ _match_", 1],
         ["**nope* *match*", 1],
-        // invalid, folled by valid, but duplicate text
+        // invalid, followed by valid, but duplicate text
         ["__test_ _test_", 1],
         ["**test* *test*", 1],
         // no match

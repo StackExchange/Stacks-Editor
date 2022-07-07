@@ -247,7 +247,7 @@ export function insertLinkCommand(
 }
 
 /**
- * Creates an `active` method that returns true of the current selection is/contained in the current block type
+ * Creates an `active` method that returns true if the current selection is/contained in the current block type
  * @param nodeType The type of the node to check for
  * @param attrs? A key-value map of attributes that must be present on this node
  */
@@ -426,161 +426,161 @@ export const createMenuEntries = (
     schema: Schema,
     options: CommonViewOptions
 ): MenuCommandEntry[] => [
-    headingDropdown(schema),
-    {
-        key: "toggleBold",
-        command: toggleMark(schema.marks.strong),
-        dom: makeMenuIcon(
-            "Bold",
-            _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
-            "bold-btn"
-        ),
-        active: markActive(schema.marks.strong),
-    },
-    {
-        key: "toggleEmphasis",
-        command: toggleMark(schema.marks.em),
-        dom: makeMenuIcon(
-            "Italic",
-            _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
-            "italic-btn"
-        ),
-        active: markActive(schema.marks.em),
-    },
-    {
-        key: "toggleCode",
-        command: toggleMark(schema.marks.code),
-        dom: makeMenuIcon(
-            "Code",
-            _t("commands.inline_code", { shortcut: getShortcut("Mod-k") }),
-            "code-btn"
-        ),
-        active: markActive(schema.marks.code),
-    },
-    addIf(
+        headingDropdown(schema),
         {
-            key: "toggleStrike",
-            command: toggleMark(schema.marks.strike),
+            key: "toggleBold",
+            command: toggleMark(schema.marks.strong),
             dom: makeMenuIcon(
-                "Strikethrough",
-                _t("commands.strikethrough"),
-                "strike-btn"
+                "Bold",
+                _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
+                "bold-btn"
             ),
-            active: markActive(schema.marks.strike),
+            active: markActive(schema.marks.strong),
         },
-        options.parserFeatures.extraEmphasis
-    ),
-    makeMenuSpacerEntry(),
-    {
-        key: "toggleLink",
-        command: insertLinkCommand,
-        dom: makeMenuIcon(
-            "Link",
-            _t("commands.link", { shortcut: getShortcut("Mod-l") }),
-            "insert-link-btn"
-        ),
-    },
-    {
-        key: "toggleBlockquote",
-        command: toggleWrapIn(schema.nodes.blockquote),
-        dom: makeMenuIcon(
-            "Quote",
-            _t("commands.blockquote", { shortcut: getShortcut("Mod-q") }),
-            "blockquote-btn"
-        ),
-        active: nodeTypeActive(schema.nodes.blockquote),
-    },
-    {
-        key: "toggleCodeblock",
-        command: toggleBlockType(schema.nodes.code_block),
-        dom: makeMenuIcon(
-            "Codeblock",
-            _t("commands.code_block", { shortcut: getShortcut("Mod-m") }),
-            "code-block-btn"
-        ),
-        active: nodeTypeActive(schema.nodes.code_block),
-    },
-    addIf(
         {
-            key: "insertImage",
-            command: insertImageCommand,
+            key: "toggleEmphasis",
+            command: toggleMark(schema.marks.em),
             dom: makeMenuIcon(
-                "Image",
-                _t("commands.image", { shortcut: getShortcut("Mod-g") }),
-                "insert-image-btn"
+                "Italic",
+                _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
+                "italic-btn"
+            ),
+            active: markActive(schema.marks.em),
+        },
+        {
+            key: "toggleCode",
+            command: toggleMark(schema.marks.code),
+            dom: makeMenuIcon(
+                "Code",
+                _t("commands.inline_code", { shortcut: getShortcut("Mod-k") }),
+                "code-btn"
+            ),
+            active: markActive(schema.marks.code),
+        },
+        addIf(
+            {
+                key: "toggleStrike",
+                command: toggleMark(schema.marks.strike),
+                dom: makeMenuIcon(
+                    "Strikethrough",
+                    _t("commands.strikethrough"),
+                    "strike-btn"
+                ),
+                active: markActive(schema.marks.strike),
+            },
+            options.parserFeatures.extraEmphasis
+        ),
+        makeMenuSpacerEntry(),
+        {
+            key: "toggleLink",
+            command: insertLinkCommand,
+            dom: makeMenuIcon(
+                "Link",
+                _t("commands.link", { shortcut: getShortcut("Mod-l") }),
+                "insert-link-btn"
             ),
         },
-        !!options.imageUpload?.handler
-    ),
-    addIf(
         {
-            key: "insertTable",
-            command: insertTableCommand,
+            key: "toggleBlockquote",
+            command: toggleWrapIn(schema.nodes.blockquote),
             dom: makeMenuIcon(
-                "Table",
-                _t("commands.table_insert", { shortcut: getShortcut("Mod-e") }),
-                "insert-table-btn"
+                "Quote",
+                _t("commands.blockquote", { shortcut: getShortcut("Mod-q") }),
+                "blockquote-btn"
             ),
-            visible: (state: EditorState) =>
-                !inTable(state.schema, state.selection),
+            active: nodeTypeActive(schema.nodes.blockquote),
         },
-        options.parserFeatures.tables
-    ),
-    addIf(tableDropdown(), options.parserFeatures.tables),
-    makeMenuSpacerEntry(),
-    {
-        key: "toggleOrderedList",
-        command: toggleWrapIn(schema.nodes.ordered_list),
-        dom: makeMenuIcon(
-            "OrderedList",
-            _t("commands.ordered_list", { shortcut: getShortcut("Mod-o") }),
-            "numbered-list-btn"
+        {
+            key: "toggleCodeblock",
+            command: toggleBlockType(schema.nodes.code_block),
+            dom: makeMenuIcon(
+                "Codeblock",
+                _t("commands.code_block", { shortcut: getShortcut("Mod-m") }),
+                "code-block-btn"
+            ),
+            active: nodeTypeActive(schema.nodes.code_block),
+        },
+        addIf(
+            {
+                key: "insertImage",
+                command: insertImageCommand,
+                dom: makeMenuIcon(
+                    "Image",
+                    _t("commands.image", { shortcut: getShortcut("Mod-g") }),
+                    "insert-image-btn"
+                ),
+            },
+            !!options.imageUpload?.handler
         ),
-        active: nodeTypeActive(schema.nodes.ordered_list),
-    },
-    {
-        key: "toggleUnorderedList",
-        command: toggleWrapIn(schema.nodes.bullet_list),
-        dom: makeMenuIcon(
-            "UnorderedList",
-            _t("commands.unordered_list", { shortcut: getShortcut("Mod-u") }),
-            "bullet-list-btn"
+        addIf(
+            {
+                key: "insertTable",
+                command: insertTableCommand,
+                dom: makeMenuIcon(
+                    "Table",
+                    _t("commands.table_insert", { shortcut: getShortcut("Mod-e") }),
+                    "insert-table-btn"
+                ),
+                visible: (state: EditorState) =>
+                    !inTable(state.schema, state.selection),
+            },
+            options.parserFeatures.tables
         ),
-        active: nodeTypeActive(schema.nodes.bullet_list),
-    },
-    {
-        key: "insertRule",
-        command: insertHorizontalRuleCommand,
-        dom: makeMenuIcon(
-            "HorizontalRule",
-            _t("commands.horizontal_rule", { shortcut: getShortcut("Mod-r") }),
-            "horizontal-rule-btn"
-        ),
-    },
-    makeMenuSpacerEntry(() => false, ["sm:d-inline-block"]),
-    {
-        key: "undo",
-        command: undo,
-        dom: makeMenuIcon(
-            "Undo",
-            _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
-            "undo-btn",
-            ["sm:d-inline-block"]
-        ),
-        visible: () => false,
-    },
-    {
-        key: "redo",
-        command: redo,
-        dom: makeMenuIcon(
-            "Refresh",
-            _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
-            "redo-btn",
-            ["sm:d-inline-block"]
-        ),
-        visible: () => false,
-    },
-    makeMenuSpacerEntry(),
-    //TODO eventually this will mimic the "help" dropdown in the prod editor
-    makeMenuLinkEntry("Help", _t("commands.help"), options.editorHelpLink),
-];
+        addIf(tableDropdown(), options.parserFeatures.tables),
+        makeMenuSpacerEntry(),
+        {
+            key: "toggleOrderedList",
+            command: toggleWrapIn(schema.nodes.ordered_list),
+            dom: makeMenuIcon(
+                "OrderedList",
+                _t("commands.ordered_list", { shortcut: getShortcut("Mod-o") }),
+                "numbered-list-btn"
+            ),
+            active: nodeTypeActive(schema.nodes.ordered_list),
+        },
+        {
+            key: "toggleUnorderedList",
+            command: toggleWrapIn(schema.nodes.bullet_list),
+            dom: makeMenuIcon(
+                "UnorderedList",
+                _t("commands.unordered_list", { shortcut: getShortcut("Mod-u") }),
+                "bullet-list-btn"
+            ),
+            active: nodeTypeActive(schema.nodes.bullet_list),
+        },
+        {
+            key: "insertRule",
+            command: insertHorizontalRuleCommand,
+            dom: makeMenuIcon(
+                "HorizontalRule",
+                _t("commands.horizontal_rule", { shortcut: getShortcut("Mod-r") }),
+                "horizontal-rule-btn"
+            ),
+        },
+        makeMenuSpacerEntry(() => false, ["sm:d-inline-block"]),
+        {
+            key: "undo",
+            command: undo,
+            dom: makeMenuIcon(
+                "Undo",
+                _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
+                "undo-btn",
+                ["sm:d-inline-block"]
+            ),
+            visible: () => false,
+        },
+        {
+            key: "redo",
+            command: redo,
+            dom: makeMenuIcon(
+                "Refresh",
+                _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
+                "redo-btn",
+                ["sm:d-inline-block"]
+            ),
+            visible: () => false,
+        },
+        makeMenuSpacerEntry(),
+        //TODO eventually this will mimic the "help" dropdown in the prod editor
+        makeMenuLinkEntry("Help", _t("commands.help"), options.editorHelpLink),
+    ];

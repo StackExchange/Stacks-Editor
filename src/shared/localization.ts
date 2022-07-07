@@ -2,9 +2,9 @@ import type { PartialDeep } from "./utils";
 
 type Strings = {
     [key: string]:
-        | string
-        | ((params: Record<string, unknown>) => string)
-        | Strings;
+    | string
+    | ((params: Record<string, unknown>) => string)
+    | Strings;
 };
 
 /** Curried helper method that wraps a i18n method for menu entries w/ shortcuts */
@@ -88,7 +88,7 @@ export function registerLocalizationStrings(
     strings = newStrings;
 }
 
-/** Resolves a dot-separeated key against an object */
+/** Resolves a dot-separated key against an object */
 function resolve(obj: Strings, key: string) {
     return key.split(".").reduce((p, n) => p?.[n], obj);
 }

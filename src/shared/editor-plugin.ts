@@ -17,7 +17,7 @@ import {
 } from "./menu";
 import { EditorType } from "./view";
 
-/** A more tightly scoped version of @type {SchemaSpec} so plugins can predictibly update the schema */
+/** A more tightly scoped version of @type {SchemaSpec} so plugins can predictably update the schema */
 interface PluginSchemaSpec extends SchemaSpec {
     nodes: OrderedMap<NodeSpec>;
     marks: OrderedMap<MarkSpec>;
@@ -180,7 +180,7 @@ export type EditorPlugin<TOptions = unknown> = (
 ) => EditorPluginSpec;
 
 /**
- * Aggregates and provides plugins to comsuming editors
+ * Aggregates and provides plugins to consuming editors
  * @internal
  */
 export interface IExternalPluginProvider {
