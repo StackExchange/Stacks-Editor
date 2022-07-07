@@ -3,7 +3,7 @@
     "tasks": [{
         "label": "serve",
         "type": "shell",
-        "command": "webpack serve --env SUPPRESS_OPEN=1 --config config/webpack.dev.js",
+        "command": "webpack serve --env SUPPRESS_OPEN --config config/webpack.dev.js",
         "problemMatcher": [],
         "isBackground": true,
     }]

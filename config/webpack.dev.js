@@ -4,6 +4,7 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require("fs");
 
 module.exports = (env, argv) => {
+    console.log({env,argv})
     // add --mode=production to flip this into a pseudo-production server
     const emulateProdServer = argv.mode === "production";
     return [
@@ -30,7 +31,7 @@ module.exports = (env, argv) => {
                 ],
             },
             devServer: {
-                open: env.SUPPRESS_OPEN != undefined ? false : true,
+                open: !env.SUPPRESS_OPEN,
                 host:
                     // set the host to 0.0.0.0 by default so we can preview the demo on other devices in the same network
                     // NOTE: 0.0.0.0 doesn't work on Windows machines, so settle for localhost instead
