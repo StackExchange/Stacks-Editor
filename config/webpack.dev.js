@@ -4,7 +4,6 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require("fs");
 
 module.exports = (env, argv) => {
-    console.log({env,argv})
     // add --mode=production to flip this into a pseudo-production server
     const emulateProdServer = argv.mode === "production";
     return [
