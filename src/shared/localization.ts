@@ -88,7 +88,7 @@ export function registerLocalizationStrings(
     strings = newStrings;
 }
 
-/** Resolves a dot-separeated key against an object */
+/** Resolves a dot-separated key against an object */
 function resolve(obj: Strings, key: string) {
     return key.split(".").reduce((p, n) => p?.[n], obj);
 }

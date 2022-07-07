@@ -14,7 +14,7 @@ import { _t } from "../localization";
 import { ManagedInterfaceKey, PluginInterfaceView } from "./interface-manager";
 
 /**
- * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
+ * Async image upload callback that is passed the uploaded file and returns a resolvable path to the image
  * @param {File} file The uploaded image file or user entered image url
  * @returns {string} The resolvable path to where the file was uploaded
  */
@@ -582,7 +582,7 @@ export function hideImageUploader(view: EditorView): void {
     }
 }
 
-/** Shows the image uploder
+/** Shows the image uploader
  * @param view The current editor view
  * @param file The file to upload
  */
