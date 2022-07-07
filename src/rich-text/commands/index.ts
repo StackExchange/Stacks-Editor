@@ -33,7 +33,6 @@ import {
     removeRowCommand,
 } from "./tables";
 import { _t } from "../../shared/localization";
-import { insertRawTextCommand } from "../../commonmark/commands";
 
 export * from "./tables";
 
@@ -467,11 +466,11 @@ const overflowDropdown = (schema: Schema) =>
         () => true,
         null,
         dropdownItem(
-            _t("commands.tag", { level: 1 }),
+            _t("commands.tag", { shortcut: getShortcut("Mod-[") }),
             toggleTagCommand,
             "tag-btn",
             nodeTypeActive(schema.nodes.tagLink),
-            ["fs-body3", "mt8"]
+            ["fs-body1", "mt8"]
         )
     );
 

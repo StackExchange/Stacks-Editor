@@ -19,7 +19,7 @@ export const defaultStrings = {
         bold: shortcut("Bold"),
         code_block: shortcut("Code block"),
         emphasis: shortcut("Italic"),
-        tag: shortcut("Tag"),
+        tag: shortcut("Insert Tag"),
         overflow: shortcut("Overflow"),
         heading: {
             dropdown: shortcut("Heading"),
