@@ -2,8 +2,8 @@
     "version": "2.0.0",
     "tasks": [{
         "label": "serve",
-        "type": "shell",
-        "command": "webpack serve --env SUPPRESS_OPEN --config config/webpack.dev.js",
+        "type": "npm",
+        "script": "start",
         "problemMatcher": [],
         "isBackground": true,
     }]
