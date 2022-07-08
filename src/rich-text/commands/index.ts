@@ -145,6 +145,9 @@ function getHeadingLevel(state: EditorState): number {
     return level;
 }
 
+/**
+ * Creates a command that toggles tagLink formatting for a node
+ */
 export function toggleTagCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
