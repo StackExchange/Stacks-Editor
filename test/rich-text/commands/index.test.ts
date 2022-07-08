@@ -4,6 +4,7 @@ import {
     insertHorizontalRuleCommand,
     toggleHeadingLevel,
     toggleTagCommand,
+    toggleWrapIn,
 } from "../../../src/rich-text/commands";
 import {
     applySelection,
@@ -445,6 +446,47 @@ describe("commands", () => {
                 ],
             });
         });
+    });
+
+    describe("wrapInCommand", () => {
+        it.each([
+            [createState("", []).schema.nodes.spoiler, "spoiler"],
+            [createState("", []).schema.nodes.blockquote, "blockquote"],
+        ])(
+            "should wrap selected node with nodeType",
+            (nodeType, nodeTypeText) => {
+                let state = createState("asdf", []);
+
+                state = applySelection(state, 0, 4);
+
+                const { newState, isValid } = executeTransaction(
+                    state,
+                    toggleWrapIn(nodeType)
+                );
+
+                expect(isValid).toBeTruthy();
+
+                expect(newState.doc).toMatchNodeTree({
+                    "type.name": "doc",
+                    "content": [
+                        {
+                            "type.name": nodeTypeText,
+                            "content": [
+                                {
+                                    "type.name": "paragraph",
+                                    "content": [
+                                        {
+                                            isText: true,
+                                            text: "asdf",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                });
+            }
+        );
     });
 
     describe("exitMarkCommand", () => {

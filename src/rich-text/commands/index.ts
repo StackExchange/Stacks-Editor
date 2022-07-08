@@ -36,8 +36,11 @@ import { _t } from "../../shared/localization";
 
 export * from "./tables";
 
-//TODO
-function toggleWrapIn(nodeType: NodeType) {
+/**
+ * Creates a command that toggles wrapping/lifting the current node to or from a given NodeType
+ * @param nodeType The type to toggle to/from
+ */
+export function toggleWrapIn(nodeType: NodeType) {
     const nodeCheck = nodeTypeActive(nodeType);
     const wrapInCommand = wrapIn(nodeType);
 
