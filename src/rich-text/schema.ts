@@ -423,22 +423,29 @@ const nodes: {
         },
     },
 
-    // TODO should this be a mark instead?
     tagLink: {
         content: "text*",
-        marks: "", // TODO should it accept marks?
+        marks: "",
         atom: true, // TODO allow this to be editable
         inline: true,
         group: "inline",
         attrs: {
-            tagName: { default: null },
-            tagType: { default: "tag" },
+            tagName: { default: null }, // TODO: remove?
+            tagType: { default: "tag" }, // TODO: remove?
             href: { default: null },
             title: { default: null },
-            additionalClasses: { default: null },
+            additionalClasses: { default: "" },
         },
         toDOM(node) {
-            // TODO
+            return [
+                "a",
+                {
+                    href: node.attrs.href as string,
+                    title: node.attrs.title as string,
+                    class: "s-tag " + node.attrs.additionalClasses
+                },
+                node.attrs.tagName
+            ];
         },
     },
 };

@@ -38,7 +38,7 @@ function parse_tag_link(
         return false;
     }
 
-    const tagName = totalContent.slice(isMeta ? 10 : 5, -1);
+    const tagName = totalContent.slice(isMeta ? 10 : 5, -1).trim();
 
     // check that the tag name follows specific rules TODO better docs
     const validationRegex = options.allowNonAscii
@@ -74,8 +74,6 @@ function parse_tag_link(
             token.attrSet("title", rendered.linkTitle);
             token.attrSet("additionalClasses", additionalClasses.join(" "));
         }
-
-        token.content = totalContent;
 
         token = state.push("text", "", 0);
         token.content = tagName;
