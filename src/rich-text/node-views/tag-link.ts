@@ -3,6 +3,7 @@ import { NodeView } from "prosemirror-view";
 import { error } from "../../shared/logger";
 import { TagLinkOptions } from "../../shared/view";
 
+// TODO REMOVE
 // TODO instead of a NodeView, should we use marks and an editor like `link-tooltip`?
 export class TagLink implements NodeView {
     dom: HTMLElement | null;

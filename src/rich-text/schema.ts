@@ -433,6 +433,12 @@ const nodes: {
         attrs: {
             tagName: { default: null },
             tagType: { default: "tag" },
+            href: { default: null },
+            title: { default: null },
+            additionalClasses: { default: null },
+        },
+        toDOM(node) {
+            // TODO
         },
     },
 };

@@ -53,6 +53,28 @@ function parse_tag_link(
         let token = state.push("tag_link_open", "a", 1);
         token.attrSet("tagName", tagName);
         token.attrSet("tagType", isMeta ? "meta-tag" : "tag");
+
+        // call the renderer as if it exists
+        if (options.renderer) {
+            const rendered = options.renderer(tagName, isMeta);
+
+            // the renderer failed to return the bare minimum necessary to link the tag
+            // log an error to the console, but don't crash the user input
+            // if (!rendered || !rendered?.link) {
+            //     error(
+            //         "TagLink NodeView",
+            //         "Unable to render taglink due to invalid response from options.renderer: ",
+            //         rendered
+            //     );
+            //     return;
+            // }
+
+            const additionalClasses = rendered.additionalClasses || [];
+            token.attrSet("href", rendered.link);
+            token.attrSet("title", rendered.linkTitle);
+            token.attrSet("additionalClasses", additionalClasses.join(" "));
+        }
+
         token.content = totalContent;
 
         token = state.push("text", "", 0);
