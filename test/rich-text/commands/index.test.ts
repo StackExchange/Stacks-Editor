@@ -3,6 +3,7 @@ import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
     toggleHeadingLevel,
+    toggleWrapIn,
 } from "../../../src/rich-text/commands";
 import {
     applySelection,
@@ -190,6 +191,43 @@ describe("commands", () => {
                         "type.name": "paragraph",
                         "childCount": 1,
                     },
+                ],
+            });
+        });
+
+        it("should toggle blockquote within list item", () => {
+            const state = applySelection(
+                createState("<ul><li>list</li></ul>", []),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            // default li child is paragraph
+            expect(resolvedNode.node().type.name).toBe("paragraph");
+
+            const toggleBlockQuote = toggleWrapIn(state.schema.nodes.blockquote);
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockQuote
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [{
+                    "type.name": "bullet_list",
+                    content: [{
+                        "type.name": "list_item",
+                        content: [{
+                            "type.name": "blockquote",
+                            content: [{
+                                "type.name": "paragraph",
+                                childCount: 1
+                            }]
+                        }
+                        ]
+                    }
+                    ]
+                },
                 ],
             });
         });
