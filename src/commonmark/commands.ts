@@ -685,7 +685,7 @@ export function selectAllTextCommand(
 }
 
 export const boldCommand = wrapInCommand("**");
-export const emphasisCommand = wrapInCommand("*");
+export const emphasisCommand = wrapInCommand("_");
 export const inlineCodeCommand = wrapInCommand("`");
 export const indentCommand = indentBlockCommand;
 export const unindentBlock = unIndentBlockCommand;

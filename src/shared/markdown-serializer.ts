@@ -597,7 +597,12 @@ const extendedCodeMarkDeserializer: typeof defaultCodeMarkDeserializer = {
 // extend the default markdown serializer's marks and add our own
 const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
     ...defaultMarkdownSerializer.marks,
-    em: genMarkupAwareMarkConfig(defaultMarkdownSerializer.marks.em),
+    em: genMarkupAwareMarkConfig({
+        open: "_",
+        close: "_",
+        mixable: true,
+        expelEnclosingWhitespace: true,
+    }),
     strong: genMarkupAwareMarkConfig(defaultMarkdownSerializer.marks.strong),
     code: extendedCodeMarkDeserializer,
     link: extendedLinkMarkDeserializer,
