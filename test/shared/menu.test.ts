@@ -1,8 +1,7 @@
 import {
     addIf,
-    makeMenuIcon,
+    makeMenuButton,
     makeMenuLinkEntry,
-    makeMenuSpacerEntry,
     MenuCommandEntry,
 } from "../../src/shared/menu";
 
@@ -10,9 +9,12 @@ describe("menu", () => {
     describe("basic functionality", () => {
         it.todo("constructor");
         it.todo("createMenuPlugin");
+        it.todo("block visibility");
+        it.todo("entry visibility");
+        it.todo("entry active");
     });
 
-    describe("dropdowns", () => {
+    describe("dropdown", () => {
         it.todo("makeMenuDropdown");
         it.todo("dropdownItem");
         it.todo("dropdownSection");
@@ -31,13 +33,13 @@ describe("menu", () => {
             expect(addIf(entry, false)).toBeNull();
         });
 
-        it("makeMenuIcon", () => {
+        it("makeMenuButton", () => {
             const iconName = "testIcon";
             const key = "testKey";
             const title = "test title";
             const cssClasses = ["testClass1", "testClass2"];
 
-            const icon = makeMenuIcon(iconName, title, key, cssClasses);
+            const icon = makeMenuButton(iconName, title, key, cssClasses);
             expect(icon.nodeName).toBe("BUTTON");
             expect(icon.classList).toContain(`js-${key}`);
             expect(icon.title).toBe(title);
@@ -49,12 +51,6 @@ describe("menu", () => {
             expect(icon.firstElementChild.classList).toContain(
                 `icon${iconName}`
             );
-        });
-
-        it("makeMenuSpacerEntry", () => {
-            const entry = makeMenuSpacerEntry(null, []);
-            expect(entry.dom).toBeDefined();
-            expect(entry.key).toBe("spacer");
         });
 
         it("makeMenuLinkEntry", () => {
