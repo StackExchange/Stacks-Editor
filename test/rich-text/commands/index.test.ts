@@ -204,7 +204,9 @@ describe("commands", () => {
             // default li child is paragraph
             expect(resolvedNode.node().type.name).toBe("paragraph");
 
-            const toggleBlockQuote = toggleWrapIn(state.schema.nodes.blockquote);
+            const toggleBlockQuote = toggleWrapIn(
+                state.schema.nodes.blockquote
+            );
             const { newState, isValid } = executeTransaction(
                 state,
                 toggleBlockQuote
@@ -213,21 +215,26 @@ describe("commands", () => {
             expect(isValid).toBeTruthy();
             expect(newState.doc).toMatchNodeTree({
                 "type.name": "doc",
-                "content": [{
-                    "type.name": "bullet_list",
-                    content: [{
-                        "type.name": "list_item",
-                        content: [{
-                            "type.name": "blockquote",
-                            content: [{
-                                "type.name": "paragraph",
-                                childCount: 1
-                            }]
-                        }
-                        ]
-                    }
-                    ]
-                },
+                "content": [
+                    {
+                        "type.name": "bullet_list",
+                        "content": [
+                            {
+                                "type.name": "list_item",
+                                "content": [
+                                    {
+                                        "type.name": "blockquote",
+                                        "content": [
+                                            {
+                                                "type.name": "paragraph",
+                                                "childCount": 1,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
                 ],
             });
         });
