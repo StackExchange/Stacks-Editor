@@ -31,9 +31,7 @@ class PreviewView implements PluginView {
             previewOptions?.renderer ||
             createDefaultMarkdownItInstance({
                 ...parserFeatures,
-                // TODO until we handle proper html sanitizing in the renderer,
-                // we need to disable html entirely...
-                html: false,
+                html: true,
             });
 
         this.renderDelayMs =
