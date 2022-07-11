@@ -57,5 +57,6 @@ module.exports = (_, argv) => {
             libraryTarget: "umd",
         },
         plugins: [new CleanWebpackPlugin(), new MiniCssExtractPlugin()],
+        node: false,
     };
 };
