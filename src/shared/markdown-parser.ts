@@ -256,7 +256,12 @@ export function createDefaultMarkdownItInstance(
         linkify: true, // automatically link plain URLs
     });
 
-    if (!features.tables) {
+    if (features.tables) {
+        defaultMarkdownItInstance.enable("table");
+        defaultMarkdownItInstance.renderer.rules.table_open = () => '<div class="s-table-container"><table class="s-table">';
+        defaultMarkdownItInstance.renderer.rules.table_close = () => '</table></div>';
+    }
+    else {
         defaultMarkdownItInstance.disable("table");
     }
 
