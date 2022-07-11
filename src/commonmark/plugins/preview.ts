@@ -11,7 +11,7 @@ import type { CommonmarkOptions } from "../editor";
  * The amount of time to delay rendering since the last render;
  * Setting to a high value will result in less frequent renders as users type
  */
-const DEFAULT_RENDER_DELAY_MS = 1000;
+const DEFAULT_RENDER_DELAY_MS = 100;
 
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
