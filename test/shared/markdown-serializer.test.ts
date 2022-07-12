@@ -63,7 +63,7 @@ describe("markdown-serializer", () => {
         ],
         [`test<br>test`, `test  \ntest`],
         /* Marks */
-        [`<em>test</em>`, `*test*`],
+        [`<em>test</em>`, `_test_`],
         [`<strong>test</strong>`, `**test**`],
         [`<del>test</del>`, `~~test~~`],
         [`<kbd>test</kbd>`, `<kbd>test</kbd>`],
@@ -77,6 +77,10 @@ describe("markdown-serializer", () => {
         [
             `<a href="https://www.example.com">https://www.example.com</a>`,
             `<https://www.example.com>`,
+        ],
+        [
+            "<strong>Bold </strong><em><strong>Both </strong></em><em>Italic</em>",
+            "**Bold _Both_** _Italic_",
         ],
     ];
 
