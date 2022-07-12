@@ -457,15 +457,17 @@ export function dropdownSection(title: string, key: string): MenuCommandEntry {
  * @param iconName The html of the svg to use as the icon
  * @param title The text to place in the link's title attribute
  * @param href The href to open when clicked
+ * @param key A unique identifier used for this link
  * @internal
  */
 export function makeMenuLinkEntry(
     iconName: string,
     title: string,
-    href: string
+    href: string,
+    key: string
 ): MenuCommandEntry {
     const dom = document.createElement("a");
-    dom.className = `s-editor-btn js-editor-btn flex--item`;
+    dom.className = `s-editor-btn flex--item js-editor-btn js-${key}`;
     dom.href = href;
     dom.target = "_blank";
     dom.title = title;
@@ -480,7 +482,7 @@ export function makeMenuLinkEntry(
     dom.append(icon);
 
     return {
-        key: title,
+        key: key,
         command: (_, dispatch) => {
             if (dispatch) {
                 window.open(dom.href, dom.target);

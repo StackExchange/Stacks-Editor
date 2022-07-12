@@ -629,7 +629,8 @@ export const createMenuEntries = (
             makeMenuLinkEntry(
                 "Help",
                 _t("commands.help"),
-                options.editorHelpLink
+                options.editorHelpLink,
+                "help-link"
             ),
         ],
     },

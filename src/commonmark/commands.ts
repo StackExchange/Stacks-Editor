@@ -918,7 +918,8 @@ export const createMenuEntries = (options: CommonViewOptions): MenuBlock[] => [
             makeMenuLinkEntry(
                 "Help",
                 _t("commands.help"),
-                options.editorHelpLink
+                options.editorHelpLink,
+                "help-link"
             ),
         ],
     },

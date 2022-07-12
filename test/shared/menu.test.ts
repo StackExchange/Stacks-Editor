@@ -57,14 +57,16 @@ describe("menu", () => {
             const iconName = "testIcon";
             const title = "test title";
             const href = "http://example.com/";
-            const entry = makeMenuLinkEntry(iconName, title, href);
+            const key = "testKey";
+            const entry = makeMenuLinkEntry(iconName, title, href, key);
 
             const link = entry.dom as HTMLAnchorElement;
 
-            expect(entry.key).toBe(title);
+            expect(entry.key).toBe(key);
             expect(link.nodeName).toBe("A");
             expect(link.target).toBe("_blank");
             expect(link.href).toBe(href);
+            expect(link.classList).toContain(`js-${key}`);
 
             expect(link.children).toHaveLength(1);
             expect(link.firstChild.nodeName).toBe("SPAN");
