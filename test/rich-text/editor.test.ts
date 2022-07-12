@@ -247,6 +247,13 @@ _world_.
             expect(editorDom(richEditorView)).toEqual(normalize(expectedHtml));
         });
 
+        it("should allow nested <sub><sub>text</sub></sub> strings", () => {
+            const markdown = "<sub><sub>text</sub></sub>";
+            const richEditorView = richView(markdown);
+            const expectedHtml = "<p><sub><sub>text</sub></sub></p>"; // should not be changed
+            expect(editorDom(richEditorView)).toEqual(expectedHtml);
+        });
+
         it("should render markdown within inline HTML", () => {
             const markdown = "<em>**text**</em>";
             const richEditorView = richView(markdown);
