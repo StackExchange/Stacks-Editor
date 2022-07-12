@@ -347,9 +347,10 @@ function sanitizeInlineHtmlTokens(tokens: Token[]): Token[] {
         for (let j = i + 1, len2 = tokens.length; j < len2; j++) {
             const closeToken = tokens[j];
 
-            // not inline or already paired, skip
+            // not inline, not a closetoken, or already paired, skip
             if (
                 !closeToken ||
+                !closeToken.type.includes("_close") || // cannot be a close token if…not a close token
                 !closeToken.attrGet("inline_html") ||
                 closeToken.attrGet("paired")
             ) {
