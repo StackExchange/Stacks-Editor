@@ -100,37 +100,44 @@ const addMenuItems: EditorPluginSpec["menuItems"] = function (schema: Schema) {
 
     return [
         {
-            name: "silly",
-            priority: 100,
+            name: "other",
             entries: [
                 {
                     richText: null,
                     commonmark: null,
                     keybind: "Mod-Shift-1",
 
-                    svg: "HandRock",
-                    label: "Silly",
                     key: "silly-menu",
+                    display: {
+                        svg: "HandRock",
+                        label: "Silly",
+                    },
 
                     children: [
                         {
                             key: "silly-menu-item-0",
-                            svg: "Tada",
-                            label: "Tada",
+                            display: {
+                                svg: "Tada",
+                                label: "Tada",
+                            },
                             richText: addSillyEffectRichCommand("🎉"),
                             commonmark: addSillyEffectCommonmarkCommand("🎉"),
                         },
                         {
                             key: "silly-menu-item-1",
-                            svg: "Hundred",
-                            label: "Hundred",
+                            display: {
+                                svg: "Hundred",
+                                label: "Hundred",
+                            },
                             richText: addSillyEffectRichCommand("💯"),
                             commonmark: addSillyEffectCommonmarkCommand("💯"),
                         },
                         {
                             key: "silly-menu-item-2",
-                            svg: "Wave",
-                            label: "Wave",
+                            display: {
+                                svg: "Wave",
+                                label: "Wave",
+                            },
                             richText: addSillyEffectRichCommand("👋"),
                             commonmark: addSillyEffectCommonmarkCommand("👋"),
                         },

@@ -1,11 +1,10 @@
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import {
-    makeMenuIcon,
+    makeMenuButton,
     makeMenuLinkEntry,
-    makeMenuSpacerEntry,
     addIf,
     MenuCommand,
-    MenuCommandEntry,
+    MenuBlock,
 } from "../shared/menu";
 import { EditorView } from "prosemirror-view";
 import {
@@ -712,161 +711,216 @@ export function insertImageCommand(
     return true;
 }
 
-export const createMenuEntries = (
-    options: CommonViewOptions
-): MenuCommandEntry[] => [
+// TODO ensure that all names match those found in the rich-text editor
+/**
+ * Creates all menu entries for the commonmark editor
+ * @param options The options for the editor
+ * @internal
+ */
+export const createMenuEntries = (options: CommonViewOptions): MenuBlock[] => [
     {
-        key: "toggleHeading",
-        command: headerCommand,
-        dom: makeMenuIcon(
-            "Header",
-            _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-h") }),
-            "heading-btn"
-        ),
-    },
-    {
-        key: "togglBold",
-        command: boldCommand,
-        dom: makeMenuIcon(
-            "Bold",
-            _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
-            "bold-btn"
-        ),
-    },
-    {
-        key: "toggleEmphasis",
-        command: emphasisCommand,
-        dom: makeMenuIcon(
-            "Italic",
-            _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
-            "italic-btn"
-        ),
-    },
-    {
-        key: "toggleCode",
-        command: inlineCodeCommand,
-        dom: makeMenuIcon(
-            "Code",
-            _t("commands.inline_code", { shortcut: getShortcut("Mod-k") }),
-            "code-btn"
-        ),
-    },
-    addIf(
-        {
-            key: "toggleStrikethrough",
-            command: strikethroughCommand,
-            dom: makeMenuIcon(
-                "Strikethrough",
-                _t("commands.strikethrough"),
-                "strike-btn"
+        name: "formatting1", // TODO better name?
+        priority: 0,
+        entries: [
+            {
+                key: "toggleHeading",
+                command: headerCommand,
+                dom: makeMenuButton(
+                    "Header",
+                    _t("commands.heading.dropdown", {
+                        shortcut: getShortcut("Mod-h"),
+                    }),
+                    "heading-btn"
+                ),
+            },
+            {
+                key: "toggleBold",
+                command: boldCommand,
+                dom: makeMenuButton(
+                    "Bold",
+                    _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
+                    "bold-btn"
+                ),
+            },
+            {
+                key: "toggleEmphasis",
+                command: emphasisCommand,
+                dom: makeMenuButton(
+                    "Italic",
+                    _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
+                    "italic-btn"
+                ),
+            },
+            {
+                key: "toggleCode",
+                command: inlineCodeCommand,
+                dom: makeMenuButton(
+                    "Code",
+                    _t("commands.inline_code", {
+                        shortcut: getShortcut("Mod-k"),
+                    }),
+                    "code-btn"
+                ),
+            },
+            addIf(
+                {
+                    key: "toggleStrikethrough",
+                    command: strikethroughCommand,
+                    dom: makeMenuButton(
+                        "Strikethrough",
+                        _t("commands.strikethrough"),
+                        "strike-btn"
+                    ),
+                },
+                options.parserFeatures.extraEmphasis
             ),
-        },
-        options.parserFeatures.extraEmphasis
-    ),
-    makeMenuSpacerEntry(),
-    {
-        key: "toggleLink",
-        command: insertLinkCommand,
-        dom: makeMenuIcon(
-            "Link",
-            _t("commands.link", { shortcut: getShortcut("Mod-l") }),
-            "insert-link-btn"
-        ),
+        ],
     },
     {
-        key: "toggleBlockquote",
-        command: blockquoteCommand,
-        dom: makeMenuIcon(
-            "Quote",
-            _t("commands.blockquote", { shortcut: getShortcut("Ctrl-q") }),
-            "blockquote-btn"
-        ),
-    },
-    {
-        key: "insertCodeblock",
-        command: insertCodeblockCommand,
-        dom: makeMenuIcon(
-            "Codeblock",
-            _t("commands.code_block", { shortcut: getShortcut("Mod-m") }),
-            "code-block-btn"
-        ),
-    },
-    addIf(
-        {
-            key: "insertImage",
-            command: insertImageCommand,
-            dom: makeMenuIcon(
-                "Image",
-                _t("commands.image", { shortcut: getShortcut("Mod-g") }),
-                "insert-image-btn"
+        name: "formatting2", // TODO better name?
+        priority: 10,
+        entries: [
+            {
+                key: "toggleLink",
+                command: insertLinkCommand,
+                dom: makeMenuButton(
+                    "Link",
+                    _t("commands.link", { shortcut: getShortcut("Mod-l") }),
+                    "insert-link-btn"
+                ),
+            },
+            {
+                key: "toggleBlockquote",
+                command: blockquoteCommand,
+                dom: makeMenuButton(
+                    "Quote",
+                    _t("commands.blockquote", {
+                        shortcut: getShortcut("Ctrl-q"),
+                    }),
+                    "blockquote-btn"
+                ),
+            },
+            {
+                key: "insertCodeblock",
+                command: insertCodeblockCommand,
+                dom: makeMenuButton(
+                    "Codeblock",
+                    _t("commands.code_block", {
+                        shortcut: getShortcut("Mod-m"),
+                    }),
+                    "code-block-btn"
+                ),
+            },
+            addIf(
+                {
+                    key: "insertImage",
+                    command: insertImageCommand,
+                    dom: makeMenuButton(
+                        "Image",
+                        _t("commands.image", {
+                            shortcut: getShortcut("Mod-g"),
+                        }),
+                        "insert-image-btn"
+                    ),
+                },
+                !!options.imageUpload?.handler
             ),
-        },
-        !!options.imageUpload?.handler
-    ),
-    addIf(
-        {
-            key: "insertTable",
-            command: insertTableCommand,
-            dom: makeMenuIcon(
-                "Table",
-                _t("commands.table_insert", { shortcut: getShortcut("Mod-e") }),
-                "insert-table-btn"
+            addIf(
+                {
+                    key: "insertTable",
+                    command: insertTableCommand,
+                    dom: makeMenuButton(
+                        "Table",
+                        _t("commands.table_insert", {
+                            shortcut: getShortcut("Mod-e"),
+                        }),
+                        "insert-table-btn"
+                    ),
+                },
+                options.parserFeatures.tables
             ),
-        },
-        options.parserFeatures.tables
-    ),
-    makeMenuSpacerEntry(),
-    {
-        key: "toggleOrderedList",
-        command: orderedListCommand,
-        dom: makeMenuIcon(
-            "OrderedList",
-            _t("commands.ordered_list", { shortcut: getShortcut("Mod-o") }),
-            "numbered-list-btn"
-        ),
+        ],
     },
     {
-        key: "toggleUnorderedList",
-        command: unorderedListCommand,
-        dom: makeMenuIcon(
-            "UnorderedList",
-            _t("commands.unordered_list", { shortcut: getShortcut("Mod-u") }),
-            "bullet-list-btn"
-        ),
+        name: "formatting3", // TODO better name?
+        priority: 20,
+        entries: [
+            {
+                key: "toggleOrderedList",
+                command: orderedListCommand,
+                dom: makeMenuButton(
+                    "OrderedList",
+                    _t("commands.ordered_list", {
+                        shortcut: getShortcut("Mod-o"),
+                    }),
+                    "numbered-list-btn"
+                ),
+            },
+            {
+                key: "toggleUnorderedList",
+                command: unorderedListCommand,
+                dom: makeMenuButton(
+                    "UnorderedList",
+                    _t("commands.unordered_list", {
+                        shortcut: getShortcut("Mod-u"),
+                    }),
+                    "bullet-list-btn"
+                ),
+            },
+            {
+                key: "insertRule",
+                command: insertHorizontalRuleCommand,
+                dom: makeMenuButton(
+                    "HorizontalRule",
+                    _t("commands.horizontal_rule", {
+                        shortcut: getShortcut("Mod-r"),
+                    }),
+                    "horizontal-rule-btn"
+                ),
+            },
+        ],
     },
     {
-        key: "insertRule",
-        command: insertHorizontalRuleCommand,
-        dom: makeMenuIcon(
-            "HorizontalRule",
-            _t("commands.horizontal_rule", { shortcut: getShortcut("Mod-r") }),
-            "horizontal-rule-btn"
-        ),
-    },
-    makeMenuSpacerEntry(() => false, ["sm:d-inline-block"]),
-    {
-        key: "undo",
-        command: undo,
-        dom: makeMenuIcon(
-            "Undo",
-            _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
-            "undo-btn",
-            ["sm:d-inline-block"]
-        ),
+        name: "history",
+        priority: 30,
+        entries: [
+            {
+                key: "undo",
+                command: undo,
+                dom: makeMenuButton(
+                    "Undo",
+                    _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
+                    "undo-btn",
+                    ["sm:d-inline-block"]
+                ),
+                visible: () => false,
+            },
+            {
+                key: "redo",
+                command: redo,
+                dom: makeMenuButton(
+                    "Refresh",
+                    _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
+                    "redo-btn",
+                    ["sm:d-inline-block"]
+                ),
+                visible: () => false,
+            },
+        ],
         visible: () => false,
+        classes: ["sm:d-inline-block"],
     },
     {
-        key: "redo",
-        command: redo,
-        dom: makeMenuIcon(
-            "Refresh",
-            _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
-            "redo-btn",
-            ["sm:d-inline-block"]
-        ),
-        visible: () => false,
+        name: "other",
+        priority: 40,
+        entries: [
+            //TODO eventually this will mimic the "help" dropdown in the prod editor
+            makeMenuLinkEntry(
+                "Help",
+                _t("commands.help"),
+                options.editorHelpLink,
+                "help-link"
+            ),
+        ],
     },
-    makeMenuSpacerEntry(),
-    //TODO eventually this will mimic the "help" dropdown in the prod editor
-    makeMenuLinkEntry("Help", _t("commands.help"), options.editorHelpLink),
 ];

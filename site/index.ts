@@ -180,7 +180,7 @@ domReady(() => {
 
     const options: StacksEditorOptions = {
         defaultView: getDefaultEditor(),
-        editorHelpLink: "#TODO",
+        editorHelpLink: "#HELP_LINK",
         commonmarkOptions: {
             preview: {
                 enabled: enableMDPreview,
@@ -242,6 +242,18 @@ domReady(() => {
             setDefaultEditor(e.detail.editorType);
         }
     );
+
+    // if the help link button is clicked, show the user an alert instead of opening the non-existent help page
+    document.querySelectorAll(".js-help-link").forEach((el) => {
+        el.addEventListener("click", (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // eslint-disable-next-line no-alert
+            alert(
+                "The demo help link doesn't actually go anywhere, so enjoy this alert instead. :)"
+            );
+        });
+    });
 });
 
 if ("serviceWorker" in navigator) {
