@@ -436,7 +436,7 @@ const nodes: {
             title: { default: null },
             additionalClasses: { default: "" },
         },
-         parseDOM: [
+        parseDOM: [
             {
                 tag: "a.s-tag",
                 getAttrs(dom: HTMLElement) {
@@ -447,7 +447,7 @@ const nodes: {
                         additionalClasses: Array.from(dom.classList).join(" "),
                         tagType: dom.getAttribute("tagtype"),
                         tagName: dom.textContent,
-                    }
+                    };
                 },
             },
         ],
@@ -458,9 +458,9 @@ const nodes: {
                     tagType: node.attrs.tagType as string,
                     href: node.attrs.href as string,
                     title: node.attrs.title as string,
-                    class: `s-tag ${node.attrs.additionalClasses as string}`
+                    class: `s-tag ${node.attrs.additionalClasses as string}`,
                 },
-                node.attrs.tagName
+                node.attrs.tagName,
             ];
         },
     },

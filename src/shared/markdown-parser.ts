@@ -119,7 +119,7 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
             tagType: tok.attrGet("tagType"),
             href: tok.attrGet("href"),
             additionalClasses: tok.attrGet("additionalClasses"),
-            title: tok.attrGet("title")
+            title: tok.attrGet("title"),
         }),
     },
 
