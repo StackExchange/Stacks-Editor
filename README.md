@@ -64,7 +64,7 @@ new StacksEditor(
 
 1. Install dependencies with `npm i`
 2. Build and start using `npm start`
-3. Your browser will show the example page automatically
+3. Point your browser to the address listed in the output - typically <http://localhost:8080/>
 
 ## Run Tests
 
