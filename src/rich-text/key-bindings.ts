@@ -29,7 +29,7 @@ import {
     insertTableCommand,
     exitInclusiveMarkCommand,
     toggleHeadingLevel,
-    toggleTagCommand,
+    toggleTagLinkCommand,
 } from "./commands";
 
 export function allKeymaps(
@@ -73,7 +73,7 @@ export function allKeymaps(
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
         ...bindLetterKeymap(
             "Mod-[",
-            toggleTagCommand(parserFeatures.tagLinks.allowNonAscii)
+            toggleTagLinkCommand(parserFeatures.tagLinks.allowNonAscii)
         ),
         ...bindLetterKeymap("Mod-]", wrapIn(schema.nodes.spoiler)),
         ...bindLetterKeymap("Mod-;", toggleMark(schema.marks.sub)),

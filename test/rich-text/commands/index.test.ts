@@ -3,7 +3,7 @@ import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
     toggleHeadingLevel,
-    toggleTagCommand,
+    toggleTagLinkCommand,
     toggleWrapIn,
 } from "../../../src/rich-text/commands";
 import {
@@ -392,13 +392,13 @@ describe("commands", () => {
         });
     });
 
-    describe("toggleTagCommand", () => {
+    describe("toggleTagLinkCommand", () => {
         it("should not insert with no text selected", () => {
             const state = createState("", []);
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagCommand(true)
+                toggleTagLinkCommand(true)
             );
 
             expect(isValid).toBeFalsy();
@@ -420,7 +420,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagCommand(true)
+                toggleTagLinkCommand(true)
             );
 
             expect(isValid).toBeFalsy();
@@ -442,7 +442,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagCommand(true)
+                toggleTagLinkCommand(true)
             );
 
             expect(isValid).toBeTruthy();

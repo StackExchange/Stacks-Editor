@@ -148,7 +148,7 @@ function getHeadingLevel(state: EditorState): number {
 /**
  * Creates a command that toggles tagLink formatting for a node
  */
-export function toggleTagCommand(allowNonAscii: boolean) {
+export function toggleTagLinkCommand(allowNonAscii: boolean) {
     return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
         if (state.selection.empty) {
             return false;
@@ -482,7 +482,7 @@ const overflowDropdown = (schema: Schema, options: CommonViewOptions) =>
         () => false,
         dropdownItem(
             _t("commands.tag", { shortcut: getShortcut("Mod-[") }),
-            toggleTagCommand(options.parserFeatures.tagLinks.allowNonAscii),
+            toggleTagLinkCommand(options.parserFeatures.tagLinks.allowNonAscii),
             "tag-btn",
             nodeTypeActive(schema.nodes.tagLink),
             ["fs-body1", "mt8"]
