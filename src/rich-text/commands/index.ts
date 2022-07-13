@@ -17,7 +17,11 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { getCurrentTextNode, getShortcut } from "../../shared/utils";
+import {
+    getCurrentTextNode,
+    getShortcut,
+    validateTagName,
+} from "../../shared/utils";
 import type { CommonViewOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
@@ -36,7 +40,7 @@ import { _t } from "../../shared/localization";
 export * from "./tables";
 
 //TODO
-function toggleWrapIn(nodeType: NodeType) {
+export function toggleWrapIn(nodeType: NodeType) {
     const nodeCheck = nodeTypeActive(nodeType);
     const wrapInCommand = wrapIn(nodeType);
 
@@ -139,6 +143,54 @@ function getHeadingLevel(state: EditorState): number {
     });
 
     return level;
+}
+
+/**
+ * Creates a command that toggles tagLink formatting for a node
+ */
+export function toggleTagCommand(allowNonAscii: boolean) {
+    return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+        if (state.selection.empty) {
+            return false;
+        }
+
+        if (
+            !validateTagName(
+                state.selection
+                    .content()
+                    .content.firstChild?.textContent.trim(),
+                allowNonAscii
+            )
+        ) {
+            return false;
+        }
+
+        if (!dispatch) {
+            return true;
+        }
+
+        let tr = state.tr;
+        const nodeCheck = nodeTypeActive(state.schema.nodes.tagLink);
+        if (nodeCheck(state)) {
+            const selectedText = state.selection.content().content.firstChild
+                .attrs["tagName"] as string;
+
+            tr = state.tr.replaceSelectionWith(state.schema.text(selectedText));
+        } else {
+            const selectedText =
+                state.selection.content().content.firstChild?.textContent;
+
+            const newTagNode = state.schema.nodes.tagLink.create({
+                tagName: selectedText,
+            });
+
+            tr = state.tr.replaceSelectionWith(newTagNode);
+        }
+
+        dispatch(tr);
+
+        return true;
+    };
 }
 
 export function insertHorizontalRuleCommand(
