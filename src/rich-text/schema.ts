@@ -430,16 +430,32 @@ const nodes: {
         inline: true,
         group: "inline",
         attrs: {
-            tagName: { default: null }, // TODO: remove?
-            tagType: { default: "tag" }, // TODO: remove?
+            tagName: { default: null },
+            tagType: { default: "tag" },
             href: { default: null },
             title: { default: null },
             additionalClasses: { default: "" },
         },
+         parseDOM: [
+            {
+                tag: "a.s-tag",
+                getAttrs(dom: HTMLElement) {
+                    dom.classList.remove("s-tag");
+                    return {
+                        href: dom.getAttribute("href"),
+                        title: dom.getAttribute("title"),
+                        additionalClasses: Array.from(dom.classList).join(" "),
+                        tagType: dom.getAttribute("tagtype"),
+                        tagName: dom.textContent,
+                    }
+                },
+            },
+        ],
         toDOM(node) {
             return [
                 "a",
                 {
+                    tagType: node.attrs.tagType,
                     href: node.attrs.href as string,
                     title: node.attrs.title as string,
                     class: "s-tag " + node.attrs.additionalClasses
@@ -492,7 +508,7 @@ const marks: {
         },
         parseDOM: [
             {
-                tag: "a[href]",
+                tag: "a[href]:not(.s-tag)",
                 getAttrs(dom: HTMLElement) {
                     return {
                         href: dom.getAttribute("href"),
