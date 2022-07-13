@@ -310,8 +310,8 @@ export function bindLetterKeymap(
 
 /**
  * Tests whether a string is a valid tag name.
- * @param input The string to test
- * @param options TagLink configuration options
+ * @param tagName The string to test
+ * @param allowNonAscii Whether to allow non-ascii characters in the tag name
  */
 export function validateTagName(
     tagName: string,

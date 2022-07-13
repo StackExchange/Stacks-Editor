@@ -147,6 +147,7 @@ function getHeadingLevel(state: EditorState): number {
 
 /**
  * Creates a command that toggles tagLink formatting for a node
+ * @param allowNonAscii Whether to allow non-ascii characters in the tag name
  */
 export function toggleTagLinkCommand(allowNonAscii: boolean) {
     return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
