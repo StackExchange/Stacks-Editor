@@ -3,7 +3,6 @@ import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { IExternalPluginProvider } from "../shared/editor-plugin";
-import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { log } from "../shared/logger";
 import { createMenuPlugin } from "../shared/menu";
 import { createPreviewPlugin } from "./plugins/preview";
@@ -32,6 +31,8 @@ import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
 import type MarkdownIt from "markdown-it";
 import { textCopyHandlerPlugin } from "./plugins/text-copy-handler";
+import { highlightPlugin } from "prosemirror-lezer";
+import { parser } from "@lezer/markdown";
 
 export interface CommonmarkOptions extends CommonViewOptions {
     /** Settings for showing a static rendered preview of the editor's contents */
@@ -95,7 +96,12 @@ export class CommonmarkEditor extends BaseView {
                             this.options.preview,
                             this.options.parserFeatures
                         ),
-                        CodeBlockHighlightPlugin(null),
+                        highlightPlugin(
+                            {
+                                "*": parser,
+                            },
+                            ["code_block"]
+                        ),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),

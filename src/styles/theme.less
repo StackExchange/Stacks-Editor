@@ -1,18 +1,35 @@
 .s-code-block.markdown {
-    .hljs-section {
+    .tok-heading {
         color: var(--black-800) !important;
         font-weight: bold;
         font-size: var(--fs-body2);
     }
 
-    .hljs-link {
-        color: var(--blue-600) !important;
+    .tok-url,
+    .tok-labelName {
+        &,
+        &.tok-link {
+            color: var(--blue-600) !important;
+        }
     }
 
-    .hljs-quote,
-    .hljs-string,
-    .hljs-symbol,
-    .hljs-tag {
+    .tok-link,
+    .tok-meta {
         color: var(--black-600) !important;
     }
+
+    // TODO taken from upstream .hljs-strong
+    .tok-strong {
+        font-weight: bold;
+    }
+
+    // TODO taken from upstream .hljs-emphasis
+    .tok-emphasis {
+        font-style: italic;
+    }
 }
+
+// TODO inline code text
+// TODO code block text
+// TODO html tags
+// TODO quote text
