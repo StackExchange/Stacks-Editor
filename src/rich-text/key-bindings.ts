@@ -71,7 +71,10 @@ export function allKeymaps(
         ...bindLetterKeymap("Mod-h", toggleHeadingLevel()),
         ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
-        ...bindLetterKeymap("Mod-[", toggleTagCommand),
+        ...bindLetterKeymap(
+            "Mod-[",
+            toggleTagCommand(parserFeatures.tagLinks.allowNonAscii)
+        ),
         ...bindLetterKeymap("Mod-]", wrapIn(schema.nodes.spoiler)),
         ...bindLetterKeymap("Mod-;", toggleMark(schema.marks.sub)),
         ...bindLetterKeymap("Mod-:", toggleMark(schema.marks.sup)),

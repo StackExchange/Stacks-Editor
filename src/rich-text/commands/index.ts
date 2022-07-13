@@ -18,7 +18,11 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { getCurrentTextNode, getShortcut } from "../../shared/utils";
+import {
+    getCurrentTextNode,
+    getShortcut,
+    validateTagName,
+} from "../../shared/utils";
 import type { CommonViewOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
@@ -148,40 +152,49 @@ function getHeadingLevel(state: EditorState): number {
 /**
  * Creates a command that toggles tagLink formatting for a node
  */
-export function toggleTagCommand(
-    state: EditorState,
-    dispatch: (tr: Transaction) => void
-): boolean {
-    if (state.selection.empty) {
-        return false;
-    }
+export function toggleTagCommand(allowNonAscii: boolean) {
+    return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+        if (state.selection.empty) {
+            return false;
+        }
 
-    if (!dispatch) {
+        if (
+            !validateTagName(
+                state.selection
+                    .content()
+                    .content.firstChild?.textContent.trim(),
+                allowNonAscii
+            )
+        ) {
+            return false;
+        }
+
+        if (!dispatch) {
+            return true;
+        }
+
+        let tr = state.tr;
+        const nodeCheck = nodeTypeActive(state.schema.nodes.tagLink);
+        if (nodeCheck(state)) {
+            const selectedText = state.selection.content().content.firstChild
+                .attrs["tagName"] as string;
+
+            tr = state.tr.replaceSelectionWith(state.schema.text(selectedText));
+        } else {
+            const selectedText =
+                state.selection.content().content.firstChild?.textContent;
+
+            const newTagNode = state.schema.nodes.tagLink.create({
+                tagName: selectedText,
+            });
+
+            tr = state.tr.replaceSelectionWith(newTagNode);
+        }
+
+        dispatch(tr);
+
         return true;
-    }
-
-    let tr = state.tr;
-    const nodeCheck = nodeTypeActive(state.schema.nodes.tagLink);
-    if (nodeCheck(state)) {
-        const selectedText = state.selection.content().content.firstChild.attrs[
-            "tagName"
-        ] as string;
-
-        tr = state.tr.replaceSelectionWith(state.schema.text(selectedText));
-    } else {
-        const selectedText =
-            state.selection.content().content.firstChild?.textContent;
-
-        const newTagNode = state.schema.nodes.tagLink.create({
-            tagName: selectedText,
-        });
-
-        tr = state.tr.replaceSelectionWith(newTagNode);
-    }
-
-    dispatch(tr);
-
-    return true;
+    };
 }
 
 export function insertHorizontalRuleCommand(
@@ -464,7 +477,7 @@ const headingDropdown = (schema: Schema) =>
         )
     );
 
-const overflowDropdown = (schema: Schema) =>
+const overflowDropdown = (schema: Schema, options: CommonViewOptions) =>
     makeMenuDropdown(
         "Overflow",
         _t("commands.overflow"),
@@ -473,7 +486,7 @@ const overflowDropdown = (schema: Schema) =>
         () => false,
         dropdownItem(
             _t("commands.tag", { shortcut: getShortcut("Mod-[") }),
-            toggleTagCommand,
+            toggleTagCommand(options.parserFeatures.tagLinks.allowNonAscii),
             "tag-btn",
             nodeTypeActive(schema.nodes.tagLink),
             ["fs-body1", "mt8"]
@@ -606,7 +619,7 @@ export const createMenuEntries = (
         },
         options.parserFeatures.tables
     ),
-    overflowDropdown(schema),
+    overflowDropdown(schema, options),
     addIf(tableDropdown(), options.parserFeatures.tables),
     makeMenuSpacerEntry(),
     {

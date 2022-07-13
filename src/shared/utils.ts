@@ -1,5 +1,6 @@
 import { escapeHtml } from "markdown-it/lib/common/utils";
 import { Command, EditorState } from "prosemirror-state";
+import type { TagLinkOptions } from "./view";
 
 /**
  * Recursively deep merges two objects into a new object, leaving the original two untouched
@@ -305,4 +306,25 @@ export function bindLetterKeymap(
         [prefix + letter]: command,
         [prefix + letter.toUpperCase()]: command,
     };
+}
+
+/**
+ * Tests whether a string is a valid tag name.
+ * @param input The string to test
+ * @param options TagLink configuration options
+ */
+export function validateTagName(
+    tagName: string,
+    allowNonAscii: boolean
+): boolean {
+    const validationRegex = allowNonAscii
+        ? /([a-z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF#+.-]+)/i
+        : /([a-z0-9#+.-]+)/i;
+
+    // test above regex as well as for any whitespace
+    if (/\s/.test(tagName) || !validationRegex.exec(tagName)) {
+        return false;
+    }
+
+    return true;
 }

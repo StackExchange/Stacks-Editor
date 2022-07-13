@@ -398,7 +398,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagCommand
+                toggleTagCommand(true)
             );
 
             expect(isValid).toBeFalsy();
@@ -412,6 +412,29 @@ describe("commands", () => {
 
             expect(containsTagLink).toBeFalsy();
         });
+
+        it("should not insert with whitespace in tag name", () => {
+            let state = createState("tag with spaces", []);
+
+            state = applySelection(state, 0, 16); //"is"
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagCommand(true)
+            );
+
+            expect(isValid).toBeFalsy();
+            let containsTagLink = false;
+
+            newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
+                containsTagLink = node.type.name === "tagLink";
+
+                return !containsTagLink;
+            });
+
+            expect(containsTagLink).toBeFalsy();
+        });
+
         it("should replace selected text with tagLink", () => {
             let state = createState("this is my state", []);
 
@@ -419,7 +442,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagCommand
+                toggleTagCommand(true)
             );
 
             expect(isValid).toBeTruthy();
