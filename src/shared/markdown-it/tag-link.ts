@@ -58,21 +58,17 @@ function parse_tag_link(
         if (options.renderer) {
             const rendered = options.renderer(tagName, isMeta);
 
-            // the renderer failed to return the bare minimum necessary to link the tag
-            // log an error to the console, but don't crash the user input
-            // if (!rendered || !rendered?.link) {
-            //     error(
-            //         "TagLink NodeView",
-            //         "Unable to render taglink due to invalid response from options.renderer: ",
-            //         rendered
-            //     );
-            //     return;
-            // }
-
-            const additionalClasses = rendered.additionalClasses || [];
-            token.attrSet("href", rendered.link);
-            token.attrSet("title", rendered.linkTitle);
-            token.attrSet("additionalClasses", additionalClasses.join(" "));
+            if (rendered && rendered.link) {
+                const additionalClasses = rendered.additionalClasses || [];
+                token.attrSet("href", rendered.link);
+                token.attrSet("title", rendered.linkTitle);
+                token.attrSet("additionalClasses", additionalClasses.join(" "));
+            }
+            else {
+                // We don't want to crash the parsing process here since we can still display a passable version of the tag link.
+                // However, we should at least log a console error.
+                console.error(`Unable to fully render taglink for [${tagName}] due to invalid response from options.renderer.`);
+            }
         }
 
         token = state.push("text", "", 0);
