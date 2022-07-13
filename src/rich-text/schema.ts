@@ -455,10 +455,10 @@ const nodes: {
             return [
                 "a",
                 {
-                    tagType: node.attrs.tagType,
+                    tagType: node.attrs.tagType as string,
                     href: node.attrs.href as string,
                     title: node.attrs.title as string,
-                    class: "s-tag " + node.attrs.additionalClasses
+                    class: `s-tag ${node.attrs.additionalClasses as string}`
                 },
                 node.attrs.tagName
             ];

@@ -67,6 +67,7 @@ function parse_tag_link(
             else {
                 // We don't want to crash the parsing process here since we can still display a passable version of the tag link.
                 // However, we should at least log a console error.
+                // eslint-disable-next-line no-console
                 console.error(`Unable to fully render taglink for [${tagName}] due to invalid response from options.renderer.`);
             }
         }
