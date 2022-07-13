@@ -584,7 +584,7 @@ function insertRawText(
 }
 
 /**
- * Inserts a link at the cursor, optionally placing it around the currenly selected text if able
+ * Inserts a link at the cursor, optionally placing it around the currently selected text if able
  * @param state The current editor state
  * @param dispatch the dispatch function used to dispatch the transaction, set to "null" if you don't want to dispatch
  */

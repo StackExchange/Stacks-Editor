@@ -125,7 +125,7 @@ export function docChanged(
 }
 
 /**
- * Returns the text node the cursor is currently achored in
+ * Returns the text node the cursor is currently anchored in
  * @param state The current editor state
  * @returns A text node or null if the cursor is not in a text node
  */
@@ -209,7 +209,7 @@ export function stackOverflowValidateLink(url: string): boolean {
 }
 
 /**
- * Template function to escape all html in substitions, but not the rest of the template.
+ * Template function to escape all html in substitutions, but not the rest of the template.
  * For instance, escapeHTML`<p>${"<span>user input</span>"}</p>` will escape the inner span, but not the outer p tags.
  * Uses markdown-it's @see escapeHtml in the background
  */

@@ -304,14 +304,14 @@ some text`;
                 );
             });
 
-            it("single line, arbitary selection", () => {
+            it("single line, arbitrary selection", () => {
                 const state = createState("test", 2, 4);
                 const command = commands.setBlockTypeCommand(">");
 
                 expect(state).transactionSuccess(command, "> test", null);
             });
 
-            it("multi line, arbitary selection spanning multiple lines, insert newline", () => {
+            it("multi line, arbitrary selection spanning multiple lines, insert newline", () => {
                 const state = createState(
                     "test\n\nthis is a test\nuntouched line",
                     2,
@@ -326,7 +326,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, don't insert newline", () => {
+            it("multi line, arbitrary selection spanning multiple lines, don't insert newline", () => {
                 const state = createState(
                     "test\n\nthis is a test\nuntouched line",
                     0,
@@ -341,7 +341,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, partial exists", () => {
+            it("multi line, arbitrary selection spanning multiple lines, partial exists", () => {
                 const state = createState(
                     "test\n> \nthis is a test\nuntouched line",
                     2,
@@ -356,7 +356,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, partial exists + swap", () => {
+            it("multi line, arbitrary selection spanning multiple lines, partial exists + swap", () => {
                 const state = createState(
                     "test\n# \nthis is a test\nuntouched line",
                     2,
@@ -416,14 +416,14 @@ some text`;
                 );
             });
 
-            it("single line, arbitary selection", () => {
+            it("single line, arbitrary selection", () => {
                 const state = createState("> test", 2, 4);
                 const command = commands.setBlockTypeCommand(">");
 
                 expect(state).transactionSuccess(command, "test", "te");
             });
 
-            it("multi line, arbitary selection spanning multiple lines", () => {
+            it("multi line, arbitrary selection spanning multiple lines", () => {
                 const state = createState(
                     "test\n> \n> this is a test\nuntouched line",
                     5,
@@ -483,14 +483,14 @@ some text`;
                 );
             });
 
-            it("single line, arbitary selection", () => {
+            it("single line, arbitrary selection", () => {
                 const state = createState("# test", 2, 4);
                 const command = commands.setBlockTypeCommand(">");
 
                 expect(state).transactionSuccess(command, "> test", null);
             });
 
-            it("multi line, arbitary selection spanning multiple lines", () => {
+            it("multi line, arbitrary selection spanning multiple lines", () => {
                 const state = createState(
                     "te\n# st\n# \n# this is a test\nuntouched line",
                     3,
@@ -505,7 +505,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, partial exists", () => {
+            it("multi line, arbitrary selection spanning multiple lines, partial exists", () => {
                 const state = createState(
                     "te\n# st\n> \n# this is a test\nuntouched line",
                     3,
