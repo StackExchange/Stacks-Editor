@@ -188,6 +188,9 @@ export function toggleTagLinkCommand(allowNonAscii: boolean) {
     };
 }
 
+/**
+ * Creates a command that inserts a horizontal rule node
+ */
 export function insertHorizontalRuleCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
@@ -221,6 +224,9 @@ export function insertHorizontalRuleCommand(
     return true;
 }
 
+/**
+ * Opens the image uploader
+ */
 export function insertImageCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void,
@@ -395,6 +401,10 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
+/**
+ * Creates a dropdown menu for table edit functionality
+ * @param schema The finalized rich-text schema
+ */
 const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
@@ -438,6 +448,10 @@ const tableDropdown = () =>
         )
     );
 
+/**
+ * Creates a dropdown menu for heading formatting
+ * @param schema The finalized rich-text schema
+ */
 const headingDropdown = (schema: Schema) =>
     makeMenuDropdown(
         "Header",
@@ -468,6 +482,11 @@ const headingDropdown = (schema: Schema) =>
         )
     );
 
+/**
+ * Creates a dropdown menu containing misc formatting tools
+ * @param schema The finalized rich-text schema
+ * @param options The options for the editor
+ */
 const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
     makeMenuDropdown(
         "MoreFormatting",
