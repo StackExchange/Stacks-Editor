@@ -482,7 +482,7 @@ const overflowDropdown = (schema: Schema, options: CommonViewOptions) =>
         () => true,
         () => false,
         dropdownItem(
-            _t("commands.tag", { shortcut: getShortcut("Mod-[") }),
+            _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
             toggleTagLinkCommand(options.parserFeatures.tagLinks.allowNonAscii),
             "tag-btn",
             nodeTypeActive(schema.nodes.tagLink),

@@ -47,7 +47,7 @@ export const defaultStrings = {
             insert_before: "Insert row before",
             remove: "Remove row",
         },
-        tag: shortcut("Create Tag"),
+        tagLink: shortcut("Create Tag"),
         undo: shortcut("Undo"),
         unordered_list: shortcut("Bulleted list"),
     },
