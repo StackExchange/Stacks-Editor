@@ -19,7 +19,7 @@
         "build": "webpack --config config/webpack.prod.js",
         "build:dev": "webpack --config config/webpack.dev.js",
         "build:gh-pages": "webpack --config config/webpack.dev.js --mode=production --",
-        "print-stats": "webpack --config config/webpack.prod.js --profile --json > stats.json",
+        "print-stats": "webpack --config config/webpack.prod.js --entry ./src/index.ts --profile --json > stats.json",
         "lint:eslint": "eslint .",
         "lint:prettier": "prettier --check . --end-of-line auto",
         "lint:prettier:fix": "prettier --check . --end-of-line auto --write",
