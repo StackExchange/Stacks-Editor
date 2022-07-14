@@ -42,9 +42,9 @@ import { _t } from "../../shared/localization";
 export * from "./tables";
 
 /**
- * Builds a command which toggle the passed in node type
+ * Builds a command which wraps/unwraps the current selection with the passed in node type
  * @param nodeType
- * @returns A command to toggle the node type
+ * @returns A command to toggle the wrapper node
  * Commands are functions that take a state and an optional
  * transaction dispatch function and...
  *
