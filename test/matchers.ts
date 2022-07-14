@@ -126,3 +126,56 @@ expect.extend({
         };
     },
 });
+
+export function createBasicNodeTree(input: string): CompareTree {
+    const branches = input
+        .split(">")
+        .map((x) => x.trim())
+        .reverse();
+    if (!branches.length) return {};
+
+    let branch = branches.pop();
+    const root: CompareTree = {
+        "type.name": branch,
+    };
+
+    branch = branches.pop();
+    let node: CompareTree = root;
+    while (branch) {
+        if (isNaN(Number(branch))) {
+            const child = {
+                "type.name": branch,
+            };
+            node.content = [child];
+
+            node = child;
+            branch = branches.pop();
+        } else {
+            node.childCount = Number(branch);
+            return root;
+        }
+    }
+    return root;
+}
+
+describe("createBasicNodeTree", () => {
+    it("creates nested tree", () => {
+        const input = "doc>blockquote>paragraph>1";
+        const expected = {
+            "type.name": "doc",
+            "content": [
+                {
+                    "type.name": "blockquote",
+                    "content": [
+                        {
+                            "type.name": "paragraph",
+                            "childCount": 1,
+                        },
+                    ],
+                },
+            ],
+        };
+        const result = createBasicNodeTree(input);
+        expect(result).toEqual(expected);
+    });
+});
