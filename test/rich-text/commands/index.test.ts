@@ -534,8 +534,8 @@ describe("commands", () => {
         it.each([
             [`middle of some text`, false],
             [`<em>cannot exit emphasis from anywhere</em>`, true],
-            [`<sup>cannot exit emphasis from anywhere</sup>`, true],
-            [`<sub>cannot exit emphasis from anywhere</sub>`, true],
+            [`<sup>cannot exit sup from anywhere</sup>`, true],
+            [`<sub>cannot exit sub from anywhere</sub>`, true],
             [`<code>cannot exit code from middle</code>`, false],
         ])("should not exit unexitable marks", (input, positionCursorAtEnd) => {
             let state = createState(input, []);
