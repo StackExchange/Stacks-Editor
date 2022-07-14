@@ -19,7 +19,6 @@ export const defaultStrings = {
         bold: shortcut("Bold"),
         code_block: shortcut("Code block"),
         emphasis: shortcut("Italic"),
-        overflow: "Overflow",
         heading: {
             dropdown: shortcut("Heading"),
             entry: ({ level }: { level: number }) => `Heading ${level}`,
@@ -29,6 +28,7 @@ export const defaultStrings = {
         image: shortcut("Image"),
         inline_code: shortcut("Inline code"),
         link: shortcut("Link"),
+        moreFormatting: "More formatting",
         ordered_list: shortcut("Numbered list"),
         redo: shortcut("Redo"),
         spoiler: shortcut("Spoiler"),

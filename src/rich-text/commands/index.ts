@@ -474,40 +474,36 @@ const headingDropdown = (schema: Schema) =>
         )
     );
 
-const overflowDropdown = (schema: Schema, options: CommonViewOptions) =>
+const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
     makeMenuDropdown(
-        "Overflow",
-        _t("commands.overflow"),
-        "overflow-dropdown",
+        "More formatting",
+        _t("commands.moreFormatting"),
+        "more-formatting-dropdown",
         () => true,
         () => false,
         dropdownItem(
             _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
             toggleTagLinkCommand(options.parserFeatures.tagLinks.allowNonAscii),
             "tag-btn",
-            nodeTypeActive(schema.nodes.tagLink),
-            ["fs-body1", "mt8"]
+            nodeTypeActive(schema.nodes.tagLink)
         ),
         dropdownItem(
             _t("commands.spoiler", { shortcut: getShortcut("Mod-]") }),
             toggleWrapIn(schema.nodes.spoiler),
             "spoiler-btn",
-            nodeTypeActive(schema.nodes.spoiler),
-            ["fs-body1", "mt8"]
+            nodeTypeActive(schema.nodes.spoiler)
         ),
         dropdownItem(
             _t("commands.sub", { shortcut: getShortcut("Mod-;") }),
             toggleMark(schema.marks.sub),
             "subscript-btn",
-            markActive(schema.marks.sub),
-            ["fs-body1", "mt8"]
+            markActive(schema.marks.sub)
         ),
         dropdownItem(
             _t("commands.sup", { shortcut: getShortcut("Mod-:") }),
             toggleMark(schema.marks.sup),
             "superscript-btn",
-            markActive(schema.marks.sup),
-            ["fs-body1", "mt8"]
+            markActive(schema.marks.sup)
         )
     );
 
@@ -642,7 +638,7 @@ export const createMenuEntries = (
                 options.parserFeatures.tables
             ),
             addIf(tableDropdown(), options.parserFeatures.tables),
-            overflowDropdown(schema, options),
+            moreFormattingDropdown(schema, options),
         ],
     },
     {
