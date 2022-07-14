@@ -127,6 +127,11 @@ expect.extend({
     },
 });
 
+/**
+ * Creates a simple nested node tree with the passed in path
+ * @param input valid node names separated by a `>` symbol, and optionally ending in a number of child nodes
+ * @returns a CompareTree to be used with `toMatchNodeTree`
+ */
 export function createBasicNodeTree(input: string): CompareTree {
     const branches = input
         .split(">")
