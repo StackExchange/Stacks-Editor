@@ -155,17 +155,6 @@ export function toggleTagLinkCommand(allowNonAscii: boolean) {
             return false;
         }
 
-        if (
-            !validateTagName(
-                state.selection
-                    .content()
-                    .content.firstChild?.textContent.trim(),
-                allowNonAscii
-            )
-        ) {
-            return false;
-        }
-
         if (!dispatch) {
             return true;
         }
@@ -178,8 +167,13 @@ export function toggleTagLinkCommand(allowNonAscii: boolean) {
 
             tr = state.tr.replaceSelectionWith(state.schema.text(selectedText));
         } else {
-            const selectedText =
-                state.selection.content().content.firstChild?.textContent;
+            const selectedText = state.selection
+                .content()
+                .content.firstChild?.textContent.trim();
+
+            if (!validateTagName(selectedText, allowNonAscii)) {
+                return false;
+            }
 
             const newTagNode = state.schema.nodes.tagLink.create({
                 tagName: selectedText,
@@ -476,7 +470,7 @@ const headingDropdown = (schema: Schema) =>
 
 const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
     makeMenuDropdown(
-        "More formatting",
+        "MoreFormatting",
         _t("commands.moreFormatting"),
         "more-formatting-dropdown",
         () => true,
