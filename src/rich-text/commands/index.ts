@@ -1,7 +1,12 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
-import { EditorState, TextSelection, Transaction } from "prosemirror-state";
+import {
+    Command,
+    EditorState,
+    TextSelection,
+    Transaction,
+} from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
@@ -36,8 +41,20 @@ import { _t } from "../../shared/localization";
 
 export * from "./tables";
 
-//TODO
-export function toggleWrapIn(nodeType: NodeType) {
+/**
+ * Builds a command which toggle the passed in node type
+ * @param nodeType
+ * @returns A command to toggle the node type
+ * Commands are functions that take a state and an optional
+ * transaction dispatch function and...
+ *
+ *  - determine whether they apply to this state
+ *  - if not, return false
+ *  - if `dispatch` was passed, perform their effect, possibly by
+ *    passing a transaction to `dispatch`
+ *  - return true
+ */
+export function toggleWrapIn(nodeType: NodeType): Command {
     const nodeCheck = nodeTypeActive(nodeType);
     const wrapInCommand = wrapIn(nodeType);
 
