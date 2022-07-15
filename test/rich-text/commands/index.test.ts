@@ -13,7 +13,8 @@ import {
     testRichTextSchema,
 } from "../test-helpers";
 import "../../matchers";
-import { Node } from "prosemirror-model";
+import { toggleMark, wrapIn } from "prosemirror-commands";
+import { MarkType } from "prosemirror-model";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;
@@ -418,7 +419,7 @@ describe("commands", () => {
         it("should not insert with whitespace in tag name", () => {
             let state = createState("tag with spaces", []);
 
-            state = applySelection(state, 0, 16); //"is"
+            state = applySelection(state, 0, 16);
 
             const { newState, isValid } = executeTransaction(
                 state,
@@ -436,6 +437,44 @@ describe("commands", () => {
 
             expect(containsTagLink).toBeFalsy();
         });
+
+        it.each([
+            [createState("", []).schema.marks.link],
+            [createState("", []).schema.marks.code],
+        ])(
+            "should not insert tag in text node with certain marks",
+            (mark: MarkType) => {
+                let state = createState("thisIsMyText", []);
+
+                state = applySelection(state, 0, 13);
+
+                const markResult = executeTransaction(state, toggleMark(mark));
+
+                expect(markResult.isValid).toBeTruthy();
+
+                markResult.newState = applySelection(markResult.newState, 2, 6);
+
+                const tagLinkResult = executeTransaction(
+                    markResult.newState,
+                    toggleTagLinkCommand(true)
+                );
+
+                expect(tagLinkResult.isValid).toBeFalsy();
+
+                let containsTagLink = false;
+                tagLinkResult.newState.doc.nodesBetween(
+                    0,
+                    tagLinkResult.newState.doc.content.size,
+                    (node) => {
+                        containsTagLink = node.type.name === "tagLink";
+
+                        return !containsTagLink;
+                    }
+                );
+
+                expect(containsTagLink).toBeFalsy();
+            }
+        );
 
         it("should replace selected text with tagLink", () => {
             let state = createState("this is my state", []);

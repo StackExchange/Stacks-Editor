@@ -1,7 +1,12 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
-import { EditorState, TextSelection, Transaction } from "prosemirror-state";
+import {
+    EditorState,
+    TextSelection,
+    Transaction,
+    Selection,
+} from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
@@ -155,6 +160,10 @@ export function toggleTagLinkCommand(allowNonAscii: boolean) {
             return false;
         }
 
+        if (!isValidTagLinkTarget(state.schema, state.selection)) {
+            return false;
+        }
+
         if (!dispatch) {
             return true;
         }
@@ -186,6 +195,30 @@ export function toggleTagLinkCommand(allowNonAscii: boolean) {
 
         return true;
     };
+}
+
+/**
+ * Validates whether the target of our selection is within a valid context. e.g. not in a link
+ * @param schema Current editor schema
+ * @param selection Current selection handle
+ */
+function isValidTagLinkTarget(schema: Schema, selection: Selection): boolean {
+    const invalidNodeTypes = [
+        schema.nodes.horizontal_rule,
+        schema.nodes.code_block,
+        schema.nodes.image,
+    ];
+
+    const invalidNodeMarks = [schema.marks.link, schema.marks.code];
+
+    const hasInvalidMark =
+        selection.$head.marks().filter((f) => invalidNodeMarks.includes(f.type))
+            .length != 0;
+
+    return (
+        !invalidNodeTypes.includes(selection.$head.parent.type) &&
+        !hasInvalidMark
+    );
 }
 
 /**
