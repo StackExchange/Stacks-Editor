@@ -13,7 +13,7 @@ import {
     testRichTextSchema,
 } from "../test-helpers";
 import "../../matchers";
-import { toggleMark, wrapIn } from "prosemirror-commands";
+import { toggleMark } from "prosemirror-commands";
 import { MarkType } from "prosemirror-model";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
@@ -627,6 +627,7 @@ describe("commands", () => {
             [`<sup>cannot exit sup from anywhere</sup>`, true],
             [`<sub>cannot exit sub from anywhere</sub>`, true],
             [`<code>cannot exit code from middle</code>`, false],
+            [`<kbd>cannot exit kbd from middle</kbd>`, false],
         ])("should not exit unexitable marks", (input, positionCursorAtEnd) => {
             let state = createState(input, []);
 

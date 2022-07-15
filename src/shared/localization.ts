@@ -27,6 +27,7 @@ export const defaultStrings = {
         horizontal_rule: shortcut("Horizontal rule"),
         image: shortcut("Image"),
         inline_code: shortcut("Inline code"),
+        kbd: shortcut("Keyboard"),
         link: shortcut("Link"),
         moreFormatting: "More formatting",
         ordered_list: shortcut("Numbered list"),

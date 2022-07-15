@@ -550,6 +550,12 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
             toggleMark(schema.marks.sup),
             "superscript-btn",
             markActive(schema.marks.sup)
+        ),
+        dropdownItem(
+            _t("commands.kbd", { shortcut: getShortcut("Mod-'") }),
+            toggleMark(schema.marks.kbd),
+            "kbd-btn",
+            markActive(schema.marks.kbd)
         )
     );
 
