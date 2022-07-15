@@ -1,31 +1,44 @@
 .s-code-block.markdown {
-    .tok-heading {
-        color: var(--black-800) !important;
-        font-weight: bold;
-        font-size: var(--fs-body2);
-    }
+    // CONTROL CHARACTERS
 
-    .tok-url,
-    .tok-labelName {
-        &,
-        &.tok-link {
-            color: var(--blue-600) !important;
-        }
-    }
-
-    .tok-link,
+    .tok-string,
     .tok-meta {
-        color: var(--black-600) !important;
+        color: var(--highlight-comment) !important;
     }
 
-    // TODO taken from upstream .hljs-strong
+    // TEXT
+
+    .tok-heading {
+        color: var(--highlight-color);
+        font-size: var(--fs-body2);
+        font-weight: bold;
+    }
+
     .tok-strong {
         font-weight: bold;
     }
 
-    // TODO taken from upstream .hljs-emphasis
     .tok-emphasis {
         font-style: italic;
+    }
+
+    // LINKS + URLS
+
+    .tok-link {
+        color: var(--highlight-namespace);
+
+        &.tok-labelName {
+            color: var(--highlight-keyword);
+        }
+    }
+
+    .tok-url {
+        color: var(--highlight-keyword);
+        text-decoration: underline;
+    }
+
+    .tok-labelName {
+        color: var(--highlight-comment);
     }
 }
 
