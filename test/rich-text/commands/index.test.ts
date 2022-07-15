@@ -7,11 +7,13 @@ import {
     toggleWrapIn,
 } from "../../../src/rich-text/commands";
 import {
+    applyNodeSelection,
     applySelection,
     createState,
     testRichTextSchema,
 } from "../test-helpers";
 import "../../matchers";
+import { Node } from "prosemirror-model";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;
@@ -463,6 +465,55 @@ describe("commands", () => {
                             {
                                 isText: true,
                                 text: " my state",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+
+        it("should untoggle tagLink when selected", () => {
+            let state = createState("someText", []);
+
+            state = applySelection(state, 0, 8); // cursor is inside the tag
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagLinkCommand(true)
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                "type.name": "tagLink",
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            const nodeSelection = applyNodeSelection(newState, 1);
+
+            const { newState: newerState, isValid: isStillValid } =
+                executeTransaction(nodeSelection, toggleTagLinkCommand(true));
+
+            expect(isStillValid).toBeTruthy();
+
+            expect(newerState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "someText",
                             },
                         ],
                     },
