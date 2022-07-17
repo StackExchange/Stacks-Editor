@@ -512,9 +512,15 @@ const marks: {
 
     kbd: genHtmlInlineMarkSpec({ exitable: true, inclusive: true }, "kbd"),
 
-    sup: genHtmlInlineMarkSpec({}, "sup"),
+    sup: {
+        ...genHtmlInlineMarkSpec({}, "sup"),
+        excludes: "",
+    },
 
-    sub: genHtmlInlineMarkSpec({}, "sub"),
+    sub: {
+        ...genHtmlInlineMarkSpec({}, "sub"),
+        excludes: "",
+    }
 };
 
 // for *every* mark, add in support for the `markup` attribute
