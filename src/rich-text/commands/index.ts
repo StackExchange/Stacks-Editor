@@ -176,16 +176,21 @@ export function toggleTagLinkCommand(allowNonAscii: boolean) {
 
             tr = state.tr.replaceSelectionWith(state.schema.text(selectedText));
         } else {
-            const selectedText = state.selection
-                .content()
-                .content.firstChild?.textContent.trim();
+            const selectedText =
+                state.selection.content().content.firstChild?.textContent;
 
-            if (!validateTagName(selectedText, allowNonAscii)) {
+            // If we have a trailing space, update the selection to not include it.
+            if (selectedText.endsWith(" ")) {
+                const { from, to } = state.selection;
+                state.selection = TextSelection.create(state.doc, from, to - 1);
+            }
+
+            if (!validateTagName(selectedText.trim(), allowNonAscii)) {
                 return false;
             }
 
             const newTagNode = state.schema.nodes.tagLink.create({
-                tagName: selectedText,
+                tagName: selectedText.trim(),
             });
 
             tr = state.tr.replaceSelectionWith(newTagNode);
