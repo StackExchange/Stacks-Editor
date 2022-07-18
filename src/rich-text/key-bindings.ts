@@ -73,9 +73,13 @@ export function allKeymaps(
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
         ...bindLetterKeymap(
             "Mod-[",
-            toggleTagLinkCommand(parserFeatures.tagLinks.allowNonAscii)
+            toggleTagLinkCommand(parserFeatures.tagLinks.allowNonAscii, false)
         ),
-        ...bindLetterKeymap("Mod-]", wrapIn(schema.nodes.spoiler)),
+        ...bindLetterKeymap(
+            "Mod-]",
+            toggleTagLinkCommand(parserFeatures.tagLinks.allowNonAscii, true)
+        ),
+        ...bindLetterKeymap("Mod-/", wrapIn(schema.nodes.spoiler)),
         ...bindLetterKeymap("Mod-,", toggleMark(schema.marks.sub)),
         ...bindLetterKeymap("Mod-.", toggleMark(schema.marks.sup)),
         ...bindLetterKeymap("Mod-'", toggleMark(schema.marks.kbd)),

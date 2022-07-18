@@ -401,7 +401,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true)
+                toggleTagLinkCommand(true, false)
             );
 
             expect(isValid).toBeFalsy();
@@ -423,7 +423,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true)
+                toggleTagLinkCommand(true, false)
             );
 
             expect(isValid).toBeFalsy();
@@ -456,7 +456,7 @@ describe("commands", () => {
 
                 const tagLinkResult = executeTransaction(
                     markResult.newState,
-                    toggleTagLinkCommand(true)
+                    toggleTagLinkCommand(true, false)
                 );
 
                 expect(tagLinkResult.isValid).toBeFalsy();
@@ -483,7 +483,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true)
+                toggleTagLinkCommand(true, false)
             );
 
             expect(isValid).toBeTruthy();
@@ -518,7 +518,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true)
+                toggleTagLinkCommand(true, false)
             );
 
             expect(isValid).toBeTruthy();
@@ -540,7 +540,10 @@ describe("commands", () => {
             const nodeSelection = applyNodeSelection(newState, 1);
 
             const { newState: newerState, isValid: isStillValid } =
-                executeTransaction(nodeSelection, toggleTagLinkCommand(true));
+                executeTransaction(
+                    nodeSelection,
+                    toggleTagLinkCommand(true, false)
+                );
 
             expect(isStillValid).toBeTruthy();
 

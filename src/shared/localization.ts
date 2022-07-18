@@ -29,6 +29,7 @@ export const defaultStrings = {
         inline_code: shortcut("Inline code"),
         kbd: shortcut("Keyboard"),
         link: shortcut("Link"),
+        metaTagLink: shortcut("Meta Tag"),
         moreFormatting: "More formatting",
         ordered_list: shortcut("Numbered list"),
         redo: shortcut("Redo"),

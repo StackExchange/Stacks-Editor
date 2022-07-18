@@ -154,7 +154,10 @@ function getHeadingLevel(state: EditorState): number {
  * Creates a command that toggles tagLink formatting for a node
  * @param allowNonAscii Whether to allow non-ascii characters in the tag name
  */
-export function toggleTagLinkCommand(allowNonAscii: boolean) {
+export function toggleTagLinkCommand(
+    allowNonAscii: boolean,
+    isMetaTag: boolean
+) {
     return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
         if (state.selection.empty) {
             return false;
@@ -191,6 +194,7 @@ export function toggleTagLinkCommand(allowNonAscii: boolean) {
 
             const newTagNode = state.schema.nodes.tagLink.create({
                 tagName: selectedText.trim(),
+                tagType: isMetaTag ? "meta-tag" : "tag",
             });
 
             tr = state.tr.replaceSelectionWith(newTagNode);
@@ -534,12 +538,24 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
         () => false,
         dropdownItem(
             _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
-            toggleTagLinkCommand(options.parserFeatures.tagLinks.allowNonAscii),
+            toggleTagLinkCommand(
+                options.parserFeatures.tagLinks.allowNonAscii,
+                false
+            ),
             "tag-btn",
             nodeTypeActive(schema.nodes.tagLink)
         ),
         dropdownItem(
-            _t("commands.spoiler", { shortcut: getShortcut("Mod-]") }),
+            _t("commands.metaTagLink", { shortcut: getShortcut("Mod-]") }),
+            toggleTagLinkCommand(
+                options.parserFeatures.tagLinks.allowNonAscii,
+                true
+            ),
+            "tag-btn",
+            nodeTypeActive(schema.nodes.tagLink)
+        ),
+        dropdownItem(
+            _t("commands.spoiler", { shortcut: getShortcut("Mod-/") }),
             toggleWrapIn(schema.nodes.spoiler),
             "spoiler-btn",
             nodeTypeActive(schema.nodes.spoiler)
