@@ -210,7 +210,9 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
-            expect(newState.doc).toMatchNodeTreeString("doc>blockquote>paragraph>1");
+            expect(newState.doc).toMatchNodeTreeString(
+                "doc>blockquote>paragraph>1"
+            );
         });
 
         it("should remove blockquote within blockquote", () => {
@@ -218,7 +220,9 @@ describe("commands", () => {
                 createState("<blockquote>quote</blockquote>", []),
                 3
             );
-            expect(state.doc).toMatchNodeTreeString("doc>blockquote>paragraph>1");
+            expect(state.doc).toMatchNodeTreeString(
+                "doc>blockquote>paragraph>1"
+            );
 
             const toggleBlockQuote = toggleWrapIn(
                 state.schema.nodes.blockquote
@@ -250,7 +254,9 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
-            expect(newState.doc).toMatchNodeTreeString("doc>bullet_list>list_item>blockquote>paragraph>1");
+            expect(newState.doc).toMatchNodeTreeString(
+                "doc>bullet_list>list_item>blockquote>paragraph>1"
+            );
         });
     });
 
