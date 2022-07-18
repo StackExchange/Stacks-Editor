@@ -1,0 +1,10 @@
+{
+    "version": "2.0.0",
+    "tasks": [{
+        "label": "start",
+        "type": "npm",
+        "script": "start",
+        "problemMatcher": [],
+        "isBackground": true,
+    }]
+}

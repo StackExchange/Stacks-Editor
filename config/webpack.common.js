@@ -32,13 +32,6 @@ module.exports = (_, argv) => {
                             options: {
                                 postcssOptions: {
                                     config: "./config/postcss.config.js",
-                                    // add a super hacky flag to postcss to indicate to *not* minify for the stackoverflow config
-                                    // this allows us to share configs/loaders, but differ the behavior for different configs
-                                    _data: {
-                                        minify: !argv["config"][0].includes(
-                                            "stackoverflow"
-                                        ),
-                                    },
                                 },
                             },
                         },
