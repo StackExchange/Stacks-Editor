@@ -17,7 +17,6 @@ import {
 } from "./menu";
 import { EditorType } from "./view";
 
-
 /** A more tightly scoped version of {@link SchemaSpec} so plugins can predictably update the schema */
 interface PluginSchemaSpec extends SchemaSpec {
     nodes: OrderedMap<NodeSpec>;
