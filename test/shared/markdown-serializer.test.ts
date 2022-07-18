@@ -79,8 +79,8 @@ describe("markdown-serializer", () => {
             `<https://www.example.com>`,
         ],
         [
-            "<strong>Bold </strong><em><strong>Both </strong></em><em>Italic</em>",
-            "**Bold _Both_** _Italic_",
+            "<p><strong>This is bold, </strong><em><strong>this is both</strong>, this is emphasis.</em></p>",
+            "**This is bold, _this is both_**_, this is emphasis._",
         ],
     ];
 
