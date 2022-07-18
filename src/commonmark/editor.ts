@@ -1,4 +1,6 @@
+import { parser } from "@lezer/markdown";
 import { history } from "prosemirror-history";
+import { highlightPlugin } from "prosemirror-lezer";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
@@ -31,8 +33,6 @@ import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
 import type MarkdownIt from "markdown-it";
 import { textCopyHandlerPlugin } from "./plugins/text-copy-handler";
-import { highlightPlugin } from "prosemirror-lezer";
-import { parser } from "@lezer/markdown";
 
 export interface CommonmarkOptions extends CommonViewOptions {
     /** Settings for showing a static rendered preview of the editor's contents */
