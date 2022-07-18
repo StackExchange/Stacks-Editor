@@ -540,13 +540,13 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
             nodeTypeActive(schema.nodes.spoiler)
         ),
         dropdownItem(
-            _t("commands.sub", { shortcut: getShortcut("Mod-;") }),
+            _t("commands.sub", { shortcut: getShortcut("Mod-,") }),
             toggleMark(schema.marks.sub),
             "subscript-btn",
             markActive(schema.marks.sub)
         ),
         dropdownItem(
-            _t("commands.sup", { shortcut: getShortcut("Mod-:") }),
+            _t("commands.sup", { shortcut: getShortcut("Mod-.") }),
             toggleMark(schema.marks.sup),
             "superscript-btn",
             markActive(schema.marks.sup)

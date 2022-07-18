@@ -76,8 +76,8 @@ export function allKeymaps(
             toggleTagLinkCommand(parserFeatures.tagLinks.allowNonAscii)
         ),
         ...bindLetterKeymap("Mod-]", wrapIn(schema.nodes.spoiler)),
-        ...bindLetterKeymap("Mod-;", toggleMark(schema.marks.sub)),
-        ...bindLetterKeymap("Mod-:", toggleMark(schema.marks.sup)),
+        ...bindLetterKeymap("Mod-,", toggleMark(schema.marks.sub)),
+        ...bindLetterKeymap("Mod-.", toggleMark(schema.marks.sup)),
         ...bindLetterKeymap("Mod-'", toggleMark(schema.marks.kbd)),
 
         // users expect to be able to leave certain blocks/marks using the arrow keys
