@@ -248,7 +248,7 @@ _world_.
         });
         
         // skip pending resolution of upstream issues with prosemirror that are preventing this from working properly
-        it.skip("should allow nested <sub><sub>text</sub></sub> strings", () => {
+        it("should allow nested <sub><sub>text</sub></sub> strings", () => {
             const markdown = "<sub><sub>text</sub></sub>";
             const richEditorView = richView(markdown);
             const expectedHtml = "<p><sub><sub>text</sub></sub></p>"; // should not be changed

@@ -515,11 +515,23 @@ const marks: {
     sup: {
         ...genHtmlInlineMarkSpec({}, "sup"),
         excludes: "",
+        attrs: {
+            nesting: {
+                default: null
+            }
+        },
+        parseDOM: [{ tag: "sup", getAttrs: nesting("sup") }],
     },
 
     sub: {
         ...genHtmlInlineMarkSpec({}, "sub"),
         excludes: "",
+        attrs: {
+            nesting: {
+                default: null
+            }
+        },
+        parseDOM: [{ tag: "sub", getAttrs: nesting("sub") }],
     }
 };
 
@@ -583,3 +595,18 @@ function genHtmlInlineMarkSpec(
         parseDOM: tags.map((tag) => ({ tag: tag })),
     };
 }
+
+function nesting(...args : string[]) {
+    const fn = (node : any) => {
+      let el = (node as HTMLElement).parentElement
+      let nesting = 0
+      while(el !== null) {
+        if (args.includes(el.tagName)) {
+            nesting++
+        }
+        el = el.parentElement
+      }
+      return {nesting: nesting}
+    }
+    return fn
+  }
