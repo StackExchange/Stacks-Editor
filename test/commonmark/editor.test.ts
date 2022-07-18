@@ -1,7 +1,7 @@
 import { CommonmarkEditor } from "../../src/commonmark/editor";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import { schema } from "prosemirror-markdown";
-import { externalPluginProvider } from "../test-helpers";
+import { externalPluginProvider, normalize } from "../test-helpers";
 
 const target = document.createElement("div");
 const markdownRoundTripData = [
@@ -133,6 +133,17 @@ describe("commonmark editor view", () => {
 
     describe("external plugins", () => {
         it.todo("should do all the things");
+    });
+
+    it("should have syntax highlighting", () => {
+        const markdown = "**Hello** _world_!";
+
+        const view = commonmarkView(markdown);
+        const dom = view.dom;
+
+        expect(normalize(dom.innerHTML)).toBe(
+            `<pre class="s-code-block markdown"><code><span class="tok-strong tok-meta">**</span><span class="tok-strong">Hello</span><span class="tok-strong tok-meta">**</span> <span class="tok-emphasis tok-meta">_</span><span class="tok-emphasis">world</span><span class="tok-emphasis tok-meta">_</span>!</code></pre>`
+        );
     });
 });
 
