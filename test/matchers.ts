@@ -1,5 +1,4 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
-
 /*
  * NOTE: Add all exposed matches to `expect.extend` at the bottom
  * and add all the definitions below so TS can pick them up without error
@@ -11,6 +10,7 @@ declare global {
     namespace jest {
         interface Matchers<R> {
             toMatchNodeTree(tree: CompareTree): R;
+            toMatchNodeTreeString(tree: string): R;
         }
     }
 }
@@ -113,20 +113,6 @@ function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
     }
 }
 
-expect.extend({
-    toMatchNodeTree(doc: ProsemirrorNode, tree: CompareTree) {
-        // call the backing expect wrapper
-        expectNodeTree(doc, tree);
-
-        return {
-            // no error message on pass - we don't support "not" here
-            message: () => null,
-            // always assume a pass, expectNodeTree will throw an exception if it doesn't
-            pass: true,
-        };
-    },
-});
-
 /**
  * Creates a simple nested node tree with the passed in path
  * @param input valid node names separated by a `>` symbol, and optionally ending in a number of child nodes
@@ -162,3 +148,33 @@ export function createBasicNodeTree(input: string): CompareTree {
     }
     return root;
 }
+
+function toMatchNodeTree(
+    doc: ProsemirrorNode,
+    tree: CompareTree
+): jest.CustomMatcherResult {
+    // call the backing expect wrapper
+    expectNodeTree(doc, tree);
+
+    return {
+        // no error message on pass - we don't support "not" here
+        message: () => null,
+        // always assume a pass, expectNodeTree will throw an exception if it doesn't
+        pass: true,
+    };
+}
+
+expect.extend({
+    toMatchNodeTree,
+    /**
+     * Matches doc against a CSS-like tree of nodes, separated by `>`
+     * @param doc the current document to match against
+     * @param tree a string of nodes, with an optional last number of children
+     * ex. "doc>blockquote>paragraph>1"
+     * ex. "doc>paragraph"
+     * @returns the expect result
+     */
+    toMatchNodeTreeString(doc: ProsemirrorNode, tree: string) {
+        return toMatchNodeTree(doc, createBasicNodeTree(tree));
+    },
+});

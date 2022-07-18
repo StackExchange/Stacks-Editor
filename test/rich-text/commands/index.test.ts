@@ -11,7 +11,6 @@ import {
     testRichTextSchema,
 } from "../test-helpers";
 import "../../matchers";
-import { createBasicNodeTree } from "../../matchers";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;
@@ -200,9 +199,7 @@ describe("commands", () => {
     describe("toggleWrapIn", () => {
         it("should apply blockquote within paragraph", () => {
             const state = applySelection(createState("<p>quote</p>", []), 3);
-            expect(state.doc).toMatchNodeTree(
-                createBasicNodeTree("doc>paragraph>1")
-            );
+            expect(state.doc).toMatchNodeTreeString("doc>paragraph>1");
 
             const toggleBlockQuote = toggleWrapIn(
                 state.schema.nodes.blockquote
@@ -213,9 +210,7 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
-            expect(newState.doc).toMatchNodeTree(
-                createBasicNodeTree("doc>blockquote>paragraph>1")
-            );
+            expect(newState.doc).toMatchNodeTreeString("doc>blockquote>paragraph>1");
         });
 
         it("should remove blockquote within blockquote", () => {
@@ -223,9 +218,7 @@ describe("commands", () => {
                 createState("<blockquote>quote</blockquote>", []),
                 3
             );
-            expect(state.doc).toMatchNodeTree(
-                createBasicNodeTree("doc>blockquote>paragraph>1")
-            );
+            expect(state.doc).toMatchNodeTreeString("doc>blockquote>paragraph>1");
 
             const toggleBlockQuote = toggleWrapIn(
                 state.schema.nodes.blockquote
@@ -236,9 +229,7 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
-            expect(newState.doc).toMatchNodeTree(
-                createBasicNodeTree("doc>paragraph>1")
-            );
+            expect(newState.doc).toMatchNodeTreeString("doc>paragraph>1");
         });
 
         it("should toggle blockquote within list item", () => {
@@ -259,10 +250,7 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
-            const expected = createBasicNodeTree(
-                "doc>bullet_list>list_item>blockquote>paragraph>1"
-            );
-            expect(newState.doc).toMatchNodeTree(expected);
+            expect(newState.doc).toMatchNodeTreeString("doc>bullet_list>list_item>blockquote>paragraph>1");
         });
     });
 

@@ -43,7 +43,7 @@ export * from "./tables";
 
 /**
  * Builds a command which wraps/unwraps the current selection with the passed in node type
- * @param nodeType
+ * @param nodeType the type of node to wrap the selection in
  * @returns A command to toggle the wrapper node
  * Commands are functions that take a state and an optional
  * transaction dispatch function and...
