@@ -1,52 +1,19 @@
 .s-code-block.markdown {
-    // TEXT
-
-    .tok-heading {
-        color: var(--highlight-color);
+    .hljs-section {
+        color: var(--black-800) !important;
+        font-weight: bold;
         font-size: var(--fs-body2);
-        font-weight: bold;
     }
 
-    .tok-strong {
-        font-weight: bold;
+    .hljs-quote,
+    .hljs-string,
+    .hljs-symbol,
+    .hljs-tag {
+        color: var(--black-600) !important;
     }
 
-    .tok-emphasis {
-        font-style: italic;
-    }
-
-    .tok-quote {
-        color: var(--highlight-comment);
-    }
-
-    // LINKS + URLS
-
-    .tok-link {
-        color: var(--highlight-namespace);
-
-        &.tok-labelName {
-            color: var(--highlight-keyword);
-        }
-    }
-
-    .tok-url {
-        color: var(--highlight-keyword);
+    .hljs-link {
+        color: var(--blue-600) !important;
         text-decoration: underline;
     }
-
-    .tok-labelName {
-        color: var(--highlight-comment);
-    }
-
-    // SPECIAL CHARACTERS
-    //NOTE: these are placed last so they take precedence over the rest of the token styles
-
-    .tok-string,
-    .tok-meta,
-    .tok-tagName {
-        color: var(--highlight-comment);
-    }
 }
-
-// TODO inline code text
-// TODO code block text
