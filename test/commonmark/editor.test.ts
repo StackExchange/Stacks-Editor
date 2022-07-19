@@ -142,7 +142,7 @@ describe("commonmark editor view", () => {
         const dom = view.dom;
 
         expect(normalize(dom.innerHTML)).toBe(
-            `<pre class="s-code-block markdown"><code><span class="tok-strong tok-meta">**</span><span class="tok-strong">Hello</span><span class="tok-strong tok-meta">**</span> <span class="tok-emphasis tok-meta">_</span><span class="tok-emphasis">world</span><span class="tok-emphasis tok-meta">_</span>!</code></pre>`
+            `<pre class="s-code-block markdown"><code><span class="hljs-strong hljs-symbol">**</span><span class="hljs-strong">Hello</span><span class="hljs-strong hljs-symbol">**</span> <span class="hljs-emphasis hljs-symbol">_</span><span class="hljs-emphasis">world</span><span class="hljs-emphasis hljs-symbol">_</span>!</code></pre>`
         );
     });
 });
