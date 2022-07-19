@@ -3,36 +3,6 @@ import { createView } from "../../rich-text/test-helpers";
 import { normalize } from "../../test-helpers";
 import { createState } from "../test-helpers";
 
-/*
-        // commonmark
-        { tag: tags.quote, class: "hljs-quote" },
-        { tag: tags.contentSeparator, class: "hljs-built_in" },
-        { tag: tags.heading1, class: "hljs-section" },
-        { tag: tags.heading2, class: "hljs-section" },
-        { tag: tags.heading3, class: "hljs-section" },
-        { tag: tags.heading4, class: "hljs-section" },
-        { tag: tags.heading5, class: "hljs-section" },
-        { tag: tags.heading6, class: "hljs-section" },
-        { tag: tags.comment, class: "hljs-comment" },
-        { tag: tags.escape, class: "hljs-literal" },
-        { tag: tags.character, class: "hljs-symbol" },
-        { tag: tags.emphasis, class: "hljs-emphasis" },
-        { tag: tags.strong, class: "hljs-strong" },
-        { tag: tags.link, class: "hljs-string" },
-        { tag: tags.monospace, class: "hljs-code" },
-        { tag: tags.url, class: "hljs-link" },
-        { tag: tags.processingInstruction, class: "hljs-symbol" },
-        { tag: tags.labelName, class: "hljs-string" },
-        { tag: tags.string, class: "hljs-string" },
-        { tag: tags.tagName, class: "hljs-tag" },
-        // extensions
-        { tag: tags.strikethrough, class: "tok-strike" },
-        { tag: tags.heading, class: "hljs-strong" },
-        // no highlighting
-        { tag: tags.content, class: "" },
-        { tag: tags.list, class: "" },
-         */
-
 describe("markdown highlight plugin", () => {
     it.each([
         {
