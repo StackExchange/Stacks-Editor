@@ -77,10 +77,6 @@ describe("markdown highlight plugin", () => {
             expected: `<span class="hljs-symbol">\`</span><span class="hljs-code">code</span><span class="hljs-symbol">\`</span>`,
         },
         {
-            content: "<kbd>html</kbd>",
-            expected: `<span class="hljs-tag">&lt;kbd&gt;</span>html<span class="hljs-tag">&lt;/kbd&gt;</span>`,
-        },
-        {
             content: "* list\n* list2",
             expected: `<span class="hljs-symbol">*</span> list<span class="hljs-symbol">*</span> list2`,
         },
@@ -105,6 +101,11 @@ describe("markdown highlight plugin", () => {
             expected: `| table || --- || cell |`,
             parserFeatures: {},
         },
+        {
+            content: "<kbd>html</kbd>",
+            expected: `&lt;kbd&gt;html&lt;/kbd&gt;`,
+            parserFeatures: {},
+        },
         // enabled
         {
             content: `~~strikethrough~~`,
@@ -118,6 +119,13 @@ describe("markdown highlight plugin", () => {
             expected: `<span class="hljs-strong hljs-symbol">|</span><span class="hljs-strong"> table </span><span class="hljs-strong hljs-symbol">|</span><span class="hljs-symbol">| --- |</span><span class="hljs-symbol">|</span> cell <span class="hljs-symbol">|</span>`,
             parserFeatures: {
                 tables: true,
+            },
+        },
+        {
+            content: "<kbd>html</kbd>",
+            expected: `<span class="hljs-tag">&lt;kbd&gt;</span>html<span class="hljs-tag">&lt;/kbd&gt;</span>`,
+            parserFeatures: {
+                html: true,
             },
         },
     ])(
