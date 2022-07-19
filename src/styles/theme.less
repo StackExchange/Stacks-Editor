@@ -1,11 +1,4 @@
 .s-code-block.markdown {
-    // CONTROL CHARACTERS
-
-    .tok-string,
-    .tok-meta {
-        color: var(--highlight-comment) !important;
-    }
-
     // TEXT
 
     .tok-heading {
@@ -20,6 +13,10 @@
 
     .tok-emphasis {
         font-style: italic;
+    }
+
+    .tok-quote {
+        color: var(--highlight-comment);
     }
 
     // LINKS + URLS
@@ -41,10 +38,11 @@
         color: var(--highlight-comment);
     }
 
-    .tok-quote {
-        color: var(--highlight-comment);
-    }
+    // SPECIAL CHARACTERS
+    //NOTE: these are placed last so they take precedence over the rest of the token styles
 
+    .tok-string,
+    .tok-meta,
     .tok-tagName {
         color: var(--highlight-comment);
     }
