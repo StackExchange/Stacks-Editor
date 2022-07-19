@@ -401,7 +401,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true, false)
+                toggleTagLinkCommand(() => true, false)
             );
 
             expect(isValid).toBeFalsy();
@@ -416,14 +416,14 @@ describe("commands", () => {
             expect(containsTagLink).toBeFalsy();
         });
 
-        it("should not insert with whitespace in tag name", () => {
+        it("should not insert when the text fails validation", () => {
             let state = createState("tag with spaces", []);
 
-            state = applySelection(state, 0, 16);
+            state = applySelection(state, 1, 15);
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true, false)
+                toggleTagLinkCommand(() => false, false)
             );
 
             expect(isValid).toBeFalsy();
@@ -446,7 +446,7 @@ describe("commands", () => {
             (mark: MarkType) => {
                 let state = createState("thisIsMyText", []);
 
-                state = applySelection(state, 0, 13);
+                state = applySelection(state, 1, 12);
 
                 const markResult = executeTransaction(state, toggleMark(mark));
 
@@ -456,7 +456,7 @@ describe("commands", () => {
 
                 const tagLinkResult = executeTransaction(
                     markResult.newState,
-                    toggleTagLinkCommand(true, false)
+                    toggleTagLinkCommand(() => true, false)
                 );
 
                 expect(tagLinkResult.isValid).toBeFalsy();
@@ -483,7 +483,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true, false)
+                toggleTagLinkCommand(() => true, false)
             );
 
             expect(isValid).toBeTruthy();
@@ -518,7 +518,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(true, false)
+                toggleTagLinkCommand(() => true, false)
             );
 
             expect(isValid).toBeTruthy();
@@ -542,7 +542,7 @@ describe("commands", () => {
             const { newState: newerState, isValid: isStillValid } =
                 executeTransaction(
                     nodeSelection,
-                    toggleTagLinkCommand(true, false)
+                    toggleTagLinkCommand(() => true, false)
                 );
 
             expect(isStillValid).toBeTruthy();
