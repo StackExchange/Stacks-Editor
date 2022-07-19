@@ -517,8 +517,8 @@ const marks: {
         excludes: "",
         attrs: {
             nesting: {
-                default: null
-            }
+                default: null,
+            },
         },
         parseDOM: [{ tag: "sup", getAttrs: nesting("sup") }],
     },
@@ -528,11 +528,11 @@ const marks: {
         excludes: "",
         attrs: {
             nesting: {
-                default: null
-            }
+                default: null,
+            },
         },
         parseDOM: [{ tag: "sub", getAttrs: nesting("sub") }],
-    }
+    },
 };
 
 // for *every* mark, add in support for the `markup` attribute
@@ -596,17 +596,18 @@ function genHtmlInlineMarkSpec(
     };
 }
 
-function nesting(...args : string[]) {
-    const fn = (node : any) => {
-      let el = (node as HTMLElement).parentElement
-      let nesting = 0
-      while(el !== null) {
-        if (args.includes(el.tagName)) {
-            nesting++
+// TODO necessary? Might be required for pasting from other sources
+function nesting(...args: string[]) {
+    const fn = (node: HTMLElement) => {
+        let el = node.parentElement;
+        let nesting = 0;
+        while (el !== null) {
+            if (args.includes(el.tagName)) {
+                nesting++;
+            }
+            el = el.parentElement;
         }
-        el = el.parentElement
-      }
-      return {nesting: nesting}
-    }
-    return fn
-  }
+        return { nesting: nesting };
+    };
+    return fn;
+}

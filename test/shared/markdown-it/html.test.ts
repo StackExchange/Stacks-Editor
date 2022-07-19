@@ -189,6 +189,22 @@ describe("html markdown-it plugin", () => {
             expect(tokens).toHaveLength(1);
             expect(tokens[0].type).toBe("html_block");
         });
+
+        it("should handle nested inline tags of the same type", () => {
+            const markdown = `<sub>1<sub>2</sub>3</sub>`;
+            const tokens = instance.parse(markdown, {});
+            expect(tokens).toHaveLength(3);
+            const inline = tokens[1];
+            expect(inline.type).toBe("inline");
+            expect(inline.children).toHaveLength(7);
+            expect(inline.children[0].type).toBe("sub_open");
+            expect(inline.children[1].type).toBe("text");
+            expect(inline.children[2].type).toBe("sub_open");
+            expect(inline.children[3].type).toBe("text");
+            expect(inline.children[4].type).toBe("sub_close");
+            expect(inline.children[5].type).toBe("text");
+            expect(inline.children[6].type).toBe("sub_close");
+        });
     });
 
     describe("html_block", () => {

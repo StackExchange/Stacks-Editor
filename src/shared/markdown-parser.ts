@@ -19,7 +19,12 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     pre: { block: "pre" },
     kbd: { mark: "kbd" },
     sup: { mark: "sup" },
-    sub: { mark: "sub" },
+    sub: {
+        mark: "sub",
+        getAttrs: (token: Token) => ({
+            nesting: token.attrGet("nesting"),
+        }),
+    },
 
     html_inline: {
         node: "html_inline",

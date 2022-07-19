@@ -323,6 +323,19 @@ function sanitizeHtmlInlineToken(token: Token): Token {
  * @param tokens The tokens to sanitize
  */
 function sanitizeInlineHtmlTokens(tokens: Token[]): Token[] {
+    // keep track of how deep we're nesting tokens of the same type in case we need to set nested mark attributes
+    const nestingLevel: Record<string, number> = {};
+
+    const increaseNestingLevel = (tag: string) => {
+        nestingLevel[tag] = (nestingLevel[tag] || 0) + 1;
+    };
+    const decreaseNestingLevel = (tag: string) => {
+        nestingLevel[tag] = (nestingLevel[tag] || 0) - 1;
+        if (nestingLevel[tag] < 0) {
+            nestingLevel[tag] = 0;
+        }
+    };
+
     tokens = tokens.map(sanitizeHtmlInlineToken).filter((t) => !!t);
     for (let i = 0, len = tokens.length; i < len; i++) {
         const openToken = tokens[i];
@@ -331,15 +344,28 @@ function sanitizeInlineHtmlTokens(tokens: Token[]): Token[] {
             continue;
         }
 
+        const tagName = openToken.type.slice(
+            0,
+            openToken.type.lastIndexOf("_")
+        );
+
         // doesn't have an open tag... change back to html_inline and let the renderer deal with it
         if (openToken.type.includes("_close") && !openToken.attrGet("paired")) {
             openToken.type = "html_inline";
             continue;
+        } else if (openToken.type.includes("_close")) {
+            // found a paired close tag, decrement the nesting level for that type
+            decreaseNestingLevel(tagName);
         }
 
         if (!openToken.type.includes("_open")) {
             continue;
         }
+
+        openToken.attrSet("nesting", nestingLevel[tagName]?.toString() || "0");
+
+        // open tag found, so increment the nesting level for that type
+        increaseNestingLevel(tagName);
 
         let hasClosingTag = false;
 
@@ -347,10 +373,10 @@ function sanitizeInlineHtmlTokens(tokens: Token[]): Token[] {
         for (let j = i + 1, len2 = tokens.length; j < len2; j++) {
             const closeToken = tokens[j];
 
-            // not inline, not a closetoken, or already paired, skip
+            // not inline, not a close token, or already paired, skip
             if (
                 !closeToken ||
-                !closeToken.type.includes("_close") || // cannot be a close token if…not a close token
+                !closeToken.type.includes("_close") ||
                 !closeToken.attrGet("inline_html") ||
                 closeToken.attrGet("paired")
             ) {
@@ -367,6 +393,8 @@ function sanitizeInlineHtmlTokens(tokens: Token[]): Token[] {
         // doesn't have a close tag... change back to html_inline and let the renderer deal with it
         if (!hasClosingTag) {
             openToken.type = "html_inline";
+            // false alarm, take back the increment from above
+            decreaseNestingLevel(tagName);
         }
     }
 

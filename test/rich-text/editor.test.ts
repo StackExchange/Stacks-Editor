@@ -246,12 +246,12 @@ _world_.
             const expectedHtml = `<p><em><strong><del>wtf?</del></strong></em></p>`;
             expect(editorDom(richEditorView)).toEqual(normalize(expectedHtml));
         });
-        
+
         // skip pending resolution of upstream issues with prosemirror that are preventing this from working properly
         it("should allow nested <sub><sub>text</sub></sub> strings", () => {
-            const markdown = "<sub><sub>text</sub></sub>";
+            const markdown = "<sub>1<sub>text</sub>2</sub>";
             const richEditorView = richView(markdown);
-            const expectedHtml = "<p><sub><sub>text</sub></sub></p>"; // should not be changed
+            const expectedHtml = "<p><sub>1<sub>text</sub>2</sub></p>"; // should not be changed
             expect(editorDom(richEditorView)).toEqual(expectedHtml);
         });
 

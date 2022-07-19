@@ -93,6 +93,39 @@ describe("SOMarkdownParser", () => {
 
         //const doc = markdownParser.parse("<ul><li><em>test</em></li></ul>");
         it.todo("should support block html with deep nesting");
+
+        it("should support valid nested inline html", () => {
+            const doc = markdownParser.parse("<sub>1<sub>2</sub>3</sub>");
+
+            expect(doc).toMatchNodeTree({
+                content: [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                "isText": true,
+                                "text": "1",
+                                "marks.length": 1,
+                                "marks.0.type.name": "sub",
+                            },
+                            {
+                                "isText": true,
+                                "text": "2",
+                                "marks.length": 2,
+                                "marks.0.type.name": "sub",
+                                "marks.1.type.name": "sub",
+                            },
+                            {
+                                "isText": true,
+                                "text": "3",
+                                "marks.length": 1,
+                                "marks.0.type.name": "sub",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
     });
 
     // NOTE: detailed / edge case testing is done in the plugin specific tests,
