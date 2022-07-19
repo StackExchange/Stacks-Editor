@@ -354,6 +354,11 @@ function sanitizeInlineHtmlTokens(tokens: Token[]): Token[] {
             openToken.type = "html_inline";
             continue;
         } else if (openToken.type.includes("_close")) {
+            openToken.attrSet(
+                "nesting",
+                nestingLevel[tagName]?.toString() || "0"
+            );
+
             // found a paired close tag, decrement the nesting level for that type
             decreaseNestingLevel(tagName);
         }
