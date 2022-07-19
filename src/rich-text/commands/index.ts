@@ -22,12 +22,8 @@ import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import {
-    getCurrentTextNode,
-    getShortcut,
-    validateTagName,
-} from "../../shared/utils";
-import type { CommonViewOptions } from "../../shared/view";
+import { getCurrentTextNode, getShortcut } from "../../shared/utils";
+import type { CommonViewOptions, TagLinkOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
@@ -152,10 +148,11 @@ function getHeadingLevel(state: EditorState): number {
 
 /**
  * Creates a command that toggles tagLink formatting for a node
- * @param allowNonAscii Whether to allow non-ascii characters in the tag name
+ * @param validate The function to validate the tagName with
+ * @param isMetaTag Whether the tag to be created is a meta tag or not
  */
 export function toggleTagLinkCommand(
-    allowNonAscii: boolean,
+    validate: TagLinkOptions["validate"],
     isMetaTag: boolean
 ) {
     return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
@@ -188,7 +185,7 @@ export function toggleTagLinkCommand(
                 state.selection = TextSelection.create(state.doc, from, to - 1);
             }
 
-            if (!validateTagName(selectedText.trim(), allowNonAscii)) {
+            if (!validate(selectedText.trim(), isMetaTag)) {
                 return false;
             }
 
@@ -539,7 +536,7 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
         dropdownItem(
             _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
             toggleTagLinkCommand(
-                options.parserFeatures.tagLinks.allowNonAscii,
+                options.parserFeatures.tagLinks.validate,
                 false
             ),
             "tag-btn",
@@ -548,7 +545,7 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
         dropdownItem(
             _t("commands.metaTagLink", { shortcut: getShortcut("Mod-]") }),
             toggleTagLinkCommand(
-                options.parserFeatures.tagLinks.allowNonAscii,
+                options.parserFeatures.tagLinks.validate,
                 true
             ),
             "tag-btn",

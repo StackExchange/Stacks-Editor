@@ -307,24 +307,3 @@ export function bindLetterKeymap(
         [prefix + letter.toUpperCase()]: command,
     };
 }
-
-/**
- * Tests whether a string is a valid tag name.
- * @param tagName The string to test
- * @param allowNonAscii Whether to allow non-ascii characters in the tag name
- */
-export function validateTagName(
-    tagName: string,
-    allowNonAscii: boolean
-): boolean {
-    const validationRegex = allowNonAscii
-        ? /([a-z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF#+.-]+)/i
-        : /([a-z0-9#+.-]+)/i;
-
-    // test above regex as well as for any whitespace
-    if (/\s/.test(tagName) || !validationRegex.exec(tagName)) {
-        return false;
-    }
-
-    return true;
-}
