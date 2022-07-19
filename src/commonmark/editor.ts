@@ -95,7 +95,7 @@ export class CommonmarkEditor extends BaseView {
                             this.options.preview,
                             this.options.parserFeatures
                         ),
-                        markdownHighlightPlugin(),
+                        markdownHighlightPlugin(this.options.parserFeatures),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),

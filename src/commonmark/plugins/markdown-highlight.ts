@@ -1,8 +1,16 @@
-import { parser } from "@lezer/markdown";
+import {
+    MarkdownExtension,
+    parser,
+    Strikethrough,
+    Table,
+} from "@lezer/markdown";
 import { styleTags, tags, tagHighlighter } from "@lezer/highlight";
 import { highlightPlugin } from "prosemirror-lezer";
+import { CommonmarkParserFeatures } from "../../shared/view";
 
-export function markdownHighlightPlugin() {
+export function markdownHighlightPlugin(
+    parserFeatures: CommonmarkParserFeatures
+) {
     /**
      * Custom classes for rendered tokens to match the hljs classes;
      * supports all tokens added by @lezer/highlight along with the ones we add in parser.configure below
@@ -10,6 +18,7 @@ export function markdownHighlightPlugin() {
      * Original class names can be found in {@link @lezer/highlight.classHighlighter}
      */
     const highlighter = tagHighlighter([
+        // commonmark
         { tag: tags.quote, class: "hljs-quote" },
         { tag: tags.contentSeparator, class: "hljs-built_in" },
         { tag: tags.heading1, class: "hljs-section" },
@@ -30,20 +39,37 @@ export function markdownHighlightPlugin() {
         { tag: tags.labelName, class: "hljs-string" },
         { tag: tags.string, class: "hljs-string" },
         { tag: tags.tagName, class: "hljs-tag" },
+        // extensions
+        { tag: tags.strikethrough, class: "tok-strike" },
+        { tag: tags.heading, class: "hljs-strong" },
         // no highlighting
         { tag: tags.content, class: "" },
         { tag: tags.list, class: "" },
     ]);
 
+    // extensions to the default commonmark parser
+    const extensions: MarkdownExtension[] = [];
+
+    if (parserFeatures.extraEmphasis) {
+        extensions.push(Strikethrough);
+    }
+
+    if (parserFeatures.tables) {
+        extensions.push(Table);
+    }
+
     return highlightPlugin(
         {
-            "*": parser.configure({
-                props: [
-                    styleTags({
-                        "HTMLBlock HTMLTag": tags.tagName,
-                    }),
-                ],
-            }),
+            "*": parser.configure([
+                {
+                    props: [
+                        styleTags({
+                            "HTMLBlock HTMLTag": tags.tagName,
+                        }),
+                    ],
+                },
+                ...extensions,
+            ]),
         },
         ["code_block"],
         null,
