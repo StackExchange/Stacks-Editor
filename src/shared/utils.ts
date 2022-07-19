@@ -1,6 +1,5 @@
 import { escapeHtml } from "markdown-it/lib/common/utils";
 import { Command, EditorState } from "prosemirror-state";
-import type { TagLinkOptions } from "./view";
 
 /**
  * Recursively deep merges two objects into a new object, leaving the original two untouched

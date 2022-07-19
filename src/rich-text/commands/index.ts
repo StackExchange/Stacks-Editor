@@ -229,6 +229,8 @@ function isValidTagLinkTarget(schema: Schema, selection: Selection): boolean {
 
 /**
  * Creates a command that inserts a horizontal rule node
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
  */
 export function insertHorizontalRuleCommand(
     state: EditorState,
@@ -264,7 +266,10 @@ export function insertHorizontalRuleCommand(
 }
 
 /**
- * Opens the image uploader
+ * Opens the image uploader pane
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
+ * @param view The current editor view
  */
 export function insertImageCommand(
     state: EditorState,
@@ -283,6 +288,9 @@ export function insertImageCommand(
 
 /**
  * Inserts a link into the document and opens the link edit tooltip at the cursor
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
+ * @param view The current editor view
  */
 export function insertLinkCommand(
     state: EditorState,
@@ -384,6 +392,8 @@ function markActive(mark: MarkType) {
 /**
  * Exits an inclusive mark that has been marked as exitable by toggling the mark type
  * and optionally adding a trailing space if the mark is at the end of the document
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
  */
 export function exitInclusiveMarkCommand(
     state: EditorState,
@@ -442,7 +452,6 @@ export function exitInclusiveMarkCommand(
 
 /**
  * Creates a dropdown menu for table edit functionality
- * @param schema The finalized rich-text schema
  */
 const tableDropdown = () =>
     makeMenuDropdown(
