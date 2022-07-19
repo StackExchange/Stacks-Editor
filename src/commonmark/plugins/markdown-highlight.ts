@@ -4,10 +4,14 @@ import {
     Strikethrough,
     Table,
 } from "@lezer/markdown";
-import { styleTags, tags, tagHighlighter } from "@lezer/highlight";
+import { styleTags, tags, tagHighlighter, Tag } from "@lezer/highlight";
 import { highlightPlugin } from "prosemirror-lezer";
 import { CommonmarkParserFeatures } from "../../shared/view";
 
+/**
+ * Plugin that highlights markdown syntax using {@link @lezer/highlight}.
+ * @param parserFeatures The additional parser features to add syntax highlighting for
+ */
 export function markdownHighlightPlugin(
     parserFeatures: CommonmarkParserFeatures
 ) {
@@ -18,7 +22,7 @@ export function markdownHighlightPlugin(
      * Original class names can be found in {@link @lezer/highlight.classHighlighter}
      */
     const highlighter = tagHighlighter([
-        // commonmark
+        // commonmark standard
         { tag: tags.quote, class: "hljs-quote" },
         { tag: tags.contentSeparator, class: "hljs-built_in" },
         { tag: tags.heading1, class: "hljs-section" },
@@ -39,7 +43,7 @@ export function markdownHighlightPlugin(
         { tag: tags.labelName, class: "hljs-string" },
         { tag: tags.string, class: "hljs-string" },
         { tag: tags.tagName, class: "hljs-tag" },
-        // extensions
+        // commonmark extensions
         { tag: tags.strikethrough, class: "tok-strike" },
         { tag: tags.heading, class: "hljs-strong" },
         // no highlighting
@@ -47,8 +51,9 @@ export function markdownHighlightPlugin(
         { tag: tags.list, class: "" },
     ]);
 
-    // extensions to the default commonmark parser
+    // extensions to the default commonmark parser/highlighter
     const extensions: MarkdownExtension[] = [];
+    const extensionProps: Record<string, Tag> = {};
 
     if (parserFeatures.extraEmphasis) {
         extensions.push(Strikethrough);
@@ -58,15 +63,15 @@ export function markdownHighlightPlugin(
         extensions.push(Table);
     }
 
+    if (parserFeatures.html) {
+        extensionProps["HTMLBlock HTMLTag"] = tags.tagName;
+    }
+
     return highlightPlugin(
         {
             "*": parser.configure([
                 {
-                    props: [
-                        styleTags({
-                            "HTMLBlock HTMLTag": tags.tagName,
-                        }),
-                    ],
+                    props: [styleTags(extensionProps)],
                 },
                 ...extensions,
             ]),
