@@ -189,9 +189,7 @@ domReady(() => {
         parserFeatures: {
             tables: true,
             tagLinks: {
-                allowNonAscii: false,
-                allowMetaTags: true,
-                renderer: (tagName, isMetaTag) => {
+                render: (tagName, isMetaTag) => {
                     return {
                         link: "#" + tagName,
                         linkTitle: "Show questions tagged '" + tagName + "'",
