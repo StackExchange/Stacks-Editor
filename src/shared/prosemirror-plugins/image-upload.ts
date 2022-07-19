@@ -159,7 +159,7 @@ export class ImageUploader extends PluginInterfaceView<
             <div class="d-flex ai-center p12">
                 <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
                 <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
-                <div class="ml64 d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
+                <div class="ml64 sm:ml0 d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
                     <div class="js-branding-html"></div>
                     <div class="js-content-policy-html"></div>
                 </div>
