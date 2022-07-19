@@ -33,19 +33,9 @@ function parse_tag_link(
 
     const totalContent = state.src.slice(state.pos, labelEnd + 1);
     const isMeta = totalContent.slice(0, 10) === "[meta-tag:";
-
-    if (isMeta && !options.allowMetaTags) {
-        return false;
-    }
-
     const tagName = totalContent.slice(isMeta ? 10 : 5, -1);
 
-    // check that the tag name follows specific rules TODO better docs
-    const validationRegex = options.allowNonAscii
-        ? /([a-z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF#+.-]+)/i
-        : /([a-z0-9#+.-]+)/i;
-
-    if (!validationRegex.exec(tagName)) {
+    if (options.validate && !options.validate(tagName, isMeta, totalContent)) {
         return false;
     }
 

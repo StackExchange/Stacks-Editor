@@ -13,10 +13,7 @@ const features: Required<CommonmarkParserFeatures> = {
     html: true,
     extraEmphasis: true,
     tables: true,
-    tagLinks: {
-        allowNonAscii: false,
-        allowMetaTags: false,
-    },
+    tagLinks: {},
     validateLink: stackOverflowValidateLink,
 };
 

@@ -47,16 +47,23 @@ export interface CommonViewOptions {
  * @property {string} linkTitle - Text to be placed in the 'title' attribute on the rendered link
  */
 export interface TagLinkOptions {
-    /** Indicates whether meta tags are allowed in this instance */
-    allowMetaTags: boolean;
-    /** Indicates characters outside of the ASCII set are allowed in tag names */
-    allowNonAscii: boolean;
+    /**
+     * Callback to check if a tagname is valid; a return value of false fails the token parsing
+     * @param tagName The name of the tag being validated
+     * @param isMetaTag Whether the tag is a meta tag; may not be passed depending on the calling context
+     * @param totalMarkup The full parsed markup of the tag link; may not be passed depending on the calling context
+     */
+    validate?: (
+        tagName: string,
+        isMetaTag?: boolean,
+        totalMarkup?: string
+    ) => boolean;
     /** Provide the necessary information to render the parsed tag as a link
      * @param tagName - the name of the tag
      * @param isMetaTag - whether the tag was specified via [meta-tag:*] or not
      * @return {TagLinkInfo}
      */
-    renderer?: (
+    render?: (
         tagName: string,
         isMetaTag: boolean
     ) => { link: string; additionalClasses: string[]; linkTitle: string };
@@ -88,8 +95,7 @@ export const defaultParserFeatures: Required<CommonmarkParserFeatures> = {
     extraEmphasis: true,
     tables: true,
     tagLinks: {
-        allowMetaTags: true,
-        allowNonAscii: false,
+        validate: () => true,
     },
     validateLink: stackOverflowValidateLink,
 };
