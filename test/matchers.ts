@@ -10,7 +10,20 @@ declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace jest {
         interface Matchers<R> {
+            /**
+             * Compares a node dynamically via a deep tree structure, recursing through a document's content via the tree's content
+             * @param doc The document do check
+             * @param tree The CompareTree to check against
+             */
             toMatchNodeTree(tree: CompareTree): R;
+            /**
+             * Matches doc against a CSS-like tree of nodes, separated by `>`
+             * @param tree a string of nodes, with an optional last number of children
+             * ex. "doc>blockquote>paragraph>1"
+             * ex. "doc>paragraph"
+             * @returns the expect result
+             */
+            toMatchNodeTreeString(tree: string): R;
         }
     }
 }
@@ -62,11 +75,7 @@ type CompareTree = {
     content?: CompareTree[];
 };
 
-/**
- * Compares a node dynamically via a deep tree structure, recursing through a document's content via the tree's content
- * @param doc The document do check
- * @param tree The CompareTree to check against
- */
+/** {@inheritDoc jest.Matchers<R>.toMatchNodeTree} */
 function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
     const keys = Object.keys(tree);
 
@@ -113,17 +122,62 @@ function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
     }
 }
 
-expect.extend({
-    toMatchNodeTree(doc: ProsemirrorNode, tree: CompareTree) {
-        // call the backing expect wrapper
-        expectNodeTree(doc, tree);
+/**
+ * Creates a simple nested node tree with the passed in path
+ * @param input valid node names separated by a `>` symbol, and optionally ending in a number of child nodes
+ * @returns a CompareTree to be used with `toMatchNodeTree`
+ */
+export function createBasicNodeTree(input: string): CompareTree {
+    const branches = input
+        .split(">")
+        .map((x) => x.trim())
+        .reverse();
+    if (!branches.length) return {};
 
-        return {
-            // no error message on pass - we don't support "not" here
-            message: () => null,
-            // always assume a pass, expectNodeTree will throw an exception if it doesn't
-            pass: true,
-        };
+    let branch = branches.pop();
+    const root: CompareTree = {
+        "type.name": branch,
+    };
+
+    branch = branches.pop();
+    let node: CompareTree = root;
+    while (branch) {
+        if (isNaN(Number(branch))) {
+            const child = {
+                "type.name": branch,
+            };
+            node.content = [child];
+
+            node = child;
+            branch = branches.pop();
+        } else {
+            node.childCount = Number(branch);
+            return root;
+        }
+    }
+    return root;
+}
+
+/** {@inheritDoc jest.Matchers<R>.toMatchNodeTree} */
+function toMatchNodeTree(
+    doc: ProsemirrorNode,
+    tree: CompareTree
+): jest.CustomMatcherResult {
+    // call the backing expect wrapper
+    expectNodeTree(doc, tree);
+
+    return {
+        // no error message on pass - we don't support "not" here
+        message: () => null,
+        // always assume a pass, expectNodeTree will throw an exception if it doesn't
+        pass: true,
+    };
+}
+
+expect.extend({
+    toMatchNodeTree,
+    toMatchNodeTreeString(doc: ProsemirrorNode, tree: string) {
+        return toMatchNodeTree(doc, createBasicNodeTree(tree));
     },
 });
 
