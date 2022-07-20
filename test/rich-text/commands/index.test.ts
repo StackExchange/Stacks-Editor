@@ -9,7 +9,6 @@ import {
     createState,
     testRichTextSchema,
 } from "../test-helpers";
-import "../../matchers";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;

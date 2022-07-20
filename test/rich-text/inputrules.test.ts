@@ -2,7 +2,6 @@ import { MarkType } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { richTextInputRules } from "../../src/rich-text/inputrules";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
-import "../matchers";
 import {
     applySelection,
     cleanupPasteSupport,

@@ -8,7 +8,6 @@ import {
     commonmarkImageUpload,
     richTextImageUpload,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
-import "../../matchers";
 import { externalPluginProvider, getSelectedText } from "../../test-helpers";
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";

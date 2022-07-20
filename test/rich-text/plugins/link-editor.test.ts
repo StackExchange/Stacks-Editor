@@ -18,7 +18,6 @@ import {
     createView,
     setupPasteSupport,
 } from "../test-helpers";
-import "../../matchers";
 import { interfaceManagerPlugin } from "../../../src/shared/prosemirror-plugins/interface-manager";
 import { externalPluginProvider, onViewDispatch } from "../../test-helpers";
 

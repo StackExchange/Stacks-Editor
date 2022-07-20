@@ -126,3 +126,6 @@ expect.extend({
         };
     },
 });
+
+// NOTE: without this, sometimes the expects don't extend correctly in every test...
+export default Promise.resolve();
