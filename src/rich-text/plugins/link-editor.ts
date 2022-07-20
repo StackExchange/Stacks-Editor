@@ -1,5 +1,5 @@
 import { toggleMark } from "prosemirror-commands";
-import { Mark } from "prosemirror-model";
+import { Mark, MarkType } from "prosemirror-model";
 import {
     EditorState,
     PluginView,
@@ -486,9 +486,10 @@ class LinkTooltip {
             return;
         }
 
-        const link = start.node.marks.find(
-            (mark) => mark.type === state.schema.marks.link
-        );
+        const link = findMarksInSet(
+            start.node.marks,
+            state.schema.marks.link
+        )[0];
         if (!link) {
             return;
         }
@@ -524,16 +525,12 @@ class LinkTooltip {
         const linkMarks: Mark[][] = [];
         const { to, from, $from, empty } = state.selection;
         if (empty) {
-            return $from
-                .marks()
-                .filter((mark) => mark.type === state.schema.marks.link);
+            return findMarksInSet($from.marks(), state.schema.marks.link);
         }
         if (to > from) {
             state.doc.nodesBetween(from, to, (node) => {
                 linkMarks.push(
-                    node.marks.filter(
-                        (mark) => mark.type === state.schema.marks.link
-                    )
+                    findMarksInSet(node.marks, state.schema.marks.link)
                 );
             });
         }
@@ -583,19 +580,6 @@ class LinkTooltip {
             view.dispatch(tr);
         };
     }
-}
-
-/**
- * TODO REUSE EXISTING
- * Returns the mark at cursor if it is of type `link`
- * @param state The current editor state
- */
-function findLinkAtCursor(state: EditorState): Mark {
-    const { $from, empty } = state.selection;
-    return (
-        empty &&
-        $from.marks().find((mark) => mark.type === mark.type.schema.marks.link)
-    );
 }
 
 /**
@@ -667,16 +651,27 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     return false;
                 },
             },
-            handleClick(this, view: EditorView, _: number, event: MouseEvent) {
-                const selectedLink = findLinkAtCursor(view.state);
+            handleClick(
+                this,
+                view: EditorView,
+                pos: number,
+                event: MouseEvent
+            ) {
+                const $pos = view.state.doc.resolve(pos);
+
+                const mark = findMarksInSet(
+                    $pos.marks(),
+                    view.state.schema.marks.link
+                )[0];
+
                 const modPressed = event.getModifierState(
                     getPlatformModKey() === "Cmd" ? "Meta" : "Control"
                 );
 
-                const handled = selectedLink && modPressed;
+                const handled = mark && modPressed;
 
                 if (handled) {
-                    window.open(selectedLink.attrs.href, "_blank");
+                    window.open(mark.attrs.href, "_blank");
                 }
 
                 return handled;
@@ -721,4 +716,13 @@ export function hideLinkEditor(view: EditorView): void {
     if (tr) {
         view.dispatch(tr);
     }
+}
+
+/**
+ * Finds all marks in a set that are of the given type
+ * @param marks The set of marks to search
+ * @param type The type of mark to find
+ */
+function findMarksInSet(marks: readonly Mark[], type: MarkType): Mark[] {
+    return marks.filter((mark) => mark.type === type);
 }
