@@ -13,7 +13,11 @@ import {
     PluginInterfaceView,
 } from "../../shared/prosemirror-plugins/interface-manager";
 import { StatefulPlugin } from "../../shared/prosemirror-plugins/plugin-extensions";
-import { escapeHTML, generateRandomId } from "../../shared/utils";
+import {
+    escapeHTML,
+    generateRandomId,
+    getPlatformModKey,
+} from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 
 /**
@@ -582,6 +586,19 @@ class LinkTooltip {
 }
 
 /**
+ * TODO REUSE EXISTING
+ * Returns the mark at cursor if it is of type `link`
+ * @param state The current editor state
+ */
+function findLinkAtCursor(state: EditorState): Mark {
+    const { $from, empty } = state.selection;
+    return (
+        empty &&
+        $from.marks().find((mark) => mark.type === mark.type.schema.marks.link)
+    );
+}
+
+/**
  * A plugin view that shows a tooltip when selecting a link in rich-text mode.
  * The tooltip shows the href attribute of the selected link and allows removing
  * the link mark from the document. Clicking on the tooltip's edit button will launch
@@ -649,6 +666,20 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     // always return false since we're not cancelling/handling the blur
                     return false;
                 },
+            },
+            handleClick(this, view: EditorView, _: number, event: MouseEvent) {
+                const selectedLink = findLinkAtCursor(view.state);
+                const modPressed = event.getModifierState(
+                    getPlatformModKey() === "Cmd" ? "Meta" : "Control"
+                );
+
+                const handled = selectedLink && modPressed;
+
+                if (handled) {
+                    window.open(selectedLink.attrs.href, "_blank");
+                }
+
+                return handled;
             },
         },
         view(editorView): PluginView {

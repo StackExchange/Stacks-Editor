@@ -33,7 +33,6 @@ import { TagLink } from "./node-views/tag-link";
 import { richTextCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
-import { linkModClickHandler } from "./plugins/link-mod-click-handler";
 import { linkEditorPlugin } from "./plugins/link-editor";
 import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
@@ -127,7 +126,6 @@ export class RichTextEditor extends BaseView {
                             this.options.pluginParentContainer
                         ),
                         linkEditorPlugin(this.options.parserFeatures),
-                        linkModClickHandler(),
                         placeholderPlugin(this.options.placeholderText),
                         richTextImageUpload(
                             this.options.imageUpload,
