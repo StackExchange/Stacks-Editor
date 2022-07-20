@@ -225,6 +225,11 @@ export function escapeHTML(
     return output;
 }
 
+/** Gets the modifier key for the current platform; i.e. "Command" on macOS and "Control" elsewhere */
+export function getPlatformModKey(): "Cmd" | "Ctrl" {
+    return /Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl";
+}
+
 /**
  * Returns a string containing the label and readable keyboard shortcut for button tooltips
  * @param mapping Corresponding command mapping (keyboard shortcut)
@@ -234,10 +239,7 @@ export function getShortcut(mapping: string): string {
         return mapping;
     }
 
-    return (
-        (/Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl") +
-        mapping.slice(3).toUpperCase()
-    );
+    return getPlatformModKey() + mapping.slice(3);
 }
 
 /**
