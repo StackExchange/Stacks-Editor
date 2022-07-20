@@ -651,6 +651,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     return false;
                 },
             },
+            /** Handle mod-click to open links in a new window */
             handleClick(
                 this,
                 view: EditorView,
