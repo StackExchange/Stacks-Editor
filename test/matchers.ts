@@ -1,4 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
+
 /*
  * NOTE: Add all exposed matches to `expect.extend` at the bottom
  * and add all the definitions below so TS can pick them up without error
@@ -9,7 +10,19 @@ declare global {
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace jest {
         interface Matchers<R> {
+            /**
+             * Compares a node dynamically via a deep tree structure, recursing through a document's content via the tree's content
+             * @param doc The document do check
+             * @param tree The CompareTree to check against
+             */
             toMatchNodeTree(tree: CompareTree): R;
+            /**
+             * Matches doc against a CSS-like tree of nodes, separated by `>`
+             * @param tree a string of nodes, with an optional last number of children
+             * ex. "doc>blockquote>paragraph>1"
+             * ex. "doc>paragraph"
+             * @returns the expect result
+             */
             toMatchNodeTreeString(tree: string): R;
         }
     }
@@ -62,11 +75,7 @@ type CompareTree = {
     content?: CompareTree[];
 };
 
-/**
- * Compares a node dynamically via a deep tree structure, recursing through a document's content via the tree's content
- * @param doc The document do check
- * @param tree The CompareTree to check against
- */
+/** {@inheritDoc jest.Matchers<R>.toMatchNodeTree} */
 function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
     const keys = Object.keys(tree);
 
@@ -149,6 +158,7 @@ export function createBasicNodeTree(input: string): CompareTree {
     return root;
 }
 
+/** {@inheritDoc jest.Matchers<R>.toMatchNodeTree} */
 function toMatchNodeTree(
     doc: ProsemirrorNode,
     tree: CompareTree
@@ -166,15 +176,10 @@ function toMatchNodeTree(
 
 expect.extend({
     toMatchNodeTree,
-    /**
-     * Matches doc against a CSS-like tree of nodes, separated by `>`
-     * @param doc the current document to match against
-     * @param tree a string of nodes, with an optional last number of children
-     * ex. "doc>blockquote>paragraph>1"
-     * ex. "doc>paragraph"
-     * @returns the expect result
-     */
     toMatchNodeTreeString(doc: ProsemirrorNode, tree: string) {
         return toMatchNodeTree(doc, createBasicNodeTree(tree));
     },
 });
+
+// NOTE: without this, sometimes the expects don't extend correctly in every test...
+export default Promise.resolve();

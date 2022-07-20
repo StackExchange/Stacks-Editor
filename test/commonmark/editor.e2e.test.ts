@@ -61,7 +61,7 @@ test.describe.serial("markdown mode", () => {
             page,
             "# Heading 1\n\n```\nconsole.log(window);\n```\n\n- list item 1\n- list item 2\n\nparagraph here."
         );
-        await clickEditorContent(page, ".js-editor .hljs-section", 3);
+        await clickEditorContent(page, ".js-editor code >> text=Heading", 3);
 
         const selectedText = await page.evaluate(() =>
             window.getSelection().toString()

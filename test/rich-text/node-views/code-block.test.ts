@@ -1,6 +1,5 @@
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import { externalPluginProvider } from "../../test-helpers";
-import "../../matchers";
 import { applySelection } from "../test-helpers";
 
 describe("code-block", () => {

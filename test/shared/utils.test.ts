@@ -4,6 +4,7 @@ import {
     escapeHTML,
     stackOverflowValidateLink,
     getShortcut,
+    getPlatformModKey,
 } from "../../src/shared/utils";
 
 const setNavigatorProperty = (
@@ -153,6 +154,26 @@ describe("utils", () => {
                 expect(keys[0]).not.toBe(keys[1]);
             }
         );
+    });
+
+    describe("getPlatformModKey", () => {
+        it("should return `Cmd` when platform contains `Mac` and `Ctrl` otherwise", () => {
+            // Set the platform to macOS
+            setNavigatorProperty("platform", "MacIntel");
+
+            let mod = getPlatformModKey();
+            expect(mod).toBe("Cmd");
+            expect(navigator.platform).toBe("MacIntel");
+
+            // Set the platform to Windows
+            setNavigatorProperty("platform", "Win32");
+            mod = getPlatformModKey();
+            expect(mod).toBe("Ctrl");
+            expect(navigator.platform).toBe("Win32");
+
+            // Reset the platform
+            setNavigatorProperty("platform", "");
+        });
     });
 
     describe("getShortcut", () => {

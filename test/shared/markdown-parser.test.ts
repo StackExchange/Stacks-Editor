@@ -3,7 +3,6 @@ import { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
-import "../matchers";
 import { testRichTextSchema } from "../rich-text/test-helpers";
 import { externalPluginProvider } from "../test-helpers";
 

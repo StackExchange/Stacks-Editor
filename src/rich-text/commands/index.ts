@@ -411,7 +411,7 @@ const tableDropdown = () =>
 const headingDropdown = (schema: Schema) =>
     makeMenuDropdown(
         "Header",
-        _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-h") }),
+        _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-H") }),
         "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
@@ -459,7 +459,7 @@ export const createMenuEntries = (
                 command: toggleMark(schema.marks.strong),
                 dom: makeMenuButton(
                     "Bold",
-                    _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
+                    _t("commands.bold", { shortcut: getShortcut("Mod-B") }),
                     "bold-btn"
                 ),
                 active: markActive(schema.marks.strong),
@@ -469,7 +469,7 @@ export const createMenuEntries = (
                 command: toggleMark(schema.marks.em),
                 dom: makeMenuButton(
                     "Italic",
-                    _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
+                    _t("commands.emphasis", { shortcut: getShortcut("Mod-I") }),
                     "italic-btn"
                 ),
                 active: markActive(schema.marks.em),
@@ -480,7 +480,7 @@ export const createMenuEntries = (
                 dom: makeMenuButton(
                     "Code",
                     _t("commands.inline_code", {
-                        shortcut: getShortcut("Mod-k"),
+                        shortcut: getShortcut("Mod-K"),
                     }),
                     "code-btn"
                 ),
@@ -510,7 +510,7 @@ export const createMenuEntries = (
                 command: insertLinkCommand,
                 dom: makeMenuButton(
                     "Link",
-                    _t("commands.link", { shortcut: getShortcut("Mod-l") }),
+                    _t("commands.link", { shortcut: getShortcut("Mod-L") }),
                     "insert-link-btn"
                 ),
             },
@@ -520,7 +520,7 @@ export const createMenuEntries = (
                 dom: makeMenuButton(
                     "Quote",
                     _t("commands.blockquote", {
-                        shortcut: getShortcut("Mod-q"),
+                        shortcut: getShortcut("Mod-Q"),
                     }),
                     "blockquote-btn"
                 ),
@@ -532,7 +532,7 @@ export const createMenuEntries = (
                 dom: makeMenuButton(
                     "Codeblock",
                     _t("commands.code_block", {
-                        shortcut: getShortcut("Mod-m"),
+                        shortcut: getShortcut("Mod-M"),
                     }),
                     "code-block-btn"
                 ),
@@ -545,7 +545,7 @@ export const createMenuEntries = (
                     dom: makeMenuButton(
                         "Image",
                         _t("commands.image", {
-                            shortcut: getShortcut("Mod-g"),
+                            shortcut: getShortcut("Mod-G"),
                         }),
                         "insert-image-btn"
                     ),
@@ -559,7 +559,7 @@ export const createMenuEntries = (
                     dom: makeMenuButton(
                         "Table",
                         _t("commands.table_insert", {
-                            shortcut: getShortcut("Mod-e"),
+                            shortcut: getShortcut("Mod-E"),
                         }),
                         "insert-table-btn"
                     ),
@@ -581,7 +581,7 @@ export const createMenuEntries = (
                 dom: makeMenuButton(
                     "OrderedList",
                     _t("commands.ordered_list", {
-                        shortcut: getShortcut("Mod-o"),
+                        shortcut: getShortcut("Mod-O"),
                     }),
                     "numbered-list-btn"
                 ),
@@ -593,7 +593,7 @@ export const createMenuEntries = (
                 dom: makeMenuButton(
                     "UnorderedList",
                     _t("commands.unordered_list", {
-                        shortcut: getShortcut("Mod-u"),
+                        shortcut: getShortcut("Mod-U"),
                     }),
                     "bullet-list-btn"
                 ),
@@ -605,7 +605,7 @@ export const createMenuEntries = (
                 dom: makeMenuButton(
                     "HorizontalRule",
                     _t("commands.horizontal_rule", {
-                        shortcut: getShortcut("Mod-r"),
+                        shortcut: getShortcut("Mod-R"),
                     }),
                     "horizontal-rule-btn"
                 ),
@@ -621,7 +621,7 @@ export const createMenuEntries = (
                 command: undo,
                 dom: makeMenuButton(
                     "Undo",
-                    _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
+                    _t("commands.undo", { shortcut: getShortcut("Mod-Z") }),
                     "undo-btn"
                 ),
             },
@@ -630,7 +630,7 @@ export const createMenuEntries = (
                 command: redo,
                 dom: makeMenuButton(
                     "Refresh",
-                    _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
+                    _t("commands.redo", { shortcut: getShortcut("Mod-Y") }),
                     "redo-btn"
                 ),
             },
