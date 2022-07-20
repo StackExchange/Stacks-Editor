@@ -93,10 +93,10 @@
         "prosemirror-markdown": "^1.9.3",
         "prosemirror-model": "^1.18.1",
         "prosemirror-schema-basic": "^1.2.0",
-        "prosemirror-schema-list": "^1.2.0",
+        "prosemirror-schema-list": "^1.2.1",
         "prosemirror-state": "^1.4.1",
         "prosemirror-transform": "^1.6.0",
-        "prosemirror-view": "^1.26.5"
+        "prosemirror-view": "^1.27.0"
     },
     "peerDependencies": {
         "highlight.js": "^11.6.0"
