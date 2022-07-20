@@ -574,6 +574,10 @@ describe("link-editor", () => {
             return promise.then(() => cleanupPasteSupport());
         });
     });
+
+    describe("props", () => {
+        it.todo("should open links in a new window on mod-click");
+    });
 });
 
 function getDecorations(state: EditorState) {
