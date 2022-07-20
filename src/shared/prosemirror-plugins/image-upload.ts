@@ -145,7 +145,7 @@ export class ImageUploader extends PluginInterfaceView<
             </div>
 
             <div class="js-external-url-input-container p12 d-none">
-                <div class="d-flex fd-row sm:fd-column ai-center">
+                <div class="d-flex fd-row ai-center sm:fd-column sm:ai-start">
                     <label class="d-block s-label ws-nowrap mr4" for="external-url-input-${randomId}">
                         External url
                     </label>
@@ -156,10 +156,12 @@ export class ImageUploader extends PluginInterfaceView<
             <div id="image-preview-${randomId}" class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
 
-            <div class="d-flex ai-center p12">
-                <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
-                <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
-                <div class="ml64 d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
+            <div class="d-flex jc-space-between ai-center p12 sm:fd-column sm:ai-start sm:g16">
+                <div>
+                    <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
+                    <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
+                </div>
+                <div class="d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
                     <div class="js-branding-html"></div>
                     <div class="js-content-policy-html"></div>
                 </div>
