@@ -576,7 +576,55 @@ describe("link-editor", () => {
     });
 
     describe("props", () => {
-        it.todo("should open links in a new window on mod-click");
+        it("should open links in a new window on mod-click", () => {
+            const mock = jest.fn();
+
+            // mock the window.open function
+            window.open = mock;
+
+            const plugin = linkEditorPlugin({});
+            const view = createView(
+                createState(
+                    `<p>test<a href="https://www.example.com">link</a></p>`,
+                    [plugin]
+                )
+            );
+
+            // call the prop fn directly instead of playing around with event dispatching
+            // regular click
+            let result = plugin.props.handleClick(
+                view,
+                6,
+                new MouseEvent("click", {})
+            );
+
+            expect(result).toBe(false);
+            expect(mock).toHaveBeenCalledTimes(0);
+
+            // mod-click
+            result = plugin.props.handleClick(
+                view,
+                6,
+                new MouseEvent("click", {
+                    ctrlKey: true,
+                })
+            );
+
+            expect(result).toBe(true);
+            expect(mock).toHaveBeenCalledTimes(1);
+
+            // mod-click, but not on a link
+            result = plugin.props.handleClick(
+                view,
+                1,
+                new MouseEvent("click", {
+                    ctrlKey: true,
+                })
+            );
+
+            expect(result).toBe(false);
+            expect(mock).toHaveBeenCalledTimes(1);
+        });
     });
 });
 

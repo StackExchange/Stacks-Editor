@@ -652,30 +652,25 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                 },
             },
             /** Handle mod-click to open links in a new window */
-            handleClick(
-                this,
-                view: EditorView,
-                pos: number,
-                event: MouseEvent
-            ) {
-                const $pos = view.state.doc.resolve(pos);
-
+            handleClick(view, pos, event) {
                 const mark = findMarksInSet(
-                    $pos.marks(),
+                    view.state.doc.resolve(pos).marks(),
                     view.state.schema.marks.link
                 )[0];
 
-                const modPressed = event.getModifierState(
-                    getPlatformModKey() === "Cmd" ? "Meta" : "Control"
-                );
+                const modPressed =
+                    getPlatformModKey() === "Cmd"
+                        ? event.metaKey
+                        : event.ctrlKey;
 
                 const handled = mark && modPressed;
 
+                // a link was mod-clicked, so open it in a new window
                 if (handled) {
                     window.open(mark.attrs.href, "_blank");
                 }
 
-                return handled;
+                return !!handled;
             },
         },
         view(editorView): PluginView {
