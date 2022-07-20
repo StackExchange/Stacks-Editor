@@ -40,7 +40,7 @@ function getTagInfo(tag: string): TagInfo {
     // check if this tag looks like `</div>` or `</div malformed>`
     const isClosingTag = /^<\/\S+?.*?>$/.test(tag);
 
-    // strip away all html characters and potential attibutes
+    // strip away all html characters and potential attributes
     const tagName = tag.replace(/[<>/]/g, "").trim().split(/\s/)[0];
 
     if (["del", "strike", "s"].includes(tagName)) {
@@ -202,7 +202,7 @@ function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
     const content = token.content;
     // checks if a token matches `<open>content</close>` OR `<br />`
     const matches =
-        /^(?:(<[a-z0-9]+.*?>)([^<>]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
+        /^(?:(<[a-z0-9]+.*?>)([^<>\n]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
             content
         );
 
@@ -229,7 +229,7 @@ function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
         const text = matches[2];
         const closeTag = getTagInfo(matches[3]);
 
-        // the tag is only valid if both tags are known and match eachother
+        // the tag is only valid if both tags are known and match each other
         if (
             openTag.type !== TagType.unknown &&
             closeTag.type !== TagType.unknown &&

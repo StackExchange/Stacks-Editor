@@ -3,26 +3,38 @@ import {
     deepMerge,
     escapeHTML,
     stackOverflowValidateLink,
+    getShortcut,
 } from "../../src/shared/utils";
+
+const setNavigatorProperty = (
+    property: string,
+    value: string,
+    configurable = true
+): void => {
+    Object.defineProperty(navigator, property, {
+        value,
+        configurable,
+    });
+};
 
 describe("utils", () => {
     describe("deepmerge", () => {
         it("should merge two objects", () => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const basefn = (input: string): string => "base";
+            const baseFn = (input: string): string => "base";
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const overridefn = (x: string): string => "overwritten";
+            const overrideFn = (x: string): string => "overwritten";
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const new1fn = (input: string): string => "new 1";
+            const new1Fn = (input: string): string => "new 1";
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
-            const new2fn = (x: string): string => "new 2";
+            const new2Fn = (x: string): string => "new 2";
 
             const one = {
                 s1: "string one",
                 n: 1,
                 o: { a1: "nested string one", b1: 1 },
-                f: basefn,
-                f1: new1fn,
+                f: baseFn,
+                f1: new1Fn,
                 arr: ["item1"],
             };
 
@@ -30,8 +42,8 @@ describe("utils", () => {
                 s2: "string two",
                 n: 2,
                 o: { a1: "nested string two", b2: 2 },
-                f: overridefn,
-                f2: new2fn,
+                f: overrideFn,
+                f2: new2Fn,
                 arr: ["item2"],
             };
 
@@ -42,9 +54,9 @@ describe("utils", () => {
                 s2: "string two",
                 n: 2,
                 o: { a1: "nested string two", b1: 1, b2: 2 },
-                f: overridefn,
-                f1: new1fn,
-                f2: new2fn,
+                f: overrideFn,
+                f1: new1Fn,
+                f2: new2Fn,
                 arr: ["item1", "item2"],
             };
 
@@ -141,5 +153,34 @@ describe("utils", () => {
                 expect(keys[0]).not.toBe(keys[1]);
             }
         );
+    });
+
+    describe("getShortcut", () => {
+        it("should replace `Mod` with `Cmd` when platform contains `Mac`", () => {
+            // Set the platform to macOS
+            setNavigatorProperty("platform", "MacIntel");
+
+            const shortcut = getShortcut("Mod-z");
+            expect(shortcut).toBe("Cmd-z");
+            expect(navigator.platform).toBe("MacIntel");
+
+            // Reset the platform
+            setNavigatorProperty("platform", "");
+        });
+        it("should replace `Mod` with `Ctrl` when platform is not an Apple platform", () => {
+            // Set the platform to Windows
+            setNavigatorProperty("platform", "Win32");
+
+            const shortcut = getShortcut("Mod-z");
+            expect(shortcut).toBe("Ctrl-z");
+            expect(navigator.platform).toBe("Win32");
+
+            // Reset the platform
+            setNavigatorProperty("platform", "");
+        });
+        it("should return unmodified string when `Mod` isn't passed", () => {
+            const shortcut = getShortcut("Cmd-y");
+            expect(shortcut).toBe("Cmd-y" + navigator.platform);
+        });
     });
 });

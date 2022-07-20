@@ -1,8 +1,7 @@
 import {
     addIf,
-    makeMenuIcon,
+    makeMenuButton,
     makeMenuLinkEntry,
-    makeMenuSpacerEntry,
     MenuCommandEntry,
 } from "../../src/shared/menu";
 
@@ -10,9 +9,12 @@ describe("menu", () => {
     describe("basic functionality", () => {
         it.todo("constructor");
         it.todo("createMenuPlugin");
+        it.todo("block visibility");
+        it.todo("entry visibility");
+        it.todo("entry active");
     });
 
-    describe("dropdowns", () => {
+    describe("dropdown", () => {
         it.todo("makeMenuDropdown");
         it.todo("dropdownItem");
         it.todo("dropdownSection");
@@ -31,13 +33,13 @@ describe("menu", () => {
             expect(addIf(entry, false)).toBeNull();
         });
 
-        it("makeMenuIcon", () => {
+        it("makeMenuButton", () => {
             const iconName = "testIcon";
             const key = "testKey";
             const title = "test title";
             const cssClasses = ["testClass1", "testClass2"];
 
-            const icon = makeMenuIcon(iconName, title, key, cssClasses);
+            const icon = makeMenuButton(iconName, title, key, cssClasses);
             expect(icon.nodeName).toBe("BUTTON");
             expect(icon.classList).toContain(`js-${key}`);
             expect(icon.title).toBe(title);
@@ -51,24 +53,20 @@ describe("menu", () => {
             );
         });
 
-        it("makeMenuSpacerEntry", () => {
-            const entry = makeMenuSpacerEntry(null, []);
-            expect(entry.dom).toBeDefined();
-            expect(entry.key).toBe("spacer");
-        });
-
         it("makeMenuLinkEntry", () => {
             const iconName = "testIcon";
             const title = "test title";
             const href = "http://example.com/";
-            const entry = makeMenuLinkEntry(iconName, title, href);
+            const key = "testKey";
+            const entry = makeMenuLinkEntry(iconName, title, href, key);
 
             const link = entry.dom as HTMLAnchorElement;
 
-            expect(entry.key).toBe(title);
+            expect(entry.key).toBe(key);
             expect(link.nodeName).toBe("A");
             expect(link.target).toBe("_blank");
             expect(link.href).toBe(href);
+            expect(link.classList).toContain(`js-${key}`);
 
             expect(link.children).toHaveLength(1);
             expect(link.firstChild.nodeName).toBe("SPAN");

@@ -92,7 +92,7 @@ describe("table commands", () => {
             });
         });
 
-        it("should select newly inserted paragraph. afer table", () => {
+        it("should select newly inserted paragraph. after table", () => {
             let state = applySelection(
                 createState(
                     "<table><thead><tr><th>asdf</td></th></thead></table>",
@@ -784,5 +784,11 @@ describe("table commands", () => {
                 "some paragraph"
             );
         });
+    });
+
+    describe("command validity", () => {
+        it.todo("should show the table dropdown when inside a table");
+        it.todo("should show enable column commands when inside a table");
+        it.todo("should show only enable row commands in valid rows");
     });
 });

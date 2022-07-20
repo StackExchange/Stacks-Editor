@@ -1,31 +1,25 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
-import { Mark, MarkType, NodeType } from "prosemirror-model";
-import {
-    EditorState,
-    Plugin,
-    TextSelection,
-    Transaction,
-} from "prosemirror-state";
+import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
+import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
     addIf,
-    createMenuPlugin,
     dropdownItem,
     dropdownSection,
     makeMenuDropdown,
-    makeMenuIcon,
+    makeMenuButton,
     makeMenuLinkEntry,
-    makeMenuSpacerEntry,
+    MenuBlock,
 } from "../../shared/menu";
 import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { richTextSchema as schema } from "../schema";
+import { getCurrentTextNode, getShortcut } from "../../shared/utils";
 import type { CommonViewOptions } from "../../shared/view";
-import { LINK_TOOLTIP_KEY } from "../plugins/link-editor";
+import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
     insertTableColumnAfterCommand,
@@ -37,6 +31,7 @@ import {
     removeColumnCommand,
     removeRowCommand,
 } from "./tables";
+import { _t } from "../../shared/localization";
 
 export * from "./tables";
 
@@ -70,9 +65,6 @@ function toggleWrapIn(nodeType: NodeType) {
     };
 }
 
-/** Command to set a block type to a paragraph (plain text) */
-const setToTextCommand = setBlockType(schema.nodes.paragraph);
-
 /**
  * Creates a command that toggles the NodeType of the current node to the passed type
  * @param nodeType The type to toggle to
@@ -82,30 +74,78 @@ export function toggleBlockType(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
-    const nodeCheck = nodeTypeActive(nodeType, attrs);
-    const setBlockTypeCommand = setBlockType(nodeType, attrs);
-
     return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
+
         // if the node is set, toggle it off
         if (nodeCheck(state)) {
-            return setToTextCommand(state, dispatch);
+            return setBlockType(state.schema.nodes.paragraph)(state, dispatch);
         }
 
+        const setBlockTypeCommand = setBlockType(nodeType, attrs);
         return setBlockTypeCommand(state, (t) => {
             if (dispatch) {
                 // when adding a block node, make sure the user can navigate past it
-                t = insertParagraphIfAtDocEnd(t);
-                dispatch(t);
+                dispatch(insertParagraphIfAtDocEnd(t));
             }
         });
     };
+}
+
+/**
+ * Creates a command that toggles heading and cycles through heading levels
+ * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
+ * @internal
+ */
+export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
+    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
+        const nodeType = state.schema.nodes.heading;
+        const nodeCheck = nodeTypeActive(nodeType, attrs);
+        const headingLevel = getHeadingLevel(state);
+
+        // if the node is a heading and is either level 6 or matches the current level, toggle it off
+        if (
+            nodeCheck(state) &&
+            (headingLevel === 6 || headingLevel === attrs?.level)
+        ) {
+            return setBlockType(state.schema.nodes.paragraph)(state, dispatch);
+        }
+
+        const updatedAttrs = !attrs?.level
+            ? { ...attrs, level: headingLevel + 1 }
+            : attrs;
+        const setBlockTypeCommand = setBlockType(nodeType, updatedAttrs);
+        return setBlockTypeCommand(state, (t) => {
+            if (dispatch) {
+                // when adding a block node, make sure the user can navigate past it
+                dispatch(insertParagraphIfAtDocEnd(t));
+            }
+        });
+    };
+}
+
+/**
+ * Returns the first heading level of the current selection
+ * @param state The current editor state
+ */
+function getHeadingLevel(state: EditorState): number {
+    const { from, to } = state.selection;
+    let level = 0;
+    state.doc.nodesBetween(from, to, (node) => {
+        if (node.type.name === "heading") {
+            level = node.attrs.level as number;
+            return true;
+        }
+    });
+
+    return level;
 }
 
 export function insertHorizontalRuleCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (inTable(state.selection)) {
+    if (inTable(state.schema, state.selection)) {
         return false;
     }
 
@@ -119,15 +159,15 @@ export function insertHorizontalRuleCommand(
     const isAtBeginning = state.tr.selection.from === 1;
 
     let tr = state.tr.replaceSelectionWith(
-        schema.nodes.horizontal_rule.create()
+        state.schema.nodes.horizontal_rule.create()
     );
 
     if (isAtBeginning) {
-        tr = tr.insert(0, schema.nodes.paragraph.create());
+        tr = tr.insert(0, state.schema.nodes.paragraph.create());
     }
 
     if (isAtEnd) {
-        tr = tr.insert(tr.selection.to, schema.nodes.paragraph.create());
+        tr = tr.insert(tr.selection.to, state.schema.nodes.paragraph.create());
     }
 
     dispatch(tr);
@@ -157,31 +197,56 @@ export function insertLinkCommand(
     dispatch: (tr: Transaction) => void,
     view: EditorView
 ): boolean {
-    if (state.selection.empty) return false;
+    // never actually toggle the mark, as that is done in the link editor
+    // we do want to *pretend* to, as toggleMark checks for validity
+    const valid = toggleMark(state.schema.marks.link, { href: null })(
+        state,
+        null
+    );
 
-    let linkUrl = null;
+    if (dispatch && valid) {
+        let selectedText: string;
+        let linkUrl: string;
 
-    if (dispatch) {
-        const selectedText =
-            state.selection.content().content.firstChild?.textContent ?? null;
-        const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
-        linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
-
-        // wrap the dispatch function so that we can add additional transactions after toggleMark
-        const oldDispatch = dispatch;
-        dispatch = (tr) => {
-            oldDispatch(tr);
-            view.dispatch(
-                LINK_TOOLTIP_KEY.setEditMode(true, state, view.state.tr)
+        const $anchor = state.selection.$anchor;
+        // if selection is empty, but inside link mark, use the link url/text from it
+        if (state.selection.empty && $anchor.textOffset) {
+            const currentTextNode = getCurrentTextNode(state);
+            const mark = currentTextNode.marks.find(
+                (m) => m.type === state.schema.marks.link
             );
-        };
+            if (mark) {
+                selectedText = currentTextNode.text;
+                linkUrl = mark.attrs.href as string;
+
+                // expand the selection so we're editing the entire link
+                const pos = $anchor.pos;
+                dispatch(
+                    state.tr.setSelection(
+                        TextSelection.create(
+                            state.doc,
+                            pos - $anchor.textOffset,
+                            pos - $anchor.textOffset + selectedText.length
+                        )
+                    )
+                );
+            }
+        } else {
+            selectedText =
+                state.selection.content().content.firstChild?.textContent ??
+                null;
+            const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
+            linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
+        }
+
+        showLinkEditor(view, linkUrl, selectedText);
     }
 
-    return toggleMark(schema.marks.link, { href: linkUrl })(state, dispatch);
+    return valid;
 }
 
 /**
- * Creates an `active` method that returns true of the current selection is/contained in the current block type
+ * Creates an `active` method that returns true if the current selection is/contained in the current block type
  * @param nodeType The type of the node to check for
  * @param attrs? A key-value map of attributes that must be present on this node
  */
@@ -286,127 +351,187 @@ export function exitInclusiveMarkCommand(
 const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
-        "Edit table",
+        _t("commands.table_edit"),
         "table-dropdown",
-        (state: EditorState) => inTable(state.selection),
+        (state: EditorState) => inTable(state.schema, state.selection),
         () => false,
 
         dropdownSection("Column", "columnSection"),
-        dropdownItem("Remove column", removeColumnCommand, "remove-column-btn"),
         dropdownItem(
-            "Insert column before",
+            _t("commands.table_column.remove"),
+            removeColumnCommand,
+            "remove-column-btn"
+        ),
+        dropdownItem(
+            _t("commands.table_column.insert_before"),
             insertTableColumnBeforeCommand,
             "insert-column-before-btn"
         ),
         dropdownItem(
-            "Insert column after",
+            _t("commands.table_column.insert_after"),
             insertTableColumnAfterCommand,
             "insert-column-after-btn"
         ),
 
         dropdownSection("Row", "rowSection"),
-        dropdownItem("Remove row", removeRowCommand, "remove-row-btn"),
         dropdownItem(
-            "Insert row before",
+            _t("commands.table_row.remove"),
+            removeRowCommand,
+            "remove-row-btn"
+        ),
+        dropdownItem(
+            _t("commands.table_row.insert_before"),
             insertTableRowBeforeCommand,
             "insert-row-before-btn"
         ),
         dropdownItem(
-            "Insert row after",
+            _t("commands.table_row.insert_after"),
             insertTableRowAfterCommand,
             "insert-row-after-btn"
         )
     );
 
-const headingDropdown = () =>
+const headingDropdown = (schema: Schema) =>
     makeMenuDropdown(
         "Header",
-        "Header",
+        _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-h") }),
         "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
-
         dropdownItem(
-            "Heading 1",
-            toggleBlockType(schema.nodes.heading, { level: 1 }),
+            _t("commands.heading.entry", { level: 1 }),
+            toggleHeadingLevel({ level: 1 }),
             "h1-btn",
             nodeTypeActive(schema.nodes.heading, { level: 1 }),
             ["fs-body3", "mt8"]
         ),
         dropdownItem(
-            "Heading 2",
-            toggleBlockType(schema.nodes.heading, { level: 2 }),
+            _t("commands.heading.entry", { level: 2 }),
+            toggleHeadingLevel({ level: 2 }),
             "h2-btn",
             nodeTypeActive(schema.nodes.heading, { level: 2 }),
             ["fs-body2"]
         ),
         dropdownItem(
-            "Heading 3",
-            toggleBlockType(schema.nodes.heading, { level: 3 }),
+            _t("commands.heading.entry", { level: 3 }),
+            toggleHeadingLevel({ level: 3 }),
             "h3-btn",
             nodeTypeActive(schema.nodes.heading, { level: 3 }),
             ["fs-body1"]
         )
     );
 
-export const createMenu = (options: CommonViewOptions): Plugin =>
-    createMenuPlugin(
-        [
-            headingDropdown(),
+// TODO ensure that all names and priorities match those found in the rich-text editor
+/**
+ * Creates all menu entries for the commonmark editor
+ * @param schema The finalized rich-text schema
+ * @param options The options for the editor
+ * @internal
+ */
+export const createMenuEntries = (
+    schema: Schema,
+    options: CommonViewOptions
+): MenuBlock[] => [
+    {
+        name: "formatting1", // TODO better name?
+        priority: 0,
+        entries: [
+            headingDropdown(schema),
             {
                 key: "toggleBold",
                 command: toggleMark(schema.marks.strong),
-                dom: makeMenuIcon("Bold", "Bold", "bold-btn"),
+                dom: makeMenuButton(
+                    "Bold",
+                    _t("commands.bold", { shortcut: getShortcut("Mod-b") }),
+                    "bold-btn"
+                ),
                 active: markActive(schema.marks.strong),
             },
             {
                 key: "toggleEmphasis",
                 command: toggleMark(schema.marks.em),
-                dom: makeMenuIcon("Italic", "Italic", "italic-btn"),
+                dom: makeMenuButton(
+                    "Italic",
+                    _t("commands.emphasis", { shortcut: getShortcut("Mod-i") }),
+                    "italic-btn"
+                ),
                 active: markActive(schema.marks.em),
             },
             {
                 key: "toggleCode",
                 command: toggleMark(schema.marks.code),
-                dom: makeMenuIcon("Code", "Inline code", "code-btn"),
+                dom: makeMenuButton(
+                    "Code",
+                    _t("commands.inline_code", {
+                        shortcut: getShortcut("Mod-k"),
+                    }),
+                    "code-btn"
+                ),
                 active: markActive(schema.marks.code),
             },
             addIf(
                 {
                     key: "toggleStrike",
                     command: toggleMark(schema.marks.strike),
-                    dom: makeMenuIcon(
+                    dom: makeMenuButton(
                         "Strikethrough",
-                        "Strikethrough",
+                        _t("commands.strikethrough"),
                         "strike-btn"
                     ),
                     active: markActive(schema.marks.strike),
                 },
                 options.parserFeatures.extraEmphasis
             ),
-            makeMenuSpacerEntry(),
+        ],
+    },
+    {
+        name: "formatting2", // TODO better name?
+        priority: 10,
+        entries: [
             {
                 key: "toggleLink",
                 command: insertLinkCommand,
-                dom: makeMenuIcon("Link", "Link selection", "insert-link-btn"),
+                dom: makeMenuButton(
+                    "Link",
+                    _t("commands.link", { shortcut: getShortcut("Mod-l") }),
+                    "insert-link-btn"
+                ),
             },
             {
                 key: "toggleBlockquote",
                 command: toggleWrapIn(schema.nodes.blockquote),
-                dom: makeMenuIcon("Quote", "Blockquote", "blockquote-btn"),
+                dom: makeMenuButton(
+                    "Quote",
+                    _t("commands.blockquote", {
+                        shortcut: getShortcut("Mod-q"),
+                    }),
+                    "blockquote-btn"
+                ),
                 active: nodeTypeActive(schema.nodes.blockquote),
             },
             {
                 key: "toggleCodeblock",
                 command: toggleBlockType(schema.nodes.code_block),
-                dom: makeMenuIcon("Codeblock", "Code block", "code-block-btn"),
+                dom: makeMenuButton(
+                    "Codeblock",
+                    _t("commands.code_block", {
+                        shortcut: getShortcut("Mod-m"),
+                    }),
+                    "code-block-btn"
+                ),
                 active: nodeTypeActive(schema.nodes.code_block),
             },
             addIf(
                 {
                     key: "insertImage",
                     command: insertImageCommand,
-                    dom: makeMenuIcon("Image", "Image", "insert-image-btn"),
+                    dom: makeMenuButton(
+                        "Image",
+                        _t("commands.image", {
+                            shortcut: getShortcut("Mod-g"),
+                        }),
+                        "insert-image-btn"
+                    ),
                 },
                 !!options.imageUpload?.handler
             ),
@@ -414,19 +539,33 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
                 {
                     key: "insertTable",
                     command: insertTableCommand,
-                    dom: makeMenuIcon("Table", "Table", "insert-table-btn"),
-                    visible: (state: EditorState) => !inTable(state.selection),
+                    dom: makeMenuButton(
+                        "Table",
+                        _t("commands.table_insert", {
+                            shortcut: getShortcut("Mod-e"),
+                        }),
+                        "insert-table-btn"
+                    ),
+                    visible: (state: EditorState) =>
+                        !inTable(state.schema, state.selection),
                 },
                 options.parserFeatures.tables
             ),
             addIf(tableDropdown(), options.parserFeatures.tables),
-            makeMenuSpacerEntry(),
+        ],
+    },
+    {
+        name: "formatting3", // TODO better name?
+        priority: 20,
+        entries: [
             {
                 key: "toggleOrderedList",
                 command: toggleWrapIn(schema.nodes.ordered_list),
-                dom: makeMenuIcon(
+                dom: makeMenuButton(
                     "OrderedList",
-                    "Numbered list",
+                    _t("commands.ordered_list", {
+                        shortcut: getShortcut("Mod-o"),
+                    }),
                     "numbered-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.ordered_list),
@@ -434,9 +573,11 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "toggleUnorderedList",
                 command: toggleWrapIn(schema.nodes.bullet_list),
-                dom: makeMenuIcon(
+                dom: makeMenuButton(
                     "UnorderedList",
-                    "Bulleted list",
+                    _t("commands.unordered_list", {
+                        shortcut: getShortcut("Mod-u"),
+                    }),
                     "bullet-list-btn"
                 ),
                 active: nodeTypeActive(schema.nodes.bullet_list),
@@ -444,32 +585,53 @@ export const createMenu = (options: CommonViewOptions): Plugin =>
             {
                 key: "insertRule",
                 command: insertHorizontalRuleCommand,
-                dom: makeMenuIcon(
+                dom: makeMenuButton(
                     "HorizontalRule",
-                    "Horizontal rule",
+                    _t("commands.horizontal_rule", {
+                        shortcut: getShortcut("Mod-r"),
+                    }),
                     "horizontal-rule-btn"
                 ),
             },
-            makeMenuSpacerEntry(() => false, ["sm:d-inline-block"]),
+        ],
+    },
+    {
+        name: "history",
+        priority: 30,
+        entries: [
             {
                 key: "undo",
                 command: undo,
-                dom: makeMenuIcon("Undo", "Undo", "undo-btn", [
-                    "sm:d-inline-block",
-                ]),
-                visible: () => false,
+                dom: makeMenuButton(
+                    "Undo",
+                    _t("commands.undo", { shortcut: getShortcut("Mod-z") }),
+                    "undo-btn"
+                ),
             },
             {
                 key: "redo",
                 command: redo,
-                dom: makeMenuIcon("Refresh", "Redo", "redo-btn", [
-                    "sm:d-inline-block",
-                ]),
-                visible: () => false,
+                dom: makeMenuButton(
+                    "Refresh",
+                    _t("commands.redo", { shortcut: getShortcut("Mod-y") }),
+                    "redo-btn"
+                ),
             },
-            makeMenuSpacerEntry(),
-            //TODO eventually this will mimic the "help" dropdown in the prod editor
-            makeMenuLinkEntry("Help", "Help", options.editorHelpLink),
         ],
-        options.menuParentContainer
-    );
+        visible: () => false,
+        classes: ["sm:d-inline-flex"],
+    },
+    {
+        name: "other",
+        priority: 40,
+        entries: [
+            //TODO eventually this will mimic the "help" dropdown in the prod editor
+            makeMenuLinkEntry(
+                "Help",
+                _t("commands.help"),
+                options.editorHelpLink,
+                "help-link"
+            ),
+        ],
+    },
+];

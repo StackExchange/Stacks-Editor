@@ -2,6 +2,50 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.6.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.6.0...v0.6.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* **options:** fix crash on startup when `preview` option is unset ([c692e17](https://github.com/StackExchange/Stacks-Editor/commit/c692e17aaa26ad0a1a7626f33617a2f9f4ac88ed)), closes [#149](https://github.com/StackExchange/Stacks-Editor/issues/149)
+
+## [0.6.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.5.1...v0.6.0) (2022-07-01)
+
+
+### Features
+
+* **commonmark-editor:** add basic static markdown preview support ([#146](https://github.com/StackExchange/Stacks-Editor/issues/146)) ([bb9f862](https://github.com/StackExchange/Stacks-Editor/commit/bb9f8626648109e2187626a17ed85e807fb43956)), closes [#115](https://github.com/StackExchange/Stacks-Editor/issues/115)
+* **commonmark-editor:** change copy behavior of commonmark content to be plain text instead of code ([485855d](https://github.com/StackExchange/Stacks-Editor/commit/485855db6ee8cda48f267a48cbaf6da2f4cde5b8))
+* **commonmark-editor:** detect and format pasted code like rich-text mode ([#147](https://github.com/StackExchange/Stacks-Editor/issues/147)) ([9d9841a](https://github.com/StackExchange/Stacks-Editor/commit/9d9841a9ee4dff30d7bc19196095c16517ed50e8)), closes [#135](https://github.com/StackExchange/Stacks-Editor/issues/135)
+* **editor-plugin:** add external plugin support ([#141](https://github.com/StackExchange/Stacks-Editor/issues/141)) ([aca011f](https://github.com/StackExchange/Stacks-Editor/commit/aca011f58d48c35bdf836ac9ff5f29f8af84eaf7))
+* **link-editor:** change link editor from a popover to a plugin pane ([#142](https://github.com/StackExchange/Stacks-Editor/issues/142)) ([3e4c847](https://github.com/StackExchange/Stacks-Editor/commit/3e4c84777c9ace43c2a83494a6071f6ceae389a6)), closes [#19](https://github.com/StackExchange/Stacks-Editor/issues/19)
+
+
+### Bug Fixes
+
+* **commonmark-editor:** fix commonmark editor treating all pasted html content as code ([6dc4556](https://github.com/StackExchange/Stacks-Editor/commit/6dc4556353fea70b340986381e58381c0ddaa105))
+* **commonmark-editor:** only select current paragraph on triple click ([#128](https://github.com/StackExchange/Stacks-Editor/issues/128)) ([7f1fa6c](https://github.com/StackExchange/Stacks-Editor/commit/7f1fa6cbeb12bf1a0ac2c9f476d82b6c5fe1b871)), closes [#27](https://github.com/StackExchange/Stacks-Editor/issues/27)
+* **commonmark-editor:** prevent placeholder clipping ([#144](https://github.com/StackExchange/Stacks-Editor/issues/144)) ([a3d0669](https://github.com/StackExchange/Stacks-Editor/commit/a3d0669a01d702c5c08e198ca80690a16f720f57))
+
+### [0.5.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.5.0...v0.5.1) (2022-06-16)
+
+
+### Features
+
+* **image-upload:** add `imageUpload.allowExternalUrls` option to allow uploads from external urls ([4b994d5](https://github.com/StackExchange/Stacks-Editor/commit/4b994d50650e7252428ec2e928dcb709ead22268)), closes [#43](https://github.com/StackExchange/Stacks-Editor/issues/43)
+* **image-upload:** add `imageUpload.embedImagesAsLinks` setting support ([d778070](https://github.com/StackExchange/Stacks-Editor/commit/d77807027fe1eda8f718fe4c5a4271ecc5ee58f6)), closes [#61](https://github.com/StackExchange/Stacks-Editor/issues/61)
+* **menu:** add keyboard shortcut labels to tooltips ([#127](https://github.com/StackExchange/Stacks-Editor/issues/127)) ([90d427a](https://github.com/StackExchange/Stacks-Editor/commit/90d427a8959795859fad08e7d132378193c69b02)), closes [#46](https://github.com/StackExchange/Stacks-Editor/issues/46)
+* **plugins:** add new interface-manager plugin to coordinate different plugins' interfaces ([166b486](https://github.com/StackExchange/Stacks-Editor/commit/166b4861cb2debbedab9c9dda7d4b13d87e3034e))
+* **plugins:** add placeholder to empty input ([#116](https://github.com/StackExchange/Stacks-Editor/issues/116)) ([da2963e](https://github.com/StackExchange/Stacks-Editor/commit/da2963e77c2a1512ab21bb9f44bdad4860b9cc6e)), closes [#103](https://github.com/StackExchange/Stacks-Editor/issues/103)
+* **rich-text-editor:** cycle heading levels on keyboard shortcut ([#131](https://github.com/StackExchange/Stacks-Editor/issues/131)) ([3be01a0](https://github.com/StackExchange/Stacks-Editor/commit/3be01a0fff4fa41ac6580aa234f965e7fa7199b9)), closes [#45](https://github.com/StackExchange/Stacks-Editor/issues/45)
+
+
+### Bug Fixes
+
+* **commonmark-editor:** prevent block change from stripping numbers ([#140](https://github.com/StackExchange/Stacks-Editor/issues/140)) ([1c18a0b](https://github.com/StackExchange/Stacks-Editor/commit/1c18a0b36febdc306aeb4c186d64722ee6f54e5f)), closes [#69](https://github.com/StackExchange/Stacks-Editor/issues/69)
+* **html:** only parse inline html tags if the opening and closing tags are on the same line ([383c6db](https://github.com/StackExchange/Stacks-Editor/commit/383c6db921542e86fdd46c46322302b57f7c6698)), closes [#133](https://github.com/StackExchange/Stacks-Editor/issues/133)
+* **image-upload:** improve image uploader i18n support ([b8e5730](https://github.com/StackExchange/Stacks-Editor/commit/b8e57304907fd240e9760ec524d0dada0038f38a))
+
 ## [0.5.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.4.2...v0.5.0) (2022-05-13)
 
 

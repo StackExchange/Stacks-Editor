@@ -5,9 +5,9 @@ import {
     Transaction,
     StateField,
     EditorState,
+    PluginView,
+    EditorStateConfig,
 } from "prosemirror-state";
-import { Schema } from "prosemirror-model";
-import { PluginView } from "../view";
 import { EditorView } from "prosemirror-view";
 import { log } from "../logger";
 
@@ -17,49 +17,45 @@ import { log } from "../logger";
 interface StatefulPluginStateField<
     T,
     TThis extends StatefulPlugin<T> = StatefulPlugin<T>
-> extends StateField<T, Schema> {
+> extends StateField<T> {
     /** @inheritdoc */
-    init(
-        this: TThis,
-        config: { [key: string]: unknown },
-        instance: EditorState<Schema>
-    ): T;
+    init(this: TThis, config: EditorStateConfig, instance: EditorState): T;
     /** @inheritdoc */
     apply(
         this: TThis,
-        tr: Transaction<Schema>,
+        tr: Transaction,
         value: T,
-        oldState: EditorState<Schema>,
-        newState: EditorState<Schema>
+        oldState: EditorState,
+        newState: EditorState
     ): T;
     /** @inheritdoc */
     toJSON?: (this: TThis, value: T) => unknown;
     /** @inheritdoc */
     fromJSON?: (
         this: TThis,
-        config: { [key: string]: unknown },
+        config: EditorStateConfig,
         value: unknown,
-        state: EditorState<Schema>
+        state: EditorState
     ) => T;
 }
 
 export interface StatefulPluginSpec<
     T,
     TThis extends StatefulPlugin<T> = StatefulPlugin<T>
-> extends PluginSpec<T, Schema> {
+> extends PluginSpec<T> {
     /** @inheritdoc */
     key: StatefulPluginKey<T>;
     /** @inheritdoc */
     state: StatefulPluginStateField<T, TThis> | null;
 }
 
-export class StatefulPluginKey<T> extends PluginKey<T, Schema> {
+export class StatefulPluginKey<T> extends PluginKey<T> {
     constructor(name?: string) {
         super(name);
     }
 
     /** @inheritdoc */
-    get(state: EditorState<Schema>): StatefulPlugin<T> | null | undefined {
+    get(state: EditorState): StatefulPlugin<T> | null | undefined {
         return super.get(state) as StatefulPlugin<T>;
     }
 
@@ -68,7 +64,7 @@ export class StatefulPluginKey<T> extends PluginKey<T, Schema> {
     }
 }
 
-export class StatefulPlugin<T> extends Plugin<T, Schema> {
+export class StatefulPlugin<T> extends Plugin<T> {
     spec: StatefulPluginSpec<T>;
 
     constructor(spec: StatefulPluginSpec<T>) {

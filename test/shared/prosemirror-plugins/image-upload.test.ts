@@ -8,11 +8,11 @@ import {
     commonmarkImageUpload,
     richTextImageUpload,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
-import { richTextSchema } from "../../../src/rich-text/schema";
 import "../../matchers";
-import { getSelectedText } from "../../test-helpers";
+import { externalPluginProvider, getSelectedText } from "../../test-helpers";
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
+import { testRichTextSchema } from "../../rich-text/test-helpers";
 
 let pluginContainer: Element;
 let view: RichTextEditor;
@@ -29,21 +29,20 @@ describe("image upload plugin", () => {
                     handler: () =>
                         Promise.resolve("https://example.com/image.png"),
                 },
-                pluginContainer,
                 stackOverflowValidateLink,
                 (state) => state.tr
             );
         });
 
         it("should show image uploader", () => {
-            expect(uploader.uploadContainer.classList).toContain("d-none");
+            expect(uploader.uploadContainer.parentElement).toBeNull();
 
             showImageUploader(view.editorView);
             uploader.update(view.editorView);
             const updatedUploadContainer =
                 pluginContainer.querySelector(".js-image-uploader");
 
-            expect(updatedUploadContainer.classList).not.toContain("d-none");
+            expect(updatedUploadContainer.parentElement).toBeTruthy();
         });
 
         it("should focus 'browse' button when showing image uploader", () => {
@@ -51,7 +50,7 @@ describe("image upload plugin", () => {
             // see https://github.com/jsdom/jsdom/issues/2586#issuecomment-742593116
             document.body.appendChild(pluginContainer);
 
-            expect(uploader.uploadContainer.classList).toContain("d-none");
+            expect(uploader.uploadContainer.parentElement).toBeNull();
 
             showImageUploader(view.editorView);
             uploader.update(view.editorView);
@@ -77,7 +76,7 @@ describe("image upload plugin", () => {
             hideImageUploader(view.editorView);
             uploader.update(view.editorView);
 
-            expect(uploader.uploadContainer.classList).toContain("d-none");
+            expect(uploader.uploadContainer.parentElement).toBeNull();
         });
 
         it("should disable 'add image' button without preview", () => {
@@ -171,12 +170,12 @@ describe("image upload plugin", () => {
                     wrapImagesInLinks: optionSet,
                 },
                 stackOverflowValidateLink,
-                () => document.createElement("div")
+                testRichTextSchema
             );
 
             const view = new EditorView(document.createElement("div"), {
                 state: EditorState.create({
-                    schema: richTextSchema,
+                    schema: testRichTextSchema,
                     plugins: [plugin],
                 }),
                 plugins: [],
@@ -236,8 +235,7 @@ describe("image upload plugin", () => {
                         Promise.resolve("https://www.example.com/image"),
                     wrapImagesInLinks: optionSet,
                 },
-                stackOverflowValidateLink,
-                () => document.createElement("div")
+                stackOverflowValidateLink
             );
 
             const view = new EditorView(document.createElement("div"), {
@@ -271,12 +269,12 @@ describe("image upload plugin", () => {
                     embedImagesAsLinks: optionSet,
                 },
                 stackOverflowValidateLink,
-                () => document.createElement("div")
+                testRichTextSchema
             );
 
             const view = new EditorView(document.createElement("div"), {
                 state: EditorState.create({
-                    schema: richTextSchema,
+                    schema: testRichTextSchema,
                     plugins: [plugin],
                 }),
                 plugins: [],
@@ -337,8 +335,7 @@ describe("image upload plugin", () => {
                         Promise.resolve("https://www.example.com/image"),
                     embedImagesAsLinks: optionSet,
                 },
-                stackOverflowValidateLink,
-                () => document.createElement("div")
+                stackOverflowValidateLink
             );
 
             const view = new EditorView(document.createElement("div"), {
@@ -374,12 +371,12 @@ describe("image upload plugin", () => {
                     allowExternalUrls: true,
                 },
                 stackOverflowValidateLink,
-                () => document.createElement("div")
+                testRichTextSchema
             );
 
             const view = new EditorView(document.createElement("div"), {
                 state: EditorState.create({
-                    schema: richTextSchema,
+                    schema: testRichTextSchema,
                     plugins: [plugin],
                 }),
                 plugins: [],
@@ -424,8 +421,7 @@ describe("image upload plugin", () => {
                     },
                     allowExternalUrls: true,
                 },
-                stackOverflowValidateLink,
-                () => document.createElement("div")
+                stackOverflowValidateLink
             );
 
             const view = new EditorView(document.createElement("div"), {
@@ -464,7 +460,6 @@ describe("image upload plugin", () => {
                         },
                         allowExternalUrls: true,
                     },
-                    pluginContainer,
                     stackOverflowValidateLink,
                     (state) => state.tr
                 );
@@ -534,7 +529,12 @@ function richTextView(
     markdown: string,
     containerFn: () => Element
 ): RichTextEditor {
-    return new RichTextEditor(document.createElement("div"), markdown, {
-        pluginParentContainer: containerFn,
-    });
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdown,
+        externalPluginProvider(),
+        {
+            pluginParentContainer: containerFn,
+        }
+    );
 }

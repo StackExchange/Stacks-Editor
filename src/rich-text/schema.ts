@@ -1,11 +1,13 @@
-import { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
+import { MarkSpec, NodeSpec } from "prosemirror-model";
 import { _t } from "../shared/localization";
 
 //TODO this relies on Stacks classes, should we abstract?
 
 /** Base rich-text schema; heavily inspired by prosemirror-markdown's schema */
 
-const nodes: SchemaSpec["nodes"] = {
+const nodes: {
+    [name: string]: NodeSpec;
+} = {
     doc: {
         content: "block+",
     },
@@ -91,6 +93,7 @@ const nodes: SchemaSpec["nodes"] = {
         attrs: {
             params: { default: "" },
             detectedHighlightLanguage: { default: "" },
+            isEditingProcessor: { default: false },
         },
         parseDOM: [
             {
@@ -434,7 +437,9 @@ const nodes: SchemaSpec["nodes"] = {
     },
 };
 
-const marks: SchemaSpec["marks"] = {
+const marks: {
+    [name: string]: MarkSpec;
+} = {
     em: {
         parseDOM: [
             { tag: "i" },
@@ -532,21 +537,11 @@ Object.entries(nodes).forEach(([k, node]) => {
     node.attrs = attrs;
 });
 
-/** The complete schema used by the rich-text editor */
-export const richTextSchema = new Schema({
+/** The complete schema spec used by the rich-text editor */
+export const richTextSchemaSpec = {
     nodes: nodes,
     marks: marks,
-});
-
-/** All nodes that are considered to be within a table */
-export const tableNodes = [
-    richTextSchema.nodes.table,
-    richTextSchema.nodes.table_head,
-    richTextSchema.nodes.table_body,
-    richTextSchema.nodes.table_row,
-    richTextSchema.nodes.table_cell,
-    richTextSchema.nodes.table_header,
-];
+};
 
 /**
  * Creates a generic html NodeSpec for a block html tag

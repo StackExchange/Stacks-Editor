@@ -2,28 +2,58 @@ import { history } from "prosemirror-history";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
+import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { log } from "../shared/logger";
+import { createMenuPlugin } from "../shared/menu";
+import { createPreviewPlugin } from "./plugins/preview";
+import { commonmarkCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import {
     commonmarkImageUpload,
     defaultImageUploadHandler,
 } from "../shared/prosemirror-plugins/image-upload";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
+import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
 import {
     editableCheck,
     readonlyPlugin,
 } from "../shared/prosemirror-plugins/readonly";
+import { tripleClickHandler } from "./plugins/triple-click-handler";
 import { CodeStringParser } from "../shared/schema";
 import { deepMerge } from "../shared/utils";
 import {
     BaseView,
     CommonViewOptions,
     defaultParserFeatures,
+    EditorType,
 } from "../shared/view";
-import { createMenu } from "./commands";
+import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
+import type MarkdownIt from "markdown-it";
+import { textCopyHandlerPlugin } from "./plugins/text-copy-handler";
+import { markdownHighlightPlugin } from "./plugins/markdown-highlight";
 
-export type CommonmarkOptions = CommonViewOptions;
+export interface CommonmarkOptions extends CommonViewOptions {
+    /** Settings for showing a static rendered preview of the editor's contents */
+    preview?: {
+        /** Whether the preview is enabled */
+        enabled: boolean;
+        /**
+         * Function to get the container to place the markdown preview;
+         * defaults to returning this editor's target's parentNode
+         */
+        parentContainer?: (view: EditorView) => Element;
+        /**
+         * Custom renderer instance to use to render the markdown;
+         * defaults to the markdown-it instance used by this editor;
+         * WARNING: The passed renderer will need to properly sanitize html,
+         * SANITIZATION IS NOT PROVIDED FOR CUSTOM RENDERERS
+         */
+        renderer?: MarkdownIt;
+        /** The number of milliseconds to delay rendering between updates */
+        renderDelayMs?: number;
+    };
+}
 
 export class CommonmarkEditor extends BaseView {
     private options: CommonmarkOptions;
@@ -31,14 +61,26 @@ export class CommonmarkEditor extends BaseView {
     constructor(
         target: Node,
         content: string,
+        pluginProvider: IExternalPluginProvider,
         options: CommonmarkOptions = {}
     ) {
         super();
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
+        const menuEntries = pluginProvider.getFinalizedMenu(
+            createMenuEntries(this.options),
+            EditorType.Commonmark,
+            commonmarkSchema
+        );
+
+        const menu = createMenuPlugin(
+            menuEntries,
+            this.options.menuParentContainer
+        );
+
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                node.classList.add(...this.options.classList);
+                node.classList.add(...(this.options.classList || []));
                 target.appendChild(node);
             },
             {
@@ -48,14 +90,25 @@ export class CommonmarkEditor extends BaseView {
                     plugins: [
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
-                        createMenu(this.options),
-                        CodeBlockHighlightPlugin(null),
-                        commonmarkImageUpload(
-                            this.options.imageUpload,
-                            this.options.parserFeatures.validateLink,
+                        menu,
+                        createPreviewPlugin(
+                            this.options.preview,
+                            this.options.parserFeatures
+                        ),
+                        markdownHighlightPlugin(this.options.parserFeatures),
+                        interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
+                        commonmarkImageUpload(
+                            this.options.imageUpload,
+                            this.options.parserFeatures.validateLink
+                        ),
+                        placeholderPlugin(this.options.placeholderText),
                         readonlyPlugin(),
+                        tripleClickHandler,
+                        commonmarkCodePasteHandler,
+                        textCopyHandlerPlugin,
+                        ...pluginProvider.plugins.commonmark,
                     ],
                 }),
                 plugins: [],
@@ -74,8 +127,14 @@ export class CommonmarkEditor extends BaseView {
             editorHelpLink: null,
             menuParentContainer: null,
             parserFeatures: defaultParserFeatures,
+            placeholderText: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,
+            },
+            preview: {
+                enabled: false,
+                parentContainer: null,
+                renderer: null,
             },
         };
     }

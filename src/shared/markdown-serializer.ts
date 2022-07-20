@@ -2,25 +2,23 @@ import {
     defaultMarkdownSerializer,
     MarkdownSerializer,
     MarkdownSerializerState,
-    MarkSerializerConfig,
 } from "prosemirror-markdown";
 import { Node as ProsemirrorNode, Mark } from "prosemirror-model";
-import { error } from "../shared/logger";
-import { ExternalEditorPlugin } from "../shared/external-editor-plugin";
+import { error } from "./logger";
 import {
     selfClosingElements,
     supportedTagAttributes,
     TagType,
-} from "../shared/html-helpers";
+} from "./html-helpers";
 import { normalizeReference } from "markdown-it/lib/common/utils";
-import { richTextSchema } from "./schema";
+import { IExternalPluginProvider } from "./editor-plugin";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<
     typeof MarkdownSerializer
 >[0];
 
-type MarkdownSerializerMarks = ConstructorParameters<
+export type MarkdownSerializerMarks = ConstructorParameters<
     typeof MarkdownSerializer
 >[1];
 
@@ -36,7 +34,7 @@ class SOMarkdownSerializerState extends MarkdownSerializerState {
     constructor(
         nodes: MarkdownSerializerNodes,
         marks: MarkdownSerializerMarks,
-        options?: { [key: string]: unknown }
+        options: { [key: string]: unknown }
     ) {
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error TODO constructor not exposed in types
@@ -89,7 +87,7 @@ class SOMarkdownSerializer extends MarkdownSerializer {
         const state = new SOMarkdownSerializerState(
             this.nodes,
             this.marks,
-            options
+            options || {}
         );
         state.renderContent(content);
         state.writeLinkReferenceDefinitions();
@@ -254,12 +252,17 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             return;
         }
 
+        const title = node.attrs.title
+            ? // @ts-expect-error TODO types might be wrong here
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
+              " " + state.quote(node.attrs.title)
+            : "";
         state.write(
             "![" +
                 state.esc(node.attrs.alt || "") +
                 "](" +
                 state.esc(node.attrs.src) +
-                (node.attrs.title ? " " + state.quote(node.attrs.title) : "") +
+                title +
                 ")"
         );
     },
@@ -336,10 +339,11 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
     },
 
     table(state, node) {
+        const schema = node.type.schema;
         function serializeTableHead(head: ProsemirrorNode) {
             let columnAlignments: string[] = [];
             head.forEach((headRow) => {
-                if (headRow.type === richTextSchema.nodes.table_row) {
+                if (headRow.type === schema.nodes.table_row) {
                     columnAlignments = serializeTableRow(headRow);
                 }
             });
@@ -362,7 +366,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
 
         function serializeTableBody(body: ProsemirrorNode) {
             body.forEach((bodyRow) => {
-                if (bodyRow.type === richTextSchema.nodes.table_row) {
+                if (bodyRow.type === schema.nodes.table_row) {
                     serializeTableRow(bodyRow);
                 }
             });
@@ -373,8 +377,8 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
             state.ensureNewLine();
             row.forEach((cell) => {
                 if (
-                    cell.type === richTextSchema.nodes.table_header ||
-                    cell.type === richTextSchema.nodes.table_cell
+                    cell.type === schema.nodes.table_header ||
+                    cell.type === schema.nodes.table_cell
                 ) {
                     const alignment = serializeTableCell(cell);
                     columnAlignment.push(alignment);
@@ -409,9 +413,9 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
         }
 
         node.forEach((table_child) => {
-            if (table_child.type === richTextSchema.nodes.table_head)
+            if (table_child.type === schema.nodes.table_head)
                 serializeTableHead(table_child);
-            if (table_child.type === richTextSchema.nodes.table_body)
+            if (table_child.type === schema.nodes.table_body)
                 serializeTableBody(table_child);
         });
 
@@ -436,7 +440,9 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
  * but could also be html tags from our extended html support plugin (e.g. * vs <em> for emphasis)
  * @param config The base config to extend
  */
-function genMarkupAwareMarkConfig(config: MarkSerializerConfig) {
+function genMarkupAwareMarkConfig(
+    config: MarkdownSerializer["marks"]["string"]
+) {
     // we don't support function open/close since these could have fairly complicated logic in them
     if (config.open instanceof Function || config.close instanceof Function) {
         // log an error to the console and return the unmodified base config
@@ -462,13 +468,12 @@ function genMarkupAwareMarkConfig(config: MarkSerializerConfig) {
                 : markup;
             return markup || config.close;
         },
-    };
+    } as typeof config;
 }
 
 // add support for html/linkify marked-up links (defaulting back to the default serializer otherwise)
-const defaultLinkMarkDeserializer = defaultMarkdownSerializer.marks
-    .link as MarkSerializerConfig;
-const extendedLinkMarkDeserializer: MarkSerializerConfig = {
+const defaultLinkMarkDeserializer = defaultMarkdownSerializer.marks.link;
+const extendedLinkMarkDeserializer: typeof defaultLinkMarkDeserializer = {
     open(state, mark, parent, index) {
         if (!mark.attrs.markup) {
             return typeof defaultLinkMarkDeserializer.open === "string"
@@ -536,9 +541,8 @@ const extendedLinkMarkDeserializer: MarkSerializerConfig = {
 };
 
 // add support for <code> markup
-const defaultCodeMarkDeserializer = defaultMarkdownSerializer.marks
-    .code as MarkSerializerConfig;
-const extendedCodeMarkDeserializer: MarkSerializerConfig = {
+const defaultCodeMarkDeserializer = defaultMarkdownSerializer.marks.code;
+const extendedCodeMarkDeserializer: typeof defaultCodeMarkDeserializer = {
     open(state, mark, parent, index) {
         if (typeof defaultCodeMarkDeserializer.open === "string") {
             return (
@@ -566,7 +570,7 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
         if (typeof defaultCodeMarkDeserializer.close === "string") {
             return (
                 (mark.attrs.markup as string) ||
-                defaultCodeMarkDeserializer.open
+                defaultCodeMarkDeserializer.close
             );
         }
 
@@ -593,49 +597,48 @@ const extendedCodeMarkDeserializer: MarkSerializerConfig = {
 // extend the default markdown serializer's marks and add our own
 const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
     ...defaultMarkdownSerializer.marks,
-    ...{
-        em: genMarkupAwareMarkConfig(defaultMarkdownSerializer.marks.em),
-        strong: genMarkupAwareMarkConfig(
-            defaultMarkdownSerializer.marks.strong
-        ),
-        code: extendedCodeMarkDeserializer,
-        link: extendedLinkMarkDeserializer,
-        strike: genMarkupAwareMarkConfig({
-            open: "~~",
-            close: "~~",
-            mixable: true,
-            expelEnclosingWhitespace: true,
-        }),
-        kbd: genMarkupAwareMarkConfig({
-            open: "<kbd>",
-            close: "</kbd>",
-            mixable: true,
-            expelEnclosingWhitespace: true,
-        }),
-        sup: genMarkupAwareMarkConfig({
-            open: "<sup>",
-            close: "</sup>",
-            mixable: true,
-            expelEnclosingWhitespace: true,
-        }),
-        sub: genMarkupAwareMarkConfig({
-            open: "<sub>",
-            close: "</sub>",
-            mixable: true,
-            expelEnclosingWhitespace: true,
-        }),
-    },
+    em: genMarkupAwareMarkConfig(defaultMarkdownSerializer.marks.em),
+    strong: genMarkupAwareMarkConfig(defaultMarkdownSerializer.marks.strong),
+    code: extendedCodeMarkDeserializer,
+    link: extendedLinkMarkDeserializer,
+    strike: genMarkupAwareMarkConfig({
+        open: "~~",
+        close: "~~",
+        mixable: true,
+        expelEnclosingWhitespace: true,
+    }),
+    kbd: genMarkupAwareMarkConfig({
+        open: "<kbd>",
+        close: "</kbd>",
+        mixable: true,
+        expelEnclosingWhitespace: true,
+    }),
+    sup: genMarkupAwareMarkConfig({
+        open: "<sup>",
+        close: "</sup>",
+        mixable: true,
+        expelEnclosingWhitespace: true,
+    }),
+    sub: genMarkupAwareMarkConfig({
+        open: "<sub>",
+        close: "</sub>",
+        mixable: true,
+        expelEnclosingWhitespace: true,
+    }),
 };
 
 // export our custom serializer using the extended nodes/marks taken from the default schema
 export const stackOverflowMarkdownSerializer = (
-    externalPlugin: ExternalEditorPlugin
+    externalPluginProvider: IExternalPluginProvider
 ): MarkdownSerializer =>
     new SOMarkdownSerializer(
         {
             ...defaultMarkdownSerializerNodes,
             ...customMarkdownSerializerNodes,
-            ...externalPlugin.markdownSerializers,
+            ...externalPluginProvider.markdownProps.serializers.nodes,
         },
-        customMarkdownSerializerMarks
+        {
+            ...customMarkdownSerializerMarks,
+            ...externalPluginProvider.markdownProps.serializers.marks,
+        }
     );

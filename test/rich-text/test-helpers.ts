@@ -6,8 +6,11 @@ import {
     Transaction,
 } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { richTextSchemaSpec } from "../../src/rich-text/schema";
 import { MenuCommand } from "../../src/shared/menu";
-import { richTextSchema } from "../../src/rich-text/schema";
+
+/** Consistent schema to test against */
+export const testRichTextSchema = new Schema(richTextSchemaSpec);
 
 /**
  * Url to use when testing (de)serialization that contains special encodings/other pitfalls and
@@ -36,7 +39,7 @@ export function parseHtmlToDoc(
     // NOTE: tests only, no XSS danger
     // eslint-disable-next-line no-unsanitized/property
     container.innerHTML = htmlContent;
-    const parser = DOMParser.fromSchema(richTextSchema);
+    const parser = DOMParser.fromSchema(testRichTextSchema);
 
     return asSlice ? parser.parseSlice(container) : parser.parse(container);
 }
@@ -48,13 +51,13 @@ export function createState(
 ): EditorState {
     return EditorState.create({
         doc: parseHtmlToDoc(htmlContent, false),
-        schema: richTextSchema,
+        schema: testRichTextSchema,
         plugins: plugins,
     });
 }
 
 /** Creates a bare editor view with only the passed state and nothing else */
-export function createView(state: EditorState<Schema>): EditorView<Schema> {
+export function createView(state: EditorState): EditorView {
     return new EditorView(document.createElement("div"), {
         state: state,
         plugins: [],
@@ -63,10 +66,10 @@ export function createView(state: EditorState<Schema>): EditorView<Schema> {
 
 /** Applies a text selection to the passed state based on the given from/to */
 export function applySelection(
-    state: EditorState<Schema>,
+    state: EditorState,
     from: number,
     to?: number
-): EditorState<Schema> {
+): EditorState {
     const tr = setSelection(state.tr, from, to);
     return state.apply(tr);
 }
@@ -88,7 +91,7 @@ export function setSelection(
 
 /** Applies a command to the state and expects it to apply correctly */
 export function runCommand(
-    state: EditorState<Schema>,
+    state: EditorState,
     command: MenuCommand,
     expectSuccess = true
 ) {
@@ -129,7 +132,11 @@ export class DataTransferMock implements DataTransfer {
     effectAllowed: DataTransfer["effectAllowed"];
     files: FileList;
     items: DataTransferItemList;
-    types: readonly string[];
+
+    get types() {
+        return Object.keys(this.data);
+    }
+
     clearData(): void {
         throw new Error("Method not implemented.");
     }

@@ -1,9 +1,13 @@
 import "@stackoverflow/stacks";
 import packageJson from "../package.json";
-import type { StacksEditor, StacksEditorOptions } from "../src";
-import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
+import {
+    registerLocalizationStrings,
+    StacksEditor,
+    StacksEditorOptions,
+} from "../src";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
+import { samplePlugins } from "./sample-plugins";
 import "./site.less";
 
 function domReady(callback: (e: Event) => void) {
@@ -149,8 +153,9 @@ domReady(() => {
     const place = document.querySelector<HTMLElement>("#example-1");
     const place2 = document.querySelector<HTMLElement>("#example-2");
     const content = document.querySelector<HTMLTextAreaElement>("#content");
-    const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
+    const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
+    const enableMDPreview = place.classList.contains("js-md-preview-enabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -167,66 +172,60 @@ domReady(() => {
         imageUploadOptions["handler"] = null;
     }
 
-    // asynchronously load the required bundles
-    void import("../src/index").then(function ({
-        StacksEditor,
-        registerLocalizationStrings,
-    }) {
-        registerLocalizationStrings({
-            menubar: {
-                mode_toggle_title: "Localization test: Toggle editor mode",
-            },
-        });
+    registerLocalizationStrings({
+        menubar: {
+            mode_toggle_title: "Localization test: Toggle editor mode",
+        },
+    });
 
-        const options: StacksEditorOptions = {
-            defaultView: getDefaultEditor(),
-            editorHelpLink: "#TODO",
-            commonmarkOptions: {},
-            parserFeatures: {
-                tables: enableTables,
-                tagLinks: {
-                    allowNonAscii: false,
-                    allowMetaTags: true,
-                    renderer: (tagName, isMetaTag) => {
-                        return {
-                            link: "#" + tagName,
-                            linkTitle:
-                                "Show questions tagged '" + tagName + "'",
-                            additionalClasses: isMetaTag
-                                ? ["s-tag__muted"]
-                                : [],
-                        };
-                    },
+    const options: StacksEditorOptions = {
+        defaultView: getDefaultEditor(),
+        editorHelpLink: "#HELP_LINK",
+        commonmarkOptions: {
+            preview: {
+                enabled: enableMDPreview,
+            },
+        },
+        parserFeatures: {
+            tables: true,
+            tagLinks: {
+                render: (tagName, isMetaTag) => {
+                    return {
+                        link: "#" + tagName,
+                        linkTitle: "Show questions tagged '" + tagName + "'",
+                        additionalClasses: isMetaTag ? ["s-tag__muted"] : [],
+                    };
                 },
             },
-            richTextOptions: {
-                linkPreviewProviders: [
-                    ExampleTextOnlyLinkPreviewProvider,
-                    ExampleLinkPreviewProvider,
-                ],
-            },
-            imageUpload: imageUploadOptions,
-            externalPlugins: [StackSnippetsPlugin],
-        };
+        },
+        placeholderText: "This is placeholder text, so start typing…",
+        richTextOptions: {
+            linkPreviewProviders: [
+                ExampleTextOnlyLinkPreviewProvider,
+                ExampleLinkPreviewProvider,
+            ],
+        },
+        imageUpload: imageUploadOptions,
+        editorPlugins: enableSamplePlugin ? samplePlugins : [],
+    };
 
-        const editorInstance = new StacksEditor(place, content.value, options);
+    const editorInstance = new StacksEditor(place, content.value, options);
+
+    // set the instance on the window for developers to poke around in
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+    (window as any)["editorInstance"] = editorInstance;
+
+    if (place2) {
+        const secondEditorInstance = new StacksEditor(
+            place2,
+            content.value,
+            options
+        );
 
         // set the instance on the window for developers to poke around in
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-        (window as any)["editorInstance"] = editorInstance;
-
-        if (place2) {
-            const secondEditorInstance = new StacksEditor(
-                place2,
-                content.value,
-                options
-            );
-
-            // set the instance on the window for developers to poke around in
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-            (window as any)["secondEditorInstance"] = secondEditorInstance;
-        }
-    });
+        (window as any)["secondEditorInstance"] = secondEditorInstance;
+    }
 
     place.addEventListener(
         "StacksEditor:view-change",
@@ -241,6 +240,18 @@ domReady(() => {
             setDefaultEditor(e.detail.editorType);
         }
     );
+
+    // if the help link button is clicked, show the user an alert instead of opening the non-existent help page
+    document.querySelectorAll(".js-help-link").forEach((el) => {
+        el.addEventListener("click", (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // eslint-disable-next-line no-alert
+            alert(
+                "The demo help link doesn't actually go anywhere, so enjoy this alert instead. :)"
+            );
+        });
+    });
 });
 
 if ("serviceWorker" in navigator) {

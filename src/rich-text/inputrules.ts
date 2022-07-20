@@ -4,32 +4,9 @@ import {
     textblockTypeInputRule,
     wrappingInputRule,
 } from "prosemirror-inputrules";
-import { MarkType } from "prosemirror-model";
+import { MarkType, Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
-import { richTextSchema as schema } from "./schema";
 import { CommonmarkParserFeatures } from "../shared/view";
-
-const blockquoteInputRule = wrappingInputRule(
-    /^\s*>\s$/,
-    schema.nodes.blockquote
-);
-const spoilerInputRule = wrappingInputRule(/^\s*>!\s$/, schema.nodes.spoiler);
-const headingInputRule = textblockTypeInputRule(
-    new RegExp("^(#{1,3})\\s$"),
-    schema.nodes.heading,
-    (match) => ({ level: match[1].length })
-);
-const codeBlockRule = textblockTypeInputRule(/^```$/, schema.nodes.code_block);
-const unorderedListRule = wrappingInputRule(
-    /^\s*[*+-]\s$/,
-    schema.nodes.bullet_list
-);
-const orderedListRule = wrappingInputRule(
-    /^\s*\d(\.|\))\s$/,
-    schema.nodes.ordered_list,
-    (match) => ({ order: +match[1] }),
-    (match, node) => node.childCount + <number>node.attrs.order == +match[1]
-);
 
 // matches: `some text`, but not ` text `
 const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
@@ -43,32 +20,6 @@ const strongRegexUnderscores = /__(\S(?:|.*?\S))__$/;
 const emphasisRegexUnderscore = /_([^_\s]([^_])*[^_\s]|[^_\s])_$/;
 // matches: [ *any* thing ]( any thing )
 const linkRegex = /\[(.+)\]\((.+)\)$/;
-
-const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code);
-const boldRule = markInputRule(strongRegexAsterisks, schema.marks.strong);
-const emphasisRule = markInputRule(
-    emphasisRegexAsterisk,
-    schema.marks.em,
-    (match) => match.input.charAt(match.input.lastIndexOf(match[0]) - 1) !== "*"
-);
-const boldUnderlineRule = markInputRule(
-    strongRegexUnderscores,
-    schema.marks.strong
-);
-const emphasisUnderlineRule = markInputRule(
-    emphasisRegexUnderscore,
-    schema.marks.em,
-    (match) => match.input.charAt(match.input.lastIndexOf(match[0]) - 1) !== "_"
-);
-const linkRule = (features: CommonmarkParserFeatures) =>
-    markInputRule(
-        linkRegex,
-        schema.marks.link,
-        (match) => features.validateLink(match[2]), // only apply link input rule, if the matched URL is valid,
-        (match: RegExpMatchArray) => {
-            return { href: match[2] };
-        }
-    );
 
 /**
  * Create an input rule that applies a mark to the text matched by a regular expression.
@@ -142,8 +93,77 @@ function markInputRule(
  *      * starting a line with "# " will turn the line into a headline
  *      * starting a line with "> " will insert a new blockquote in place
  */
-export const richTextInputRules = (features: CommonmarkParserFeatures) =>
-    inputRules({
+export const richTextInputRules = (
+    schema: Schema,
+    features: CommonmarkParserFeatures
+) => {
+    const blockquoteInputRule = wrappingInputRule(
+        /^\s*>\s$/,
+        schema.nodes.blockquote
+    );
+
+    const spoilerInputRule = wrappingInputRule(
+        /^\s*>!\s$/,
+        schema.nodes.spoiler
+    );
+
+    const headingInputRule = textblockTypeInputRule(
+        new RegExp("^(#{1,3})\\s$"),
+        schema.nodes.heading,
+        (match) => ({ level: match[1].length })
+    );
+
+    const codeBlockRule = textblockTypeInputRule(
+        /^```$/,
+        schema.nodes.code_block
+    );
+
+    const unorderedListRule = wrappingInputRule(
+        /^\s*[*+-]\s$/,
+        schema.nodes.bullet_list
+    );
+
+    const orderedListRule = wrappingInputRule(
+        /^\s*\d(\.|\))\s$/,
+        schema.nodes.ordered_list,
+        (match) => ({ order: +match[1] }),
+        (match, node) => node.childCount + <number>node.attrs.order == +match[1]
+    );
+
+    const inlineCodeRule = markInputRule(inlineCodeRegex, schema.marks.code);
+
+    const boldRule = markInputRule(strongRegexAsterisks, schema.marks.strong);
+
+    const emphasisRule = markInputRule(
+        emphasisRegexAsterisk,
+        schema.marks.em,
+        (match) =>
+            match.input.charAt(match.input.lastIndexOf(match[0]) - 1) !== "*"
+    );
+
+    const boldUnderlineRule = markInputRule(
+        strongRegexUnderscores,
+        schema.marks.strong
+    );
+
+    const emphasisUnderlineRule = markInputRule(
+        emphasisRegexUnderscore,
+        schema.marks.em,
+        (match) =>
+            match.input.charAt(match.input.lastIndexOf(match[0]) - 1) !== "_"
+    );
+
+    const linkRule = (features: CommonmarkParserFeatures) =>
+        markInputRule(
+            linkRegex,
+            schema.marks.link,
+            (match) => features.validateLink(match[2]), // only apply link input rule, if the matched URL is valid,
+            (match: RegExpMatchArray) => {
+                return { href: match[2] };
+            }
+        );
+
+    return inputRules({
         rules: [
             blockquoteInputRule,
             spoilerInputRule,
@@ -159,3 +179,4 @@ export const richTextInputRules = (features: CommonmarkParserFeatures) =>
             linkRule(features),
         ],
     });
+};

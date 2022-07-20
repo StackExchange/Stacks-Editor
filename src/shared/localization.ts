@@ -7,11 +7,53 @@ type Strings = {
         | Strings;
 };
 
+/** Curried helper method that wraps a i18n method for menu entries w/ shortcuts */
+function shortcut(text: string): (args: { shortcut: string }) => string {
+    return (args) => `${text} (${args.shortcut})`;
+}
+
 /** The default set of localizable strings */
 export const defaultStrings = {
+    commands: {
+        blockquote: shortcut("Blockquote"),
+        bold: shortcut("Bold"),
+        code_block: shortcut("Code block"),
+        emphasis: shortcut("Italic"),
+        heading: {
+            dropdown: shortcut("Heading"),
+            entry: ({ level }: { level: number }) => `Heading ${level}`,
+        },
+        help: "Help",
+        horizontal_rule: shortcut("Horizontal rule"),
+        image: shortcut("Image"),
+        inline_code: shortcut("Inline code"),
+        link: shortcut("Link"),
+        ordered_list: shortcut("Numbered list"),
+        redo: shortcut("Redo"),
+        strikethrough: "Strikethrough",
+        table_edit: "Edit table",
+        table_insert: shortcut("Table"),
+        table_column: {
+            insert_after: "Insert column after",
+            insert_before: "Insert column before",
+            remove: "Remove column",
+        },
+        table_row: {
+            insert_after: "Insert row after",
+            insert_before: "Insert row before",
+            remove: "Remove row",
+        },
+        undo: shortcut("Undo"),
+        unordered_list: shortcut("Bulleted list"),
+    },
+    link_editor: {
+        cancel_button: "Cancel",
+        href_label: "Link URL",
+        save_button: "Save",
+        text_label: "Link text",
+        validation_error: "The entered URL is invalid.",
+    },
     link_tooltip: {
-        apply_button_text: "Apply" as string,
-        apply_button_title: "Apply new link" as string,
         edit_button_title: "Edit link" as string,
         remove_button_title: "Remove link" as string,
     },
@@ -24,6 +66,8 @@ export const defaultStrings = {
         spoiler_reveal_text: "Reveal spoiler" as string,
     },
     image_upload: {
+        default_image_alt_text: "enter image description here" as string,
+        external_url_validation_error: "The entered URL is invalid." as string,
         upload_error_file_too_big:
             "Your image is too large to upload (over 2 MiB)" as string,
         upload_error_generic:
@@ -45,7 +89,7 @@ export function registerLocalizationStrings(
     strings = newStrings;
 }
 
-/** Resolves a dot-separeated key against an object */
+/** Resolves a dot-separated key against an object */
 function resolve(obj: Strings, key: string) {
     return key.split(".").reduce((p, n) => p?.[n], obj);
 }

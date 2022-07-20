@@ -1,7 +1,6 @@
 import { MarkType } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { richTextInputRules } from "../../src/rich-text/inputrules";
-import { richTextSchema } from "../../src/rich-text/schema";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import "../matchers";
 import {
@@ -11,6 +10,7 @@ import {
     createView,
     setupPasteSupport,
     sleepAsync,
+    testRichTextSchema,
 } from "./test-helpers";
 
 function dispatchInputAsync(view: EditorView, inputStr: string) {
@@ -27,7 +27,7 @@ function dispatchInputAsync(view: EditorView, inputStr: string) {
     }
 
     // TODO HACK
-    // the above is triggered asyncronously via a dom observer,
+    // the above is triggered asynchronously via a dom observer,
     // so defer execution so it can finish and update the state
     return sleepAsync(0);
 }
@@ -35,7 +35,7 @@ function dispatchInputAsync(view: EditorView, inputStr: string) {
 function markInputRuleTest(expectedMark: MarkType, charactersTrimmed: number) {
     return async (testString: string, matches: boolean) => {
         const state = createState("", [
-            richTextInputRules({
+            richTextInputRules(testRichTextSchema, {
                 validateLink: stackOverflowValidateLink,
             }),
         ]);
@@ -90,7 +90,7 @@ describe("mark input rules", () => {
     // eslint-disable-next-line jest/expect-expect
     it.each(emphasisTests)(
         "*emphasis* (%s)",
-        markInputRuleTest(richTextSchema.marks.em, 1)
+        markInputRuleTest(testRichTextSchema.marks.em, 1)
     );
 
     const emphasisUnderlineTests = [
@@ -104,7 +104,7 @@ describe("mark input rules", () => {
     // eslint-disable-next-line jest/expect-expect
     it.each(emphasisUnderlineTests)(
         "_emphasis_ (%s)",
-        markInputRuleTest(richTextSchema.marks.em, 1)
+        markInputRuleTest(testRichTextSchema.marks.em, 1)
     );
 
     const boldTests = [
@@ -116,7 +116,7 @@ describe("mark input rules", () => {
     // eslint-disable-next-line jest/expect-expect
     it.each(boldTests)(
         "**strong** (%s)",
-        markInputRuleTest(richTextSchema.marks.strong, 2)
+        markInputRuleTest(testRichTextSchema.marks.strong, 2)
     );
 
     const boldUnderlineTests = [
@@ -128,7 +128,7 @@ describe("mark input rules", () => {
     // eslint-disable-next-line jest/expect-expect
     it.each(boldUnderlineTests)(
         "__strong__ (%s)",
-        markInputRuleTest(richTextSchema.marks.strong, 2)
+        markInputRuleTest(testRichTextSchema.marks.strong, 2)
     );
 
     const codeTests = [
@@ -140,7 +140,7 @@ describe("mark input rules", () => {
     // eslint-disable-next-line jest/expect-expect
     it.each(codeTests)(
         "`code` (%s)",
-        markInputRuleTest(richTextSchema.marks.code, 1)
+        markInputRuleTest(testRichTextSchema.marks.code, 1)
     );
 
     const customValidateLink = (link: string) => /www.example.com/.test(link);
@@ -166,7 +166,7 @@ describe("mark input rules", () => {
             validateLink: typeof stackOverflowValidateLink
         ) => {
             const state = createState("", [
-                richTextInputRules({
+                richTextInputRules(testRichTextSchema, {
                     validateLink: validateLink ?? stackOverflowValidateLink,
                 }),
             ]);
@@ -184,7 +184,7 @@ describe("mark input rules", () => {
                 matchedText.text = /\[(.+?)\]/.exec(testString)[1];
                 matchedText["marks.length"] = 1;
                 matchedText["marks.0.type.name"] =
-                    richTextSchema.marks.link.name;
+                    testRichTextSchema.marks.link.name;
                 matchedText["marks.0.attrs.href"] = /\((.+?)\)/.exec(
                     testString
                 )[1];

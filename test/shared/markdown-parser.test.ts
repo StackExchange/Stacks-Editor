@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import type { Mark } from "prosemirror-model";
+import { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
-import { richTextSchema } from "../../src/rich-text/schema";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
 import "../matchers";
+import { testRichTextSchema } from "../rich-text/test-helpers";
+import { externalPluginProvider } from "../test-helpers";
 
 // mark features as required to ensure our tests have all the features set
 const features: Required<CommonmarkParserFeatures> = {
@@ -12,14 +13,15 @@ const features: Required<CommonmarkParserFeatures> = {
     html: true,
     extraEmphasis: true,
     tables: true,
-    tagLinks: {
-        allowNonAscii: false,
-        allowMetaTags: false,
-    },
+    tagLinks: {},
     validateLink: stackOverflowValidateLink,
 };
 
-const markdownParser = buildMarkdownParser(features, richTextSchema, null);
+const markdownParser = buildMarkdownParser(
+    features,
+    testRichTextSchema,
+    externalPluginProvider()
+);
 
 describe("SOMarkdownParser", () => {
     describe("html support", () => {
@@ -210,8 +212,8 @@ console.log("test");
         it("should not parse tag links", () => {
             const mdParserWithoutTagLinks = buildMarkdownParser(
                 {},
-                richTextSchema,
-                null
+                testRichTextSchema,
+                externalPluginProvider()
             );
             const doc = mdParserWithoutTagLinks.parse("[tag:python]");
 
@@ -275,6 +277,7 @@ console.log("test");
             "mailto:test@example.com",
             "ftp://example.com/path/to/file",
         ])("should autolink valid links (%s)", (input) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toBe("paragraph");
             expect(doc.content[0].content).toHaveLength(1);
@@ -289,6 +292,7 @@ console.log("test");
             "test@example.com",
             "127.0.0.1",
         ])("should not autolink invalid links (%s)", (input) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toBe("paragraph");
             expect(doc.content[0].content).toHaveLength(1);
@@ -304,6 +308,7 @@ console.log("test");
             ["1. test1\n1. test2", true],
             ["1. test1\n\n1. test2", false],
         ])("should parse tight/loose lists", (input, isTight) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toContain("_list");
             expect(doc.content[0].attrs.tight).toBe(isTight);
@@ -323,6 +328,7 @@ console.log("test");
         it.each(referenceLinkData)(
             "should add reference attributes to reference links",
             (input, type, label) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const doc = markdownParser.parse(input).toJSON();
                 expect(doc.content[0].type).toBe("paragraph");
                 expect(doc.content[0].content).toHaveLength(1);
@@ -343,9 +349,10 @@ console.log("test");
                     // only allow links from www.example.com
                     validateLink: (url) => /www.example.com/.test(url),
                 },
-                richTextSchema,
-                null
+                testRichTextSchema,
+                externalPluginProvider()
             );
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = mdParser
                 .parse(
                     "[foo](www.example.com/test1) [bar](www.notexample.com/test2)"
