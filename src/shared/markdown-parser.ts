@@ -184,7 +184,7 @@ interface MarkdownParserState {
 
 // TODO can we do this more cleanly?
 /**
- * Custom MardownParser that manually adds a low-level handler for `html_inline`.
+ * Custom MarkdownParser that manually adds a low-level handler for `html_inline`.
  * We do this because we need some special functionality that is not exposed by default with the existing
  * handler generation code (from adding tokens)
  */
@@ -292,7 +292,7 @@ export function createDefaultMarkdownItInstance(
     // parse spoilers
     defaultMarkdownItInstance.use(spoiler);
 
-    // ensure lists are tighted up for parsing into the doc
+    // ensure lists are tightened up for parsing into the doc
     defaultMarkdownItInstance.use(tight_list);
 
     // ensure links are have their references properly referenced
