@@ -307,16 +307,13 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
 
 // extend the default markdown serializer's nodes and add our own
 const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
-    // TODO
     html_inline(state, node) {
         state.write(node.attrs.content);
-        state.ensureNewLine();
-        state.write("\n");
     },
 
-    // TODO
     html_block(state, node) {
         state.write(node.attrs.content);
+        state.closeBlock(node);
     },
 
     // TODO

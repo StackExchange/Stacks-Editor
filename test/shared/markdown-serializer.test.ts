@@ -197,6 +197,18 @@ describe("markdown-serializer", () => {
         }
     );
 
+    it.each([
+        // just html
+        `<p>test</p>`,
+        // ensure html terminates with a newline
+        `<p>test</p>\ntest\n<p>test</p>`,
+        // ensure that inline_html does not terminate with a newline
+        `inline_html</sub>tag`,
+    ])("should serialize elements from basic html markup", (input) => {
+        const view = richView(input);
+        expect(view.content).toBe(input);
+    });
+
     it.todo("should serialize elements from complex html markup");
 
     // TODO lots of complicated cases in the spec
