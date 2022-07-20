@@ -1,7 +1,6 @@
 import { Plugin, EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Mark } from "prosemirror-model";
-import { richTextSchema as schema } from "../schema";
 
 /**
  * Returns the mark at cursor if it is of type `link`
@@ -10,7 +9,8 @@ import { richTextSchema as schema } from "../schema";
 function findLinkAtCursor(state: EditorState): Mark {
     const { $from, empty } = state.selection;
     return (
-        empty && $from.marks().find((mark) => mark.type === schema.marks.link)
+        empty &&
+        $from.marks().find((mark) => mark.type === mark.type.schema.marks.link)
     );
 }
 
