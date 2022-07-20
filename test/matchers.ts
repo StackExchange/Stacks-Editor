@@ -4,27 +4,32 @@ import { Node as ProsemirrorNode } from "prosemirror-model";
  * NOTE: Add all exposed matches to `expect.extend` at the bottom
  * and add all the definitions below so TS can pick them up without error
  */
+/* eslint-disable @typescript-eslint/no-empty-interface */
+interface CustomMatchers<R = unknown> {
+    /**
+     * Compares a node dynamically via a deep tree structure, recursing through a document's content via the tree's content
+     * @param tree The CompareTree to check against
+     */
+    toMatchNodeTree(tree: CompareTree): R;
+    /**
+     * Matches doc against a CSS-like tree of nodes, separated by `>`
+     * @param tree a string of nodes, with an optional last number of children
+     * ex. "doc>blockquote>paragraph>1"
+     * ex. "doc>paragraph"
+     * @returns the expect result
+     */
+    toMatchNodeTreeString(tree: string): R;
+}
 
 declare global {
-    // Disable eslint warning, this is what the docs say to do
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace jest {
-        interface Matchers<R> {
-            /**
-             * Compares a node dynamically via a deep tree structure, recursing through a document's content via the tree's content
-             * @param doc The document do check
-             * @param tree The CompareTree to check against
-             */
-            toMatchNodeTree(tree: CompareTree): R;
-            /**
-             * Matches doc against a CSS-like tree of nodes, separated by `>`
-             * @param tree a string of nodes, with an optional last number of children
-             * ex. "doc>blockquote>paragraph>1"
-             * ex. "doc>paragraph"
-             * @returns the expect result
-             */
-            toMatchNodeTreeString(tree: string): R;
-        }
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
+        interface Expect extends CustomMatchers {}
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
+        interface Matchers<R> extends CustomMatchers<R> {}
+        // eslint-disable-next-line @typescript-eslint/no-empty-interface
+        interface InverseAsymmetricMatchers extends CustomMatchers {}
     }
 }
 
@@ -180,6 +185,3 @@ expect.extend({
         return toMatchNodeTree(doc, createBasicNodeTree(tree));
     },
 });
-
-// NOTE: without this, sometimes the expects don't extend correctly in every test...
-export default Promise.resolve();
