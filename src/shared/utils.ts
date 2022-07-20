@@ -236,7 +236,7 @@ export function getShortcut(mapping: string): string {
 
     return (
         (/Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl") +
-        mapping.slice(3)
+        mapping.slice(3).toUpperCase()
     );
 }
 
