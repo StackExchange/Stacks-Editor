@@ -221,10 +221,10 @@ describe("markdown-serializer", () => {
         [
             `<ul>
             <li>
-            <pre class="hljs"><code></code></pre>
+            <pre class="hljs"><code>code in list</code></pre>
             </li>
             </ul>`,
-            `-\n      code in list`,
+            `-     code in list`,
         ],
         [
             `<ul>
