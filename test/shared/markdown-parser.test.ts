@@ -312,6 +312,23 @@ console.log("test");
             expect(doc.content[0].type).toContain("_list");
             expect(doc.content[0].attrs.tight).toBe(isTight);
         });
+
+        it.each([
+            [`- > blockquote in list`, "bullet_list>list_item>blockquote"],
+            [`- paragraph in list`, "bullet_list>list_item>paragraph"],
+            [`- # heading in list`, "bullet_list>list_item>heading"],
+            [
+                `- ~~~\n  code in list\n  ~~~`,
+                "bullet_list>list_item>code_block",
+            ],
+            [`- - list in list`, "bullet_list>list_item>bullet_list"],
+        ])(
+            "should parse lists with direct block children",
+            (input, expected) => {
+                const doc = markdownParser.parse(input);
+                expect(doc).toMatchNodeTreeString(expected);
+            }
+        );
     });
 
     describe("reference links", () => {

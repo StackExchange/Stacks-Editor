@@ -198,7 +198,7 @@ describe("commands", () => {
     describe("toggleWrapIn", () => {
         it("should apply blockquote within paragraph", () => {
             const state = applySelection(createState("<p>quote</p>", []), 3);
-            expect(state.doc).toMatchNodeTreeString("doc>paragraph>1");
+            expect(state.doc).toMatchNodeTreeString("paragraph>text");
 
             const toggleBlockQuote = toggleWrapIn(
                 state.schema.nodes.blockquote
@@ -210,7 +210,7 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             expect(newState.doc).toMatchNodeTreeString(
-                "doc>blockquote>paragraph>1"
+                "blockquote>paragraph>text"
             );
         });
 
@@ -220,7 +220,7 @@ describe("commands", () => {
                 3
             );
             expect(state.doc).toMatchNodeTreeString(
-                "doc>blockquote>paragraph>1"
+                "blockquote>paragraph>text"
             );
 
             const toggleBlockQuote = toggleWrapIn(
@@ -232,7 +232,7 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeTruthy();
-            expect(newState.doc).toMatchNodeTreeString("doc>paragraph>1");
+            expect(newState.doc).toMatchNodeTreeString("paragraph>text");
         });
 
         it("should toggle blockquote within list item", () => {
@@ -254,7 +254,7 @@ describe("commands", () => {
 
             expect(isValid).toBeTruthy();
             expect(newState.doc).toMatchNodeTreeString(
-                "doc>bullet_list>list_item>blockquote>paragraph>1"
+                "bullet_list>list_item>blockquote>paragraph>text"
             );
         });
     });
