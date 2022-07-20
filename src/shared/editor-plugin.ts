@@ -121,6 +121,8 @@ type MarkdownExtensionProps = {
         nodes: MarkdownSerializerNodes;
         marks: MarkdownSerializerMarks;
     };
+    /** TODO Extension for @lezer/markdown to provide specialized syntax highlighting */
+    //highlightingExtension?: MarkdownExtension
 };
 
 /**
