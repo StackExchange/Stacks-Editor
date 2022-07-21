@@ -106,7 +106,7 @@ export function runCommand(
 }
 
 /** Sets up ProseMirror paste support globally for jsdom */
-export function setupPasteSupport(dropElement?: Element): void {
+export function setupPasteSupport(): void {
     Range.prototype.getClientRects = () => ({
         item: () => null,
         length: 0,
@@ -115,14 +115,21 @@ export function setupPasteSupport(dropElement?: Element): void {
 
     Range.prototype.getBoundingClientRect = () =>
         jest.mocked<DOMRect>({} as never);
-
-    Document.prototype.elementFromPoint = () => dropElement;
 }
 
 /** Tears down ProseMirror paste support globally for jsdom */
 export function cleanupPasteSupport(): void {
     Range.prototype.getClientRects = undefined;
     Range.prototype.getBoundingClientRect = undefined;
+}
+
+/** Sets up ProseMirror drop support globally for jsdom */
+export function setupDropSupport(dropElement: HTMLElement) {
+    Document.prototype.elementFromPoint = () => dropElement;
+}
+
+/** Tears down ProseMirror drop support globally for jsdom */
+export function cleanupDropSupport() {
     Document.prototype.elementFromPoint = () => undefined;
 }
 

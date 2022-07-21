@@ -1,4 +1,4 @@
-import { EditorState, PluginView } from "prosemirror-state";
+import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import {
@@ -18,9 +18,11 @@ import {
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
 import {
+    cleanupDropSupport,
     cleanupPasteSupport,
     dispatchDropEvent,
     dispatchPasteEvent,
+    setupDropSupport,
     setupPasteSupport,
     testRichTextSchema,
 } from "../../rich-text/test-helpers";
@@ -149,7 +151,7 @@ describe("image upload plugin", () => {
         });
 
         it("should handleDrop on editor", () => {
-            setupPasteSupport(view.editorView.dom);
+            setupDropSupport(view.editorView.dom);
 
             let state = getPluginStateByName<{ file: File }>(
                 view.editorView.state,
@@ -170,7 +172,7 @@ describe("image upload plugin", () => {
 
             expect(state.file).toBeTruthy();
 
-            cleanupPasteSupport();
+            cleanupDropSupport();
         });
 
         it("should handlePaste on editor", () => {
