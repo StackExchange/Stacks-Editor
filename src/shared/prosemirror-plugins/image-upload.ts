@@ -539,9 +539,9 @@ export class ImageUploader extends PluginInterfaceView<
     }
 
     update(view: EditorView): void {
-        super.update(view);
         const state = this.key.getState(view.state);
         this.image = state?.file || this.image;
+        super.update(view);
     }
 
     destroy(): void {
@@ -598,11 +598,14 @@ export function showImageUploader(view: EditorView, file?: File): void {
     }
 }
 
-/** Checks if the image-upload functionality is enabled */
-export function imageUploaderEnabled(view: EditorView): boolean {
-    const state = INTERFACE_KEY.getState(view.state);
+/**
+ * Checks if the image-upload functionality is enabled
+ * @param state The current editor state
+ */
+export function imageUploaderEnabled(state: EditorState): boolean {
+    const pluginState = INTERFACE_KEY.getState(state);
 
-    return !!state;
+    return !!pluginState;
 }
 
 /**

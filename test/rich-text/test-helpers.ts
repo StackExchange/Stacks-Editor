@@ -106,7 +106,7 @@ export function runCommand(
 }
 
 /** Sets up ProseMirror paste support globally for jsdom */
-export function setupPasteSupport(): void {
+export function setupPasteSupport(dropElement?: Element): void {
     Range.prototype.getClientRects = () => ({
         item: () => null,
         length: 0,
@@ -115,19 +115,34 @@ export function setupPasteSupport(): void {
 
     Range.prototype.getBoundingClientRect = () =>
         jest.mocked<DOMRect>({} as never);
+
+    Document.prototype.elementFromPoint = () => dropElement;
 }
 
 /** Tears down ProseMirror paste support globally for jsdom */
 export function cleanupPasteSupport(): void {
     Range.prototype.getClientRects = undefined;
-
     Range.prototype.getBoundingClientRect = undefined;
+    Document.prototype.elementFromPoint = () => undefined;
 }
 
 /** Partial mock of DataTransfer for jsdom */
 export class DataTransferMock implements DataTransfer {
-    constructor(private data: Record<string, string>) {}
+    constructor(data: Record<string, string>, file?: File) {
+        this.data = data || {};
+        if (file) {
+            this.files = {
+                0: file,
+                item() {
+                    return file;
+                },
+                length: 1,
+                [Symbol.iterator]: jest.fn(),
+            } as FileList;
+        }
+    }
 
+    private data: Record<string, string>;
     dropEffect: DataTransfer["dropEffect"];
     effectAllowed: DataTransfer["effectAllowed"];
     files: FileList;
@@ -154,16 +169,29 @@ export class DataTransferMock implements DataTransfer {
 /** Dispatches a paste event with the given records added to the clipboardData */
 export function dispatchPasteEvent(
     el: Element,
-    data: Record<string, string>
+    data: Record<string, string>,
+    file?: File
 ): ClipboardEvent {
     const event = new Event("paste");
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error
-    event.clipboardData = new DataTransferMock(data);
+    event.clipboardData = new DataTransferMock(data, file);
 
     el.dispatchEvent(event);
 
     return event as ClipboardEvent;
+}
+
+/** Dispatches a paste event with the given records added to the clipboardData */
+export function dispatchDropEvent(el: Element, file: File): DragEvent {
+    const event = new Event("drop");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
+    event.dataTransfer = new DataTransferMock(null, file);
+
+    el.dispatchEvent(event);
+
+    return event as DragEvent;
 }
 
 /** Returns a promise that is resolved delayMs from when it is called */

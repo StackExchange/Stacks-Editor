@@ -1,4 +1,4 @@
-import { EditorState } from "prosemirror-state";
+import { EditorState, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import {
@@ -7,11 +7,23 @@ import {
     hideImageUploader,
     commonmarkImageUpload,
     richTextImageUpload,
+    imageUploaderEnabled,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
-import { externalPluginProvider, getSelectedText } from "../../test-helpers";
+import {
+    externalPluginProvider,
+    getPluginStateByName,
+    getPluginViewInstance,
+    getSelectedText,
+} from "../../test-helpers";
 import { commonmarkSchema } from "../../../src/commonmark/schema";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
-import { testRichTextSchema } from "../../rich-text/test-helpers";
+import {
+    cleanupPasteSupport,
+    dispatchDropEvent,
+    dispatchPasteEvent,
+    setupPasteSupport,
+    testRichTextSchema,
+} from "../../rich-text/test-helpers";
 
 let pluginContainer: Element;
 let view: RichTextEditor;
@@ -19,25 +31,12 @@ let uploader: ImageUploader;
 
 describe("image upload plugin", () => {
     describe("plugin view", () => {
-        beforeEach(() => {
-            pluginContainer = document.createElement("div");
-            view = richTextView("", () => pluginContainer);
-            uploader = new ImageUploader(
-                view.editorView,
-                {
-                    handler: () =>
-                        Promise.resolve("https://example.com/image.png"),
-                },
-                stackOverflowValidateLink,
-                (state) => state.tr
-            );
-        });
+        beforeEach(setupTestVariables);
 
         it("should show image uploader", () => {
             expect(uploader.uploadContainer.parentElement).toBeNull();
 
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
             const updatedUploadContainer =
                 pluginContainer.querySelector(".js-image-uploader");
 
@@ -52,7 +51,6 @@ describe("image upload plugin", () => {
             expect(uploader.uploadContainer.parentElement).toBeNull();
 
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
             const updatedUploadContainer =
                 pluginContainer.querySelector(".js-image-uploader");
 
@@ -70,17 +68,14 @@ describe("image upload plugin", () => {
 
         it("should hide image uploader", () => {
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             hideImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             expect(uploader.uploadContainer.parentElement).toBeNull();
         });
 
         it("should disable 'add image' button without preview", () => {
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             const addButton = findAddButton(uploader);
 
@@ -89,7 +84,6 @@ describe("image upload plugin", () => {
 
         it("should hide file preview when no file is selected", () => {
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             const previewElement = findPreviewElement(uploader);
             expect(previewElement.classList).toContain("d-none");
@@ -98,7 +92,6 @@ describe("image upload plugin", () => {
         it("should show file preview", async () => {
             const previewElement = findPreviewElement(uploader);
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             return uploader
                 .showImagePreview(mockFile("some image", "image/png"))
@@ -115,7 +108,6 @@ describe("image upload plugin", () => {
 
         it("should show error when uploading wrong filetype", async () => {
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             await expect(
                 uploader.showImagePreview(
@@ -133,7 +125,6 @@ describe("image upload plugin", () => {
 
         it("should hide error when hiding uploader", async () => {
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             await expect(
                 uploader.showImagePreview(
@@ -143,7 +134,6 @@ describe("image upload plugin", () => {
 
             // hide the uploader again
             hideImageUploader(view.editorView);
-            uploader.update(view.editorView);
 
             const validationMessage = findValidationMessage(uploader);
             expect(validationMessage.classList).toContain("d-none");
@@ -151,13 +141,66 @@ describe("image upload plugin", () => {
 
         it("should not show `enter link` prompt when allowExternalUrls is disabled", () => {
             showImageUploader(view.editorView);
-            uploader.update(view.editorView);
             const updatedUploadContainer = pluginContainer.querySelector(
                 ".js-external-url-trigger-container"
             );
 
             expect(updatedUploadContainer.classList).toContain("d-none");
         });
+
+        it("should handleDrop on editor", () => {
+            setupPasteSupport(view.editorView.dom);
+
+            let state = getPluginStateByName<{ file: File }>(
+                view.editorView.state,
+                "image-uploader"
+            );
+
+            expect(state.file).toBeFalsy();
+
+            dispatchDropEvent(
+                view.editorView.dom,
+                mockFile("some image", "image/png")
+            );
+
+            state = getPluginStateByName<{ file: File }>(
+                view.editorView.state,
+                "image-uploader"
+            );
+
+            expect(state.file).toBeTruthy();
+
+            cleanupPasteSupport();
+        });
+
+        it("should handlePaste on editor", () => {
+            setupPasteSupport();
+
+            let state = getPluginStateByName<{ file: File }>(
+                view.editorView.state,
+                "image-uploader"
+            );
+
+            expect(state.file).toBeFalsy();
+
+            dispatchPasteEvent(
+                view.editorView.dom,
+                null,
+                mockFile("some image", "image/png")
+            );
+
+            state = getPluginStateByName<{ file: File }>(
+                view.editorView.state,
+                "image-uploader"
+            );
+
+            expect(state.file).toBeTruthy();
+
+            cleanupPasteSupport();
+        });
+
+        it.todo("should handleDrop on pane");
+        it.todo("should handlePaste on pane");
     });
 
     describe("wrapImagesInLinks", () => {
@@ -466,7 +509,6 @@ describe("image upload plugin", () => {
 
             it("should toggle `enter link` prompt visibility", () => {
                 showImageUploader(view.editorView);
-                uploader.update(view.editorView);
                 const updatedUploadContainer =
                     pluginContainer.querySelector(".js-image-uploader");
 
@@ -478,7 +520,6 @@ describe("image upload plugin", () => {
             // TODO test fails due to DOM not updating
             it.skip("should show url input when prompt is clicked", () => {
                 showImageUploader(view.editorView);
-                uploader.update(view.editorView);
                 const inputContainer = pluginContainer.querySelector(
                     ".js-external-url-input-container"
                 );
@@ -507,6 +548,83 @@ describe("image upload plugin", () => {
         });
     });
 
+    describe("helpers", () => {
+        beforeEach(setupTestVariables);
+        it.skip("should prefill when showImageUploader is passed file data", () => {
+            expect(uploader.uploadContainer.parentElement).toBeNull();
+
+            showImageUploader(
+                view.editorView,
+                mockFile("some image", "image/png")
+            );
+
+            const pluginState = getPluginStateByName<{ file: File | null }>(
+                view.editorView.state,
+                "image-uploader"
+            );
+
+            expect(pluginState.file).toBeTruthy();
+
+            const updatedUploadContainer =
+                pluginContainer.querySelector(".js-image-uploader");
+
+            expect(updatedUploadContainer.parentElement).toBeTruthy();
+            expect(findPreviewElement(uploader)).not.toContain("d-none");
+        });
+
+        it("should clear the state when hideImageUploader is called", () => {
+            expect(uploader.uploadContainer.parentElement).toBeNull();
+
+            // first, show the uploader with a file set
+            showImageUploader(
+                view.editorView,
+                mockFile("some image", "image/png")
+            );
+
+            let pluginState = getPluginStateByName<{ file: File | null }>(
+                view.editorView.state,
+                "image-uploader"
+            );
+
+            expect(pluginState.file).toBeTruthy();
+
+            // then, hide the uploader
+            hideImageUploader(view.editorView);
+
+            pluginState = getPluginStateByName<{ file: File | null }>(
+                view.editorView.state,
+                "image-uploader"
+            );
+
+            expect(pluginState.file).toBeFalsy();
+        });
+        it("should return the correct value when imageUploaderEnabled is called", () => {
+            // test enabled state
+            let state = EditorState.create({
+                schema: testRichTextSchema,
+                plugins: [
+                    richTextImageUpload(
+                        {
+                            handler: () => null,
+                        },
+                        null,
+                        testRichTextSchema
+                    ),
+                ],
+            });
+
+            expect(imageUploaderEnabled(state)).toBe(true);
+
+            // test disabled state
+            state = EditorState.create({
+                schema: testRichTextSchema,
+                plugins: [richTextImageUpload({}, null, testRichTextSchema)],
+            });
+
+            expect(imageUploaderEnabled(state)).toBe(false);
+        });
+    });
+
     function findPreviewElement(uploader: ImageUploader): HTMLElement {
         return uploader.uploadContainer.querySelector(".js-image-preview");
     }
@@ -519,6 +637,12 @@ describe("image upload plugin", () => {
         return uploader.uploadContainer.querySelector(".js-validation-message");
     }
 });
+
+function setupTestVariables() {
+    pluginContainer = document.createElement("div");
+    view = richTextView("", () => pluginContainer);
+    uploader = getPluginViewInstance(view.editorView, ImageUploader);
+}
 
 function mockFile(filename: string, type: string): File {
     return new File([""], filename, { type: type });

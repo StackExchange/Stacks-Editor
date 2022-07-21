@@ -179,7 +179,7 @@ export function insertImageCommand(
     dispatch: (tr: Transaction) => void,
     view: EditorView
 ): boolean {
-    if (!imageUploaderEnabled(view)) {
+    if (!imageUploaderEnabled(view.state)) {
         return false;
     }
 
