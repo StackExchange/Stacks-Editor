@@ -61,13 +61,32 @@ class SOMarkdownSerializerState extends MarkdownSerializerState {
 
     /** Writes all saved linked reference definitions to the state */
     writeLinkReferenceDefinitions(): void {
-        const refs = Object.keys(this.linkReferenceDefinitions);
+        let refs = Object.keys(this.linkReferenceDefinitions);
 
         if (!refs.length) {
             return;
         }
 
-        refs.sort().forEach((r) => {
+        // typically, users want numbered references to sort numerically instead of alphabetically
+        // i.e. `1, 2, 10` vs `1, 10, 2`
+        const numberRefs: number[] = [];
+        const otherRefs: string[] = [];
+
+        refs.forEach((ref) => {
+            if (!isNaN(Number(ref))) {
+                numberRefs.push(+ref);
+            } else {
+                otherRefs.push(ref);
+            }
+        });
+
+        // sort first by number, then by string
+        refs = [
+            ...numberRefs.sort((a, b) => a - b).map((r) => r.toString()),
+            ...otherRefs.sort(),
+        ];
+
+        refs.forEach((r) => {
             const def = this.linkReferenceDefinitions[r];
             this.ensureNewLine();
             this.write("[");

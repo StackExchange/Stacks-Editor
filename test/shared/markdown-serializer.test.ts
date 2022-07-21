@@ -230,6 +230,11 @@ describe("markdown-serializer", () => {
 
 This is a test. I want to link to [foo][1] as a full reference link.
 
+We also want to ensure that [bar][10] and [baz][2] are sorted numerically, not alphabetically.
+
+[10]: https://stackoverflow.com
+[2]: https://stackexchange.com
+
 I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
 
 [THIS]: https://google.com
@@ -239,11 +244,15 @@ And finally, how about a [shortcut] link? I'm placing this one all the way at th
 [1]: https://example.com`,
             `This is a test. I want to link to [foo][1] as a full reference link.
 
+We also want to ensure that [bar][10] and [baz][2] are sorted numerically, not alphabetically.
+
 I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
 
 And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
 
 [1]: https://example.com
+[2]: https://stackexchange.com
+[10]: https://stackoverflow.com
 [SHORTCUT]: https://stackoverflow.com
 [THIS]: https://google.com`,
         ],
