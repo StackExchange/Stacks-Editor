@@ -211,6 +211,36 @@ describe("markdown-serializer", () => {
 
     it.todo("should serialize elements from complex html markup");
 
+    it.each([
+        [
+            `<ul><li><blockquote><p>blockquote in list</p></blockquote></li></ul>`,
+            `- > blockquote in list`,
+        ],
+        [`<ul><li><p>paragraph in list</p></li></ul>`, `- paragraph in list`],
+        [`<ul><li><h1>heading in list</h1></li></ul>`, `- # heading in list`],
+        [
+            `<ul>
+            <li>
+            <pre class="hljs"><code>code in list</code></pre>
+            </li>
+            </ul>`,
+            `-     code in list`,
+        ],
+        [
+            `<ul>
+            <li>
+            <ul>
+            <li>list in list</li>
+            </ul>
+            </li>
+            </ul>`,
+            `- - list in list`,
+        ],
+    ])("should serialize lists containing block children", (input, output) => {
+        const view = nonMarkdownRichView(input);
+        expect(view.content).toBe(output);
+    });
+
     // TODO lots of complicated cases in the spec
     // see https://spec.commonmark.org/0.30/#reference-link
     // see https://spec.commonmark.org/0.30/#link-reference-definitions

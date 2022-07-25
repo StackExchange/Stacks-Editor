@@ -133,33 +133,23 @@ function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
  * @returns a CompareTree to be used with `toMatchNodeTree`
  */
 export function createBasicNodeTree(input: string): CompareTree {
-    const branches = input
-        .split(">")
-        .map((x) => x.trim())
-        .reverse();
+    const branches = input.split(">").map((x) => x.trim());
+
     if (!branches.length) return {};
 
-    let branch = branches.pop();
     const root: CompareTree = {
-        "type.name": branch,
+        "type.name": "doc",
     };
+    let tree = root;
 
-    branch = branches.pop();
-    let node: CompareTree = root;
-    while (branch) {
-        if (isNaN(Number(branch))) {
-            const child = {
-                "type.name": branch,
-            };
-            node.content = [child];
-
-            node = child;
-            branch = branches.pop();
-        } else {
-            node.childCount = Number(branch);
-            return root;
-        }
+    for (const branch of branches) {
+        const child = {
+            "type.name": branch,
+        };
+        tree.content = [child];
+        tree = child;
     }
+
     return root;
 }
 

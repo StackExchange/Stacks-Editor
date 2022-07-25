@@ -3,6 +3,7 @@ import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
     toggleHeadingLevel,
+    toggleWrapIn,
 } from "../../../src/rich-text/commands";
 import {
     applySelection,
@@ -191,6 +192,70 @@ describe("commands", () => {
                     },
                 ],
             });
+        });
+    });
+
+    describe("toggleWrapIn", () => {
+        it("should apply blockquote within paragraph", () => {
+            const state = applySelection(createState("<p>quote</p>", []), 3);
+            expect(state.doc).toMatchNodeTreeString("paragraph>text");
+
+            const toggleBlockQuote = toggleWrapIn(
+                state.schema.nodes.blockquote
+            );
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockQuote
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTreeString(
+                "blockquote>paragraph>text"
+            );
+        });
+
+        it("should remove blockquote within blockquote", () => {
+            const state = applySelection(
+                createState("<blockquote>quote</blockquote>", []),
+                3
+            );
+            expect(state.doc).toMatchNodeTreeString(
+                "blockquote>paragraph>text"
+            );
+
+            const toggleBlockQuote = toggleWrapIn(
+                state.schema.nodes.blockquote
+            );
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockQuote
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTreeString("paragraph>text");
+        });
+
+        it("should toggle blockquote within list item", () => {
+            const state = applySelection(
+                createState("<ul><li>list</li></ul>", []),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            // default li child is paragraph
+            expect(resolvedNode.node().type.name).toBe("paragraph");
+
+            const toggleBlockQuote = toggleWrapIn(
+                state.schema.nodes.blockquote
+            );
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockQuote
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTreeString(
+                "bullet_list>list_item>blockquote>paragraph>text"
+            );
         });
     });
 
