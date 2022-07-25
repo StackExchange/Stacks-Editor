@@ -183,10 +183,10 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     },
     code_block(state, node) {
         // TODO could be html...
-        const markup = node.attrs.markup as string;
+        const markup = (node.attrs.markup as string) || "```";
 
-        // lack of a markup indicator means this is an indented code block
-        if (!markup) {
+        // indented code blocks have their markup set to "indented" instead of empty
+        if (markup === "indented") {
             const lines = node.textContent.split("\n");
             lines.forEach((l, i) => {
                 if (i > 0) {

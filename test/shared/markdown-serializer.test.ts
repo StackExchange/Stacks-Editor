@@ -46,7 +46,7 @@ describe("markdown-serializer", () => {
         /* Nodes */
         [`plain text`, `plain text`],
         [`<blockquote><p>test</p></blockquote>`, `> test`],
-        [`<pre><code>test</code></pre>`, "    test"],
+        [`<pre><code>test</code></pre>`, "```\ntest\n```"],
         [`<h1>test</h1>`, `# test`],
         [`<h2>test</h2>`, `## test`],
         [`<h3>test</h2>`, `### test`],
@@ -224,7 +224,7 @@ describe("markdown-serializer", () => {
             <pre class="hljs"><code>code in list</code></pre>
             </li>
             </ul>`,
-            `-     code in list`,
+            "- ```\n  code in list\n  ```",
         ],
         [
             `<ul>

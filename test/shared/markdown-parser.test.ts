@@ -414,4 +414,29 @@ console.log("test");
             });
         });
     });
+
+    describe("code blocks", () => {
+        it.each([
+            ["    indented code", { markup: "indented", params: "" }],
+            ["```\nfence 1\n```", { markup: "```", params: "" }],
+            ["~~~\nfence 2\n~~~", { markup: "~~~", params: "" }],
+            ["```js\nfence with lang\n```", { markup: "```", params: "js" }],
+        ])(
+            "should parse indented code and code fences (%#)",
+            (input, attrs) => {
+                const doc = markdownParser.parse(input);
+
+                expect(doc).toMatchNodeTree({
+                    "type.name": "doc",
+                    "content": [
+                        {
+                            "type.name": "code_block",
+                            "attrs.markup": attrs.markup,
+                            "attrs.params": attrs.params,
+                        },
+                    ],
+                });
+            }
+        );
+    });
 });
