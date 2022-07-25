@@ -74,15 +74,18 @@ class MenuView implements PluginView {
 
     constructor(blocks: MenuBlock[], view: EditorView) {
         // sort the blocks by their priority; lower priority first
-        this.blocks = blocks.sort(
-            (a, b) => a.priority - b.priority
-        ) as MenuView["blocks"];
+        this.blocks = blocks
+            .filter((b) => !!b)
+            .sort((a, b) => a.priority - b.priority) as MenuView["blocks"];
         this.view = view;
 
         this.dom = document.createElement("div");
         this.dom.className = "d-flex g16 fl-grow1 ai-center js-editor-menu";
 
         for (const block of this.blocks) {
+            // drop all null entries
+            block.entries = block.entries.filter((e) => !!e);
+
             const blockDom = this.makeBlockContainer(block);
             for (const entry of block.entries) {
                 blockDom.appendChild(entry.dom);
@@ -99,6 +102,7 @@ class MenuView implements PluginView {
             ...this.blocks
                 .map((item) => item.entries)
                 .reduce((a, b) => a.concat(b), [])
+                .filter((e) => !!e)
                 .map((item) => {
                     if (item.children) {
                         // include the drop-down parent AND all of its children if there are child MenuCommandEntries
@@ -267,12 +271,9 @@ export function createMenuPlugin(
     blocks: MenuBlock[],
     containerFn: (view: EditorView) => Node
 ): Plugin {
-    // remove all empty / falsy items
-    const validItems = blocks.filter((i) => !!i);
-
     return new Plugin({
         view(editorView) {
-            const menuView = new MenuView(validItems, editorView);
+            const menuView = new MenuView(blocks, editorView);
             containerFn =
                 containerFn ||
                 function (v) {

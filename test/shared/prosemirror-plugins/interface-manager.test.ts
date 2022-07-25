@@ -123,7 +123,6 @@ describe("interface-manager plugin", () => {
             });
         });
 
-        // TODO doesn't work currently...
         it("should allow cancelling via event.preventDefault", () => {
             let shouldPreventDefault = true;
             let firedEvent: string = null;

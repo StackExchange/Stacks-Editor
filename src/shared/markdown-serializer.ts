@@ -61,13 +61,32 @@ class SOMarkdownSerializerState extends MarkdownSerializerState {
 
     /** Writes all saved linked reference definitions to the state */
     writeLinkReferenceDefinitions(): void {
-        const refs = Object.keys(this.linkReferenceDefinitions);
+        let refs = Object.keys(this.linkReferenceDefinitions);
 
         if (!refs.length) {
             return;
         }
 
-        refs.sort().forEach((r) => {
+        // typically, users want numbered references to sort numerically instead of alphabetically
+        // i.e. `1, 2, 10` vs `1, 10, 2`
+        const numberRefs: number[] = [];
+        const otherRefs: string[] = [];
+
+        refs.forEach((ref) => {
+            if (!isNaN(Number(ref))) {
+                numberRefs.push(+ref);
+            } else {
+                otherRefs.push(ref);
+            }
+        });
+
+        // sort first by number, then by string
+        refs = [
+            ...numberRefs.sort((a, b) => a - b).map((r) => r.toString()),
+            ...otherRefs.sort(),
+        ];
+
+        refs.forEach((r) => {
             const def = this.linkReferenceDefinitions[r];
             this.ensureNewLine();
             this.write("[");
@@ -164,10 +183,10 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     },
     code_block(state, node) {
         // TODO could be html...
-        const markup = node.attrs.markup as string;
+        const markup = (node.attrs.markup as string) || "```";
 
-        // lack of a markup indicator means this is an indented code block
-        if (!markup) {
+        // indented code blocks have their markup set to "indented" instead of empty
+        if (markup === "indented") {
             const lines = node.textContent.split("\n");
             lines.forEach((l, i) => {
                 if (i > 0) {
@@ -307,16 +326,13 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
 
 // extend the default markdown serializer's nodes and add our own
 const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
-    // TODO
     html_inline(state, node) {
         state.write(node.attrs.content);
-        state.ensureNewLine();
-        state.write("\n");
     },
 
-    // TODO
     html_block(state, node) {
         state.write(node.attrs.content);
+        state.closeBlock(node);
     },
 
     // TODO

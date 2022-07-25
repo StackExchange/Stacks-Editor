@@ -1,6 +1,5 @@
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import { LinkPreviewProvider } from "../../../src/rich-text/plugins/link-preview";
-import "../../matchers";
 import { externalPluginProvider } from "../../test-helpers";
 import { sleepAsync } from "../test-helpers";
 

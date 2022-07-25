@@ -7,7 +7,6 @@ import {
     applySelection,
     parseHtmlToDoc,
 } from "../test-helpers";
-import "../../matchers";
 import { plainTextPasteHandler } from "../../../src/rich-text/plugins/plain-text-paste-handler";
 
 describe("plain-text-paste-handler", () => {
