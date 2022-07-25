@@ -310,7 +310,7 @@ export function makeMenuButton(
     cssClasses?: string[]
 ): HTMLButtonElement {
     const button = document.createElement("button");
-    button.className = `s-editor-btn js-editor-btn js-${key}`;
+    button.className = `s-editor-btn s-btn js-editor-btn js-${key}`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
@@ -417,7 +417,7 @@ export function dropdownItem(
     button.dataset.key = key;
     button.textContent = title;
     button.dataset.action = "s-popover#hide";
-    button.className = `s-editor-btn s-editor-btn__dropdown-item js-editor-btn`;
+    button.className = `s-block-link s-editor--dropdown-item js-editor-btn`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
@@ -468,7 +468,7 @@ export function makeMenuLinkEntry(
     key: string
 ): MenuCommandEntry {
     const dom = document.createElement("a");
-    dom.className = `s-editor-btn flex--item js-editor-btn js-${key}`;
+    dom.className = `s-editor-btn s-btn flex--item js-editor-btn js-${key}`;
     dom.href = href;
     dom.target = "_blank";
     dom.title = title;
