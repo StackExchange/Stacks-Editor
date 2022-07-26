@@ -3,12 +3,7 @@
 @import (reference) "@stackoverflow/stacks/lib/css/exports/constants-colors";
 @import (reference) "@stackoverflow/stacks/lib/css/exports/constants-helpers";
 
-// TODO move this into Stacks!
-.bg-inherit {
-    background-color: inherit !important;
-}
-
-// TODO move this into Stacks!
+// TODO PR opened for upstream StackExchange/Stacks#1040 - use .is-readonly instead
 .s-input__readonly {
     border-color: var(--black-075);
     background-color: var(--black-050);
@@ -121,10 +116,8 @@
     }
 }
 
-// TODO move this into Stacks!
+// TODO PR opened for upstream StackExchange/Stacks#1040
 .is-loading {
-    // TODO should just be using this instead...
-    //&:extend(.s-btn.is-loading);
     position: relative;
     padding-left: 2.2em;
 
