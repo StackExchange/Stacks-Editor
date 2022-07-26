@@ -1,13 +1,15 @@
 import type { Page } from "@playwright/test";
 
 export const editorSelector = ".js-editor";
-const editorModeSwitcherSelector = ".js-editor-mode-switcher";
-const editorToggleStateSelector = ".js-editor-toggle-state";
 export const menuSelector = ".js-editor-menu";
+
+function getEditorToggleBtn(isMarkdown: boolean) {
+    return `.js-editor-toggle-btn[data-mode="${isMarkdown ? 1 : 0}"]`;
+}
 
 export async function getIsMarkdown(page: Page): Promise<boolean> {
     return await page.$eval(
-        editorToggleStateSelector,
+        getEditorToggleBtn(true),
         (el: HTMLInputElement) => el.checked
     );
 }
@@ -17,7 +19,10 @@ export async function switchMode(
     switchToMarkdown: boolean
 ): Promise<void> {
     if ((await getIsMarkdown(page)) !== switchToMarkdown) {
-        return await page.click(editorModeSwitcherSelector);
+        return await page.dispatchEvent(
+            getEditorToggleBtn(switchToMarkdown),
+            "change"
+        );
     }
 }
 
