@@ -80,7 +80,7 @@
         "@lezer/highlight": "^1.0.0",
         "@lezer/markdown": "^1.0.1",
         "@stackoverflow/stacks": "^1.2.0",
-        "@stackoverflow/stacks-icons": "^2.27.0",
+        "@stackoverflow/stacks-icons": "^3.0.1",
         "@types/markdown-it": "12.2.3",
         "markdown-it": "^13.0.1",
         "orderedmap": "^2.0.0",
