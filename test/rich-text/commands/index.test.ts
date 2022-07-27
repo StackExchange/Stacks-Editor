@@ -7,6 +7,7 @@ import {
     toggleWrapIn,
 } from "../../../src/rich-text/commands";
 import {
+    applyNodeSelection,
     applySelection,
     createState,
     testRichTextSchema,

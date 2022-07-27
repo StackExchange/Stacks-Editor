@@ -550,7 +550,7 @@ const headingDropdown = (schema: Schema) =>
  */
 const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
     makeMenuDropdown(
-        "MoreFormatting",
+        "EllipsisHorizontal",
         _t("commands.moreFormatting"),
         "more-formatting-dropdown",
         () => true,
