@@ -730,7 +730,6 @@ export const createMenuEntries = (
                 options.parserFeatures.tables
             ),
             addIf(tableDropdown(), options.parserFeatures.tables),
-            moreFormattingDropdown(schema, options),
         ],
     },
     {
@@ -772,6 +771,7 @@ export const createMenuEntries = (
                     "horizontal-rule-btn"
                 ),
             },
+            moreFormattingDropdown(schema, options),
         ],
     },
     {
