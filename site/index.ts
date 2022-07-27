@@ -174,7 +174,8 @@ domReady(() => {
 
     registerLocalizationStrings({
         menubar: {
-            mode_toggle_title: "Localization test: Toggle editor mode",
+            mode_toggle_richtext_title: "Localization test: Rich text mode",
+            mode_toggle_markdown_title: "Localization test: Markdown mode",
         },
     });
 
