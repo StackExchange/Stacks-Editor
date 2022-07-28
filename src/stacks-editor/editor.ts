@@ -18,6 +18,7 @@ import {
     ExternalPluginProvider,
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
+import { util } from "prettier";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -359,6 +360,32 @@ export class StacksEditor implements View {
         )}</span>
     </label>
 </div>`;
+
+        if (this.options.commonmarkOptions.preview.enabled) {
+            const input = document.createElement("input");
+            input.setAttribute(
+                "name",
+                `mode-toggle-preview-${this.internalId}`
+            );
+            input.setAttribute("type", "radio");
+            input.setAttribute("id", `mode-toggle-preview-${this.internalId}`);
+            input.className = "js-editor-toggle-btn";
+            input.setAttribute("data-mode", "preview");
+            input.checked = false; // TODO
+            const label = document.createElement("label");
+            label.setAttribute("for", `mode-toggle-preview-${this.internalId}`);
+            label.setAttribute(
+                "title",
+                _t("menubar.mode_toggle_preview_title")
+            );
+            label.className = "s-btn s-editor-btn px6";
+            label.innerHTML = escapeHTML`<span class="icon-bg iconMarkdownPreview"></span><span class="v-visible-sr">${_t(
+                "menubar.mode_toggle_preview_title"
+            )}</span>`;
+
+            container.firstChild.appendChild(input);
+            container.firstChild.appendChild(label);
+        }
 
         container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
             el.addEventListener(
