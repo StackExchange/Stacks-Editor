@@ -18,7 +18,7 @@ import {
     ExternalPluginProvider,
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
-import { util } from "prettier";
+import { togglePreviewVisibility } from "../commonmark/plugins/preview";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -370,7 +370,7 @@ export class StacksEditor implements View {
             input.setAttribute("type", "radio");
             input.setAttribute("id", `mode-toggle-preview-${this.internalId}`);
             input.className = "js-editor-toggle-btn";
-            input.setAttribute("data-mode", "preview");
+            input.setAttribute("data-mode", `${EditorType.Commonmark}`);
             input.checked = false; // TODO
             const label = document.createElement("label");
             label.setAttribute("for", `mode-toggle-preview-${this.internalId}`);
@@ -385,6 +385,9 @@ export class StacksEditor implements View {
 
             container.firstChild.appendChild(input);
             container.firstChild.appendChild(label);
+
+            // TODO onchange
+            togglePreviewVisibility(this.backingView.editorView, true);
         }
 
         container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
@@ -429,6 +432,7 @@ export class StacksEditor implements View {
         // trigger an event on the target for consumers to listen for
         dispatchEditorEvent(this.target, "view-change", {
             editorType: type,
+            previewShown: this.currentViewType !== EditorType.RichText && false, // TODO
         });
 
         // TODO do we always want to focus the editor?

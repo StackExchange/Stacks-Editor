@@ -3,21 +3,32 @@ import { EditorState, Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { log } from "../../shared/logger";
 import { createDefaultMarkdownItInstance } from "../../shared/markdown-parser";
+import {
+    StatefulPlugin,
+    StatefulPluginKey,
+} from "../../shared/prosemirror-plugins/plugin-extensions";
 import { docNodeChanged } from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 import type { CommonmarkOptions } from "../editor";
+
+/** TODO DOCUMENT */
+interface PreviewPluginState {
+    isShown: boolean;
+}
 
 /**
  * The amount of time to delay rendering since the last render;
  * Setting to a high value will result in less frequent renders as users type
  */
-const DEFAULT_RENDER_DELAY_MS = 1000;
+const DEFAULT_RENDER_DELAY_MS = 100;
 
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
     private renderer: MarkdownIt;
     private renderTimeoutId: number | null = null;
     private renderDelayMs: number;
+
+    private isShown = false;
 
     constructor(
         view: EditorView,
@@ -43,10 +54,19 @@ class PreviewView implements PluginView {
     }
 
     update(view: EditorView, prevState?: EditorState) {
+        // get the current plugin state to check if we need to update our visibility
+        const pluginState = PREVIEW_KEY.getState(view.state);
+        const shouldBeShown = pluginState?.isShown;
+
         // if the doc/view hasn't changed, there's no work to do
-        if (!docNodeChanged(prevState, view.state)) {
+        if (
+            !docNodeChanged(prevState, view.state) ||
+            (!this.isShown && shouldBeShown)
+        ) {
             return;
         }
+
+        this.isShown = shouldBeShown;
 
         // if there is a render timeout already, clear it (essentially resetting the timeout)
         if (this.renderTimeoutId) {
@@ -84,6 +104,23 @@ class PreviewView implements PluginView {
     }
 }
 
+class PreviewPluginKey extends StatefulPluginKey<PreviewPluginState> {
+    constructor() {
+        super("preview");
+    }
+
+    togglePreviewVisibility(view: EditorView, isShown: boolean) {
+        const tr = this.setMeta(view.state.tr, { isShown });
+        view.dispatch(tr);
+    }
+}
+
+export function togglePreviewVisibility(view: EditorView, isShown: boolean) {
+    PREVIEW_KEY.togglePreviewVisibility(view, isShown);
+}
+
+const PREVIEW_KEY = new PreviewPluginKey();
+
 /**
  * Plugin that renders the editor's markdown content directly and displays it in a preview element
  * @param previewOptions The preview options passed to the commonmark editor
@@ -97,7 +134,20 @@ export function createPreviewPlugin(
         return new Plugin({});
     }
 
-    return new Plugin({
+    return new StatefulPlugin<PreviewPluginState>({
+        key: PREVIEW_KEY,
+        state: {
+            init: () => ({
+                isShown: previewOptions.shownByDefault,
+            }),
+            apply(tr, value) {
+                const meta = this.getMeta(tr);
+
+                return {
+                    isShown: meta?.isShown || value.isShown,
+                };
+            },
+        },
         view(editorView) {
             const previewView = new PreviewView(
                 editorView,
