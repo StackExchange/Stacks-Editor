@@ -217,7 +217,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             state.closeBlock(node);
         } else {
             // markup is # (ATX heading) or empty
-            state.write(state.repeat("#", node.attrs.level) + " ");
+            state.write(state.repeat("#", node.attrs.level as number) + " ");
             state.renderInline(node);
             state.closeBlock(node);
         }
@@ -227,7 +227,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             return;
         }
 
-        state.write(node.attrs.markup || "----------");
+        state.write((node.attrs.markup as string) || "----------");
         state.closeBlock(node);
     },
     bullet_list(state, node) {
@@ -278,9 +278,9 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             : "";
         state.write(
             "![" +
-                state.esc(node.attrs.alt || "") +
+                state.esc((node.attrs.alt as string) || "") +
                 "](" +
-                state.esc(node.attrs.src) +
+                state.esc(node.attrs.src as string) +
                 title +
                 ")"
         );
@@ -293,7 +293,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         for (let i = index + 1; i < parent.childCount; i++) {
             if (parent.child(i).type != node.type) {
                 // `[space][space][newline]` or `\[newline]`
-                state.write(node.attrs.markup || "  \n");
+                state.write((node.attrs.markup as string) || "  \n");
                 return;
             }
         }
@@ -303,7 +303,9 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         let text = node.text;
 
         // if the text node is from a link, use the original href text if the original markup used it
-        if (["linkify", "autolink"].includes(linkMark?.attrs.markup)) {
+        if (
+            ["linkify", "autolink"].includes(linkMark?.attrs.markup as string)
+        ) {
             text = linkMark.attrs.href as string;
         }
 
@@ -327,17 +329,17 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
 // extend the default markdown serializer's nodes and add our own
 const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
     html_inline(state, node) {
-        state.write(node.attrs.content);
+        state.write(node.attrs.content as string);
     },
 
     html_block(state, node) {
-        state.write(node.attrs.content);
+        state.write(node.attrs.content as string);
         state.closeBlock(node);
     },
 
     // TODO
     html_block_container(state, node) {
-        state.write(node.attrs.contentOpen);
+        state.write(node.attrs.contentOpen as string);
 
         // ensure the opening content had a newline and write a newline
         // since that terminated the html_block and caused the container creation
@@ -345,7 +347,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
         state.write("\n");
 
         state.renderContent(node);
-        state.write(node.attrs.contentClose);
+        state.write(node.attrs.contentClose as string);
         state.closeBlock(node);
     },
 
@@ -499,9 +501,9 @@ const extendedLinkMarkDeserializer: typeof defaultLinkMarkDeserializer = {
 
         if (mark.attrs.markup === "reference") {
             (state as SOMarkdownSerializerState).addLinkReferenceDefinition(
-                mark.attrs.referenceLabel,
-                mark.attrs.href,
-                mark.attrs.title
+                mark.attrs.referenceLabel as string,
+                mark.attrs.href as string,
+                mark.attrs.title as string
             );
             return "[";
         }
@@ -577,7 +579,10 @@ const extendedCodeMarkDeserializer: typeof defaultCodeMarkDeserializer = {
         ) as unknown as string;
 
         if (mark.attrs.markup) {
-            defaultResult = defaultResult.replace("`", mark.attrs.markup);
+            defaultResult = defaultResult.replace(
+                "`",
+                mark.attrs.markup as string
+            );
         }
 
         return defaultResult;

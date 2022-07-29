@@ -18,6 +18,7 @@ import {
     ExternalPluginProvider,
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
+import type { Transaction } from "prosemirror-state";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -180,7 +181,7 @@ export class StacksEditor implements View {
         toggleReadonly(
             false,
             this.editorView.state,
-            this.editorView.dispatch.bind(null)
+            this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
         this.innerTarget.classList.remove(...StacksEditor.READONLY_CLASSES);
     }
@@ -192,7 +193,7 @@ export class StacksEditor implements View {
         toggleReadonly(
             true,
             this.editorView.state,
-            this.editorView.dispatch.bind(null)
+            this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
 
         this.innerTarget.classList.add(...StacksEditor.READONLY_CLASSES);
@@ -363,7 +364,7 @@ export class StacksEditor implements View {
         container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
             el.addEventListener(
                 "change",
-                this.editorSwitcherChangeHandler.bind(this)
+                this.editorSwitcherChangeHandler.bind(this) as EventListener
             );
         });
 

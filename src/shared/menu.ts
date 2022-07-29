@@ -134,7 +134,11 @@ class MenuView implements PluginView {
 
             const found = menuCommands.find((c) => c.key === key);
             if (found) {
-                found.command(view.state, view.dispatch.bind(view), view);
+                found.command(
+                    view.state,
+                    view.dispatch.bind(view) as (tr: Transaction) => void,
+                    view
+                );
             }
         });
 

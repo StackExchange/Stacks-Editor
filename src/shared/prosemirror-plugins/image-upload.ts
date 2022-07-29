@@ -190,12 +190,12 @@ export class ImageUploader extends PluginInterfaceView<
 
         this.uploadContainer.addEventListener(
             "dragenter",
-            this.highlightDropArea.bind(this)
+            this.highlightDropArea.bind(this) as EventListener
         );
 
         this.uploadContainer.addEventListener(
             "dragover",
-            this.highlightDropArea.bind(this)
+            this.highlightDropArea.bind(this) as EventListener
         );
 
         // we need this handler on top of the plugin's handleDrop() to make
@@ -216,7 +216,7 @@ export class ImageUploader extends PluginInterfaceView<
 
         this.uploadContainer.addEventListener(
             "dragleave",
-            this.unhighlightDropArea.bind(this)
+            this.unhighlightDropArea.bind(this) as EventListener
         );
 
         this.uploadContainer
