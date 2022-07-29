@@ -38,6 +38,12 @@
             "./config/commitlint.config.js"
         ]
     },
+    "eslintConfig": {
+        "extends": [
+            "./config/.eslintrc.js"
+        ]
+    },
+    "prettier": "./config/.prettierrc.js",
     "devDependencies": {
         "@commitlint/cli": "^17.0.3",
         "@commitlint/config-conventional": "^17.0.3",
