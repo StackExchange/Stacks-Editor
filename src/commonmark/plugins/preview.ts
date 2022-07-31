@@ -65,8 +65,9 @@ class PreviewView implements PluginView {
         ) {
             return;
         }
-
         this.isShown = shouldBeShown;
+        
+        log(`preview update shouldBeShown ${String(shouldBeShown)}`);
 
         // if there is a render timeout already, clear it (essentially resetting the timeout)
         if (this.renderTimeoutId) {
@@ -111,8 +112,18 @@ class PreviewPluginKey extends StatefulPluginKey<PreviewPluginState> {
 
     togglePreviewVisibility(view: EditorView, isShown: boolean) {
         const tr = this.setMeta(view.state.tr, { isShown });
+        log(`toggle preview, isShown: ${String(isShown)}`);
         view.dispatch(tr);
     }
+    
+    previewIsVisible(view: EditorView) : boolean {
+        const pluginState = this.getState(view.state);
+        return pluginState?.isShown ?? false;
+    }
+}
+
+export function previewIsVisible(view: EditorView) {
+    return PREVIEW_KEY.previewIsVisible(view);
 }
 
 export function togglePreviewVisibility(view: EditorView, isShown: boolean) {
@@ -164,7 +175,9 @@ export function createPreviewPlugin(
             const container = containerFn(editorView);
 
             if (!container.contains(editorView.dom)) {
-                container.insertBefore(previewView.dom, container.firstChild);
+                if (PREVIEW_KEY.previewIsVisible(editorView)) {
+                    container.insertBefore(previewView.dom, container.firstChild);
+                }
             } else {
                 throw "Preview parentContainer must not contain the editor view";
             }

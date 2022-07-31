@@ -18,7 +18,7 @@ import {
     ExternalPluginProvider,
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
-import { togglePreviewVisibility } from "../commonmark/plugins/preview";
+import { togglePreviewVisibility, previewIsVisible } from "../commonmark/plugins/preview";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -81,6 +81,11 @@ export class StacksEditor implements View {
         );
 
         this.setBackingView(this.options.defaultView, content);
+
+        if (this.options.commonmarkOptions.preview.enabled) {
+            // has to be done after backing view is set
+            togglePreviewVisibility(this.backingView.editorView, true);
+        }
     }
 
     get editorView(): EditorView {
@@ -329,6 +334,8 @@ export class StacksEditor implements View {
         const markCheckedProp =
             defaultItem === EditorType.Commonmark ? "checked" : "";
 
+        const previewEnabled = this.options.commonmarkOptions.preview.enabled;
+
         const container = document.createElement("div");
         container.className = "flex--item d-flex ai-center ml24 fc-medium";
 
@@ -350,6 +357,7 @@ export class StacksEditor implements View {
         id="mode-toggle-markdown-${this.internalId}"
         class="js-editor-toggle-btn"
         data-mode="${EditorType.Commonmark}"
+        data-preview="false"
         ${markCheckedProp} />
     <label class="s-btn s-editor-btn px6"
         for="mode-toggle-markdown-${this.internalId}"
@@ -361,7 +369,7 @@ export class StacksEditor implements View {
     </label>
 </div>`;
 
-        if (this.options.commonmarkOptions.preview.enabled) {
+        if (previewEnabled) {
             const input = document.createElement("input");
             input.setAttribute(
                 "name",
@@ -371,7 +379,10 @@ export class StacksEditor implements View {
             input.setAttribute("id", `mode-toggle-preview-${this.internalId}`);
             input.className = "js-editor-toggle-btn";
             input.setAttribute("data-mode", `${EditorType.Commonmark}`);
+            input.setAttribute("data-preview", `${previewEnabled ? 'true' : 'false'}`)
             input.checked = false; // TODO
+            container.firstChild.appendChild(input);
+
             const label = document.createElement("label");
             label.setAttribute("for", `mode-toggle-preview-${this.internalId}`);
             label.setAttribute(
@@ -382,12 +393,7 @@ export class StacksEditor implements View {
             label.innerHTML = escapeHTML`<span class="icon-bg iconMarkdownPreview"></span><span class="v-visible-sr">${_t(
                 "menubar.mode_toggle_preview_title"
             )}</span>`;
-
-            container.firstChild.appendChild(input);
             container.firstChild.appendChild(label);
-
-            // TODO onchange
-            togglePreviewVisibility(this.backingView.editorView, true);
         }
 
         container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
@@ -412,9 +418,14 @@ export class StacksEditor implements View {
         // get type from the target element
         const target = e.target as HTMLInputElement;
         const type: EditorType = +target.dataset.mode;
+        const showPreview  = target.dataset.preview == 'true' ? true : false;
+        const inPreviewNow = previewIsVisible(this.backingView.editorView);
+
+        // eslint-disable-next-line no-console
+        console.log(`type: ${type}, showPreview: ${String(showPreview)}, inPreviewNow: ${String(inPreviewNow) }`);
 
         // if the type hasn't changed, do nothing
-        if (type === this.currentViewType) {
+        if (type === this.currentViewType && showPreview == inPreviewNow) {
             return;
         }
 
@@ -427,6 +438,10 @@ export class StacksEditor implements View {
 
         // set the view type for this button
         this.setView(type);
+
+        if (showPreview != inPreviewNow) {
+            togglePreviewVisibility(this.backingView.editorView, showPreview);
+        }
 
         // TODO better event name?
         // trigger an event on the target for consumers to listen for
