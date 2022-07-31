@@ -14,6 +14,7 @@ import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { toggleReadonly } from "../shared/prosemirror-plugins/readonly";
 import { _t } from "../shared/localization";
+import { log } from "../shared/logger";
 import {
     ExternalPluginProvider,
     IExternalPluginProvider,
@@ -421,8 +422,7 @@ export class StacksEditor implements View {
         const showPreview  = target.dataset.preview == 'true' ? true : false;
         const inPreviewNow = previewIsVisible(this.backingView.editorView);
 
-        // eslint-disable-next-line no-console
-        console.log(`type: ${type}, showPreview: ${String(showPreview)}, inPreviewNow: ${String(inPreviewNow) }`);
+        log(`type: ${type}, showPreview: ${String(showPreview)}, inPreviewNow: ${String(inPreviewNow) }`);
 
         // if the type hasn't changed, do nothing
         if (type === this.currentViewType && showPreview == inPreviewNow) {
