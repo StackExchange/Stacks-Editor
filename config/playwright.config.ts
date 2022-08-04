@@ -6,15 +6,18 @@ const config: PlaywrightTestConfig = {
     testDir: path.join(__dirname, "..", "test"),
     testMatch: "*.e2e.test.ts",
     forbidOnly: !!process.env.CI,
-    retries: process.env.CI ? 2 : 0,
+    retries: 0,
 
     webServer: {
         command: "npm start -- --port 8081 --no-open",
-        port: 8081,
+        url: "http://localhost:8081/",
+        timeout: 120 * 1000,
+        reuseExistingServer: !process.env.CI,
     },
 
     use: {
         trace: "on",
+        baseURL: "http://localhost:8081/",
     },
 
     projects: [

@@ -14,7 +14,7 @@ import { _t } from "../localization";
 import { ManagedInterfaceKey, PluginInterfaceView } from "./interface-manager";
 
 /**
- * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
+ * Async image upload callback that is passed the uploaded file and returns a resolvable path to the image
  * @param {File} file The uploaded image file or user entered image url
  * @returns {string} The resolvable path to where the file was uploaded
  */
@@ -145,7 +145,7 @@ export class ImageUploader extends PluginInterfaceView<
             </div>
 
             <div class="js-external-url-input-container p12 d-none">
-                <div class="d-flex fd-row sm:fd-column ai-center">
+                <div class="d-flex fd-row ai-center sm:fd-column sm:ai-start">
                     <label class="d-block s-label ws-nowrap mr4" for="external-url-input-${randomId}">
                         External url
                     </label>
@@ -156,10 +156,12 @@ export class ImageUploader extends PluginInterfaceView<
             <div id="image-preview-${randomId}" class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
 
-            <div class="d-flex ai-center p12">
-                <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
-                <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
-                <div class="ml64 d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
+            <div class="d-flex jc-space-between ai-center p12 sm:fd-column sm:ai-start sm:g16">
+                <div>
+                    <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
+                    <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
+                </div>
+                <div class="d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
                     <div class="js-branding-html"></div>
                     <div class="js-content-policy-html"></div>
                 </div>
@@ -188,12 +190,12 @@ export class ImageUploader extends PluginInterfaceView<
 
         this.uploadContainer.addEventListener(
             "dragenter",
-            this.highlightDropArea.bind(this)
+            this.highlightDropArea.bind(this) as EventListener
         );
 
         this.uploadContainer.addEventListener(
             "dragover",
-            this.highlightDropArea.bind(this)
+            this.highlightDropArea.bind(this) as EventListener
         );
 
         // we need this handler on top of the plugin's handleDrop() to make
@@ -214,7 +216,7 @@ export class ImageUploader extends PluginInterfaceView<
 
         this.uploadContainer.addEventListener(
             "dragleave",
-            this.unhighlightDropArea.bind(this)
+            this.unhighlightDropArea.bind(this) as EventListener
         );
 
         this.uploadContainer
@@ -537,9 +539,9 @@ export class ImageUploader extends PluginInterfaceView<
     }
 
     update(view: EditorView): void {
-        super.update(view);
         const state = this.key.getState(view.state);
         this.image = state?.file || this.image;
+        super.update(view);
     }
 
     destroy(): void {
@@ -582,7 +584,7 @@ export function hideImageUploader(view: EditorView): void {
     }
 }
 
-/** Shows the image uploder
+/** Shows the image uploader
  * @param view The current editor view
  * @param file The file to upload
  */
@@ -596,11 +598,14 @@ export function showImageUploader(view: EditorView, file?: File): void {
     }
 }
 
-/** Checks if the image-upload functionality is enabled */
-export function imageUploaderEnabled(view: EditorView): boolean {
-    const state = INTERFACE_KEY.getState(view.state);
+/**
+ * Checks if the image-upload functionality is enabled
+ * @param state The current editor state
+ */
+export function imageUploaderEnabled(state: EditorState): boolean {
+    const pluginState = INTERFACE_KEY.getState(state);
 
-    return !!state;
+    return !!pluginState;
 }
 
 /**

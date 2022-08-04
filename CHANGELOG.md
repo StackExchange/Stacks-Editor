@@ -2,6 +2,61 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.7.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.6.1...v0.7.0) (2022-07-28)
+
+
+### ⚠ BREAKING CHANGES
+
+* **tag-link:** TagLinkOptions.allowNonAscii and TagLinkOptions.allowMetaTags have been removed in
+favor of the consumer handling all validation using the new TagLinkOptions.validate option
+TagLinkOptions.renderer has been renamed to TagLinkOptions.render
+
+### Features
+
+* **commands:** change all shortcut labels to use capital letters ([#204](https://github.com/StackExchange/Stacks-Editor/issues/204)) ([0bc5c65](https://github.com/StackExchange/Stacks-Editor/commit/0bc5c65a51b5626889de24366fe5e3725f511e69)), closes [#166](https://github.com/StackExchange/Stacks-Editor/issues/166)
+* **commonmark-editor:** move commonmark syntax highlighting to a new Lezer based system ([#176](https://github.com/StackExchange/Stacks-Editor/issues/176)) ([693a402](https://github.com/StackExchange/Stacks-Editor/commit/693a4024df413e75d36e4975c5db5d8ab3b9551b)), closes [#21](https://github.com/StackExchange/Stacks-Editor/issues/21)
+* **link-editor:** open link on Mod-Click ([#130](https://github.com/StackExchange/Stacks-Editor/issues/130)) ([ea8da4b](https://github.com/StackExchange/Stacks-Editor/commit/ea8da4b109c93094079109e4b052d42f1621a560)), closes [#62](https://github.com/StackExchange/Stacks-Editor/issues/62)
+* **markdown-serializer:** prefer sorting numeric link references in number order ([20f338a](https://github.com/StackExchange/Stacks-Editor/commit/20f338abea66dcaedc1157adb2cb91b223869bb5)), closes [#163](https://github.com/StackExchange/Stacks-Editor/issues/163)
+* **markdown-serializer:** serialize code_block nodes to use fences by default ([f658969](https://github.com/StackExchange/Stacks-Editor/commit/f6589698ebc934edc8bf3ebcdbfac94e6d179e29)), closes [#168](https://github.com/StackExchange/Stacks-Editor/issues/168)
+* **menu:** tweak active/selected button styling ([303e494](https://github.com/StackExchange/Stacks-Editor/commit/303e494ed5dc8de406f456f49884bb945066d084))
+* **stacks-editor:** change the mode toggle to a radio powered button group instead of a checkbox ([2df7f00](https://github.com/StackExchange/Stacks-Editor/commit/2df7f00ea404297bed7976b4f9501a0bc9376854))
+* **tag-link:** add all-purpose TagLinkOptions.validate function ([6ae6936](https://github.com/StackExchange/Stacks-Editor/commit/6ae693694c08be9afbad7f0668e0043ec747cef2))
+
+
+### Bug Fixes
+
+* **code-paste-handler:** fix "global is not defined" error when compiling with Vite ([b7aaf5c](https://github.com/StackExchange/Stacks-Editor/commit/b7aaf5c85e7c4ae75aed58b2aecc8bc7c263da05)), closes [#159](https://github.com/StackExchange/Stacks-Editor/issues/159)
+* **image-upload:** dropped/pasted images now properly load into the image uploader ([0bf0bdf](https://github.com/StackExchange/Stacks-Editor/commit/0bf0bdf1d4925f59a28a54b46527151aefb26cd8)), closes [#167](https://github.com/StackExchange/Stacks-Editor/issues/167)
+* **image-upload:** improve image-upload pane layout on small viewport widths ([c47728a](https://github.com/StackExchange/Stacks-Editor/commit/c47728aaf514d89f3c92d29137b451f58c2c1d9b)), closes [#202](https://github.com/StackExchange/Stacks-Editor/issues/202)
+* **markdown-serializer:** fix incorrect newline serialization of html_inline and html_block ([664e034](https://github.com/StackExchange/Stacks-Editor/commit/664e034dc39a3ec40fb95e31ba07c925ecbce9cf)), closes [#152](https://github.com/StackExchange/Stacks-Editor/issues/152)
+* **menu:** fix crashes when a menu entry is null ([87063b9](https://github.com/StackExchange/Stacks-Editor/commit/87063b920f3f092f61ccdfbc98a76f7a2c839331))
+* **rich-text-editor:** allow any block node inside list items ([#157](https://github.com/StackExchange/Stacks-Editor/issues/157)) ([f59b72f](https://github.com/StackExchange/Stacks-Editor/commit/f59b72f763d0880ff3c644e80caf98b8e14dfe8d)), closes [#63](https://github.com/StackExchange/Stacks-Editor/issues/63)
+
+### [0.6.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.6.0...v0.6.1) (2022-07-05)
+
+
+### Bug Fixes
+
+* **options:** fix crash on startup when `preview` option is unset ([c692e17](https://github.com/StackExchange/Stacks-Editor/commit/c692e17aaa26ad0a1a7626f33617a2f9f4ac88ed)), closes [#149](https://github.com/StackExchange/Stacks-Editor/issues/149)
+
+## [0.6.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.5.1...v0.6.0) (2022-07-01)
+
+
+### Features
+
+* **commonmark-editor:** add basic static markdown preview support ([#146](https://github.com/StackExchange/Stacks-Editor/issues/146)) ([bb9f862](https://github.com/StackExchange/Stacks-Editor/commit/bb9f8626648109e2187626a17ed85e807fb43956)), closes [#115](https://github.com/StackExchange/Stacks-Editor/issues/115)
+* **commonmark-editor:** change copy behavior of commonmark content to be plain text instead of code ([485855d](https://github.com/StackExchange/Stacks-Editor/commit/485855db6ee8cda48f267a48cbaf6da2f4cde5b8))
+* **commonmark-editor:** detect and format pasted code like rich-text mode ([#147](https://github.com/StackExchange/Stacks-Editor/issues/147)) ([9d9841a](https://github.com/StackExchange/Stacks-Editor/commit/9d9841a9ee4dff30d7bc19196095c16517ed50e8)), closes [#135](https://github.com/StackExchange/Stacks-Editor/issues/135)
+* **editor-plugin:** add external plugin support ([#141](https://github.com/StackExchange/Stacks-Editor/issues/141)) ([aca011f](https://github.com/StackExchange/Stacks-Editor/commit/aca011f58d48c35bdf836ac9ff5f29f8af84eaf7))
+* **link-editor:** change link editor from a popover to a plugin pane ([#142](https://github.com/StackExchange/Stacks-Editor/issues/142)) ([3e4c847](https://github.com/StackExchange/Stacks-Editor/commit/3e4c84777c9ace43c2a83494a6071f6ceae389a6)), closes [#19](https://github.com/StackExchange/Stacks-Editor/issues/19)
+
+
+### Bug Fixes
+
+* **commonmark-editor:** fix commonmark editor treating all pasted html content as code ([6dc4556](https://github.com/StackExchange/Stacks-Editor/commit/6dc4556353fea70b340986381e58381c0ddaa105))
+* **commonmark-editor:** only select current paragraph on triple click ([#128](https://github.com/StackExchange/Stacks-Editor/issues/128)) ([7f1fa6c](https://github.com/StackExchange/Stacks-Editor/commit/7f1fa6cbeb12bf1a0ac2c9f476d82b6c5fe1b871)), closes [#27](https://github.com/StackExchange/Stacks-Editor/issues/27)
+* **commonmark-editor:** prevent placeholder clipping ([#144](https://github.com/StackExchange/Stacks-Editor/issues/144)) ([a3d0669](https://github.com/StackExchange/Stacks-Editor/commit/a3d0669a01d702c5c08e198ca80690a16f720f57))
+
 ### [0.5.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.5.0...v0.5.1) (2022-06-16)
 
 

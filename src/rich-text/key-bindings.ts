@@ -31,6 +31,7 @@ import {
     indentCodeBlockLinesCommand,
     deindentCodeBlockLinesCommand,
     toggleHeadingLevel,
+    toggleTagLinkCommand,
 } from "./commands";
 
 export function allKeymaps(
@@ -79,6 +80,19 @@ export function allKeymaps(
         ...bindLetterKeymap("Mod-h", toggleHeadingLevel()),
         ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
+        ...bindLetterKeymap(
+            "Mod-[",
+            toggleTagLinkCommand(parserFeatures.tagLinks.validate, false)
+        ),
+        ...bindLetterKeymap(
+            "Mod-]",
+            toggleTagLinkCommand(parserFeatures.tagLinks.validate, true)
+        ),
+        ...bindLetterKeymap("Mod-/", wrapIn(schema.nodes.spoiler)),
+        ...bindLetterKeymap("Mod-,", toggleMark(schema.marks.sub)),
+        ...bindLetterKeymap("Mod-.", toggleMark(schema.marks.sup)),
+        ...bindLetterKeymap("Mod-'", toggleMark(schema.marks.kbd)),
+
         // users expect to be able to leave certain blocks/marks using the arrow keys
         "ArrowRight": exitInclusiveMarkCommand,
         "ArrowDown": exitCode,

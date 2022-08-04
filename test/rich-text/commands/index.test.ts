@@ -5,13 +5,17 @@ import {
     indentCodeBlockLinesCommand,
     deindentCodeBlockLinesCommand,
     toggleHeadingLevel,
+    toggleTagLinkCommand,
+    toggleWrapIn,
 } from "../../../src/rich-text/commands";
 import {
+    applyNodeSelection,
     applySelection,
     createState,
     testRichTextSchema,
 } from "../test-helpers";
-import "../../matchers";
+import { toggleMark } from "prosemirror-commands";
+import { MarkType } from "prosemirror-model";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;
@@ -199,6 +203,70 @@ describe("commands", () => {
         });
     });
 
+    describe("toggleWrapIn", () => {
+        it("should apply blockquote within paragraph", () => {
+            const state = applySelection(createState("<p>quote</p>", []), 3);
+            expect(state.doc).toMatchNodeTreeString("paragraph>text");
+
+            const toggleBlockQuote = toggleWrapIn(
+                state.schema.nodes.blockquote
+            );
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockQuote
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTreeString(
+                "blockquote>paragraph>text"
+            );
+        });
+
+        it("should remove blockquote within blockquote", () => {
+            const state = applySelection(
+                createState("<blockquote>quote</blockquote>", []),
+                3
+            );
+            expect(state.doc).toMatchNodeTreeString(
+                "blockquote>paragraph>text"
+            );
+
+            const toggleBlockQuote = toggleWrapIn(
+                state.schema.nodes.blockquote
+            );
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockQuote
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTreeString("paragraph>text");
+        });
+
+        it("should toggle blockquote within list item", () => {
+            const state = applySelection(
+                createState("<ul><li>list</li></ul>", []),
+                3
+            );
+            const resolvedNode = state.selection.$from;
+            // default li child is paragraph
+            expect(resolvedNode.node().type.name).toBe("paragraph");
+
+            const toggleBlockQuote = toggleWrapIn(
+                state.schema.nodes.blockquote
+            );
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleBlockQuote
+            );
+
+            expect(isValid).toBeTruthy();
+            expect(newState.doc).toMatchNodeTreeString(
+                "bullet_list>list_item>blockquote>paragraph>text"
+            );
+        });
+    });
+
     describe("insertHorizontalRuleCommand", () => {
         it("should not insert while in a table", () => {
             const state = applySelection(
@@ -218,15 +286,15 @@ describe("commands", () => {
             );
 
             expect(isValid).toBeFalsy();
-            let constainsHr = false;
+            let containsHr = false;
 
             newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
-                constainsHr = node.type.name === "horizontal_rule";
+                containsHr = node.type.name === "horizontal_rule";
 
-                return !constainsHr;
+                return !containsHr;
             });
 
-            expect(constainsHr).toBeFalsy();
+            expect(containsHr).toBeFalsy();
         });
         it("should add paragraph after when inserted at the end of the doc", () => {
             let state = createState("asdf", []);
@@ -394,6 +462,216 @@ describe("commands", () => {
         });
     });
 
+    describe("toggleTagLinkCommand", () => {
+        it("should not insert with no text selected", () => {
+            const state = createState("", []);
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagLinkCommand(() => true, false)
+            );
+
+            expect(isValid).toBeFalsy();
+            let containsTagLink = false;
+
+            newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
+                containsTagLink = node.type.name === "tagLink";
+
+                return !containsTagLink;
+            });
+
+            expect(containsTagLink).toBeFalsy();
+        });
+
+        it("should not insert when the text fails validation", () => {
+            let state = createState("tag with spaces", []);
+
+            state = applySelection(state, 1, 15);
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagLinkCommand(() => false, false)
+            );
+
+            expect(isValid).toBeFalsy();
+            let containsTagLink = false;
+
+            newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
+                containsTagLink = node.type.name === "tagLink";
+
+                return !containsTagLink;
+            });
+
+            expect(containsTagLink).toBeFalsy();
+        });
+
+        it.each([
+            [createState("", []).schema.marks.link],
+            [createState("", []).schema.marks.code],
+        ])(
+            "should not insert tag in text node with certain marks",
+            (mark: MarkType) => {
+                let state = createState("thisIsMyText", []);
+
+                state = applySelection(state, 1, 12);
+
+                const markResult = executeTransaction(state, toggleMark(mark));
+
+                expect(markResult.isValid).toBeTruthy();
+
+                markResult.newState = applySelection(markResult.newState, 2, 6);
+
+                const tagLinkResult = executeTransaction(
+                    markResult.newState,
+                    toggleTagLinkCommand(() => true, false)
+                );
+
+                expect(tagLinkResult.isValid).toBeFalsy();
+
+                let containsTagLink = false;
+                tagLinkResult.newState.doc.nodesBetween(
+                    0,
+                    tagLinkResult.newState.doc.content.size,
+                    (node) => {
+                        containsTagLink = node.type.name === "tagLink";
+
+                        return !containsTagLink;
+                    }
+                );
+
+                expect(containsTagLink).toBeFalsy();
+            }
+        );
+
+        it("should replace selected text with tagLink", () => {
+            let state = createState("this is my state", []);
+
+            state = applySelection(state, 5, 7); //"is"
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagLinkCommand(() => true, false)
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "this ",
+                            },
+                            {
+                                "type.name": "tagLink",
+                            },
+                            {
+                                isText: true,
+                                text: " my state",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+
+        it("should untoggle tagLink when selected", () => {
+            let state = createState("someText", []);
+
+            state = applySelection(state, 0, 8); // cursor is inside the tag
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagLinkCommand(() => true, false)
+            );
+
+            expect(isValid).toBeTruthy();
+
+            expect(newState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                "type.name": "tagLink",
+                            },
+                        ],
+                    },
+                ],
+            });
+
+            const nodeSelection = applyNodeSelection(newState, 1);
+
+            const { newState: newerState, isValid: isStillValid } =
+                executeTransaction(
+                    nodeSelection,
+                    toggleTagLinkCommand(() => true, false)
+                );
+
+            expect(isStillValid).toBeTruthy();
+
+            expect(newerState.doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "paragraph",
+                        "content": [
+                            {
+                                isText: true,
+                                text: "someText",
+                            },
+                        ],
+                    },
+                ],
+            });
+        });
+    });
+
+    describe("wrapInCommand", () => {
+        it.each([
+            [createState("", []).schema.nodes.spoiler, "spoiler"],
+            [createState("", []).schema.nodes.blockquote, "blockquote"],
+        ])(
+            "should wrap selected node with nodeType",
+            (nodeType, nodeTypeText) => {
+                let state = createState("asdf", []);
+
+                state = applySelection(state, 0, 4);
+
+                const { newState, isValid } = executeTransaction(
+                    state,
+                    toggleWrapIn(nodeType)
+                );
+
+                expect(isValid).toBeTruthy();
+
+                expect(newState.doc).toMatchNodeTree({
+                    "type.name": "doc",
+                    "content": [
+                        {
+                            "type.name": nodeTypeText,
+                            "content": [
+                                {
+                                    "type.name": "paragraph",
+                                    "content": [
+                                        {
+                                            isText: true,
+                                            text: "asdf",
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                });
+            }
+        );
+    });
+
     describe("exitMarkCommand", () => {
         it("all exitable marks should also be inclusive: true", () => {
             Object.keys(testRichTextSchema.marks).forEach((markName) => {
@@ -416,7 +694,10 @@ describe("commands", () => {
         it.each([
             [`middle of some text`, false],
             [`<em>cannot exit emphasis from anywhere</em>`, true],
+            [`<sup>cannot exit sup from anywhere</sup>`, true],
+            [`<sub>cannot exit sub from anywhere</sub>`, true],
             [`<code>cannot exit code from middle</code>`, false],
+            [`<kbd>cannot exit kbd from middle</kbd>`, false],
         ])("should not exit unexitable marks", (input, positionCursorAtEnd) => {
             let state = createState(input, []);
 

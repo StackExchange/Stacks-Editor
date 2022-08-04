@@ -10,40 +10,110 @@ import { docChanged, generateRandomId } from "./utils";
 /** NoOp to use in place of missing commands */
 const commandNoOp = () => false;
 
+/**
+ * Callback function signature for all menu entries
+ * @param view The editor view to act on
+ * @param suppressDispatch True if the command should *not* be ran on the state; used to determine if the command is valid
+ * @returns true if the entry is valid for the current state
+ * @public
+ */
+export type MenuCommand = (
+    state: EditorState,
+    dispatch: (tr: Transaction) => void,
+    view?: EditorView
+) => boolean;
+
+/**
+ * Describes a menu entry where command is the command to run when invoked and dom is the visual button itself
+ * @public
+ */
+export interface MenuCommandEntry {
+    active?: (state: EditorState) => boolean;
+    visible?: (state: EditorState) => boolean;
+    command: MenuCommand;
+    dom: HTMLElement;
+    key: string;
+
+    // if this menu entry is a dropdown menu, it will have child items containing the actual commands
+    children?: MenuCommandEntry[];
+}
+
+/**
+ * Describes a visual "block"/grouping of menu items
+ * @internal
+ */
+export interface MenuBlock<TEntry = MenuCommandEntry> {
+    /**
+     * The key that describes this block.
+     * Blocks added by all plugins are merged by key.
+     */
+    name?: string;
+
+    /** The priority of the block - lower values get placed first visually */
+    priority?: number;
+
+    /** The menu entries for this block */
+    entries: TEntry[];
+
+    /** Whether the block should be shown or not */
+    visible?: MenuCommandEntry["visible"];
+
+    /** The classes to add to the block container */
+    classes?: string[];
+}
+
 class MenuView implements PluginView {
     dom: HTMLDivElement;
-    protected items: MenuCommandEntry[];
-    protected menuCommands: MenuCommandEntry[];
+    protected blocks: (MenuBlock & { dom: HTMLElement })[];
     protected view: EditorView;
     protected readonly: boolean;
 
     static disabledClass = "is-disabled";
+    static activeClass = "is-selected";
+    static invisibleClass = "d-none";
 
-    constructor(items: MenuCommandEntry[], view: EditorView) {
-        this.items = items;
+    constructor(blocks: MenuBlock[], view: EditorView) {
+        // sort the blocks by their priority; lower priority first
+        this.blocks = blocks
+            .filter((b) => !!b)
+            .sort((a, b) => a.priority - b.priority) as MenuView["blocks"];
         this.view = view;
 
-        // turn all menu commands into a flat list so we can easily look them up later
-        this.menuCommands = ([] as MenuCommandEntry[]).concat(
-            ...this.items.map((item) => {
-                if (item.children) {
-                    // include the drop-down parent AND all of its children if there are child MenuCommandEntries
-                    return [item, ...item.children];
-                }
-                return item;
-            })
-        );
-
         this.dom = document.createElement("div");
-        this.dom.className =
-            "d-flex gs2 mln4 fl-grow1 ai-center js-editor-menu";
-        this.items.forEach(({ dom }) => this.dom.appendChild(dom));
+        this.dom.className = "d-flex g16 fl-grow1 ai-center js-editor-menu";
+
+        for (const block of this.blocks) {
+            // drop all null entries
+            block.entries = block.entries.filter((e) => !!e);
+
+            const blockDom = this.makeBlockContainer(block);
+            for (const entry of block.entries) {
+                blockDom.appendChild(entry.dom);
+            }
+
+            this.dom.appendChild(blockDom);
+            block.dom = blockDom;
+        }
 
         this.update(view, null);
 
+        // turn all menu commands into a flat list so we can easily look them up later
+        const menuCommands = ([] as MenuCommandEntry[]).concat(
+            ...this.blocks
+                .map((item) => item.entries)
+                .reduce((a, b) => a.concat(b), [])
+                .filter((e) => !!e)
+                .map((item) => {
+                    if (item.children) {
+                        // include the drop-down parent AND all of its children if there are child MenuCommandEntries
+                        return [item, ...item.children];
+                    }
+                    return item;
+                })
+        );
+
         // NOTE: make sure your plugin/menu container calls `e.preventDefault()` on `mousedown` events
         // so the editor doesn't blur on click! StacksEditor automatically handles this for us in a typical use-case
-        const menuCommands = this.menuCommands;
         this.dom.addEventListener("click", (e) => {
             // find the closest button parent of the clicked element
             const target = (<HTMLElement>e.target).closest(".js-editor-btn");
@@ -64,7 +134,11 @@ class MenuView implements PluginView {
 
             const found = menuCommands.find((c) => c.key === key);
             if (found) {
-                found.command(view.state, view.dispatch.bind(view), view);
+                found.command(
+                    view.state,
+                    view.dispatch.bind(view) as (tr: Transaction) => void,
+                    view
+                );
             }
         });
 
@@ -86,86 +160,106 @@ class MenuView implements PluginView {
         this.dom.classList.toggle("pe-none", this.readonly);
 
         const viewIsReadonly = this.readonly;
-        const activeClass = "is-selected";
-        const invisibleClass = "d-none";
-        const disabledClass = MenuView.disabledClass;
+        const isFocused = this.view.hasFocus();
 
-        this.menuCommands.forEach((entry) => {
-            let dom = entry.dom;
-
-            // make sure we really got the button itself, not a wrapper
-            if (!dom.classList.contains("js-editor-btn")) {
-                const button: HTMLElement = dom.querySelector(".js-editor-btn");
-                dom = button ?? dom;
-            }
-
-            const isFocused = this.view.hasFocus();
-
-            const visible = entry.visible
-                ? entry.visible(this.view.state)
+        // check all blocks and their commands for visibility
+        for (const block of this.blocks) {
+            const visible = block.visible
+                ? block.visible(this.view.state)
                 : true;
 
-            const active =
-                isFocused && entry.active
-                    ? entry.active(this.view.state)
-                    : false;
+            block.dom.classList.toggle(MenuView.invisibleClass, !visible);
 
-            const enabled =
-                !viewIsReadonly &&
-                entry.command(this.view.state, undefined, this.view);
-
-            dom.classList.remove(disabledClass);
-            dom.classList.remove(activeClass);
-            dom.classList.remove(invisibleClass);
-
-            dom.dataset.key = entry.key;
-
-            // class priority is active > disabled > default
+            // don't bother checking commands if the block is not visible
             if (!visible) {
-                dom.classList.add(invisibleClass);
-            } else if (active) {
-                dom.classList.add(activeClass);
-            } else if (!enabled) {
-                dom.classList.add(disabledClass);
+                continue;
             }
-        });
+
+            // check each entry and update the dom to match the current state
+            for (const entry of block.entries) {
+                this.checkAndUpdateMenuCommandState(
+                    entry,
+                    viewIsReadonly,
+                    isFocused
+                );
+            }
+        }
     }
 
     destroy() {
         this.dom.remove();
     }
-}
 
-/**
- * Callback function signature for all menu entries
- * @param view The editor view to act on
- * @param suppressDispatch True if the command should *not* be ran on the state; used to determine if the command is valid
- * @returns true if the entry is valid for the current state
- */
-export type MenuCommand = (
-    state: EditorState,
-    dispatch: (tr: Transaction) => void,
-    view?: EditorView
-) => boolean;
+    /**
+     * Checks if the given menu command is visible/active for the current state and updates its dom to match
+     * @param entry The menu command entry to check
+     * @param isReadonly Whether the editor is readonly
+     * @param isFocused Whether the editor currently has focus
+     */
+    private checkAndUpdateMenuCommandState(
+        entry: MenuCommandEntry,
+        isReadonly: boolean,
+        isFocused: boolean
+    ): void {
+        let dom = entry.dom;
 
-/**
- * Describes a menu entry where command is the command to run when invoked and dom is the visual button itself
- */
-export interface MenuCommandEntry {
-    active?: (state: EditorState) => boolean;
-    visible?: (state: EditorState) => boolean;
-    command: MenuCommand;
-    dom: HTMLElement;
-    key: string;
+        // make sure we really got the button itself, not a wrapper
+        if (!dom.classList.contains("js-editor-btn")) {
+            const button: HTMLElement = dom.querySelector(".js-editor-btn");
+            dom = button ?? dom;
+        }
 
-    // if this menu entry is a dropdown menu, it will have child items containing the actual commands
-    children?: MenuCommandEntry[];
+        const visible = entry.visible ? entry.visible(this.view.state) : true;
+
+        const active =
+            isFocused && entry.active ? entry.active(this.view.state) : false;
+
+        const enabled =
+            !isReadonly && entry.command(this.view.state, undefined, this.view);
+
+        dom.classList.remove(MenuView.disabledClass);
+        dom.classList.remove(MenuView.activeClass);
+        dom.classList.remove(MenuView.invisibleClass);
+
+        dom.dataset.key = entry.key;
+
+        // class priority is active > disabled > default
+        if (!visible) {
+            dom.classList.add(MenuView.invisibleClass);
+        } else if (active) {
+            dom.classList.add(MenuView.activeClass);
+        } else if (!enabled) {
+            dom.classList.add(MenuView.disabledClass);
+        }
+
+        // if this is a dropdown, check all of its children as well
+        if (entry.children?.length) {
+            for (const child of entry.children) {
+                this.checkAndUpdateMenuCommandState(
+                    child,
+                    isReadonly,
+                    isFocused
+                );
+            }
+        }
+    }
+
+    /** Creates the element that a block's child entries' doms are placed into */
+    private makeBlockContainer(block: MenuBlock) {
+        const dom = document.createElement("div");
+        dom.className = `s-editor-menu-block d-flex g2 ${
+            block.classes?.join(" ") ?? ""
+        }`;
+
+        return dom;
+    }
 }
 
 /**
  * Simple wrapper function to ensure that conditional menu item adds are consistent
  * @param item The item to add if flag is truthy
  * @param flag Whether to add the item
+ * @internal
  */
 export function addIf(item: MenuCommandEntry, flag: boolean): MenuCommandEntry {
     return flag ? item : null;
@@ -173,18 +267,17 @@ export function addIf(item: MenuCommandEntry, flag: boolean): MenuCommandEntry {
 
 /**
  * Creates a menu plugin with the passed in entries
- * @param items The entries to use on the generated menu
+ * @param blocks The entries to use on the generated menu
+ * @param containerFn A function that returns the container element for the menu
+ * @internal
  */
 export function createMenuPlugin(
-    items: MenuCommandEntry[],
+    blocks: MenuBlock[],
     containerFn: (view: EditorView) => Node
 ): Plugin {
-    // remove all empty / falsy items
-    const validItems = items.filter((i) => !!i);
-
     return new Plugin({
         view(editorView) {
-            const menuView = new MenuView(validItems, editorView);
+            const menuView = new MenuView(blocks, editorView);
             containerFn =
                 containerFn ||
                 function (v) {
@@ -212,15 +305,16 @@ export function createMenuPlugin(
  * @param title The text to place in the button's title attribute
  * @param key A unique identifier used for identifying the command to be executed on click
  * @param cssClasses extra CSS classes to be applied to this menu icon (optional)
+ * @internal
  */
-export function makeMenuIcon(
+export function makeMenuButton(
     iconName: string,
     title: string,
     key: string,
     cssClasses?: string[]
 ): HTMLButtonElement {
     const button = document.createElement("button");
-    button.className = `s-editor-btn flex--item js-editor-btn js-${key}`;
+    button.className = `s-editor-btn s-btn js-editor-btn js-${key}`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
@@ -243,29 +337,6 @@ export function makeMenuIcon(
 }
 
 /**
- * Helper function to create a MenuCommandEntry for a menu spacer
- */
-export function makeMenuSpacerEntry(
-    visible?: (state: EditorState) => boolean,
-    cssClasses?: string[]
-): MenuCommandEntry {
-    const dom = document.createElement("div");
-    dom.className = "flex--item w16";
-
-    if (cssClasses) {
-        dom.classList.add(...cssClasses);
-    }
-
-    return {
-        key: "spacer",
-        command: commandNoOp,
-        active: commandNoOp,
-        visible: visible,
-        dom: dom,
-    };
-}
-
-/**
  * Create a dropdown menu item that contains all children in its popover
  * @param svg The html of the svg to use as the dropdown icon
  * @param title The text to place in the dropdown button's title attribute
@@ -273,6 +344,7 @@ export function makeMenuSpacerEntry(
  * @param visible A function that determines wether the dropdown should be visible or hidden
  * @param active A function to determine if the dropdown should be highlighted as active
  * @param children The child MenuCommandEntry items to be placed in the dropdown menu
+ * @internal
  */
 export function makeMenuDropdown(
     svg: string,
@@ -286,7 +358,7 @@ export function makeMenuDropdown(
     const popoverId = `${key}-popover-${randomId}`;
     const buttonId = `${key}-btn-${randomId}`;
 
-    const button = makeMenuIcon(svg, title, key);
+    const button = makeMenuButton(svg, title, key);
     button.classList.add("s-btn", "s-btn__dropdown");
     button.setAttribute("aria-controls", popoverId);
     button.setAttribute("data-action", "s-popover#toggle");
@@ -335,6 +407,7 @@ export function makeMenuDropdown(
  * @param key A unique identifier used for identifying the command to be executed on click
  * @param active A function to determine whether this item should be rendered as "active"
  * @param cssClasses Additional css classes to be applied to this dropdown item
+ * @internal
  */
 export function dropdownItem(
     title: string,
@@ -348,7 +421,7 @@ export function dropdownItem(
     button.dataset.key = key;
     button.textContent = title;
     button.dataset.action = "s-popover#hide";
-    button.className = `s-editor-btn s-editor-btn__dropdown-item js-editor-btn`;
+    button.className = `s-block-link s-editor--dropdown-item js-editor-btn`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
@@ -367,6 +440,7 @@ export function dropdownItem(
  * interaction and no action being triggered on click
  * @param title The text to be displayed for this item
  * @param key A unique identifier used for identifying the command to be executed on click
+ * @internal
  */
 export function dropdownSection(title: string, key: string): MenuCommandEntry {
     const section = document.createElement("span");
@@ -388,14 +462,17 @@ export function dropdownSection(title: string, key: string): MenuCommandEntry {
  * @param iconName The html of the svg to use as the icon
  * @param title The text to place in the link's title attribute
  * @param href The href to open when clicked
+ * @param key A unique identifier used for this link
+ * @internal
  */
 export function makeMenuLinkEntry(
     iconName: string,
     title: string,
-    href: string
+    href: string,
+    key: string
 ): MenuCommandEntry {
     const dom = document.createElement("a");
-    dom.className = `s-editor-btn js-editor-btn flex--item`;
+    dom.className = `s-editor-btn s-btn flex--item js-editor-btn js-${key}`;
     dom.href = href;
     dom.target = "_blank";
     dom.title = title;
@@ -410,7 +487,7 @@ export function makeMenuLinkEntry(
     dom.append(icon);
 
     return {
-        key: title,
+        key: key,
         command: (_, dispatch) => {
             if (dispatch) {
                 window.open(dom.href, dom.target);

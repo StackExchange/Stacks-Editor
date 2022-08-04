@@ -350,7 +350,7 @@ export abstract class PluginInterfaceView<
     /**
      * Pre-implemented update override that ensures that the interface is shown/hidden appropriately.
      * If you need to do additional work, you should override this method, making sure to call `super.update(view)`
-     * in the overridden method.
+     * in the overridden method _after_ the additional setup has been done.
      * @param view The current editor view
      */
     update(view: EditorView): void {

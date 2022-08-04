@@ -11,7 +11,6 @@ import {
     removeColumnCommand,
     removeRowCommand,
 } from "../../../src/rich-text/commands";
-import "../../matchers";
 import { applySelection, createState, runCommand } from "../test-helpers";
 
 describe("table commands", () => {
@@ -92,7 +91,7 @@ describe("table commands", () => {
             });
         });
 
-        it("should select newly inserted paragraph. afer table", () => {
+        it("should select newly inserted paragraph. after table", () => {
             let state = applySelection(
                 createState(
                     "<table><thead><tr><th>asdf</td></th></thead></table>",

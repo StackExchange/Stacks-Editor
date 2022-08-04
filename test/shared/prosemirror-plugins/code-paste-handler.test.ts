@@ -3,8 +3,6 @@ import {
     parseCodeFromPasteData,
     richTextCodePasteHandler,
 } from "../../../src/shared/prosemirror-plugins/code-paste-handler";
-import "../../matchers";
-import "../../matchers";
 import {
     applySelection,
     cleanupPasteSupport,
@@ -268,6 +266,29 @@ describe("code-paste-handler", () => {
                 });
 
                 expect(view.state.doc.textContent).toBe(text);
+            }
+        );
+
+        // Commonmark
+        it.each(nonCodeTextData)(
+            "should handle pasting non-code html (%#) into commonmark editor",
+            (text) => {
+                let state = createState("<p></p>", [
+                    commonmarkCodePasteHandler,
+                ]);
+                state = applySelection(state, 0);
+
+                const view = createView(state);
+
+                dispatchPasteEvent(view.dom, {
+                    "text/plain": text,
+                    "text/html": text,
+                });
+
+                // html serializing ignores the whitespace, so check the textContent without it
+                expect(view.state.doc.textContent).toBe(
+                    text.trim().replace("\t", " ")
+                );
             }
         );
 

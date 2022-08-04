@@ -8,6 +8,7 @@ const miniSchema = new Schema({
     nodes: {
         doc: richTextSchemaSpec.nodes.doc,
         text: richTextSchemaSpec.nodes.text,
+        paragraph: richTextSchemaSpec.nodes.paragraph,
         code_block: richTextSchemaSpec.nodes.code_block,
     },
 });
@@ -17,7 +18,7 @@ function getHtmlClipboardContent(clipboardData: DataTransfer) {
         return null;
     }
 
-    return new global.DOMParser().parseFromString(
+    return new globalThis.DOMParser().parseFromString(
         clipboardData.getData("text/html"),
         "text/html"
     );

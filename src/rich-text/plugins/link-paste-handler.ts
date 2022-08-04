@@ -27,7 +27,7 @@ export const linkPasteHandler = (features: CommonmarkParserFeatures) =>
 
                 const link = event.clipboardData.getData("text/plain");
 
-                // ensure what we're pasting is actually some sort of uri in addtion to if it passes link validation
+                // ensure what we're pasting is actually some sort of uri in addition to if it passes link validation
                 if (
                     !link ||
                     !/^.+?:\/\//.test(link) ||

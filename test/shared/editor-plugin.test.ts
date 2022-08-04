@@ -284,7 +284,10 @@ describe("editor-plugin", () => {
                                         key: "entry1",
                                         richText: fake1,
                                         commonmark: fake2,
-                                        label: "entry1",
+                                        display: {
+                                            svg: "fake",
+                                            label: "entry1",
+                                        },
                                     },
                                 ],
                             },
@@ -300,7 +303,10 @@ describe("editor-plugin", () => {
                                         key: "entry2",
                                         richText: fake3,
                                         commonmark: fake4,
-                                        label: "entry2",
+                                        display: {
+                                            svg: "fake",
+                                            label: "entry2",
+                                        },
                                     },
                                 ],
                             },
@@ -312,7 +318,10 @@ describe("editor-plugin", () => {
                                         key: "entry3",
                                         richText: fake5,
                                         commonmark: fake1,
-                                        label: "entry3",
+                                        display: {
+                                            svg: "fake",
+                                            label: "entry3",
+                                        },
                                     },
                                 ],
                             },
@@ -327,21 +336,35 @@ describe("editor-plugin", () => {
                 EditorType.Commonmark,
                 testRichTextSchema
             );
-            expect(menu).toHaveLength(4);
+            expect(menu).toHaveLength(2);
+
             expect(menu[0]).toMatchObject({
-                key: "entry3",
-                command: fake1,
+                name: "block1",
+                priority: -100,
+                entries: expect.any(Array) as [],
             });
-            expect(menu[1]).toMatchObject({
-                key: "spacer",
-            });
-            expect(menu[2]).toMatchObject({
+            expect(menu[0].entries).toHaveLength(2);
+            expect(menu[0].entries[0]).toMatchObject({
                 key: "entry1",
+                dom: expect.any(HTMLElement) as HTMLElement,
                 command: fake2,
             });
-            expect(menu[3]).toMatchObject({
+            expect(menu[0].entries[1]).toMatchObject({
                 key: "entry2",
+                dom: expect.any(HTMLElement) as HTMLElement,
                 command: fake4,
+            });
+
+            expect(menu[1]).toMatchObject({
+                name: "block2",
+                priority: 100,
+                entries: expect.any(Array) as [],
+            });
+            expect(menu[1].entries).toHaveLength(1);
+            expect(menu[1].entries[0]).toMatchObject({
+                key: "entry3",
+                dom: expect.any(HTMLElement) as HTMLElement,
+                command: fake1,
             });
 
             menu = provider.getFinalizedMenu(
@@ -349,21 +372,35 @@ describe("editor-plugin", () => {
                 EditorType.RichText,
                 testRichTextSchema
             );
-            expect(menu).toHaveLength(4);
+            expect(menu).toHaveLength(2);
+
             expect(menu[0]).toMatchObject({
-                key: "entry3",
-                command: fake5,
+                name: "block1",
+                priority: -100,
+                entries: expect.any(Array) as [],
             });
-            expect(menu[1]).toMatchObject({
-                key: "spacer",
-            });
-            expect(menu[2]).toMatchObject({
+            expect(menu[0].entries).toHaveLength(2);
+            expect(menu[0].entries[0]).toMatchObject({
                 key: "entry1",
+                dom: expect.any(HTMLElement) as HTMLElement,
                 command: fake1,
             });
-            expect(menu[3]).toMatchObject({
+            expect(menu[0].entries[1]).toMatchObject({
                 key: "entry2",
+                dom: expect.any(HTMLElement) as HTMLElement,
                 command: fake3,
+            });
+
+            expect(menu[1]).toMatchObject({
+                name: "block2",
+                priority: 100,
+                entries: expect.any(Array) as [],
+            });
+            expect(menu[1].entries).toHaveLength(1);
+            expect(menu[1].entries[0]).toMatchObject({
+                key: "entry3",
+                dom: expect.any(HTMLElement) as HTMLElement,
+                command: fake5,
             });
         });
     });

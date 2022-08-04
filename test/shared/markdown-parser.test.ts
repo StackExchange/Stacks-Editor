@@ -3,7 +3,6 @@ import { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
-import "../matchers";
 import { testRichTextSchema } from "../rich-text/test-helpers";
 import { externalPluginProvider } from "../test-helpers";
 
@@ -13,10 +12,7 @@ const features: Required<CommonmarkParserFeatures> = {
     html: true,
     extraEmphasis: true,
     tables: true,
-    tagLinks: {
-        allowNonAscii: false,
-        allowMetaTags: false,
-    },
+    tagLinks: {},
     validateLink: stackOverflowValidateLink,
 };
 
@@ -316,6 +312,23 @@ console.log("test");
             expect(doc.content[0].type).toContain("_list");
             expect(doc.content[0].attrs.tight).toBe(isTight);
         });
+
+        it.each([
+            [`- > blockquote in list`, "bullet_list>list_item>blockquote"],
+            [`- paragraph in list`, "bullet_list>list_item>paragraph"],
+            [`- # heading in list`, "bullet_list>list_item>heading"],
+            [
+                `- ~~~\n  code in list\n  ~~~`,
+                "bullet_list>list_item>code_block",
+            ],
+            [`- - list in list`, "bullet_list>list_item>bullet_list"],
+        ])(
+            "should parse lists with direct block children",
+            (input, expected) => {
+                const doc = markdownParser.parse(input);
+                expect(doc).toMatchNodeTreeString(expected);
+            }
+        );
     });
 
     describe("reference links", () => {
@@ -400,5 +413,30 @@ console.log("test");
                 ],
             });
         });
+    });
+
+    describe("code blocks", () => {
+        it.each([
+            ["    indented code", { markup: "indented", params: "" }],
+            ["```\nfence 1\n```", { markup: "```", params: "" }],
+            ["~~~\nfence 2\n~~~", { markup: "~~~", params: "" }],
+            ["```js\nfence with lang\n```", { markup: "```", params: "js" }],
+        ])(
+            "should parse indented code and code fences (%#)",
+            (input, attrs) => {
+                const doc = markdownParser.parse(input);
+
+                expect(doc).toMatchNodeTree({
+                    "type.name": "doc",
+                    "content": [
+                        {
+                            "type.name": "code_block",
+                            "attrs.markup": attrs.markup,
+                            "attrs.params": attrs.params,
+                        },
+                    ],
+                });
+            }
+        );
     });
 });
