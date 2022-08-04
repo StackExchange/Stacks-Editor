@@ -11,7 +11,6 @@ import {
     removeColumnCommand,
     removeRowCommand,
 } from "../../../src/rich-text/commands";
-import "../../matchers";
 import { applySelection, createState, runCommand } from "../test-helpers";
 
 describe("table commands", () => {

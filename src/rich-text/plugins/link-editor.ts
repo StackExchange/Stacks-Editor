@@ -1,5 +1,5 @@
 import { toggleMark } from "prosemirror-commands";
-import { Mark } from "prosemirror-model";
+import { Mark, MarkType } from "prosemirror-model";
 import {
     EditorState,
     PluginView,
@@ -13,7 +13,11 @@ import {
     PluginInterfaceView,
 } from "../../shared/prosemirror-plugins/interface-manager";
 import { StatefulPlugin } from "../../shared/prosemirror-plugins/plugin-extensions";
-import { escapeHTML, generateRandomId } from "../../shared/utils";
+import {
+    escapeHTML,
+    generateRandomId,
+    getPlatformModKey,
+} from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 
 /**
@@ -482,9 +486,10 @@ class LinkTooltip {
             return;
         }
 
-        const link = start.node.marks.find(
-            (mark) => mark.type === state.schema.marks.link
-        );
+        const link = findMarksInSet(
+            start.node.marks,
+            state.schema.marks.link
+        )[0];
         if (!link) {
             return;
         }
@@ -520,16 +525,12 @@ class LinkTooltip {
         const linkMarks: Mark[][] = [];
         const { to, from, $from, empty } = state.selection;
         if (empty) {
-            return $from
-                .marks()
-                .filter((mark) => mark.type === state.schema.marks.link);
+            return findMarksInSet($from.marks(), state.schema.marks.link);
         }
         if (to > from) {
             state.doc.nodesBetween(from, to, (node) => {
                 linkMarks.push(
-                    node.marks.filter(
-                        (mark) => mark.type === state.schema.marks.link
-                    )
+                    findMarksInSet(node.marks, state.schema.marks.link)
                 );
             });
         }
@@ -553,7 +554,7 @@ class LinkTooltip {
 
             toggleMark(view.state.schema.marks.link)(
                 state,
-                view.dispatch.bind(view)
+                view.dispatch.bind(view) as (tr: Transaction) => void
             );
         };
 
@@ -650,6 +651,27 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     return false;
                 },
             },
+            /** Handle mod-click to open links in a new window */
+            handleClick(view, pos, event) {
+                const mark = findMarksInSet(
+                    view.state.doc.resolve(pos).marks(),
+                    view.state.schema.marks.link
+                )[0];
+
+                const modPressed =
+                    getPlatformModKey() === "Cmd"
+                        ? event.metaKey
+                        : event.ctrlKey;
+
+                const handled = mark && modPressed;
+
+                // a link was mod-clicked, so open it in a new window
+                if (handled) {
+                    window.open(mark.attrs.href as string, "_blank");
+                }
+
+                return !!handled;
+            },
         },
         view(editorView): PluginView {
             return new LinkEditor(editorView, features.validateLink);
@@ -690,4 +712,13 @@ export function hideLinkEditor(view: EditorView): void {
     if (tr) {
         view.dispatch(tr);
     }
+}
+
+/**
+ * Finds all marks in a set that are of the given type
+ * @param marks The set of marks to search
+ * @param type The type of mark to find
+ */
+function findMarksInSet(marks: readonly Mark[], type: MarkType): Mark[] {
+    return marks.filter((mark) => mark.type === type);
 }

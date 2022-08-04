@@ -3,8 +3,6 @@ import {
     parseCodeFromPasteData,
     richTextCodePasteHandler,
 } from "../../../src/shared/prosemirror-plugins/code-paste-handler";
-import "../../matchers";
-import "../../matchers";
 import {
     applySelection,
     cleanupPasteSupport,

@@ -27,9 +27,15 @@ export const defaultStrings = {
         horizontal_rule: shortcut("Horizontal rule"),
         image: shortcut("Image"),
         inline_code: shortcut("Inline code"),
+        kbd: shortcut("Keyboard"),
         link: shortcut("Link"),
+        metaTagLink: shortcut("Meta tag"),
+        moreFormatting: "More formatting",
         ordered_list: shortcut("Numbered list"),
         redo: shortcut("Redo"),
+        spoiler: shortcut("Spoiler"),
+        sub: shortcut("Subscript"),
+        sup: shortcut("Superscript"),
         strikethrough: "Strikethrough",
         table_edit: "Edit table",
         table_insert: shortcut("Table"),
@@ -43,6 +49,7 @@ export const defaultStrings = {
             insert_before: "Insert row before",
             remove: "Remove row",
         },
+        tagLink: shortcut("Tag"),
         undo: shortcut("Undo"),
         unordered_list: shortcut("Bulleted list"),
     },
@@ -58,8 +65,8 @@ export const defaultStrings = {
         remove_button_title: "Remove link" as string,
     },
     menubar: {
-        mode_toggle_label: "Markdown" as string,
-        mode_toggle_title: "Toggle Markdown mode" as string,
+        mode_toggle_richtext_title: "Rich text mode" as string,
+        mode_toggle_markdown_title: "Markdown mode" as string,
     },
     nodes: {
         codeblock_lang_auto: ({ lang }: { lang: string }) => `${lang} (auto)`,
@@ -98,7 +105,7 @@ const cache: Strings = {};
 
 /**
  * Checks the localized strings for a given key and returns the value
- * @param key A dot-separated key to the localized string e.g. "menubar.mode_toggle_label"
+ * @param key A dot-separated key to the localized string e.g. "commands.bold"
  * @param params An object of parameters to pass to the localization function if it exists
  */
 export function _t(key: string, params: Record<string, unknown> = {}): string {

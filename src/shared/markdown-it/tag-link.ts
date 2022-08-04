@@ -33,19 +33,9 @@ function parse_tag_link(
 
     const totalContent = state.src.slice(state.pos, labelEnd + 1);
     const isMeta = totalContent.slice(0, 10) === "[meta-tag:";
-
-    if (isMeta && !options.allowMetaTags) {
-        return false;
-    }
-
     const tagName = totalContent.slice(isMeta ? 10 : 5, -1).trim();
 
-    // check that the tag name follows specific rules TODO better docs
-    const validationRegex = options.allowNonAscii
-        ? /([a-z0-9\u00A0-\uD7FF\uF900-\uFDCF\uFDF0-\uFFEF#+.-]+)/i
-        : /([a-z0-9#+.-]+)/i;
-
-    if (!validationRegex.exec(tagName)) {
+    if (options.validate && !options.validate(tagName, isMeta, totalContent)) {
         return false;
     }
 
@@ -55,8 +45,8 @@ function parse_tag_link(
         token.attrSet("tagType", isMeta ? "meta-tag" : "tag");
 
         // call the renderer as if it exists
-        if (options.renderer) {
-            const rendered = options.renderer(tagName, isMeta);
+        if (options.render) {
+            const rendered = options.render(tagName, isMeta);
 
             if (rendered && rendered.link) {
                 const additionalClasses = rendered.additionalClasses || [];

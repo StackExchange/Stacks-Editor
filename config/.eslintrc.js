@@ -3,7 +3,7 @@ module.exports = {
     parser: "@typescript-eslint/parser",
     parserOptions: {
         tsconfigRootDir: __dirname,
-        project: ["./config/tsconfig.eslint.json"],
+        project: ["./tsconfig.eslint.json"],
     },
     plugins: ["@typescript-eslint", "jest"],
     extends: [
@@ -17,8 +17,6 @@ module.exports = {
         "no-console": "error",
         "no-alert": "error",
         "no-process-env": "error",
-        // TODO this one is a pain to fix w/ ProseMirror's Class<T extends Schema = any> types
-        "@typescript-eslint/no-unsafe-argument": "off",
     },
     overrides: [
         {

@@ -174,13 +174,14 @@ domReady(() => {
 
     registerLocalizationStrings({
         menubar: {
-            mode_toggle_title: "Localization test: Toggle editor mode",
+            mode_toggle_richtext_title: "Localization test: Rich text mode",
+            mode_toggle_markdown_title: "Localization test: Markdown mode",
         },
     });
 
     const options: StacksEditorOptions = {
         defaultView: getDefaultEditor(),
-        editorHelpLink: "#TODO",
+        editorHelpLink: "#HELP_LINK",
         commonmarkOptions: {
             preview: {
                 enabled: enableMDPreview,
@@ -189,9 +190,7 @@ domReady(() => {
         parserFeatures: {
             tables: true,
             tagLinks: {
-                allowNonAscii: false,
-                allowMetaTags: true,
-                renderer: (tagName, isMetaTag) => {
+                render: (tagName, isMetaTag) => {
                     return {
                         link: "#" + tagName,
                         linkTitle: "Show questions tagged '" + tagName + "'",
@@ -242,6 +241,18 @@ domReady(() => {
             setDefaultEditor(e.detail.editorType);
         }
     );
+
+    // if the help link button is clicked, show the user an alert instead of opening the non-existent help page
+    document.querySelectorAll(".js-help-link").forEach((el) => {
+        el.addEventListener("click", (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // eslint-disable-next-line no-alert
+            alert(
+                "The demo help link doesn't actually go anywhere, so enjoy this alert instead. :)"
+            );
+        });
+    });
 });
 
 if ("serviceWorker" in navigator) {

@@ -34,6 +34,12 @@ describe("html markdown-it plugin", () => {
             [`<br />`, `br /`, `hardbreak`],
             [`<br/>`, `br/`, `hardbreak`],
             [`<br>`, `br`, `hardbreak`],
+            // support detecting markup around attributes in self-closed elements
+            [`<img src="test" />`, `img /`, `image`],
+            // support arbitrary newlines in self-closed elements
+            [`<img \n/>`, `img/`, `image`],
+            [`<img\n />`, `img /`, `image`],
+            [`<img\n   src="test" />`, `img /`, `image`],
         ];
 
         it.each(htmlInlineSanitizationData)(

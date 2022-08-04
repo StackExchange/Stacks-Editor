@@ -62,7 +62,18 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
 
     code_block: {
         block: "code_block",
-        getAttrs: (tok: Token) => ({ params: tok.info || "" }),
+        noCloseToken: true,
+        getAttrs: (tok: Token) => ({
+            params: tok.info || "",
+            markup: tok.markup || "indented",
+        }),
+    },
+    fence: {
+        block: "code_block",
+        getAttrs: (tok: Token) => ({
+            params: tok.info || "",
+        }),
+        noCloseToken: true,
     },
 
     // add support for the strike mark
@@ -161,11 +172,10 @@ Object.keys(customMarkdownParserTokens).forEach((k) => {
                 return attrs;
             };
         } else {
-            token.getAttrs = (tok: Token, stream, index) => {
-                const attrs = { ...origGetAttrs(tok, stream, index) };
-                attrs.markup = tok.markup;
-                return attrs;
-            };
+            token.getAttrs = (tok: Token, stream, index) => ({
+                markup: tok.markup,
+                ...origGetAttrs(tok, stream, index),
+            });
         }
 
         return;

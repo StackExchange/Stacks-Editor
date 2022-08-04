@@ -18,6 +18,7 @@ import {
     ExternalPluginProvider,
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
+import type { Transaction } from "prosemirror-state";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -180,7 +181,7 @@ export class StacksEditor implements View {
         toggleReadonly(
             false,
             this.editorView.state,
-            this.editorView.dispatch.bind(null)
+            this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
         this.innerTarget.classList.remove(...StacksEditor.READONLY_CLASSES);
     }
@@ -192,7 +193,7 @@ export class StacksEditor implements View {
         toggleReadonly(
             true,
             this.editorView.state,
-            this.editorView.dispatch.bind(null)
+            this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
 
         this.innerTarget.classList.add(...StacksEditor.READONLY_CLASSES);
@@ -323,35 +324,49 @@ export class StacksEditor implements View {
      * @param menuTarget The container to append the created element to
      */
     private createEditorSwitcher(defaultItem: EditorType, menuTarget: Element) {
-        const checkedProp =
+        const richCheckedProp =
+            defaultItem === EditorType.RichText ? "checked" : "";
+        const markCheckedProp =
             defaultItem === EditorType.Commonmark ? "checked" : "";
 
         const container = document.createElement("div");
         container.className = "flex--item d-flex ai-center ml24 fc-medium";
 
-        container.innerHTML = escapeHTML`<label class="flex--item fs-caption mr4 sm:d-none" for="js-editor-toggle-${
-            this.internalId
-        }">${_t("menubar.mode_toggle_label")}</label>
-            <label class="flex--item mr4 d-none sm:d-block" for="js-editor-toggle-${
-                this.internalId
-            }">
-                <span class="icon-bg iconMarkdown"></span>
-            </label>
-            <div class="flex--item s-toggle-switch js-editor-mode-switcher">
-                <input class="js-editor-toggle-state" id="js-editor-toggle-${
-                    this.internalId
-                }" type="checkbox" ${checkedProp}/>
-                <div class="s-toggle-switch--indicator"></div>
-            </div>`;
+        container.innerHTML = escapeHTML`<div class="s-btn-group__radio">
+    <input type="radio" name="mode-toggle-${this.internalId}"
+        id="mode-toggle-rich-${this.internalId}"
+        class="js-editor-toggle-btn"
+        data-mode="${EditorType.RichText}"
+        ${richCheckedProp} />
+    <label class="s-btn s-editor-btn px6"
+        for="mode-toggle-rich-${this.internalId}"
+        title="${_t("menubar.mode_toggle_richtext_title")}">
+        <span class="icon-bg iconRichText"></span>
+        <span class="v-visible-sr">${_t(
+            "menubar.mode_toggle_richtext_title"
+        )}</span>
+    </label>
+    <input type="radio" name="mode-toggle-${this.internalId}"
+        id="mode-toggle-markdown-${this.internalId}"
+        class="js-editor-toggle-btn"
+        data-mode="${EditorType.Commonmark}"
+        ${markCheckedProp} />
+    <label class="s-btn s-editor-btn px6"
+        for="mode-toggle-markdown-${this.internalId}"
+        title="${_t("menubar.mode_toggle_markdown_title")}">
+        <span class="icon-bg iconMarkdown"></span>
+        <span class="v-visible-sr">${_t(
+            "menubar.mode_toggle_markdown_title"
+        )}</span>
+    </label>
+</div>`;
 
-        container.title = _t("menubar.mode_toggle_title");
-
-        container
-            .querySelector("#js-editor-toggle-" + this.internalId)
-            .addEventListener(
+        container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
+            el.addEventListener(
                 "change",
-                this.editorSwitcherChangeHandler.bind(this)
+                this.editorSwitcherChangeHandler.bind(this) as EventListener
             );
+        });
 
         menuTarget.appendChild(container);
     }
@@ -365,19 +380,24 @@ export class StacksEditor implements View {
         e.stopPropagation();
         e.preventDefault();
 
-        // get opposing type
-        const type =
-            this.currentViewType === EditorType.Commonmark
-                ? EditorType.RichText
-                : EditorType.Commonmark;
+        // get type from the target element
+        const target = e.target as HTMLInputElement;
+        const type: EditorType = +target.dataset.mode;
+
+        // if the type hasn't changed, do nothing
+        if (type === this.currentViewType) {
+            return;
+        }
+
+        // ensure the correct element is checked in case the event was fired programmatically
+        target.parentElement
+            .querySelectorAll<HTMLInputElement>(".js-editor-toggle-btn")
+            .forEach((el) => {
+                el.checked = el === target;
+            });
 
         // set the view type for this button
         this.setView(type);
-
-        // ensure the checkbox matches the selected editor
-        this.target.querySelector<HTMLInputElement>(
-            "#js-editor-toggle-" + this.internalId
-        ).checked = type === EditorType.Commonmark;
 
         // TODO better event name?
         // trigger an event on the target for consumers to listen for
