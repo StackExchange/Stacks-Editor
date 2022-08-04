@@ -15,6 +15,11 @@ import {
     insertCodeblockCommand,
     insertTableCommand,
     selectAllTextCommand,
+    insertTagLinkCommand,
+    spoilerCommand,
+    subCommand,
+    supCommand,
+    kbdCommand,
 } from "./commands";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import { baseKeymap } from "prosemirror-commands";
@@ -40,6 +45,18 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         ...bindLetterKeymap("Mod-h", headerCommand),
         ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
         ...bindLetterKeymap("Mod-m", insertCodeblockCommand),
+        ...bindLetterKeymap(
+            "Mod-[",
+            insertTagLinkCommand(parserFeatures.tagLinks.validate, false)
+        ),
+        ...bindLetterKeymap(
+            "Mod-]",
+            insertTagLinkCommand(parserFeatures.tagLinks.validate, true)
+        ),
+        ...bindLetterKeymap("Mod-/", spoilerCommand),
+        ...bindLetterKeymap("Mod-,", subCommand),
+        ...bindLetterKeymap("Mod-.", supCommand),
+        ...bindLetterKeymap("Mod-'", kbdCommand),
         // selectAll selects the outermost node and messes up our other commands
         ...bindLetterKeymap("Mod-a", selectAllTextCommand),
     });

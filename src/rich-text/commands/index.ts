@@ -570,7 +570,7 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                 options.parserFeatures.tagLinks.validate,
                 true
             ),
-            "tag-btn",
+            "meta-tag-btn",
             nodeTypeActive(schema.nodes.tagLink)
         ),
         dropdownItem(
