@@ -3,7 +3,7 @@ import {
     exitInclusiveMarkCommand,
     insertHorizontalRuleCommand,
     indentCodeBlockLinesCommand,
-    deindentCodeBlockLinesCommand,
+    unindentCodeBlockLinesCommand,
     toggleHeadingLevel,
     toggleTagLinkCommand,
     toggleWrapIn,
@@ -723,6 +723,7 @@ describe("commands", () => {
             }
         );
     });
+
     describe("indentCodeBlockLinesCommand", () => {
         it("should indent code block line with empty selection at start of line", () => {
             const state = applySelection(
@@ -768,6 +769,7 @@ describe("commands", () => {
                 ],
             });
         });
+
         it("should indent code block line with empty selection at end of line", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
@@ -812,6 +814,7 @@ describe("commands", () => {
                 ],
             });
         });
+
         it("should indent code block line when entire line is selected", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
@@ -856,6 +859,7 @@ describe("commands", () => {
                 ],
             });
         });
+
         it("should indent code block lines when multiple lines are selected", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
@@ -900,6 +904,7 @@ describe("commands", () => {
                 ],
             });
         });
+
         it("shouldn't indent code block lines when selection is outside of the code block", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
@@ -945,8 +950,9 @@ describe("commands", () => {
             });
         });
     });
-    describe("deindentCodeBlockLinesCommand", () => {
-        it("should deindent indented code block line with empty selection at start of line", () => {
+
+    describe("unindentCodeBlockLinesCommand", () => {
+        it("should unindent indented code block line with empty selection at start of line", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
                 10, // start of second line of code block
@@ -958,7 +964,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                deindentCodeBlockLinesCommand
+                unindentCodeBlockLinesCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -990,7 +996,8 @@ describe("commands", () => {
                 ],
             });
         });
-        it("should deindent indented code block line with empty selection at end of line", () => {
+
+        it("should unindent indented code block line with empty selection at end of line", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
                 14, // end of second line of code block
@@ -1002,7 +1009,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                deindentCodeBlockLinesCommand
+                unindentCodeBlockLinesCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -1034,7 +1041,8 @@ describe("commands", () => {
                 ],
             });
         });
-        it("should deindent indented code block line when entire line is selected", () => {
+
+        it("should unindent indented code block line when entire line is selected", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
                 10, // end of second line of code block
@@ -1046,7 +1054,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                deindentCodeBlockLinesCommand
+                unindentCodeBlockLinesCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -1078,7 +1086,8 @@ describe("commands", () => {
                 ],
             });
         });
-        it("should deindent indented code block lines when multiple lines are selected", () => {
+
+        it("should unindent indented code block lines when multiple lines are selected", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
                 6, // start of first line of code block
@@ -1090,7 +1099,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                deindentCodeBlockLinesCommand
+                unindentCodeBlockLinesCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -1122,7 +1131,8 @@ describe("commands", () => {
                 ],
             });
         });
-        it("shouldn't deindent indented code block lines when selection is outside of the code block", () => {
+
+        it("shouldn't unindent indented code block lines when selection is outside of the code block", () => {
             const state = applySelection(
                 createState(indentionBaseState, []),
                 0, // start of paragraph
@@ -1134,7 +1144,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                deindentCodeBlockLinesCommand
+                unindentCodeBlockLinesCommand
             );
 
             expect(isValid).toBeFalsy();

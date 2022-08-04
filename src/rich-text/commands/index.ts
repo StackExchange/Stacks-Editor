@@ -41,6 +41,9 @@ import { _t } from "../../shared/localization";
 
 export * from "./tables";
 
+// indent code with four [SPACE] characters (hope you aren't a "tabs" person)
+const CODE_INDENT_STR = "    ";
+
 /**
  * Builds a command which wraps/unwraps the current selection with the passed in node type
  * @param nodeType the type of node to wrap the selection in
@@ -182,8 +185,9 @@ function getCodeBlockLinesWithinSelection(state: EditorState): number[] {
 
 /**
  * Indents selected line(s) within a code block
- * @param state The current EditorState
- * @param dispatch The dispatch function used to trigger the transaction, set to "null" if you don't want to dispatch
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
+ * @internal
  */
 export function indentCodeBlockLinesCommand(
     state: EditorState,
@@ -192,76 +196,82 @@ export function indentCodeBlockLinesCommand(
     const linesToIndent = getCodeBlockLinesWithinSelection(state);
     const lineCount = linesToIndent.length;
 
-    if (lineCount > 0 && dispatch) {
-        let t = state.tr;
-        const { from, to } = state.selection;
-
-        const indentStr = "    ";
-        const fromIsCodeBlock =
-            state.selection.$from.node().type.name === "code_block";
-
-        // indent each line in reverse order so that we don't alter the lines' start positions
-        linesToIndent.reverse().forEach((pos) => {
-            t = t.insertText(indentStr, pos);
-        });
-
-        t.setSelection(
-            TextSelection.create(
-                state.apply(t).doc,
-                fromIsCodeBlock ? from + indentStr.length : from,
-                to + lineCount * indentStr.length
-            )
-        );
-
-        dispatch(t);
+    if (lineCount <= 0 || !dispatch) {
+        return lineCount > 0;
     }
 
-    return lineCount > 0;
+    let tr = state.tr;
+    const { from, to } = state.selection;
+
+    const indentStr = CODE_INDENT_STR;
+    const fromIsCodeBlock =
+        state.selection.$from.node().type.name === "code_block";
+
+    // indent each line in reverse order so that we don't alter the lines' start positions
+    linesToIndent.reverse().forEach((pos) => {
+        tr = tr.insertText(indentStr, pos);
+    });
+
+    tr.setSelection(
+        TextSelection.create(
+            state.apply(tr).doc,
+            fromIsCodeBlock ? from + indentStr.length : from,
+            to + lineCount * indentStr.length
+        )
+    );
+
+    dispatch(tr);
+
+    return true;
 }
 
 /**
- * De-indents selected line(s) within a code block, if indented
+ * Unindents selected line(s) within a code block if able
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
+ * @internal
  */
-export function deindentCodeBlockLinesCommand(
+export function unindentCodeBlockLinesCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
     const linesToIndent = getCodeBlockLinesWithinSelection(state);
     const lineCount = linesToIndent.length;
 
-    if (lineCount > 0 && dispatch) {
-        let t = state.tr;
-        const { from, to } = state.selection;
-        let deindentedLinesCount = 0;
-        const indentStr = "    ";
-        const fromIsCodeBlock =
-            state.selection.$from.node().type.name === "code_block";
-
-        linesToIndent.reverse().forEach((pos) => {
-            const canDeindent =
-                state.doc.textBetween(pos, pos + indentStr.length) ===
-                indentStr;
-
-            if (canDeindent) {
-                t = t.insertText("", pos, pos + indentStr.length);
-                deindentedLinesCount++;
-            }
-        });
-
-        t.setSelection(
-            TextSelection.create(
-                state.apply(t).doc,
-                fromIsCodeBlock && deindentedLinesCount
-                    ? from - indentStr.length
-                    : from,
-                to - deindentedLinesCount * indentStr.length
-            )
-        );
-
-        dispatch(t);
+    if (lineCount <= 0 || !dispatch) {
+        return lineCount > 0;
     }
 
-    return lineCount > 0;
+    let t = state.tr;
+    const { from, to } = state.selection;
+    let unindentedLinesCount = 0;
+    const indentStr = CODE_INDENT_STR;
+    const fromIsCodeBlock =
+        state.selection.$from.node().type.name === "code_block";
+
+    linesToIndent.reverse().forEach((pos) => {
+        const canUnindent =
+            state.doc.textBetween(pos, pos + indentStr.length) === indentStr;
+
+        if (canUnindent) {
+            t = t.insertText("", pos, pos + indentStr.length);
+            unindentedLinesCount++;
+        }
+    });
+
+    t.setSelection(
+        TextSelection.create(
+            state.apply(t).doc,
+            fromIsCodeBlock && unindentedLinesCount
+                ? from - indentStr.length
+                : from,
+            to - unindentedLinesCount * indentStr.length
+        )
+    );
+
+    dispatch(t);
+
+    return true;
 }
 
 /**

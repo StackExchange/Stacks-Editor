@@ -29,7 +29,7 @@ import {
     insertTableCommand,
     exitInclusiveMarkCommand,
     indentCodeBlockLinesCommand,
-    deindentCodeBlockLinesCommand,
+    unindentCodeBlockLinesCommand,
     toggleHeadingLevel,
     toggleTagLinkCommand,
 } from "./commands";
@@ -40,9 +40,9 @@ export function allKeymaps(
 ): Plugin[] {
     const codeBlockKeymap = keymap({
         "Tab": indentCodeBlockLinesCommand,
-        "Shift-Tab": deindentCodeBlockLinesCommand,
+        "Shift-Tab": unindentCodeBlockLinesCommand,
         "Mod-]": indentCodeBlockLinesCommand,
-        "Mod-[": deindentCodeBlockLinesCommand,
+        "Mod-[": unindentCodeBlockLinesCommand,
     });
 
     const tableKeymap = keymap({
