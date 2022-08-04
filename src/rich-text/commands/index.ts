@@ -6,6 +6,7 @@ import {
     EditorState,
     TextSelection,
     Transaction,
+    Selection,
 } from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
@@ -23,7 +24,7 @@ import {
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
 import { getCurrentTextNode, getShortcut } from "../../shared/utils";
-import type { CommonViewOptions } from "../../shared/view";
+import type { CommonViewOptions, TagLinkOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 import {
@@ -158,6 +159,92 @@ function getHeadingLevel(state: EditorState): number {
     return level;
 }
 
+/**
+ * Creates a command that toggles tagLink formatting for a node
+ * @param validate The function to validate the tagName with
+ * @param isMetaTag Whether the tag to be created is a meta tag or not
+ */
+export function toggleTagLinkCommand(
+    validate: TagLinkOptions["validate"],
+    isMetaTag: boolean
+) {
+    return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+        if (state.selection.empty) {
+            return false;
+        }
+
+        if (!isValidTagLinkTarget(state.schema, state.selection)) {
+            return false;
+        }
+
+        if (!dispatch) {
+            return true;
+        }
+
+        let tr = state.tr;
+        const nodeCheck = nodeTypeActive(state.schema.nodes.tagLink);
+        if (nodeCheck(state)) {
+            const selectedText = state.selection.content().content.firstChild
+                .attrs["tagName"] as string;
+
+            tr = state.tr.replaceSelectionWith(state.schema.text(selectedText));
+        } else {
+            const selectedText =
+                state.selection.content().content.firstChild?.textContent;
+
+            // If we have a trailing space, update the selection to not include it.
+            if (selectedText.endsWith(" ")) {
+                const { from, to } = state.selection;
+                state.selection = TextSelection.create(state.doc, from, to - 1);
+            }
+
+            if (!validate(selectedText.trim(), isMetaTag)) {
+                return false;
+            }
+
+            const newTagNode = state.schema.nodes.tagLink.create({
+                tagName: selectedText.trim(),
+                tagType: isMetaTag ? "meta-tag" : "tag",
+            });
+
+            tr = state.tr.replaceSelectionWith(newTagNode);
+        }
+
+        dispatch(tr);
+
+        return true;
+    };
+}
+
+/**
+ * Validates whether the target of our selection is within a valid context. e.g. not in a link
+ * @param schema Current editor schema
+ * @param selection Current selection handle
+ */
+function isValidTagLinkTarget(schema: Schema, selection: Selection): boolean {
+    const invalidNodeTypes = [
+        schema.nodes.horizontal_rule,
+        schema.nodes.code_block,
+        schema.nodes.image,
+    ];
+
+    const invalidNodeMarks = [schema.marks.link, schema.marks.code];
+
+    const hasInvalidMark =
+        selection.$head.marks().filter((f) => invalidNodeMarks.includes(f.type))
+            .length != 0;
+
+    return (
+        !invalidNodeTypes.includes(selection.$head.parent.type) &&
+        !hasInvalidMark
+    );
+}
+
+/**
+ * Creates a command that inserts a horizontal rule node
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
+ */
 export function insertHorizontalRuleCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
@@ -191,6 +278,12 @@ export function insertHorizontalRuleCommand(
     return true;
 }
 
+/**
+ * Opens the image uploader pane
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
+ * @param view The current editor view
+ */
 export function insertImageCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void,
@@ -208,6 +301,9 @@ export function insertImageCommand(
 
 /**
  * Inserts a link into the document and opens the link edit tooltip at the cursor
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
+ * @param view The current editor view
  */
 export function insertLinkCommand(
     state: EditorState,
@@ -309,6 +405,8 @@ function markActive(mark: MarkType) {
 /**
  * Exits an inclusive mark that has been marked as exitable by toggling the mark type
  * and optionally adding a trailing space if the mark is at the end of the document
+ * @param state The current editor state
+ * @param dispatch The dispatch function to use
  */
 export function exitInclusiveMarkCommand(
     state: EditorState,
@@ -365,6 +463,9 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
+/**
+ * Creates a dropdown menu for table edit functionality
+ */
 const tableDropdown = () =>
     makeMenuDropdown(
         "Table",
@@ -408,6 +509,10 @@ const tableDropdown = () =>
         )
     );
 
+/**
+ * Creates a dropdown menu for heading formatting
+ * @param schema The finalized rich-text schema
+ */
 const headingDropdown = (schema: Schema) =>
     makeMenuDropdown(
         "Header",
@@ -435,6 +540,62 @@ const headingDropdown = (schema: Schema) =>
             "h3-btn",
             nodeTypeActive(schema.nodes.heading, { level: 3 }),
             ["fs-body1"]
+        )
+    );
+
+/**
+ * Creates a dropdown menu containing misc formatting tools
+ * @param schema The finalized rich-text schema
+ * @param options The options for the editor
+ */
+const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
+    makeMenuDropdown(
+        "EllipsisHorizontal",
+        _t("commands.moreFormatting"),
+        "more-formatting-dropdown",
+        () => true,
+        () => false,
+        dropdownItem(
+            _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
+            toggleTagLinkCommand(
+                options.parserFeatures.tagLinks.validate,
+                false
+            ),
+            "tag-btn",
+            nodeTypeActive(schema.nodes.tagLink)
+        ),
+        dropdownItem(
+            _t("commands.metaTagLink", { shortcut: getShortcut("Mod-]") }),
+            toggleTagLinkCommand(
+                options.parserFeatures.tagLinks.validate,
+                true
+            ),
+            "tag-btn",
+            nodeTypeActive(schema.nodes.tagLink)
+        ),
+        dropdownItem(
+            _t("commands.spoiler", { shortcut: getShortcut("Mod-/") }),
+            toggleWrapIn(schema.nodes.spoiler),
+            "spoiler-btn",
+            nodeTypeActive(schema.nodes.spoiler)
+        ),
+        dropdownItem(
+            _t("commands.sub", { shortcut: getShortcut("Mod-,") }),
+            toggleMark(schema.marks.sub),
+            "subscript-btn",
+            markActive(schema.marks.sub)
+        ),
+        dropdownItem(
+            _t("commands.sup", { shortcut: getShortcut("Mod-.") }),
+            toggleMark(schema.marks.sup),
+            "superscript-btn",
+            markActive(schema.marks.sup)
+        ),
+        dropdownItem(
+            _t("commands.kbd", { shortcut: getShortcut("Mod-'") }),
+            toggleMark(schema.marks.kbd),
+            "kbd-btn",
+            markActive(schema.marks.kbd)
         )
     );
 
@@ -610,6 +771,7 @@ export const createMenuEntries = (
                     "horizontal-rule-btn"
                 ),
             },
+            moreFormattingDropdown(schema, options),
         ],
     },
     {
