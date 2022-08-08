@@ -47,8 +47,8 @@ export interface BaseMenuItem {
     richText: MenuCommandExtended | MenuCommand;
     /** The command to execute when in commonmark mode */
     commonmark: MenuCommandExtended | MenuCommand;
-    /** The keyboard shortcut to attach this command to TODO */
-    //keybind?: string;
+    /** The keyboard shortcut to attach this command to */
+    keybind?: string;
 
     /**
      * The element to display in the menu or options to pass to the default item renderer;
@@ -182,22 +182,24 @@ export function makeDropdownSection(label: string, key: string): MenuItem {
 
 /**
  * Creates a dropdown menu item that can be embedded in a dropdown menu's popover
- * @param title The text to be displayed for this item
+ * @param label The text to be displayed for this item
  * @param command The command to be executed when this item is clicked
  * @param key A unique identifier used for identifying the command to be executed on click
  * @param cssClasses Additional css classes to be applied to this dropdown item
+ * @param shortcut the keyboard shortcut attached to this button
  * @internal
  */
 export function makeDropdownItem(
-    title: string,
+    label: string,
     command: Pick<MenuItem, "richText" | "commonmark">,
     key: string,
-    cssClasses?: string[]
+    cssClasses?: string[],
+    shortcut?: string
 ): MenuItem {
     const button = document.createElement("button");
     button.type = "button";
     button.dataset.key = key;
-    button.textContent = title;
+    button.textContent = labelText(label, shortcut);
     button.dataset.action = "s-popover#hide";
     button.className = `s-block-link s-editor--dropdown-item js-editor-btn`;
 
@@ -209,6 +211,7 @@ export function makeDropdownItem(
         key: key,
         ...command,
         display: button,
+        keybind: shortcut,
     };
 }
 
@@ -225,16 +228,18 @@ export function addIf(item: MenuItem, flag: boolean): MenuItem {
 /**
  * Helper function to create consistent menu entry doms
  * @param iconName The html of the svg to use as the icon
- * @param title The text to place in the button's title attribute
+ * @param label The text to place in the button's hover label
  * @param key A unique identifier used for identifying the command to be executed on click
  * @param cssClasses extra CSS classes to be applied to this menu icon (optional)
+ * @param shortcut the keyboard shortcut attached to this button
  * @internal
  */
 export function makeMenuButton(
     iconName: string,
-    title: string,
+    label: string,
     key: string,
-    cssClasses?: string[]
+    cssClasses?: string[],
+    shortcut?: string
 ): HTMLButtonElement {
     const button = document.createElement("button");
     button.className = `s-editor-btn s-btn js-editor-btn js-${key}`;
@@ -243,8 +248,10 @@ export function makeMenuButton(
         button.classList.add(...cssClasses);
     }
 
-    button.title = title;
-    button.setAttribute("aria-label", title);
+    const hoverText = labelText(label, shortcut);
+
+    button.title = hoverText;
+    button.setAttribute("aria-label", hoverText);
     button.dataset.controller = "s-tooltip";
     button.dataset.sTooltipPlacement = "top";
     button.dataset.key = key;
@@ -262,7 +269,7 @@ export function makeMenuButton(
 /**
  * Create a dropdown menu item that contains all children in its popover
  * @param svg The html of the svg to use as the dropdown icon
- * @param title The text to place in the dropdown button's title attribute
+ * @param label The text to place in the dropdown button's hover label
  * @param key A unique identifier used for this dropdown menu
  * @param visible A function that determines wether the dropdown should be visible or hidden
  * @param active A function to determine if the dropdown should be highlighted as active
@@ -271,10 +278,11 @@ export function makeMenuButton(
  */
 export function makeMenuDropdown(
     svg: string,
-    title: string,
+    label: string,
     key: string,
     visible?: (state: EditorState) => boolean,
     active?: (state: EditorState) => boolean,
+    shortcut?: string,
     ...children: MenuItem[]
 ): DropdownMenuItem {
     const command = {
@@ -287,10 +295,15 @@ export function makeMenuDropdown(
         key: key,
         display: {
             svg,
-            label: title,
+            label: labelText(label, shortcut),
         },
         children: children,
         richText: command,
         commonmark: command,
+        keybind: shortcut,
     };
+}
+
+function labelText(text: string, shortcut: string) {
+    return shortcut ? `${text} (${shortcut})` : text;
 }

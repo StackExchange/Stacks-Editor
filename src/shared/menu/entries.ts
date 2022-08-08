@@ -63,6 +63,7 @@ const tableDropdown = () =>
         "table-dropdown",
         (state: EditorState) => inTable(state.schema, state.selection),
         () => false,
+        null,
         makeDropdownSection("Column", "columnSection"),
         makeDropdownItem(
             _t("commands.table_column.remove"),
@@ -109,10 +110,11 @@ const tableDropdown = () =>
 const headingDropdown = (schema: Schema) =>
     makeMenuDropdown(
         "Header",
-        _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-H") }),
+        _t("commands.heading.dropdown"),
         "heading-dropdown",
         () => true,
         nodeTypeActive(schema.nodes.heading),
+        getShortcut("Mod-H"),
         makeDropdownItem(
             _t("commands.heading.entry", { level: 1 }),
             {
@@ -163,8 +165,9 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
         "more-formatting-dropdown",
         () => true,
         () => false,
+        null,
         makeDropdownItem(
-            _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
+            _t("commands.tagLink"),
             {
                 richText: {
                     command: toggleTagLinkCommand(
@@ -178,10 +181,12 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                     false
                 ),
             },
-            "tag-btn"
+            "tag-btn",
+            [],
+            getShortcut("Mod-[")
         ),
         makeDropdownItem(
-            _t("commands.metaTagLink", { shortcut: getShortcut("Mod-]") }),
+            _t("commands.metaTagLink"),
             {
                 richText: {
                     command: toggleTagLinkCommand(
@@ -195,10 +200,12 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                     true
                 ),
             },
-            "meta-tag-btn"
+            "meta-tag-btn",
+            [],
+            getShortcut("Mod-]")
         ),
         makeDropdownItem(
-            _t("commands.spoiler", { shortcut: getShortcut("Mod-/") }),
+            _t("commands.spoiler"),
             {
                 richText: {
                     command: toggleWrapIn(schema.nodes.spoiler),
@@ -206,10 +213,12 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                 },
                 commonmark: spoilerCommand,
             },
-            "spoiler-btn"
+            "spoiler-btn",
+            [],
+            getShortcut("Mod-/")
         ),
         makeDropdownItem(
-            _t("commands.sub", { shortcut: getShortcut("Mod-,") }),
+            _t("commands.sub"),
             {
                 richText: {
                     command: toggleMark(schema.marks.sub),
@@ -217,10 +226,12 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                 },
                 commonmark: subCommand,
             },
-            "subscript-btn"
+            "subscript-btn",
+            [],
+            getShortcut("Mod-,")
         ),
         makeDropdownItem(
-            _t("commands.sup", { shortcut: getShortcut("Mod-.") }),
+            _t("commands.sup"),
             {
                 richText: {
                     command: toggleMark(schema.marks.sup),
@@ -228,10 +239,12 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                 },
                 commonmark: supCommand,
             },
-            "superscript-btn"
+            "superscript-btn",
+            [],
+            getShortcut("Mod-.")
         ),
         makeDropdownItem(
-            _t("commands.kbd", { shortcut: getShortcut("Mod-'") }),
+            _t("commands.kbd"),
             {
                 richText: {
                     command: toggleMark(schema.marks.kbd),
@@ -239,7 +252,9 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                 },
                 commonmark: kbdCommand,
             },
-            "kbd-btn"
+            "kbd-btn",
+            [],
+            getShortcut("Mod-'")
         )
     );
 
@@ -267,11 +282,10 @@ export const createMenuEntries = (
                     commonmark: headerCommand,
                     display: makeMenuButton(
                         "Header",
-                        _t("commands.heading.dropdown", {
-                            shortcut: getShortcut("Mod-H"),
-                        }),
+                        _t("commands.heading.dropdown"),
                         "heading-btn"
                     ),
+                    keybind: getShortcut("Mod-H"),
                 },
                 editorType === EditorType.Commonmark
             ),
@@ -284,9 +298,10 @@ export const createMenuEntries = (
                 commonmark: boldCommand,
                 display: makeMenuButton(
                     "Bold",
-                    _t("commands.bold", { shortcut: getShortcut("Mod-B") }),
+                    _t("commands.bold"),
                     "bold-btn"
                 ),
+                keybind: getShortcut("Mod-B"),
             },
             {
                 key: "toggleEmphasis",
@@ -297,9 +312,10 @@ export const createMenuEntries = (
                 commonmark: emphasisCommand,
                 display: makeMenuButton(
                     "Italic",
-                    _t("commands.emphasis", { shortcut: getShortcut("Mod-I") }),
+                    _t("commands.emphasis"),
                     "italic-btn"
                 ),
+                keybind: getShortcut("Mod-I"),
             },
             {
                 key: "toggleCode",
@@ -310,11 +326,10 @@ export const createMenuEntries = (
                 commonmark: inlineCodeCommand,
                 display: makeMenuButton(
                     "Code",
-                    _t("commands.inline_code", {
-                        shortcut: getShortcut("Mod-K"),
-                    }),
+                    _t("commands.inline_code"),
                     "code-btn"
                 ),
+                keybind: getShortcut("Mod-K"),
             },
             addIf(
                 {
@@ -344,9 +359,10 @@ export const createMenuEntries = (
                 commonmark: insertCommonmarkLinkCommand,
                 display: makeMenuButton(
                     "Link",
-                    _t("commands.link", { shortcut: getShortcut("Mod-L") }),
+                    _t("commands.link"),
                     "insert-link-btn"
                 ),
+                keybind: getShortcut("Mod-L"),
             },
             {
                 key: "toggleBlockquote",
@@ -357,11 +373,10 @@ export const createMenuEntries = (
                 commonmark: blockquoteCommand,
                 display: makeMenuButton(
                     "Quote",
-                    _t("commands.blockquote", {
-                        shortcut: getShortcut("Mod-Q"),
-                    }),
+                    _t("commands.blockquote"),
                     "blockquote-btn"
                 ),
+                keybind: getShortcut("Mod-Q"),
             },
             {
                 key: "toggleCodeblock",
@@ -372,11 +387,10 @@ export const createMenuEntries = (
                 commonmark: insertCodeblockCommand,
                 display: makeMenuButton(
                     "Codeblock",
-                    _t("commands.code_block", {
-                        shortcut: getShortcut("Mod-M"),
-                    }),
+                    _t("commands.code_block"),
                     "code-block-btn"
                 ),
+                keybind: getShortcut("Mod-M"),
             },
             addIf(
                 {
@@ -385,11 +399,10 @@ export const createMenuEntries = (
                     commonmark: insertCommonmarkImageCommand,
                     display: makeMenuButton(
                         "Image",
-                        _t("commands.image", {
-                            shortcut: getShortcut("Mod-G"),
-                        }),
+                        _t("commands.image"),
                         "insert-image-btn"
                     ),
+                    keybind: getShortcut("Mod-G"),
                 },
                 !!options.imageUpload?.handler
             ),
@@ -404,11 +417,10 @@ export const createMenuEntries = (
                     commonmark: insertCommonmarkTableCommand,
                     display: makeMenuButton(
                         "Table",
-                        _t("commands.table_insert", {
-                            shortcut: getShortcut("Mod-E"),
-                        }),
+                        _t("commands.table_insert"),
                         "insert-table-btn"
                     ),
+                    keybind: getShortcut("Mod-E"),
                 },
                 options.parserFeatures?.tables
             ),
@@ -431,11 +443,10 @@ export const createMenuEntries = (
                 commonmark: orderedListCommand,
                 display: makeMenuButton(
                     "OrderedList",
-                    _t("commands.ordered_list", {
-                        shortcut: getShortcut("Mod-O"),
-                    }),
+                    _t("commands.ordered_list"),
                     "numbered-list-btn"
                 ),
+                keybind: getShortcut("Mod-O"),
             },
             {
                 key: "toggleUnorderedList",
@@ -446,11 +457,10 @@ export const createMenuEntries = (
                 commonmark: unorderedListCommand,
                 display: makeMenuButton(
                     "UnorderedList",
-                    _t("commands.unordered_list", {
-                        shortcut: getShortcut("Mod-U"),
-                    }),
+                    _t("commands.unordered_list"),
                     "bullet-list-btn"
                 ),
+                keybind: getShortcut("Mod-U"),
             },
             {
                 key: "insertRule",
@@ -458,11 +468,10 @@ export const createMenuEntries = (
                 commonmark: insertCommonmarkHorizontalRuleCommand,
                 display: makeMenuButton(
                     "HorizontalRule",
-                    _t("commands.horizontal_rule", {
-                        shortcut: getShortcut("Mod-R"),
-                    }),
+                    _t("commands.horizontal_rule"),
                     "horizontal-rule-btn"
                 ),
+                keybind: getShortcut("Mod-R"),
             },
             moreFormattingDropdown(schema, options),
         ],
@@ -477,9 +486,10 @@ export const createMenuEntries = (
                 commonmark: undo,
                 display: makeMenuButton(
                     "Undo",
-                    _t("commands.undo", { shortcut: getShortcut("Mod-Z") }),
+                    _t("commands.undo"),
                     "undo-btn"
                 ),
+                keybind: getShortcut("Mod-Z"),
             },
             {
                 key: "redo",
@@ -487,9 +497,10 @@ export const createMenuEntries = (
                 commonmark: redo,
                 display: makeMenuButton(
                     "Refresh",
-                    _t("commands.redo", { shortcut: getShortcut("Mod-Y") }),
+                    _t("commands.redo"),
                     "redo-btn"
                 ),
+                keybind: getShortcut("Mod-Y"),
             },
         ],
         visible: () => false,
