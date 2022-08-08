@@ -2,80 +2,19 @@ import MarkdownIt from "markdown-it";
 import OrderedMap from "orderedmap";
 import { MarkdownParser } from "prosemirror-markdown";
 import type { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
-import type { EditorState, Plugin } from "prosemirror-state";
+import type { Plugin } from "prosemirror-state";
 import { EditorProps } from "prosemirror-view";
 import {
     MarkdownSerializerMarks,
     MarkdownSerializerNodes,
 } from "./markdown-serializer";
-import {
-    makeMenuDropdown,
-    makeMenuButton,
-    MenuBlock,
-    MenuCommand,
-    MenuCommandEntry,
-} from "./menu";
-import { EditorType } from "./view";
+import { MenuBlock } from "./menu/helpers";
 
 /** A more tightly scoped version of {@link SchemaSpec} so plugins can predictably update the schema */
 interface PluginSchemaSpec extends SchemaSpec {
     nodes: OrderedMap<NodeSpec>;
     marks: OrderedMap<MarkSpec>;
 }
-
-/** A more powerful command variant for {@link PluginMenuItem} */
-interface MenuCommandExtended {
-    /**
-     * Whether the menu item should be highlighted as "active" or not.
-     * Most commonly used to indicate that the selection contains a node/mark of the command's type
-     */
-    active?: (state: EditorState) => boolean;
-    /** Whether the menu item should be visible or not */
-    visible?: (state: EditorState) => boolean;
-    /** The actual command this entry triggers */
-    command: MenuCommand;
-}
-
-/** Describes the options available for displaying a standard menu item */
-type PluginMenuItemDisplay = {
-    /**
-     * The name of the svg icon to use
-     * TODO This is added as a class - this is likely to change in the near future
-     */
-    svg: string;
-    /** The text to show in the entry's tooltip */
-    label: string;
-};
-
-/** Describes a single entry to add to the menu */
-interface PluginMenuItem<TChild = PluginMenuItem<null>[]> {
-    /** The command to execute when in rich-text mode */
-    richText: MenuCommandExtended | MenuCommand;
-    /** The command to execute when in commonmark mode */
-    commonmark: MenuCommandExtended | MenuCommand;
-    /** The keyboard shortcut to attach this command to TODO */
-    //keybind?: string;
-
-    /**
-     * The element to display in the menu or options to pass to the default item renderer;
-     * if this item has children, this value must be a {@link PluginMenuItemDisplay}
-     */
-    display: PluginMenuItem["children"] extends null
-        ? PluginMenuItemDisplay | HTMLElement
-        : PluginMenuItemDisplay;
-
-    /** The unique id used to reference this entry */
-    key: string;
-
-    /**
-     * The child entries for this entry.
-     * Setting this will create a dropdown, ignoring the richText and commonmark command entries
-     * */
-    children?: TChild;
-}
-
-/** Describes a visual "block"/grouping of menu items */
-type PluginMenuBlock = MenuBlock<PluginMenuItem>;
 
 /**
  * Describes the callback for when a codeblock processor is initialized
@@ -104,7 +43,7 @@ type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
  * Callback to add new menu entries to the editor's menu.
  * @param {Schema} schema The fully-initialized editor schema, including nodes from plugins
  */
-type AddMenuItemsCallback = (schema: Schema) => PluginMenuBlock[];
+type AddMenuItemsCallback = (schema: Schema) => MenuBlock[];
 
 /** Describes the properties that can be used for extending commonmark support in the editor */
 type MarkdownExtensionProps = {
@@ -229,11 +168,7 @@ export interface IExternalPluginProvider {
      * @param editorType The current editor type
      * @param schema The finalized schema
      */
-    getFinalizedMenu(
-        menu: MenuBlock[],
-        editorType: EditorType,
-        schema: Schema
-    ): MenuBlock[];
+    getFinalizedMenu(menu: MenuBlock[], schema: Schema): MenuBlock[];
 }
 
 /**
@@ -317,16 +252,12 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
     }
 
     /** {@inheritDoc IExternalPluginProvider.getFinalizedMenu} */
-    getFinalizedMenu(
-        menu: MenuBlock[],
-        editorType: EditorType,
-        schema: Schema
-    ): MenuBlock[] {
-        const ret = [...menu];
-        const aggBlocks: PluginMenuBlock[] = [];
+    getFinalizedMenu(menu: MenuBlock[], schema: Schema): MenuBlock[] {
+        const ret: MenuBlock[] = [];
+        const aggBlocks: MenuBlock[] = [];
 
         // call each callback and aggregate the results
-        for (const callback of this.menuCallbacks) {
+        for (const callback of [() => menu, ...this.menuCallbacks]) {
             if (!callback) {
                 continue;
             }
@@ -342,23 +273,18 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
                 }
 
                 // set the priority to the most recently declared if there are multiple
-                existing.priority = block.priority || Infinity;
+                existing.priority = block.priority ?? Infinity;
             }
         }
 
         // add the blocks to the menu
         for (const block of aggBlocks) {
-            const entries = this.convertMenuCommandEntries(
-                block.entries,
-                editorType
-            );
-
             // try to find an existing block with the same name
             const match = ret.find((b) => b.name === block.name);
 
             if (match) {
                 // if there is a match, add the entries to it
-                match.entries.push(...entries);
+                match.entries.push(...block.entries);
                 // set the priority to the lowest of the two
                 match.priority = Math.min(match.priority || 0, block.priority);
             } else {
@@ -367,7 +293,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
                     priority: block.priority,
                     visible: block.visible,
                     classes: block.classes,
-                    entries,
+                    entries: block.entries,
                 });
             }
         }
@@ -444,76 +370,5 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         }
 
         this._codeblockProcessors[lang].push(callback);
-    }
-
-    /** Converts a PluginMenuCommandEntry to a regular MenuCommandEntry */
-    private convertMenuCommandEntries(
-        entries: PluginMenuItem[],
-        editorType: EditorType
-    ): MenuCommandEntry[] {
-        const ret: MenuCommandEntry[] = [];
-
-        if (!entries?.length) {
-            return [];
-        }
-
-        for (const entry of entries) {
-            let commandEntry: MenuCommandEntry = {
-                command: null,
-                visible: null,
-                active: null,
-                dom: null,
-                key: entry.key,
-                children: this.convertMenuCommandEntries(
-                    entry.children,
-                    editorType
-                ),
-            };
-
-            const command =
-                editorType === EditorType.RichText
-                    ? entry.richText
-                    : entry.commonmark;
-
-            // check for an extended vs simple command
-            if (command) {
-                commandEntry = {
-                    ...commandEntry,
-                    ...("command" in command ? command : { command }),
-                };
-            }
-
-            if (entry.children?.length) {
-                commandEntry = makeMenuDropdown(
-                    entry.display.svg,
-                    entry.display.label,
-                    commandEntry.key,
-                    commandEntry.visible,
-                    commandEntry.active,
-                    ...commandEntry.children
-                );
-            } else if (this.displayIsButton(entry.display)) {
-                commandEntry.dom = makeMenuButton(
-                    entry.display.svg,
-                    entry.display.label,
-                    commandEntry.key,
-                    []
-                );
-            } else {
-                commandEntry.dom = entry.display;
-            }
-
-            // TODO add keybind and update the dom label properly
-            ret.push(commandEntry);
-        }
-
-        return ret;
-    }
-
-    /** Helper method for checking the type of {@link PluginMenuItem.display} */
-    private displayIsButton(
-        display: PluginMenuItem["display"]
-    ): display is PluginMenuItemDisplay {
-        return "svg" in display;
     }
 }

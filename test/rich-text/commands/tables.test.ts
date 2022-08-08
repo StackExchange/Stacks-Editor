@@ -1,7 +1,7 @@
 import {
     insertTableColumnAfterCommand,
     insertTableColumnBeforeCommand,
-    insertTableCommand,
+    insertRichTextTableCommand,
     insertTableRowAfterCommand,
     insertTableRowBeforeCommand,
     moveSelectionAfterTableCommand,
@@ -618,7 +618,7 @@ describe("table commands", () => {
             let state = applySelection(createState(`some text`, []), 2);
             expect(state.selection.$from.node().type.name).toBe("paragraph");
 
-            state = runCommand(state, insertTableCommand);
+            state = runCommand(state, insertRichTextTableCommand);
 
             expect(state.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -648,7 +648,7 @@ describe("table commands", () => {
             expect(state.selection.$from.node().type.name).toBe("table_header");
 
             const before = state.doc;
-            state = runCommand(state, insertTableCommand, false);
+            state = runCommand(state, insertRichTextTableCommand, false);
 
             expect(before.nodeSize).toEqual(state.doc.nodeSize);
             expect(state.doc.eq(before)).toBe(true);

@@ -1,5 +1,4 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
-import { redo, undo } from "prosemirror-history";
 import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
 import {
     Command,
@@ -11,33 +10,14 @@ import {
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
 import {
-    addIf,
-    dropdownItem,
-    dropdownSection,
-    makeMenuDropdown,
-    makeMenuButton,
-    makeMenuLinkEntry,
-    MenuBlock,
-} from "../../shared/menu";
-import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../../shared/prosemirror-plugins/image-upload";
-import { getCurrentTextNode, getShortcut } from "../../shared/utils";
-import type { CommonViewOptions, TagLinkOptions } from "../../shared/view";
+import { getCurrentTextNode } from "../../shared/utils";
+import type { TagLinkOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
 import { insertParagraphIfAtDocEnd } from "./helpers";
-import {
-    insertTableColumnAfterCommand,
-    insertTableColumnBeforeCommand,
-    insertTableCommand,
-    insertTableRowAfterCommand,
-    insertTableRowBeforeCommand,
-    inTable,
-    removeColumnCommand,
-    removeRowCommand,
-} from "./tables";
-import { _t } from "../../shared/localization";
+import { inTable } from "./tables";
 
 export * from "./tables";
 
@@ -377,7 +357,7 @@ function isValidTagLinkTarget(schema: Schema, selection: Selection): boolean {
  * @param state The current editor state
  * @param dispatch The dispatch function to use
  */
-export function insertHorizontalRuleCommand(
+export function insertRichTextHorizontalRuleCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
@@ -416,7 +396,7 @@ export function insertHorizontalRuleCommand(
  * @param dispatch The dispatch function to use
  * @param view The current editor view
  */
-export function insertImageCommand(
+export function insertRichTextImageCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void,
     view: EditorView
@@ -437,7 +417,7 @@ export function insertImageCommand(
  * @param dispatch The dispatch function to use
  * @param view The current editor view
  */
-export function insertLinkCommand(
+export function insertRichTextLinkCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void,
     view: EditorView
@@ -494,8 +474,9 @@ export function insertLinkCommand(
  * Creates an `active` method that returns true if the current selection is/contained in the current block type
  * @param nodeType The type of the node to check for
  * @param attrs? A key-value map of attributes that must be present on this node
+ * @internal TODO TESTS
  */
-function nodeTypeActive(
+export function nodeTypeActive(
     nodeType: NodeType,
     attrs?: { [key: string]: unknown }
 ) {
@@ -522,8 +503,9 @@ function nodeTypeActive(
 /**
  * Creates an `active` method that returns true of the current selection has the passed mark
  * @param mark The mark to check for
+ * @internal TODO TESTS
  */
-function markActive(mark: MarkType) {
+export function markActive(mark: MarkType) {
     return function (state: EditorState) {
         const { from, $from, to, empty } = state.selection;
         if (empty) {
@@ -594,355 +576,3 @@ export function exitInclusiveMarkCommand(
 
     return true;
 }
-
-/**
- * Creates a dropdown menu for table edit functionality
- */
-const tableDropdown = () =>
-    makeMenuDropdown(
-        "Table",
-        _t("commands.table_edit"),
-        "table-dropdown",
-        (state: EditorState) => inTable(state.schema, state.selection),
-        () => false,
-
-        dropdownSection("Column", "columnSection"),
-        dropdownItem(
-            _t("commands.table_column.remove"),
-            removeColumnCommand,
-            "remove-column-btn"
-        ),
-        dropdownItem(
-            _t("commands.table_column.insert_before"),
-            insertTableColumnBeforeCommand,
-            "insert-column-before-btn"
-        ),
-        dropdownItem(
-            _t("commands.table_column.insert_after"),
-            insertTableColumnAfterCommand,
-            "insert-column-after-btn"
-        ),
-
-        dropdownSection("Row", "rowSection"),
-        dropdownItem(
-            _t("commands.table_row.remove"),
-            removeRowCommand,
-            "remove-row-btn"
-        ),
-        dropdownItem(
-            _t("commands.table_row.insert_before"),
-            insertTableRowBeforeCommand,
-            "insert-row-before-btn"
-        ),
-        dropdownItem(
-            _t("commands.table_row.insert_after"),
-            insertTableRowAfterCommand,
-            "insert-row-after-btn"
-        )
-    );
-
-/**
- * Creates a dropdown menu for heading formatting
- * @param schema The finalized rich-text schema
- */
-const headingDropdown = (schema: Schema) =>
-    makeMenuDropdown(
-        "Header",
-        _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-H") }),
-        "heading-dropdown",
-        () => true,
-        nodeTypeActive(schema.nodes.heading),
-        dropdownItem(
-            _t("commands.heading.entry", { level: 1 }),
-            toggleHeadingLevel({ level: 1 }),
-            "h1-btn",
-            nodeTypeActive(schema.nodes.heading, { level: 1 }),
-            ["fs-body3", "mt8"]
-        ),
-        dropdownItem(
-            _t("commands.heading.entry", { level: 2 }),
-            toggleHeadingLevel({ level: 2 }),
-            "h2-btn",
-            nodeTypeActive(schema.nodes.heading, { level: 2 }),
-            ["fs-body2"]
-        ),
-        dropdownItem(
-            _t("commands.heading.entry", { level: 3 }),
-            toggleHeadingLevel({ level: 3 }),
-            "h3-btn",
-            nodeTypeActive(schema.nodes.heading, { level: 3 }),
-            ["fs-body1"]
-        )
-    );
-
-/**
- * Creates a dropdown menu containing misc formatting tools
- * @param schema The finalized rich-text schema
- * @param options The options for the editor
- */
-const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
-    makeMenuDropdown(
-        "EllipsisHorizontal",
-        _t("commands.moreFormatting"),
-        "more-formatting-dropdown",
-        () => true,
-        () => false,
-        dropdownItem(
-            _t("commands.tagLink", { shortcut: getShortcut("Mod-[") }),
-            toggleTagLinkCommand(
-                options.parserFeatures.tagLinks.validate,
-                false
-            ),
-            "tag-btn",
-            nodeTypeActive(schema.nodes.tagLink)
-        ),
-        dropdownItem(
-            _t("commands.metaTagLink", { shortcut: getShortcut("Mod-]") }),
-            toggleTagLinkCommand(
-                options.parserFeatures.tagLinks.validate,
-                true
-            ),
-            "meta-tag-btn",
-            nodeTypeActive(schema.nodes.tagLink)
-        ),
-        dropdownItem(
-            _t("commands.spoiler", { shortcut: getShortcut("Mod-/") }),
-            toggleWrapIn(schema.nodes.spoiler),
-            "spoiler-btn",
-            nodeTypeActive(schema.nodes.spoiler)
-        ),
-        dropdownItem(
-            _t("commands.sub", { shortcut: getShortcut("Mod-,") }),
-            toggleMark(schema.marks.sub),
-            "subscript-btn",
-            markActive(schema.marks.sub)
-        ),
-        dropdownItem(
-            _t("commands.sup", { shortcut: getShortcut("Mod-.") }),
-            toggleMark(schema.marks.sup),
-            "superscript-btn",
-            markActive(schema.marks.sup)
-        ),
-        dropdownItem(
-            _t("commands.kbd", { shortcut: getShortcut("Mod-'") }),
-            toggleMark(schema.marks.kbd),
-            "kbd-btn",
-            markActive(schema.marks.kbd)
-        )
-    );
-
-// TODO ensure that all names and priorities match those found in the rich-text editor
-/**
- * Creates all menu entries for the commonmark editor
- * @param schema The finalized rich-text schema
- * @param options The options for the editor
- * @internal
- */
-export const createMenuEntries = (
-    schema: Schema,
-    options: CommonViewOptions
-): MenuBlock[] => [
-    {
-        name: "formatting1", // TODO better name?
-        priority: 0,
-        entries: [
-            headingDropdown(schema),
-            {
-                key: "toggleBold",
-                command: toggleMark(schema.marks.strong),
-                dom: makeMenuButton(
-                    "Bold",
-                    _t("commands.bold", { shortcut: getShortcut("Mod-B") }),
-                    "bold-btn"
-                ),
-                active: markActive(schema.marks.strong),
-            },
-            {
-                key: "toggleEmphasis",
-                command: toggleMark(schema.marks.em),
-                dom: makeMenuButton(
-                    "Italic",
-                    _t("commands.emphasis", { shortcut: getShortcut("Mod-I") }),
-                    "italic-btn"
-                ),
-                active: markActive(schema.marks.em),
-            },
-            {
-                key: "toggleCode",
-                command: toggleMark(schema.marks.code),
-                dom: makeMenuButton(
-                    "Code",
-                    _t("commands.inline_code", {
-                        shortcut: getShortcut("Mod-K"),
-                    }),
-                    "code-btn"
-                ),
-                active: markActive(schema.marks.code),
-            },
-            addIf(
-                {
-                    key: "toggleStrike",
-                    command: toggleMark(schema.marks.strike),
-                    dom: makeMenuButton(
-                        "Strikethrough",
-                        _t("commands.strikethrough"),
-                        "strike-btn"
-                    ),
-                    active: markActive(schema.marks.strike),
-                },
-                options.parserFeatures.extraEmphasis
-            ),
-        ],
-    },
-    {
-        name: "formatting2", // TODO better name?
-        priority: 10,
-        entries: [
-            {
-                key: "toggleLink",
-                command: insertLinkCommand,
-                dom: makeMenuButton(
-                    "Link",
-                    _t("commands.link", { shortcut: getShortcut("Mod-L") }),
-                    "insert-link-btn"
-                ),
-            },
-            {
-                key: "toggleBlockquote",
-                command: toggleWrapIn(schema.nodes.blockquote),
-                dom: makeMenuButton(
-                    "Quote",
-                    _t("commands.blockquote", {
-                        shortcut: getShortcut("Mod-Q"),
-                    }),
-                    "blockquote-btn"
-                ),
-                active: nodeTypeActive(schema.nodes.blockquote),
-            },
-            {
-                key: "toggleCodeblock",
-                command: toggleBlockType(schema.nodes.code_block),
-                dom: makeMenuButton(
-                    "Codeblock",
-                    _t("commands.code_block", {
-                        shortcut: getShortcut("Mod-M"),
-                    }),
-                    "code-block-btn"
-                ),
-                active: nodeTypeActive(schema.nodes.code_block),
-            },
-            addIf(
-                {
-                    key: "insertImage",
-                    command: insertImageCommand,
-                    dom: makeMenuButton(
-                        "Image",
-                        _t("commands.image", {
-                            shortcut: getShortcut("Mod-G"),
-                        }),
-                        "insert-image-btn"
-                    ),
-                },
-                !!options.imageUpload?.handler
-            ),
-            addIf(
-                {
-                    key: "insertTable",
-                    command: insertTableCommand,
-                    dom: makeMenuButton(
-                        "Table",
-                        _t("commands.table_insert", {
-                            shortcut: getShortcut("Mod-E"),
-                        }),
-                        "insert-table-btn"
-                    ),
-                    visible: (state: EditorState) =>
-                        !inTable(state.schema, state.selection),
-                },
-                options.parserFeatures.tables
-            ),
-            addIf(tableDropdown(), options.parserFeatures.tables),
-        ],
-    },
-    {
-        name: "formatting3", // TODO better name?
-        priority: 20,
-        entries: [
-            {
-                key: "toggleOrderedList",
-                command: toggleWrapIn(schema.nodes.ordered_list),
-                dom: makeMenuButton(
-                    "OrderedList",
-                    _t("commands.ordered_list", {
-                        shortcut: getShortcut("Mod-O"),
-                    }),
-                    "numbered-list-btn"
-                ),
-                active: nodeTypeActive(schema.nodes.ordered_list),
-            },
-            {
-                key: "toggleUnorderedList",
-                command: toggleWrapIn(schema.nodes.bullet_list),
-                dom: makeMenuButton(
-                    "UnorderedList",
-                    _t("commands.unordered_list", {
-                        shortcut: getShortcut("Mod-U"),
-                    }),
-                    "bullet-list-btn"
-                ),
-                active: nodeTypeActive(schema.nodes.bullet_list),
-            },
-            {
-                key: "insertRule",
-                command: insertHorizontalRuleCommand,
-                dom: makeMenuButton(
-                    "HorizontalRule",
-                    _t("commands.horizontal_rule", {
-                        shortcut: getShortcut("Mod-R"),
-                    }),
-                    "horizontal-rule-btn"
-                ),
-            },
-            moreFormattingDropdown(schema, options),
-        ],
-    },
-    {
-        name: "history",
-        priority: 30,
-        entries: [
-            {
-                key: "undo",
-                command: undo,
-                dom: makeMenuButton(
-                    "Undo",
-                    _t("commands.undo", { shortcut: getShortcut("Mod-Z") }),
-                    "undo-btn"
-                ),
-            },
-            {
-                key: "redo",
-                command: redo,
-                dom: makeMenuButton(
-                    "Refresh",
-                    _t("commands.redo", { shortcut: getShortcut("Mod-Y") }),
-                    "redo-btn"
-                ),
-            },
-        ],
-        visible: () => false,
-        classes: ["sm:d-inline-flex"],
-    },
-    {
-        name: "other",
-        priority: 40,
-        entries: [
-            //TODO eventually this will mimic the "help" dropdown in the prod editor
-            makeMenuLinkEntry(
-                "Help",
-                _t("commands.help"),
-                options.editorHelpLink,
-                "help-link"
-            ),
-        ],
-    },
-];
