@@ -224,6 +224,30 @@ const nodes: {
     pre: genHtmlBlockNodeSpec("pre"),
 
     /**
+     * Defines an uneditable html_comment node; Only appears when a user has written an html comment block
+     * i.e. `<!-- comment -->` or `<!-- comment\n continued -->` but not `<!-- comment --> other text`
+     */
+    html_comment: {
+        content: "text*",
+        attrs: { content: { default: "" } },
+        group: "block",
+        atom: true,
+        inline: false,
+        selectable: false,
+        parseDOM: [{ tag: "div.html_comment" }],
+        toDOM(node) {
+            return [
+                "div",
+                {
+                    class: "html_comment",
+                    hidden: true,
+                },
+                node.attrs.content,
+            ];
+        },
+    },
+
+    /**
      * Defines an uneditable html_block node; Only appears when a user has written a "complicated" html_block
      * i.e. anything not resembling `<tag>content</tag>` or `<tag />`
      */

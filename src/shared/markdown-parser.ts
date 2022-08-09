@@ -11,6 +11,7 @@ import { spoiler } from "./markdown-it/spoiler";
 import { stackLanguageComments } from "./markdown-it/stack-language-comments";
 import { tagLinks } from "./markdown-it/tag-link";
 import { tight_list } from "./markdown-it/tight-list";
+import { htmlComment } from "./markdown-it/html-comment";
 import type { CommonmarkParserFeatures } from "./view";
 
 // extend the default markdown parser's tokens and add our own
@@ -27,7 +28,12 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
             content: token.content,
         }),
     },
-
+    html_comment: {
+        node: "html_comment",
+        getAttrs: (token: Token) => ({
+            content: token.content,
+        }),
+    },
     html_block: {
         node: "html_block",
         getAttrs: (token: Token) => ({
@@ -310,6 +316,9 @@ export function createDefaultMarkdownItInstance(
 
     // ensure we can tell the difference between the different types of hardbreaks
     defaultMarkdownItInstance.use(hardbreak_markup);
+
+    // parse html comments
+    defaultMarkdownItInstance.use(htmlComment);
 
     // TODO should always exist, so remove the check once the param is made non-optional
     externalPluginProvider?.alterMarkdownIt(defaultMarkdownItInstance);

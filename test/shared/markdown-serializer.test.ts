@@ -160,6 +160,9 @@ describe("markdown-serializer", () => {
         /* Tables */
         `| foo | bar |\n| --- | --- |\n| baz | bim |`,
         `| abc | def | ghi |\n|:---:|:--- | ---:|\n| foo | bar | baz |`,
+        /* Comments */
+        `<!-- an html comment -->`,
+        `<!-- an html comment\n over multiple lines -->`,
         /* Marks */
         `*test*`,
         `_test_`,
