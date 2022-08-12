@@ -1,7 +1,7 @@
 import { EditorState, Transaction } from "prosemirror-state";
 import {
     exitInclusiveMarkCommand,
-    insertHorizontalRuleCommand,
+    insertRichTextHorizontalRuleCommand,
     indentCodeBlockLinesCommand,
     unindentCodeBlockLinesCommand,
     toggleHeadingLevel,
@@ -267,7 +267,7 @@ describe("commands", () => {
         });
     });
 
-    describe("insertHorizontalRuleCommand", () => {
+    describe("insertRichTextHorizontalRuleCommand", () => {
         it("should not insert while in a table", () => {
             const state = applySelection(
                 createState(
@@ -282,7 +282,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                insertHorizontalRuleCommand
+                insertRichTextHorizontalRuleCommand
             );
 
             expect(isValid).toBeFalsy();
@@ -303,7 +303,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                insertHorizontalRuleCommand
+                insertRichTextHorizontalRuleCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -330,7 +330,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                insertHorizontalRuleCommand
+                insertRichTextHorizontalRuleCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -358,7 +358,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                insertHorizontalRuleCommand
+                insertRichTextHorizontalRuleCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -388,7 +388,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                insertHorizontalRuleCommand
+                insertRichTextHorizontalRuleCommand
             );
 
             expect(isValid).toBeTruthy();
@@ -428,7 +428,7 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                insertHorizontalRuleCommand
+                insertRichTextHorizontalRuleCommand
             );
 
             expect(isValid).toBeTruthy();

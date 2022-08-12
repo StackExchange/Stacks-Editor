@@ -40,8 +40,8 @@ import { tables } from "./plugins/tables";
 import { richTextSchemaSpec } from "./schema";
 import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
 import { IExternalPluginProvider } from "../shared/editor-plugin";
-import { createMenuPlugin } from "../shared/menu";
-import { createMenuEntries } from "./commands";
+import { createMenuEntries } from "../shared/menu/index";
+import { createMenuPlugin } from "../shared/menu/plugin";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -86,14 +86,18 @@ export class RichTextEditor extends BaseView {
         const doc = this.parseContent(content);
 
         const menuEntries = this.externalPluginProvider.getFinalizedMenu(
-            createMenuEntries(this.finalizedSchema, this.options),
-            EditorType.RichText,
+            createMenuEntries(
+                this.finalizedSchema,
+                this.options,
+                EditorType.RichText
+            ),
             doc.type.schema
         );
 
         const menu = createMenuPlugin(
             menuEntries,
-            this.options.menuParentContainer
+            this.options.menuParentContainer,
+            EditorType.RichText
         );
 
         this.editorView = new EditorView(

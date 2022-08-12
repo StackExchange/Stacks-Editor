@@ -4,7 +4,7 @@ import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { log } from "../shared/logger";
-import { createMenuPlugin } from "../shared/menu";
+import { createMenuPlugin } from "../shared/menu/plugin";
 import { createPreviewPlugin } from "./plugins/preview";
 import { commonmarkCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import {
@@ -26,12 +26,12 @@ import {
     defaultParserFeatures,
     EditorType,
 } from "../shared/view";
-import { createMenuEntries } from "./commands";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
 import type MarkdownIt from "markdown-it";
 import { textCopyHandlerPlugin } from "./plugins/text-copy-handler";
 import { markdownHighlightPlugin } from "./plugins/markdown-highlight";
+import { createMenuEntries } from "../shared/menu";
 
 export interface CommonmarkOptions extends CommonViewOptions {
     /** Settings for showing a static rendered preview of the editor's contents */
@@ -68,14 +68,18 @@ export class CommonmarkEditor extends BaseView {
         this.options = deepMerge(CommonmarkEditor.defaultOptions, options);
 
         const menuEntries = pluginProvider.getFinalizedMenu(
-            createMenuEntries(this.options),
-            EditorType.Commonmark,
+            createMenuEntries(
+                commonmarkSchema,
+                this.options,
+                EditorType.Commonmark
+            ),
             commonmarkSchema
         );
 
         const menu = createMenuPlugin(
             menuEntries,
-            this.options.menuParentContainer
+            this.options.menuParentContainer,
+            EditorType.Commonmark
         );
 
         this.editorView = new EditorView(
