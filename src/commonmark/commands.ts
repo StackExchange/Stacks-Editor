@@ -1,21 +1,12 @@
+import { Schema } from "prosemirror-model";
 import { EditorState, TextSelection, Transaction } from "prosemirror-state";
-import {
-    makeMenuButton,
-    makeMenuLinkEntry,
-    addIf,
-    MenuCommand,
-    MenuBlock,
-} from "../shared/menu";
 import { EditorView } from "prosemirror-view";
+import { MenuCommand } from "../shared/menu";
 import {
     imageUploaderEnabled,
     showImageUploader,
 } from "../shared/prosemirror-plugins/image-upload";
-import type { CommonViewOptions } from "../shared/view";
-import { getShortcut } from "../shared/utils";
-import { Schema } from "prosemirror-model";
-import { undo, redo } from "prosemirror-history";
-import { _t } from "../shared/localization";
+import type { TagLinkOptions } from "../shared/view";
 
 /**
  * Shortcut binding that takes in a formatting string and returns a matching setBlockType command
@@ -26,10 +17,15 @@ export const setBlockTypeCommand = (formattingText: string): MenuCommand =>
 
 /**
  * Shortcut binding that takes in a formatting string and returns a matching wrapIn command
- * @param formattingText
+ * @param leadingText the text to place before the selected text
+ * @param trailingText the text to place after the selected text; if null, then the leadingText is used
+ * @internal
  */
-export const wrapInCommand = (formattingText: string): MenuCommand =>
-    <MenuCommand>toggleWrapIn.bind(null, formattingText);
+export const wrapInCommand = (
+    leadingText: string,
+    trailingText: string | null
+): MenuCommand =>
+    <MenuCommand>toggleWrapIn.bind(null, leadingText, trailingText);
 
 export const blockWrapInCommand = (formattingText: string): MenuCommand =>
     <MenuCommand>toggleBlockWrap.bind(null, formattingText);
@@ -45,55 +41,60 @@ const newTextNode = (schema: Schema, content: string) => schema.text(content);
 
 /**
  * Toggles wrapping selected text in the formatting string; adds newly wrapped text if nothing is selected
- * @param formattingText The text to wrap the currently selected text in
+ * @param leadingText the text to place before the selected text
+ * @param trailingText the text to place after the selected text; if null, then the leadingText is used
  * @param state The current editor state
  * @param dispatch The dispatch function used to trigger the transaction, set to "null" if you don't want to dispatch
  */
 function toggleWrapIn(
-    formattingText: string,
+    leadingText: string,
+    trailingText: string | null,
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ) {
     // check if we're unwrapping first
-    if (unwrapIn(formattingText, state, dispatch)) {
+    if (unwrapIn(leadingText, trailingText, state, dispatch)) {
         return true;
     }
 
-    return wrapIn(formattingText, state, dispatch);
+    return wrapIn(leadingText, trailingText, state, dispatch);
 }
 
 /**
  * Wraps the currently selected text with the passed text, creating new text if nothing is selected
- * @param formattingText The text to wrap the currently selected text in
+ * @param leadingText the text to place before the selected text
+ * @param trailingText the text to place after the selected text; if null, then the leadingText is used
  * @param state The current editor state
  * @param dispatch The dispatch function used to trigger the transaction, set to "null" if you don't want to dispatch
  */
 function wrapIn(
-    formattingText: string,
+    leadingText: string,
+    trailingText: string | null,
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ) {
     const textToInsertOnEmptySelection = "your text";
+    trailingText = trailingText || leadingText;
 
     const { from, to } = state.selection;
 
-    const tr = state.tr.insertText(formattingText, to);
+    const tr = state.tr.insertText(trailingText, to);
 
     if (state.selection.empty) {
         tr.insertText(textToInsertOnEmptySelection, to);
     }
 
-    tr.insertText(formattingText, from).scrollIntoView();
+    tr.insertText(leadingText, from).scrollIntoView();
 
     if (dispatch) {
         let selectionStart = from;
-        // add the format length twice to adjust for the characters added before *and* after the text
-        let selectionEnd = to + formattingText.length * 2;
+        // add the length to adjust for the characters added before *and* after the text
+        let selectionEnd = to + leadingText.length + trailingText.length;
 
         // if the selection was empty, just select the newly added text
         // and *not* the formatting so the user can start typing over it immediately
         if (state.selection.empty) {
-            selectionStart = from + formattingText.length;
+            selectionStart = from + leadingText.length;
             selectionEnd = selectionStart + textToInsertOnEmptySelection.length;
         }
 
@@ -113,12 +114,14 @@ function wrapIn(
 
 /**
  * Unwraps the currently selected text if it is already wrapped in the passed text
- * @param formattingText The text to wrap the currently selected text in
+ * @param leadingText the text to place before the selected text
+ * @param trailingText the text to place after the selected text; if null, then the leadingText is used
  * @param state The current editor state
  * @param dispatch The dispatch function used to trigger the transaction, set to "null" if you don't want to dispatch
  */
 function unwrapIn(
-    formattingText: string,
+    leadingText: string,
+    trailingText: string | null,
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ) {
@@ -127,16 +130,15 @@ function unwrapIn(
         return false;
     }
 
+    trailingText = trailingText || leadingText;
+
     const { from, to } = state.selection;
     const selectedText = state.doc.textBetween(from, to);
 
-    const precedingString = selectedText.slice(0, formattingText.length);
-    const postcedingString = selectedText.slice(formattingText.length * -1);
+    const precedingString = selectedText.slice(0, leadingText.length);
+    const postcedingString = selectedText.slice(trailingText.length * -1);
 
-    if (
-        precedingString !== formattingText ||
-        postcedingString !== formattingText
-    ) {
+    if (precedingString !== leadingText || postcedingString !== trailingText) {
         return false;
     }
 
@@ -145,8 +147,8 @@ function unwrapIn(
 
         // unwrap the text and set into the document
         const unwrappedText = selectedText.slice(
-            formattingText.length,
-            formattingText.length * -1
+            leadingText.length,
+            trailingText.length * -1
         );
         tr.replaceSelectionWith(newTextNode(tr.doc.type.schema, unwrappedText));
 
@@ -155,7 +157,7 @@ function unwrapIn(
             TextSelection.create(
                 state.apply(tr).doc,
                 from,
-                to - formattingText.length * 2
+                to - leadingText.length - trailingText.length
             )
         );
 
@@ -587,7 +589,7 @@ function insertRawText(
  * @param state The current editor state
  * @param dispatch the dispatch function used to dispatch the transaction, set to "null" if you don't want to dispatch
  */
-export function insertLinkCommand(
+export function insertCommonmarkLinkCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
@@ -618,11 +620,56 @@ export function insertLinkCommand(
 }
 
 /**
+ * Inserts a tagLink at the cursor, optionally placing it around the currently selected text if able
+ * @param validate The validation method that will be used to validate the selected text
+ * @param isMetaTag Whether or not the inserted tagLink is for a meta tag
+ */
+export function insertTagLinkCommand(
+    validate: TagLinkOptions["validate"],
+    isMetaTag: boolean
+): MenuCommand {
+    return (state, dispatch) => {
+        const leading = isMetaTag ? "[meta-tag:" : "[tag:";
+
+        if (state.selection.empty) {
+            const dummyText = "tag-name";
+            return insertRawText(
+                `${leading}${dummyText}]`,
+                leading.length,
+                leading.length + dummyText.length,
+                state,
+                dispatch
+            );
+        }
+
+        const { from, to } = state.selection;
+        const selectedText = state.doc.textBetween(from, to);
+
+        if (!validate(selectedText.trim(), isMetaTag)) {
+            return false;
+        }
+
+        const insertedText = `${leading}${selectedText}]`;
+        const selectFrom = leading.length;
+        const selectTo = selectFrom + selectedText.length;
+
+        // insert the link with the link selected for easy typeover
+        return insertRawText(
+            insertedText,
+            selectFrom,
+            selectTo,
+            state,
+            dispatch
+        );
+    };
+}
+
+/**
  * Inserts a basic table at the cursor
  * @param state The current editor state
  * @param dispatch the dispatch function used to dispatch the transaction, set to "null" if you don't want to dispatch
  */
-export function insertTableCommand(
+export function insertCommonmarkTableCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
@@ -683,20 +730,25 @@ export function selectAllTextCommand(
     return true;
 }
 
-export const boldCommand = wrapInCommand("**");
-export const emphasisCommand = wrapInCommand("*");
-export const inlineCodeCommand = wrapInCommand("`");
+export const boldCommand = wrapInCommand("**", null);
+export const emphasisCommand = wrapInCommand("*", null);
+export const inlineCodeCommand = wrapInCommand("`", null);
 export const indentCommand = indentBlockCommand;
 export const unindentBlock = unIndentBlockCommand;
 export const headerCommand = setBlockTypeCommand("#");
-export const strikethroughCommand = wrapInCommand("~~");
+export const strikethroughCommand = wrapInCommand("~~", null);
 export const blockquoteCommand = setBlockTypeCommand(">");
 export const orderedListCommand = setBlockTypeCommand("1.");
 export const unorderedListCommand = setBlockTypeCommand("-");
-export const insertHorizontalRuleCommand = insertRawTextCommand("\n---\n");
+export const insertCommonmarkHorizontalRuleCommand =
+    insertRawTextCommand("\n---\n");
 export const insertCodeblockCommand = blockWrapInCommand("```");
+export const spoilerCommand = setBlockTypeCommand(">!");
+export const supCommand = wrapInCommand("<sup>", "</sup>");
+export const subCommand = wrapInCommand("<sub>", "</sub>");
+export const kbdCommand = wrapInCommand("<kbd>", "</kbd>");
 
-export function insertImageCommand(
+export function insertCommonmarkImageCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void,
     view: EditorView
@@ -710,217 +762,3 @@ export function insertImageCommand(
     showImageUploader(view);
     return true;
 }
-
-// TODO ensure that all names match those found in the rich-text editor
-/**
- * Creates all menu entries for the commonmark editor
- * @param options The options for the editor
- * @internal
- */
-export const createMenuEntries = (options: CommonViewOptions): MenuBlock[] => [
-    {
-        name: "formatting1", // TODO better name?
-        priority: 0,
-        entries: [
-            {
-                key: "toggleHeading",
-                command: headerCommand,
-                dom: makeMenuButton(
-                    "Header",
-                    _t("commands.heading.dropdown", {
-                        shortcut: getShortcut("Mod-H"),
-                    }),
-                    "heading-btn"
-                ),
-            },
-            {
-                key: "toggleBold",
-                command: boldCommand,
-                dom: makeMenuButton(
-                    "Bold",
-                    _t("commands.bold", { shortcut: getShortcut("Mod-B") }),
-                    "bold-btn"
-                ),
-            },
-            {
-                key: "toggleEmphasis",
-                command: emphasisCommand,
-                dom: makeMenuButton(
-                    "Italic",
-                    _t("commands.emphasis", { shortcut: getShortcut("Mod-I") }),
-                    "italic-btn"
-                ),
-            },
-            {
-                key: "toggleCode",
-                command: inlineCodeCommand,
-                dom: makeMenuButton(
-                    "Code",
-                    _t("commands.inline_code", {
-                        shortcut: getShortcut("Mod-K"),
-                    }),
-                    "code-btn"
-                ),
-            },
-            addIf(
-                {
-                    key: "toggleStrikethrough",
-                    command: strikethroughCommand,
-                    dom: makeMenuButton(
-                        "Strikethrough",
-                        _t("commands.strikethrough"),
-                        "strike-btn"
-                    ),
-                },
-                options.parserFeatures.extraEmphasis
-            ),
-        ],
-    },
-    {
-        name: "formatting2", // TODO better name?
-        priority: 10,
-        entries: [
-            {
-                key: "toggleLink",
-                command: insertLinkCommand,
-                dom: makeMenuButton(
-                    "Link",
-                    _t("commands.link", { shortcut: getShortcut("Mod-L") }),
-                    "insert-link-btn"
-                ),
-            },
-            {
-                key: "toggleBlockquote",
-                command: blockquoteCommand,
-                dom: makeMenuButton(
-                    "Quote",
-                    _t("commands.blockquote", {
-                        shortcut: getShortcut("Ctrl-Q"),
-                    }),
-                    "blockquote-btn"
-                ),
-            },
-            {
-                key: "insertCodeblock",
-                command: insertCodeblockCommand,
-                dom: makeMenuButton(
-                    "Codeblock",
-                    _t("commands.code_block", {
-                        shortcut: getShortcut("Mod-M"),
-                    }),
-                    "code-block-btn"
-                ),
-            },
-            addIf(
-                {
-                    key: "insertImage",
-                    command: insertImageCommand,
-                    dom: makeMenuButton(
-                        "Image",
-                        _t("commands.image", {
-                            shortcut: getShortcut("Mod-G"),
-                        }),
-                        "insert-image-btn"
-                    ),
-                },
-                !!options.imageUpload?.handler
-            ),
-            addIf(
-                {
-                    key: "insertTable",
-                    command: insertTableCommand,
-                    dom: makeMenuButton(
-                        "Table",
-                        _t("commands.table_insert", {
-                            shortcut: getShortcut("Mod-E"),
-                        }),
-                        "insert-table-btn"
-                    ),
-                },
-                options.parserFeatures.tables
-            ),
-        ],
-    },
-    {
-        name: "formatting3", // TODO better name?
-        priority: 20,
-        entries: [
-            {
-                key: "toggleOrderedList",
-                command: orderedListCommand,
-                dom: makeMenuButton(
-                    "OrderedList",
-                    _t("commands.ordered_list", {
-                        shortcut: getShortcut("Mod-O"),
-                    }),
-                    "numbered-list-btn"
-                ),
-            },
-            {
-                key: "toggleUnorderedList",
-                command: unorderedListCommand,
-                dom: makeMenuButton(
-                    "UnorderedList",
-                    _t("commands.unordered_list", {
-                        shortcut: getShortcut("Mod-U"),
-                    }),
-                    "bullet-list-btn"
-                ),
-            },
-            {
-                key: "insertRule",
-                command: insertHorizontalRuleCommand,
-                dom: makeMenuButton(
-                    "HorizontalRule",
-                    _t("commands.horizontal_rule", {
-                        shortcut: getShortcut("Mod-R"),
-                    }),
-                    "horizontal-rule-btn"
-                ),
-            },
-        ],
-    },
-    {
-        name: "history",
-        priority: 30,
-        entries: [
-            {
-                key: "undo",
-                command: undo,
-                dom: makeMenuButton(
-                    "Undo",
-                    _t("commands.undo", { shortcut: getShortcut("Mod-Z") }),
-                    "undo-btn",
-                    ["sm:d-inline-block"]
-                ),
-                visible: () => false,
-            },
-            {
-                key: "redo",
-                command: redo,
-                dom: makeMenuButton(
-                    "Refresh",
-                    _t("commands.redo", { shortcut: getShortcut("Mod-Y") }),
-                    "redo-btn",
-                    ["sm:d-inline-block"]
-                ),
-                visible: () => false,
-            },
-        ],
-        visible: () => false,
-        classes: ["sm:d-inline-block"],
-    },
-    {
-        name: "other",
-        priority: 40,
-        entries: [
-            //TODO eventually this will mimic the "help" dropdown in the prod editor
-            makeMenuLinkEntry(
-                "Help",
-                _t("commands.help"),
-                options.editorHelpLink,
-                "help-link"
-            ),
-        ],
-    },
-];

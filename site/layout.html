@@ -11,7 +11,7 @@
     </head>
 
     <body class="p24">
-        <div class="d-flex ai-center ps-fixed t8 r8 sm:d-none">
+        <nav class="d-flex ai-center ps-fixed t8 r8 sm:d-none">
             <a
                 href="#"
                 class="s-btn js-repo-link"
@@ -110,13 +110,13 @@
                     </li>
                 </ul>
             </div>
-        </div>
-        <div class="wmx6 m-auto mt32">
+        </nav>
+        <main class="wmx6 m-auto mt32">
             {% block content %}
             <h1 class="mt32">Minimum viable example</h1>
             <textarea id="content" name="content" class="d-none"></textarea>
             <div id="example-1"></div>
             {% endblock %}
-        </div>
+        </main>
     </body>
 </html>

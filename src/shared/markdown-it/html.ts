@@ -96,7 +96,9 @@ function getTagInfo(tag: string): TagInfo {
     if (isSelfClosing) {
         // sanitize the original markup for output
         // <img title="asdfas" src="asdfasdf" /> becomes <img />
-        markup = tag.replace(/^(<[a-z]+).*?(\s?\/?>)$/i, "$1$2");
+        // the `s` flag makes `.` match newlines, while `[^\S\r\n]` is `\s` without newline matches
+        // this essentially strips out extraneous newlines that are found intertwined with the rest of the attributes
+        markup = tag.replace(/^(<[a-z]+).*?([^\S\r\n]?\/?>)$/is, "$1$2");
     }
 
     const attributes: { [name: string]: string } = {};

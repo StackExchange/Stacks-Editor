@@ -1,6 +1,7 @@
 import { DOMParser, Node, Schema, Slice } from "prosemirror-model";
 import {
     EditorState,
+    NodeSelection,
     Plugin,
     TextSelection,
     Transaction,
@@ -85,6 +86,22 @@ export function setSelection(
     }
 
     tr = tr.setSelection(TextSelection.create(tr.doc, from + 1, to + 1));
+
+    return tr;
+}
+
+/** Applies a node selection to the passed state based on the given from */
+export function applyNodeSelection(
+    state: EditorState,
+    from: number
+): EditorState {
+    const tr = setNodeSelection(state.tr, from);
+    return state.apply(tr);
+}
+
+/** Creates a node selection transaction based on the given from */
+export function setNodeSelection(tr: Transaction, from: number): Transaction {
+    tr = tr.setSelection(NodeSelection.create(tr.doc, from));
 
     return tr;
 }

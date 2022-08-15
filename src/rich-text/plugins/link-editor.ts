@@ -554,7 +554,7 @@ class LinkTooltip {
 
             toggleMark(view.state.schema.marks.link)(
                 state,
-                view.dispatch.bind(view)
+                view.dispatch.bind(view) as (tr: Transaction) => void
             );
         };
 
@@ -667,7 +667,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
 
                 // a link was mod-clicked, so open it in a new window
                 if (handled) {
-                    window.open(mark.attrs.href, "_blank");
+                    window.open(mark.attrs.href as string, "_blank");
                 }
 
                 return !!handled;

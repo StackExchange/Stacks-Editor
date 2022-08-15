@@ -16,7 +16,7 @@ export class TagLink implements NodeView {
 
         if (options?.render) {
             const rendered = options.render(
-                node.attrs.tagName,
+                node.attrs.tagName as string,
                 node.attrs.tagType === "meta-tag"
             );
 
