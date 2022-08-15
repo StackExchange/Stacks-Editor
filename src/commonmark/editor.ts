@@ -38,7 +38,7 @@ export interface CommonmarkOptions extends CommonViewOptions {
     preview?: {
         /** Whether the preview is enabled */
         enabled: boolean;
-        /** TODO DOCUMENT */
+        /** Whether the preview is shown on editor startup */
         shownByDefault?: boolean;
         /**
          * Function to get the container to place the markdown preview;

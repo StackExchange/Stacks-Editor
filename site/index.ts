@@ -18,12 +18,16 @@ function domReady(callback: (e: Event) => void) {
     }
 }
 
-function getDefaultEditor(): number {
-    return +localStorage.getItem("defaultEditor") || 0;
+function getDefaultEditor(): { type: number; previewShown: boolean } {
+    return {
+        type: +localStorage.getItem("defaultEditor") || 0,
+        previewShown: localStorage.getItem("previewShownByDefault") === "true",
+    };
 }
 
-function setDefaultEditor(value: number) {
+function setDefaultEditor(value: number, previewShown: boolean) {
     localStorage.setItem("defaultEditor", value.toString());
+    localStorage.setItem("previewShownByDefault", previewShown.toString());
 }
 
 function setTimeoutAsync(delay: number): Promise<void> {
@@ -179,12 +183,14 @@ domReady(() => {
         },
     });
 
+    const defaultEditor = getDefaultEditor();
     const options: StacksEditorOptions = {
-        defaultView: getDefaultEditor(),
+        defaultView: defaultEditor.type,
         editorHelpLink: "#HELP_LINK",
         commonmarkOptions: {
             preview: {
                 enabled: enableMDPreview,
+                shownByDefault: defaultEditor.previewShown,
             },
         },
         parserFeatures: {
@@ -230,15 +236,15 @@ domReady(() => {
 
     place.addEventListener(
         "StacksEditor:view-change",
-        (e: CustomEvent<{ editorType: number }>) => {
-            setDefaultEditor(e.detail.editorType);
+        (e: CustomEvent<{ editorType: number; previewShown: boolean }>) => {
+            setDefaultEditor(e.detail.editorType, e.detail.previewShown);
         }
     );
 
     place2?.addEventListener(
         "StacksEditor:view-change",
-        (e: CustomEvent<{ editorType: number }>) => {
-            setDefaultEditor(e.detail.editorType);
+        (e: CustomEvent<{ editorType: number; previewShown: boolean }>) => {
+            setDefaultEditor(e.detail.editorType, e.detail.previewShown);
         }
     );
 

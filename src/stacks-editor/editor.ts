@@ -19,8 +19,11 @@ import {
     ExternalPluginProvider,
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
-import { togglePreviewVisibility, previewIsVisible } from "../commonmark/plugins/preview";
 import type { Transaction } from "prosemirror-state";
+import {
+    togglePreviewVisibility,
+    previewIsVisible,
+} from "../commonmark/plugins/preview";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -83,11 +86,6 @@ export class StacksEditor implements View {
         );
 
         this.setBackingView(this.options.defaultView, content);
-
-        if (this.options.commonmarkOptions.preview.enabled) {
-            // has to be done after backing view is set
-            togglePreviewVisibility(this.backingView.editorView, true);
-        }
     }
 
     get editorView(): EditorView {
@@ -331,10 +329,14 @@ export class StacksEditor implements View {
      * @param menuTarget The container to append the created element to
      */
     private createEditorSwitcher(defaultItem: EditorType, menuTarget: Element) {
+        const previewIsShowing =
+            this.options.commonmarkOptions.preview.shownByDefault || false;
         const richCheckedProp =
             defaultItem === EditorType.RichText ? "checked" : "";
         const markCheckedProp =
-            defaultItem === EditorType.Commonmark ? "checked" : "";
+            defaultItem === EditorType.Commonmark && !previewIsShowing
+                ? "checked"
+                : "";
 
         const previewEnabled = this.options.commonmarkOptions.preview.enabled;
 
@@ -371,18 +373,19 @@ export class StacksEditor implements View {
     </label>
 </div>`;
 
+        // TODO CLEANUP
         if (previewEnabled) {
             const input = document.createElement("input");
-            input.setAttribute(
-                "name",
-                `mode-toggle-preview-${this.internalId}`
-            );
+            input.setAttribute("name", `mode-toggle-${this.internalId}`);
             input.setAttribute("type", "radio");
             input.setAttribute("id", `mode-toggle-preview-${this.internalId}`);
             input.className = "js-editor-toggle-btn";
             input.setAttribute("data-mode", `${EditorType.Commonmark}`);
-            input.setAttribute("data-preview", `${previewEnabled ? 'true' : 'false'}`)
-            input.checked = false; // TODO
+            input.setAttribute(
+                "data-preview",
+                `${previewEnabled ? "true" : "false"}`
+            );
+            input.checked = previewIsShowing;
             container.firstChild.appendChild(input);
 
             const label = document.createElement("label");
@@ -420,13 +423,17 @@ export class StacksEditor implements View {
         // get type from the target element
         const target = e.target as HTMLInputElement;
         const type: EditorType = +target.dataset.mode;
-        const showPreview  = target.dataset.preview == 'true' ? true : false;
+        const showPreview = target.dataset.preview === "true";
         const inPreviewNow = previewIsVisible(this.backingView.editorView);
 
-        log(`type: ${type}, showPreview: ${String(showPreview)}, inPreviewNow: ${String(inPreviewNow) }`);
+        log(
+            `type: ${type}, showPreview: ${String(
+                showPreview
+            )}, inPreviewNow: ${String(inPreviewNow)}`
+        );
 
-        // if the type hasn't changed, do nothing
-        if (type === this.currentViewType && showPreview == inPreviewNow) {
+        // if the state hasn't changed, do nothing
+        if (type === this.currentViewType && showPreview === inPreviewNow) {
             return;
         }
 
@@ -440,7 +447,7 @@ export class StacksEditor implements View {
         // set the view type for this button
         this.setView(type);
 
-        if (showPreview != inPreviewNow) {
+        if (showPreview !== inPreviewNow) {
             togglePreviewVisibility(this.backingView.editorView, showPreview);
         }
 
@@ -448,7 +455,8 @@ export class StacksEditor implements View {
         // trigger an event on the target for consumers to listen for
         dispatchEditorEvent(this.target, "view-change", {
             editorType: type,
-            previewShown: this.currentViewType !== EditorType.RichText && false, // TODO
+            previewShown:
+                this.currentViewType !== EditorType.RichText && showPreview,
         });
 
         // TODO do we always want to focus the editor?
