@@ -14,7 +14,6 @@ import type { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { toggleReadonly } from "../shared/prosemirror-plugins/readonly";
 import { _t } from "../shared/localization";
-import { log } from "../shared/logger";
 import {
     ExternalPluginProvider,
     IExternalPluginProvider,
@@ -232,15 +231,16 @@ export class StacksEditor implements View {
         const menuContainerFn = () => menuTarget;
         this.options.menuParentContainer = menuContainerFn;
 
-        // create specific area for the editor menu
-        const previewTarget = document.createElement("div");
-        previewTarget.className = "py16";
-        this.target.appendChild(previewTarget);
+        if (this.options.commonmarkOptions.preview.enabled) {
+            // create specific area for the editor menu
+            const previewTarget = document.createElement("div");
+            this.target.appendChild(previewTarget);
 
-        // set the editors' preview containers to be the combo container
-        const previewContainerFn = () => previewTarget;
-        this.options.commonmarkOptions.preview.parentContainer =
-            previewContainerFn;
+            // set the editors' preview containers to be the combo container
+            const previewContainerFn = () => previewTarget;
+            this.options.commonmarkOptions.preview.parentContainer =
+                previewContainerFn;
+        }
 
         // create a specific area for the editor plugins
         const pluginTarget = document.createElement("div");
@@ -425,12 +425,6 @@ export class StacksEditor implements View {
         const type: EditorType = +target.dataset.mode;
         const showPreview = target.dataset.preview === "true";
         const inPreviewNow = previewIsVisible(this.backingView.editorView);
-
-        log(
-            `type: ${type}, showPreview: ${String(
-                showPreview
-            )}, inPreviewNow: ${String(inPreviewNow)}`
-        );
 
         // if the state hasn't changed, do nothing
         if (type === this.currentViewType && showPreview === inPreviewNow) {

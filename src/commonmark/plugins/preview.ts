@@ -1,7 +1,6 @@
 import MarkdownIt from "markdown-it";
 import { EditorState, Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { log } from "../../shared/logger";
 import { createDefaultMarkdownItInstance } from "../../shared/markdown-parser";
 import {
     StatefulPlugin,
@@ -24,6 +23,7 @@ const DEFAULT_RENDER_DELAY_MS = 100;
 
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
+    private container: Element;
     private renderer: MarkdownIt;
     private renderTimeoutId: number | null = null;
     private renderDelayMs: number;
@@ -32,11 +32,13 @@ class PreviewView implements PluginView {
 
     constructor(
         view: EditorView,
+        container: Element,
         parserFeatures: CommonmarkParserFeatures,
         previewOptions: CommonmarkOptions["preview"]
     ) {
+        this.container = container;
         this.dom = document.createElement("div");
-        this.dom.classList.add("s-prose", "js-md-preview");
+        this.dom.classList.add("s-prose", "py16", "js-md-preview");
         // TODO pass down the ExternalPluginProvider as well
         this.renderer =
             previewOptions?.renderer ||
@@ -50,24 +52,23 @@ class PreviewView implements PluginView {
         this.renderDelayMs =
             previewOptions?.renderDelayMs || DEFAULT_RENDER_DELAY_MS;
 
-        this.renderPreview(view.state.doc.textContent);
+        this.updatePreview(view.state.doc.textContent);
     }
 
     update(view: EditorView, prevState?: EditorState) {
         // get the current plugin state to check if we need to update our visibility
         const pluginState = PREVIEW_KEY.getState(view.state);
-        const shouldBeShown = pluginState?.isShown;
+        const shouldBeShown = pluginState?.isShown || false;
 
         // if the doc/view hasn't changed, there's no work to do
         if (
-            !docNodeChanged(prevState, view.state) ||
-            (!this.isShown && shouldBeShown)
+            !docNodeChanged(prevState, view.state) &&
+            this.isShown === shouldBeShown
         ) {
             return;
         }
-        this.isShown = shouldBeShown;
 
-        log(`preview update shouldBeShown ${String(shouldBeShown)}`);
+        this.isShown = shouldBeShown;
 
         // if there is a render timeout already, clear it (essentially resetting the timeout)
         if (this.renderTimeoutId) {
@@ -76,18 +77,18 @@ class PreviewView implements PluginView {
 
         const text = view.state.doc.textContent;
 
-        if (this.renderDelayMs) {
+        if (this.isShown && this.renderDelayMs) {
             // only render the preview after a delay
             // this is to prevent too many renders while the user is typing
             this.renderTimeoutId = window.setTimeout(() => {
-                this.renderPreview(text);
+                this.updatePreview(text);
                 this.renderTimeoutId = null;
             }, this.renderDelayMs);
         } else {
             // if there is no delay, just render
             // there's typically no harm in setting a timeout with 0ms delay,
             // but running immediately without deferring execution is easier to unit test
-            this.renderPreview(text);
+            this.updatePreview(text);
         }
     }
 
@@ -96,12 +97,17 @@ class PreviewView implements PluginView {
     }
 
     /** Renders the preview using the passed markdown text */
-    private renderPreview(text: string) {
-        log("PreviewView.update", "Updated preview");
-        // NOTE: This assumes that the renderer is properly sanitizing html;
-        // this is specified in the option docs @see CommonmarkOptions["preview"]
-        // eslint-disable-next-line no-unsanitized/property
-        this.dom.innerHTML = this.renderer.render(text);
+    private updatePreview(text: string) {
+        if (this.isShown) {
+            // NOTE: This assumes that the renderer is properly sanitizing html;
+            // this is specified in the option docs @see CommonmarkOptions["preview"]
+            // eslint-disable-next-line no-unsanitized/property
+            this.dom.innerHTML = this.renderer.render(text);
+            this.container.appendChild(this.dom);
+        } else {
+            // should be hidden, so clear the preview
+            this.container.innerHTML = "";
+        }
     }
 }
 
@@ -112,7 +118,6 @@ class PreviewPluginKey extends StatefulPluginKey<PreviewPluginState> {
 
     togglePreviewVisibility(view: EditorView, isShown: boolean) {
         const tr = this.setMeta(view.state.tr, { isShown });
-        log(`toggle preview, isShown: ${String(isShown)}`);
         view.dispatch(tr);
     }
 
@@ -160,30 +165,24 @@ export function createPreviewPlugin(
             },
         },
         view(editorView) {
-            const previewView = new PreviewView(
-                editorView,
-                parserFeatures,
-                previewOptions
-            );
-
             const containerFn =
                 previewOptions?.parentContainer ||
                 function (v) {
-                    return v.dom.parentNode;
+                    return v.dom.parentElement;
                 };
 
             const container = containerFn(editorView);
 
-            if (!container.contains(editorView.dom)) {
-                if (PREVIEW_KEY.previewIsVisible(editorView)) {
-                    container.insertBefore(
-                        previewView.dom,
-                        container.firstChild
-                    );
-                }
-            } else {
+            if (container.contains(editorView.dom)) {
                 throw "Preview parentContainer must not contain the editor view";
             }
+
+            const previewView = new PreviewView(
+                editorView,
+                container,
+                parserFeatures,
+                previewOptions
+            );
 
             return previewView;
         },
