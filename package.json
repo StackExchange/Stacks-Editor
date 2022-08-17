@@ -35,7 +35,7 @@
     ],
     "commitlint": {
         "extends": [
-            "./config/commitlint.config.js"
+            "@stackoverflow"
         ]
     },
     "eslintConfig": {
@@ -43,11 +43,15 @@
             "./config/.eslintrc.js"
         ]
     },
-    "prettier": "./config/.prettierrc.js",
+    "prettier": "@stackoverflow/prettier-config",
     "devDependencies": {
         "@commitlint/cli": "^17.0.3",
         "@commitlint/config-conventional": "^17.0.3",
         "@playwright/test": "^1.25.0",
+        "@stackoverflow/commitlint-config": "^1.0.0",
+        "@stackoverflow/eslint-config": "^1.0.0",
+        "@stackoverflow/prettier-config": "^1.0.0",
+        "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^28.1.7",
         "@typescript-eslint/eslint-plugin": "^5.33.1",
         "@typescript-eslint/parser": "^5.33.1",
