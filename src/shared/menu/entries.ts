@@ -493,7 +493,7 @@ export const createMenuEntries = (
             },
         ],
         visible: () => false,
-        classes: ["sm:d-inline-flex"],
+        classes: ["sm:d-inline-flex vk:d-inline-flex"],
     },
     {
         name: "other",
