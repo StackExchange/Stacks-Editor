@@ -492,7 +492,7 @@ export const createMenuEntries = (
                 ),
             },
         ],
-        classes: ["sm:d-inline-flex vk:d-inline-flex"],
+        classes: ["d-none sm:d-inline-flex vk:d-inline-flex"],
     },
     {
         name: "other",

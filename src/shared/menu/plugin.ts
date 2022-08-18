@@ -151,7 +151,10 @@ export class MenuView implements PluginView {
                 ? block.visible(this.view.state)
                 : true;
 
-            block.dom.classList.toggle(MenuView.invisibleClass, !visible);
+            // if the block doesn't have a visibility function, don't mess with the classes at all
+            if (block.visible) {
+                block.dom.classList.toggle(MenuView.invisibleClass, !visible);
+            }
 
             // don't bother checking commands if the block is not visible
             if (!visible) {
