@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Mark } from "prosemirror-model";
+import { Mark, NodeType } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
@@ -353,6 +353,37 @@ console.log("test");
                 expect(mark.type).toBe("link");
                 expect(mark.attrs.referenceType).toBe(type);
                 expect(mark.attrs.referenceLabel).toBe(label);
+            }
+        );
+
+        const referenceImageData = [
+            // full
+            [`![foo][bar]\n\n[bar]: /url "title"`, "full", "bar"],
+            [`![foo][BaR]\n\n[bar]: /url "title"`, "full", "BaR"],
+            // collapsed
+            [`![foo][]\n\n[foo]: /url "title"`, "collapsed", "foo"],
+            // shortcut
+            [`![foo]\n\n[foo]: /url "title"`, "shortcut", "foo"],
+        ];
+        it.each(referenceImageData)(
+            "should add reference attributes to reference images",
+            (input, type, label) => {
+                const doc = markdownParser.parse(input);
+
+                expect(doc).toMatchNodeTree({
+                    content: [
+                        {
+                            "type.name": "paragraph",
+                            "content": [
+                                {
+                                    "type.name": "image",
+                                    "attrs.referenceType": type,
+                                    "attrs.referenceLabel": label,
+                                },
+                            ],
+                        },
+                    ],
+                });
             }
         );
     });
