@@ -3,6 +3,14 @@
 @import (reference) "@stackoverflow/stacks/lib/css/exports/constants-colors";
 @import (reference) "@stackoverflow/stacks/lib/css/exports/constants-helpers";
 
+/* Applies if the device would need a virtual keyboard */
+/* has no hover (touchscreens) or has only coarse input (non-stylus touchscreens / controllers) */
+@media (hover: none), (pointer: coarse) {
+    .vk\:d-inline-flex {
+        display: inline-flex !important;
+    }
+}
+
 // TODO PR opened for upstream StackExchange/Stacks#1040 - use .is-readonly instead
 .s-input__readonly {
     border-color: var(--black-075);

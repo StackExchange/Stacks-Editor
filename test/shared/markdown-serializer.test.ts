@@ -245,20 +245,31 @@ describe("markdown-serializer", () => {
     // see https://spec.commonmark.org/0.30/#reference-link
     // see https://spec.commonmark.org/0.30/#link-reference-definitions
     const linkReferencesMarkupData = [
-        // full
+        // link full
         [
             `[foo][bar]\n\n[bar]: /url "title"`,
             `[foo][bar]\n\n[BAR]: /url "title"`,
         ],
-        // collapsed
+        // link collapsed
         [`[foo][]\n\n[foo]: /url "title"`, `[foo][]\n\n[FOO]: /url "title"`],
-        // shortcut
+        // link shortcut
         [`[foo]\n\n[foo]: /url "title"`, `[foo]\n\n[FOO]: /url "title"`],
+        // image full
+        [
+            `![foo][bar]\n\n[bar]: /url "title"`,
+            `![foo][bar]\n\n[BAR]: /url "title"`,
+        ],
+        // image collapsed
+        [`![foo][]\n\n[foo]: /url "title"`, `![foo][]\n\n[FOO]: /url "title"`],
+        // image shortcut
+        [`![foo]\n\n[foo]: /url "title"`, `![foo]\n\n[FOO]: /url "title"`],
         // mixed content
         [
             `[ShortCut]: https://stackoverflow.com
 
 This is a test. I want to link to [foo][1] as a full reference link.
+
+I also want to support images: ![unique ref][img] ![shared ref][1]
 
 We also want to ensure that [bar][10] and [baz][2] are sorted numerically, not alphabetically.
 
@@ -271,8 +282,11 @@ I also would like to use a collapsed reference link like [this][], but placing i
 
 And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
 
+[img]: https://placeholder.com
 [1]: https://example.com`,
             `This is a test. I want to link to [foo][1] as a full reference link.
+
+I also want to support images: ![unique ref][img] ![shared ref][1]
 
 We also want to ensure that [bar][10] and [baz][2] are sorted numerically, not alphabetically.
 
@@ -283,6 +297,7 @@ And finally, how about a [shortcut] link? I'm placing this one all the way at th
 [1]: https://example.com
 [2]: https://stackexchange.com
 [10]: https://stackoverflow.com
+[IMG]: https://placeholder.com
 [SHORTCUT]: https://stackoverflow.com
 [THIS]: https://google.com`,
         ],

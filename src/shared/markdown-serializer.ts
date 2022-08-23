@@ -276,14 +276,31 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
               " " + state.quote(node.attrs.title)
             : "";
-        state.write(
-            "![" +
-                state.esc((node.attrs.alt as string) || "") +
-                "](" +
-                state.esc(node.attrs.src as string) +
-                title +
-                ")"
-        );
+
+        const open = "![" + state.esc((node.attrs.alt as string) || "") + "]";
+
+        let close = "(" + state.esc(node.attrs.src as string) + title + ")";
+
+        if (node.attrs.markup === "reference") {
+            (state as SOMarkdownSerializerState).addLinkReferenceDefinition(
+                node.attrs.referenceLabel as string,
+                node.attrs.src as string,
+                node.attrs.title as string
+            );
+            switch (node.attrs.referenceType) {
+                case "full":
+                    close = `[${node.attrs.referenceLabel as string}]`;
+                    break;
+                case "collapsed":
+                    close = "[]";
+                    break;
+                case "shortcut":
+                default:
+                    close = "";
+            }
+        }
+
+        state.write(open + close);
     },
     hard_break(state, node, parent, index) {
         if (renderHtmlTag(state, node, TagType.hardbreak)) {
