@@ -29,7 +29,7 @@ class PreviewView implements PluginView {
     private renderTimeoutId: number | null = null;
     private renderDelayMs: number;
 
-    private isShown = false;
+    private isShown: boolean;
 
     constructor(
         view: EditorView,
@@ -38,6 +38,7 @@ class PreviewView implements PluginView {
         previewOptions: CommonmarkOptions["preview"]
     ) {
         this.container = container;
+        this.isShown = previewOptions.enabled && previewOptions.shownByDefault;
         this.dom = document.createElement("div");
         this.dom.classList.add("s-prose", "py16", "js-md-preview");
         // TODO pass down the ExternalPluginProvider as well

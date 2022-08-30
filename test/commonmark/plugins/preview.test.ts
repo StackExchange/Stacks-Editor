@@ -30,7 +30,11 @@ describe("preview plugin", () => {
 
         const state = createState(content, [
             createPreviewPlugin(
-                { enabled: true, parentContainer: () => pluginContainer },
+                {
+                    enabled: true,
+                    shownByDefault: true,
+                    parentContainer: () => pluginContainer,
+                },
                 {}
             ),
         ]);
@@ -45,4 +49,23 @@ describe("preview plugin", () => {
 
     it.todo("should update the preview when the content changes");
     it.todo("should delay the preview update each time the content changes");
+
+    it("should not render when disabled", () => {
+        pluginContainer = document.createElement("div");
+
+        const state = createState("", [
+            createPreviewPlugin(
+                {
+                    enabled: false,
+                    shownByDefault: true,
+                    parentContainer: () => pluginContainer,
+                },
+                {}
+            ),
+        ]);
+
+        createView(state);
+
+        expect(pluginContainer.querySelector(".js-md-preview")).toBeNull();
+    });
 });
