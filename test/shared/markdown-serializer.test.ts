@@ -315,6 +315,9 @@ And finally, how about a [shortcut] link? I'm placing this one all the way at th
         String.raw`\_not-emphasized\_`,
         String.raw`_intra_text_underscores_are_not_emphasized_`,
         String.raw`http://www.example.com/dont_emphasize_urls`,
+        String.raw`http://www.example.com/_leading`,
+        String.raw`http://www.example.com/trailing_`,
+        String.raw`http://www.example.com/_wrapped_`,
         String.raw`\<Not html\>`,
     ];
 

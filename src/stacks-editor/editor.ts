@@ -60,7 +60,7 @@ export class StacksEditor implements View {
     /** Singleton instance of a plugin provider that is passed to backing views */
     private pluginProvider: IExternalPluginProvider;
 
-    private static readonly READONLY_CLASSES = ["s-input__readonly"];
+    private static readonly READONLY_CLASSES = ["is-readonly"];
 
     constructor(
         target: HTMLElement,
