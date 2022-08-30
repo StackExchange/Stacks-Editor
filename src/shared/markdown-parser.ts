@@ -114,13 +114,25 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     // override the default image parser so we can add our own extended attributes
     image: {
         node: "image",
-        getAttrs: (tok: Token) => ({
-            src: tok.attrGet("src"),
-            width: tok.attrGet("width"),
-            height: tok.attrGet("height"),
-            alt: tok.attrGet("alt") || tok.children?.[0]?.content || null,
-            title: tok.attrGet("title"),
-        }),
+        getAttrs: (tok: Token) => {
+            const attrs: Record<string, string> = {
+                src: tok.attrGet("src"),
+                width: tok.attrGet("width"),
+                height: tok.attrGet("height"),
+                alt: tok.attrGet("alt") || tok.children?.[0]?.content || null,
+                title: tok.attrGet("title"),
+            };
+
+            if (tok.markup === "reference") {
+                const meta = tok.meta as {
+                    reference?: { type: string; label: string };
+                };
+                attrs.referenceType = meta?.reference?.type;
+                attrs.referenceLabel = meta?.reference?.label;
+            }
+
+            return attrs;
+        },
     },
 
     tag_link: {

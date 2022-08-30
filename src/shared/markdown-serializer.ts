@@ -276,14 +276,31 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
               " " + state.quote(node.attrs.title)
             : "";
-        state.write(
-            "![" +
-                state.esc((node.attrs.alt as string) || "") +
-                "](" +
-                state.esc(node.attrs.src as string) +
-                title +
-                ")"
-        );
+
+        const open = "![" + state.esc((node.attrs.alt as string) || "") + "]";
+
+        let close = "(" + state.esc(node.attrs.src as string) + title + ")";
+
+        if (node.attrs.markup === "reference") {
+            (state as SOMarkdownSerializerState).addLinkReferenceDefinition(
+                node.attrs.referenceLabel as string,
+                node.attrs.src as string,
+                node.attrs.title as string
+            );
+            switch (node.attrs.referenceType) {
+                case "full":
+                    close = `[${node.attrs.referenceLabel as string}]`;
+                    break;
+                case "collapsed":
+                    close = "[]";
+                    break;
+                case "shortcut":
+                default:
+                    close = "";
+            }
+        }
+
+        state.write(open + close);
     },
     hard_break(state, node, parent, index) {
         if (renderHtmlTag(state, node, TagType.hardbreak)) {
@@ -299,30 +316,35 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         }
     },
     text(state, node) {
-        const linkMark = node.marks.find((m) => m.type.name === "link");
-        let text = node.text;
+        const linkMark = node.marks.find(
+            (m) => m.type === m.type.schema.marks.link
+        );
+
+        let text;
 
         // if the text node is from a link, use the original href text if the original markup used it
         if (
             ["linkify", "autolink"].includes(linkMark?.attrs.markup as string)
         ) {
             text = linkMark.attrs.href as string;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            const startOfLine: boolean = state.atBlank() || state.closed;
+            // escape the text using the built in escape code
+            let escapedText = state.esc(node.text, startOfLine);
+
+            // built in escape doesn't get all the cases TODO upstream!
+            escapedText = escapedText
+                .replace(/\\_/g, "_")
+                .replace(/\b_|_\b/g, "\\_");
+            escapedText = escapedText.replace(/([<>])/g, "\\$1");
+
+            text = escapedText;
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-        const startOfLine: boolean = state.atBlank() || state.closed;
-        // escape the text using the built in escape code
-        let escapedText = state.esc(text, startOfLine);
-
-        // built in escape doesn't get all the cases TODO upstream!
-        escapedText = escapedText
-            .replace(/\\_/g, "_")
-            .replace(/\b_|_\b/g, "\\_");
-        escapedText = escapedText.replace(/([<>])/g, "\\$1");
-
-        state.text(escapedText, false);
+        state.text(text, false);
     },
 };
 

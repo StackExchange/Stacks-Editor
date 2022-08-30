@@ -472,7 +472,7 @@ export const createMenuEntries = (
         priority: 30,
         entries: [
             {
-                key: "undo",
+                key: "undo-btn",
                 richText: undo,
                 commonmark: undo,
                 display: makeMenuButton(
@@ -482,7 +482,7 @@ export const createMenuEntries = (
                 ),
             },
             {
-                key: "redo",
+                key: "redo-btn",
                 richText: redo,
                 commonmark: redo,
                 display: makeMenuButton(
@@ -492,8 +492,7 @@ export const createMenuEntries = (
                 ),
             },
         ],
-        visible: () => false,
-        classes: ["sm:d-inline-flex"],
+        classes: ["d-none sm:d-inline-flex vk:d-inline-flex"],
     },
     {
         name: "other",
