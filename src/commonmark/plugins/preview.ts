@@ -52,7 +52,7 @@ class PreviewView implements PluginView {
             });
 
         this.renderDelayMs =
-            previewOptions?.renderDelayMs || DEFAULT_RENDER_DELAY_MS;
+            previewOptions?.renderDelayMs ?? DEFAULT_RENDER_DELAY_MS;
 
         this.updatePreview(view.state.doc.textContent);
     }
@@ -75,6 +75,7 @@ class PreviewView implements PluginView {
         // if there is a render timeout already, clear it (essentially resetting the timeout)
         if (this.renderTimeoutId) {
             window.clearTimeout(this.renderTimeoutId);
+            this.renderTimeoutId = null;
         }
 
         const text = view.state.doc.textContent;
@@ -173,7 +174,7 @@ export function createPreviewPlugin(
                 const meta = this.getMeta(tr);
 
                 return {
-                    isShown: meta?.isShown || value.isShown,
+                    isShown: meta?.isShown ?? value.isShown,
                 };
             },
         },
