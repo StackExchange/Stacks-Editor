@@ -1,5 +1,6 @@
 import MarkdownIt from "markdown-it/lib";
 import StateInline from "markdown-it/lib/rules_inline/state_inline";
+import { error } from "../logger";
 import type { TagLinkOptions } from "../view";
 
 function parse_tag_link(
@@ -56,8 +57,7 @@ function parse_tag_link(
             } else {
                 // We don't want to crash the parsing process here since we can still display a passable version of the tag link.
                 // However, we should at least log a console error.
-                // eslint-disable-next-line no-console
-                console.error(
+                error(
                     `Unable to fully render taglink for [${tagName}] due to invalid response from options.renderer.`
                 );
             }

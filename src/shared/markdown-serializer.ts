@@ -462,7 +462,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
         state.closeBlock(node);
     },
 
-    tagLink(state, node) {
+    tag_link(state, node) {
         const isMeta = node.attrs.tagType === "meta-tag";
         const prefix = isMeta ? "meta-tag" : "tag";
         const tag = node.attrs.tagName as string;

@@ -620,9 +620,9 @@ export function insertCommonmarkLinkCommand(
 }
 
 /**
- * Inserts a tagLink at the cursor, optionally placing it around the currently selected text if able
+ * Inserts a tag_link at the cursor, optionally placing it around the currently selected text if able
  * @param validate The validation method that will be used to validate the selected text
- * @param isMetaTag Whether or not the inserted tagLink is for a meta tag
+ * @param isMetaTag Whether or not the inserted tag_link is for a meta tag
  */
 export function insertTagLinkCommand(
     validate: TagLinkOptions["validate"],

@@ -425,7 +425,7 @@ const nodes: {
         },
     },
 
-    tagLink: {
+    tag_link: {
         content: "text*",
         marks: "",
         atom: true, // TODO allow this to be editable

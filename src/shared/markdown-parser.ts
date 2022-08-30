@@ -136,7 +136,7 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     },
 
     tag_link: {
-        block: "tagLink", // TODO: rename to "tag_link" to match others?
+        block: "tag_link",
         getAttrs: (tok: Token) => ({
             tagName: tok.attrGet("tagName"),
             tagType: tok.attrGet("tagType"),

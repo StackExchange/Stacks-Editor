@@ -272,7 +272,7 @@ function getHeadingLevel(state: EditorState): number {
 }
 
 /**
- * Creates a command that toggles tagLink formatting for a node
+ * Creates a command that toggles tag_link formatting for a node
  * @param validate The function to validate the tagName with
  * @param isMetaTag Whether the tag to be created is a meta tag or not
  */
@@ -294,7 +294,7 @@ export function toggleTagLinkCommand(
         }
 
         let tr = state.tr;
-        const nodeCheck = nodeTypeActive(state.schema.nodes.tagLink);
+        const nodeCheck = nodeTypeActive(state.schema.nodes.tag_link);
         if (nodeCheck(state)) {
             const selectedText = state.selection.content().content.firstChild
                 .attrs["tagName"] as string;
@@ -314,7 +314,7 @@ export function toggleTagLinkCommand(
                 return false;
             }
 
-            const newTagNode = state.schema.nodes.tagLink.create({
+            const newTagNode = state.schema.nodes.tag_link.create({
                 tagName: selectedText.trim(),
                 tagType: isMetaTag ? "meta-tag" : "tag",
             });

@@ -475,7 +475,7 @@ describe("commands", () => {
             let containsTagLink = false;
 
             newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
-                containsTagLink = node.type.name === "tagLink";
+                containsTagLink = node.type.name === "tag_link";
 
                 return !containsTagLink;
             });
@@ -497,7 +497,7 @@ describe("commands", () => {
             let containsTagLink = false;
 
             newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
-                containsTagLink = node.type.name === "tagLink";
+                containsTagLink = node.type.name === "tag_link";
 
                 return !containsTagLink;
             });
@@ -533,7 +533,7 @@ describe("commands", () => {
                     0,
                     tagLinkResult.newState.doc.content.size,
                     (node) => {
-                        containsTagLink = node.type.name === "tagLink";
+                        containsTagLink = node.type.name === "tag_link";
 
                         return !containsTagLink;
                     }
@@ -543,7 +543,7 @@ describe("commands", () => {
             }
         );
 
-        it("should replace selected text with tagLink", () => {
+        it("should replace selected text with tag_link", () => {
             let state = createState("this is my state", []);
 
             state = applySelection(state, 5, 7); //"is"
@@ -566,7 +566,7 @@ describe("commands", () => {
                                 text: "this ",
                             },
                             {
-                                "type.name": "tagLink",
+                                "type.name": "tag_link",
                             },
                             {
                                 isText: true,
@@ -578,7 +578,7 @@ describe("commands", () => {
             });
         });
 
-        it("should untoggle tagLink when selected", () => {
+        it("should untoggle tag_link when selected", () => {
             let state = createState("someText", []);
 
             state = applySelection(state, 0, 8); // cursor is inside the tag
@@ -597,7 +597,7 @@ describe("commands", () => {
                         "type.name": "paragraph",
                         "content": [
                             {
-                                "type.name": "tagLink",
+                                "type.name": "tag_link",
                             },
                         ],
                     },
