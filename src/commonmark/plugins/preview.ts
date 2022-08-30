@@ -10,17 +10,18 @@ import { docNodeChanged } from "../../shared/utils";
 import { CommonmarkParserFeatures } from "../../shared/view";
 import type { CommonmarkOptions } from "../editor";
 
-/** TODO DOCUMENT */
-interface PreviewPluginState {
-    isShown: boolean;
-}
-
 /**
  * The amount of time to delay rendering since the last render;
  * Setting to a high value will result in less frequent renders as users type
  */
 const DEFAULT_RENDER_DELAY_MS = 100;
 
+/** The internal state used by the preview plugin */
+interface PreviewPluginState {
+    isShown: boolean;
+}
+
+/** The PluginView for the plugin created in @see createPreviewPlugin that controls the rendered markdown preview */
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
     private container: Element;
@@ -111,6 +112,7 @@ class PreviewView implements PluginView {
     }
 }
 
+/** PluginKey for managing the plugin created in @see createPreviewPlugin */
 class PreviewPluginKey extends StatefulPluginKey<PreviewPluginState> {
     constructor() {
         super("preview");
@@ -127,14 +129,24 @@ class PreviewPluginKey extends StatefulPluginKey<PreviewPluginState> {
     }
 }
 
+/**
+ * Returns true if the markdown preview is currently visible
+ * @param view The current editor view
+ */
 export function previewIsVisible(view: EditorView) {
     return PREVIEW_KEY.previewIsVisible(view);
 }
 
+/**
+ * Toggles the preview on/off based on the passed parameters
+ * @param view The current editor view
+ * @param isShown Whether the preview should be visible
+ */
 export function togglePreviewVisibility(view: EditorView, isShown: boolean) {
     PREVIEW_KEY.togglePreviewVisibility(view, isShown);
 }
 
+/** Singleton instance of @see PreviewPluginKey */
 const PREVIEW_KEY = new PreviewPluginKey();
 
 /**
