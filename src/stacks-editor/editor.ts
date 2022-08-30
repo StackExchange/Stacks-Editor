@@ -373,32 +373,25 @@ export class StacksEditor implements View {
     </label>
 </div>`;
 
-        // TODO CLEANUP
+        // if the preview is enabled, add another toggle button
         if (previewEnabled) {
-            const input = document.createElement("input");
-            input.setAttribute("name", `mode-toggle-${this.internalId}`);
-            input.setAttribute("type", "radio");
-            input.setAttribute("id", `mode-toggle-preview-${this.internalId}`);
-            input.className = "js-editor-toggle-btn";
-            input.setAttribute("data-mode", `${EditorType.Commonmark}`);
-            input.setAttribute(
-                "data-preview",
-                `${previewEnabled ? "true" : "false"}`
-            );
-            input.checked = previewIsShowing;
-            container.firstChild.appendChild(input);
+            const previewCheckedProp = previewIsShowing ? "checked" : "";
+            const tmp = document.createElement("div");
+            tmp.innerHTML = escapeHTML`
+<input type="radio" name="mode-toggle-${this.internalId}"
+    id="mode-toggle-preview-${this.internalId}"
+    class="js-editor-toggle-btn"
+    data-mode="${EditorType.Commonmark}"
+    data-preview="${previewEnabled.toString()}"
+    ${previewCheckedProp} />
+<label class="s-btn s-editor-btn px6"
+    for="mode-toggle-preview-${this.internalId}"
+    title="${_t("menubar.mode_toggle_preview_title")}">
+    <span class="icon-bg iconMarkdownPreview"></span>
+    <span class="v-visible-sr">${_t("menubar.mode_toggle_preview_title")}</span>
+</label>`;
 
-            const label = document.createElement("label");
-            label.setAttribute("for", `mode-toggle-preview-${this.internalId}`);
-            label.setAttribute(
-                "title",
-                _t("menubar.mode_toggle_preview_title")
-            );
-            label.className = "s-btn s-editor-btn px6";
-            label.innerHTML = escapeHTML`<span class="icon-bg iconMarkdownPreview"></span><span class="v-visible-sr">${_t(
-                "menubar.mode_toggle_preview_title"
-            )}</span>`;
-            container.firstChild.appendChild(label);
+            container.firstElementChild.append(...tmp.children);
         }
 
         container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
