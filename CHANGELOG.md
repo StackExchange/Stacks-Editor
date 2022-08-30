@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.7.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.7.0...v0.7.1) (2022-08-30)
+
+
+### Features
+
+* **commonmark-editor:** add "more formatting" menu dropdown to match that in the rich-text editor ([e20b8f2](https://github.com/StackExchange/Stacks-Editor/commit/e20b8f2ac017f404e6bca906d42c7edce93888f6))
+* **menu:** show undo/redo buttons on devices that need a virtual keyboard ([15360bb](https://github.com/StackExchange/Stacks-Editor/commit/15360bbde8e28ea46c77f7427bd555414d7a1049)), closes [#210](https://github.com/StackExchange/Stacks-Editor/issues/210)
+* **preview:** add additional mode toggle when commonmarkOptions.preview is enabled ([#217](https://github.com/StackExchange/Stacks-Editor/issues/217)) ([e664128](https://github.com/StackExchange/Stacks-Editor/commit/e664128f0d7ab4e3a9d9ee2445631587c724f6dc)), closes [#150](https://github.com/StackExchange/Stacks-Editor/issues/150)
+* **reference-link:** add reference link syntax support for images ([d6efe2b](https://github.com/StackExchange/Stacks-Editor/commit/d6efe2ba0a34480723a46734673eb4f4ed72bc1f)), closes [#188](https://github.com/StackExchange/Stacks-Editor/issues/188)
+* **rich-text-editor:** add code_block (un)indent (shift-)tab shortcuts ([#137](https://github.com/StackExchange/Stacks-Editor/issues/137)) ([d3e7624](https://github.com/StackExchange/Stacks-Editor/commit/d3e762464a9641a8eb2d51fdd185052a6810c585)), closes [#50](https://github.com/StackExchange/Stacks-Editor/issues/50)
+* **rich-text-editor:** add rich-text tagLink, sub, sup, kbd, and spoiler entries/shortcuts ([#158](https://github.com/StackExchange/Stacks-Editor/issues/158)) ([4936bbe](https://github.com/StackExchange/Stacks-Editor/commit/4936bbe53d3c72b88332d21f49c704774add046e)), closes [#51](https://github.com/StackExchange/Stacks-Editor/issues/51)
+
+
+### Bug Fixes
+
+* **html:** fix newlines in-between html attributes breaking tag markup parsing ([6634898](https://github.com/StackExchange/Stacks-Editor/commit/66348988d5307d44fe91daf1888dc0c042b31445)), closes [#208](https://github.com/StackExchange/Stacks-Editor/issues/208)
+* **markdown-serializer:** ease up on over stringent escaping in link urls ([33527f6](https://github.com/StackExchange/Stacks-Editor/commit/33527f6e8a2fc88bc83a300a69dbb1b0127a3adc)), closes [#218](https://github.com/StackExchange/Stacks-Editor/issues/218)
+* **menu:** change to not mess with a block's classes if the visibility function is missing entirely ([6c62c04](https://github.com/StackExchange/Stacks-Editor/commit/6c62c04a53891b09fefd6dbb3c11831d6614f232))
+* **menu:** fix undo/redo buttons not working, along with ensuring that the state is properly updated ([bb686fb](https://github.com/StackExchange/Stacks-Editor/commit/bb686fb8a80b1ed8182970c8dbbce34bcc4c8b90)), closes [#172](https://github.com/StackExchange/Stacks-Editor/issues/172) [#214](https://github.com/StackExchange/Stacks-Editor/issues/214)
+
 ## [0.7.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.6.1...v0.7.0) (2022-07-28)
 
 
