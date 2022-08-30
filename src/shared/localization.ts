@@ -65,8 +65,9 @@ export const defaultStrings = {
         remove_button_title: "Remove link" as string,
     },
     menubar: {
-        mode_toggle_richtext_title: "Rich text mode" as string,
         mode_toggle_markdown_title: "Markdown mode" as string,
+        mode_toggle_preview_title: "Markdown with preview mode" as string,
+        mode_toggle_richtext_title: "Rich text mode" as string,
     },
     nodes: {
         codeblock_lang_auto: ({ lang }: { lang: string }) => `${lang} (auto)`,

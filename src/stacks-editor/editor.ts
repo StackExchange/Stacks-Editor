@@ -19,6 +19,10 @@ import {
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
 import type { Transaction } from "prosemirror-state";
+import {
+    togglePreviewVisibility,
+    previewIsVisible,
+} from "../commonmark/plugins/preview";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -227,15 +231,16 @@ export class StacksEditor implements View {
         const menuContainerFn = () => menuTarget;
         this.options.menuParentContainer = menuContainerFn;
 
-        // create specific area for the editor menu
-        const previewTarget = document.createElement("div");
-        previewTarget.className = "py16";
-        this.target.appendChild(previewTarget);
+        if (this.options.commonmarkOptions.preview.enabled) {
+            // create specific area for the editor menu
+            const previewTarget = document.createElement("div");
+            this.target.appendChild(previewTarget);
 
-        // set the editors' preview containers to be the combo container
-        const previewContainerFn = () => previewTarget;
-        this.options.commonmarkOptions.preview.parentContainer =
-            previewContainerFn;
+            // set the editors' preview containers to be the combo container
+            const previewContainerFn = () => previewTarget;
+            this.options.commonmarkOptions.preview.parentContainer =
+                previewContainerFn;
+        }
 
         // create a specific area for the editor plugins
         const pluginTarget = document.createElement("div");
@@ -324,10 +329,16 @@ export class StacksEditor implements View {
      * @param menuTarget The container to append the created element to
      */
     private createEditorSwitcher(defaultItem: EditorType, menuTarget: Element) {
+        const previewIsShowing =
+            this.options.commonmarkOptions.preview.shownByDefault || false;
         const richCheckedProp =
             defaultItem === EditorType.RichText ? "checked" : "";
         const markCheckedProp =
-            defaultItem === EditorType.Commonmark ? "checked" : "";
+            defaultItem === EditorType.Commonmark && !previewIsShowing
+                ? "checked"
+                : "";
+
+        const previewEnabled = this.options.commonmarkOptions.preview.enabled;
 
         const container = document.createElement("div");
         container.className = "flex--item d-flex ai-center ml24 fc-medium";
@@ -350,6 +361,7 @@ export class StacksEditor implements View {
         id="mode-toggle-markdown-${this.internalId}"
         class="js-editor-toggle-btn"
         data-mode="${EditorType.Commonmark}"
+        data-preview="false"
         ${markCheckedProp} />
     <label class="s-btn s-editor-btn px6"
         for="mode-toggle-markdown-${this.internalId}"
@@ -360,6 +372,27 @@ export class StacksEditor implements View {
         )}</span>
     </label>
 </div>`;
+
+        // if the preview is enabled, add another toggle button
+        if (previewEnabled) {
+            const previewCheckedProp = previewIsShowing ? "checked" : "";
+            const tmp = document.createElement("div");
+            tmp.innerHTML = escapeHTML`
+<input type="radio" name="mode-toggle-${this.internalId}"
+    id="mode-toggle-preview-${this.internalId}"
+    class="js-editor-toggle-btn"
+    data-mode="${EditorType.Commonmark}"
+    data-preview="${previewEnabled.toString()}"
+    ${previewCheckedProp} />
+<label class="s-btn s-editor-btn px6"
+    for="mode-toggle-preview-${this.internalId}"
+    title="${_t("menubar.mode_toggle_preview_title")}">
+    <span class="icon-bg iconMarkdownPreview"></span>
+    <span class="v-visible-sr">${_t("menubar.mode_toggle_preview_title")}</span>
+</label>`;
+
+            container.firstElementChild.append(...tmp.children);
+        }
 
         container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
             el.addEventListener(
@@ -383,9 +416,11 @@ export class StacksEditor implements View {
         // get type from the target element
         const target = e.target as HTMLInputElement;
         const type: EditorType = +target.dataset.mode;
+        const showPreview = target.dataset.preview === "true";
+        const inPreviewNow = previewIsVisible(this.backingView.editorView);
 
-        // if the type hasn't changed, do nothing
-        if (type === this.currentViewType) {
+        // if the state hasn't changed, do nothing
+        if (type === this.currentViewType && showPreview === inPreviewNow) {
             return;
         }
 
@@ -399,10 +434,16 @@ export class StacksEditor implements View {
         // set the view type for this button
         this.setView(type);
 
+        if (showPreview !== inPreviewNow) {
+            togglePreviewVisibility(this.backingView.editorView, showPreview);
+        }
+
         // TODO better event name?
         // trigger an event on the target for consumers to listen for
         dispatchEditorEvent(this.target, "view-change", {
             editorType: type,
+            previewShown:
+                this.currentViewType !== EditorType.RichText && showPreview,
         });
 
         // TODO do we always want to focus the editor?

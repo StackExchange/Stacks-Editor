@@ -38,6 +38,8 @@ export interface CommonmarkOptions extends CommonViewOptions {
     preview?: {
         /** Whether the preview is enabled */
         enabled: boolean;
+        /** Whether the preview is shown on editor startup */
+        shownByDefault?: boolean;
         /**
          * Function to get the container to place the markdown preview;
          * defaults to returning this editor's target's parentNode
