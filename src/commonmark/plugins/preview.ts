@@ -42,9 +42,11 @@ class PreviewView implements PluginView {
         this.dom = document.createElement("div");
         this.dom.classList.add("s-prose", "py16", "js-md-preview");
         // TODO pass down the ExternalPluginProvider as well
-        this.renderer =
-            previewOptions?.renderer ||
-            createDefaultMarkdownItInstance({
+        this.renderer = previewOptions?.renderer 
+            // if renderer is passed in, need to reinitialize the renderer to ensure that prototype functions 
+            // that were excluded from deepmerge are included in the renderer being used here
+            ? new MarkdownIt(previewOptions.renderer.options)
+            : createDefaultMarkdownItInstance({
                 ...parserFeatures,
                 // TODO until we handle proper html sanitizing in the renderer,
                 // we need to disable html entirely...
