@@ -9,68 +9,92 @@ import { createState } from "../test-helpers";
 describe("preview plugin", () => {
     let pluginContainer: Element;
 
-    it.each([
-        {
-            content: "",
-            expectedPreview: "",
-        },
-        {
-            content: "# Here’s a thought",
-            expectedPreview: "<h1>Here’s a thought</h1>\n",
-        },
-        {
-            content: "**bold**",
-            expectedPreview: "<p><strong>bold</strong></p>\n",
-        },
-        {
-            content:
-                "* unordered\n* lists\n    * even with nesting\n* and back again",
-            expectedPreview:
-                '<ul tight="true">\n<li>unordered</li>\n<li>lists\n<ul tight="true">\n<li>even with nesting</li>\n</ul>\n</li>\n<li>and back again</li>\n</ul>\n',
-        },
-    ])("should render the expected preview output", (obj) => {
-        pluginContainer = document.createElement("div");
-        const { content, expectedPreview } = obj;
+    it("should call the renderer callback", () => {
+        const renderer = jest.fn(() => Promise.resolve());
 
-        const state = createState(content, [
-            createPreviewPlugin(
-                {
-                    enabled: true,
-                    shownByDefault: true,
-                    parentContainer: () => pluginContainer,
-                },
-                {}
-            ),
+        pluginContainer = document.createElement("div");
+
+        const state = createState("test content", [
+            createPreviewPlugin({
+                enabled: true,
+                shownByDefault: true,
+                parentContainer: () => pluginContainer,
+                renderDelayMs: 0,
+                renderer,
+            }),
         ]);
 
         createView(state);
 
-        const previewHTML =
-            pluginContainer.querySelector(".js-md-preview").innerHTML;
-
-        expect(previewHTML).toBe(expectedPreview);
+        expect(renderer).toHaveBeenCalledWith<[string, HTMLElement]>(
+            "test content",
+            expect.any(HTMLElement) as HTMLElement
+        );
     });
 
-    it.todo("should update the preview when the content changes");
+    it("should require a renderer method when preview is enabled", () => {
+        expect(() => {
+            const state = createState("test content", [
+                createPreviewPlugin({
+                    enabled: true,
+                    parentContainer: () => pluginContainer,
+                    renderer: null,
+                }),
+            ]);
+            createView(state);
+        }).toThrow(/renderer is required/);
+    });
+
+    it("should update the preview when the content changes", () => {
+        const renderer = jest.fn(() => Promise.resolve());
+
+        pluginContainer = document.createElement("div");
+
+        const state = createState("test content", [
+            createPreviewPlugin({
+                enabled: true,
+                shownByDefault: true,
+                parentContainer: () => pluginContainer,
+                renderDelayMs: 0,
+                renderer,
+            }),
+        ]);
+
+        const view = createView(state);
+
+        expect(renderer).toHaveBeenCalledWith(
+            "test content",
+            expect.any(HTMLElement) as HTMLElement
+        );
+
+        view.dispatch(view.state.tr.insertText("new text ", 0));
+
+        expect(renderer).toHaveBeenCalledWith(
+            "new text test content",
+            expect.any(HTMLElement) as HTMLElement
+        );
+    });
+
     it.todo("should delay the preview update each time the content changes");
 
     it("should initially render when enabled and shown by default", () => {
+        const renderer = jest.fn(() => Promise.resolve());
         pluginContainer = document.createElement("div");
 
         const state = createState("", [
-            createPreviewPlugin(
-                {
-                    enabled: true,
-                    shownByDefault: true,
-                    parentContainer: () => pluginContainer,
-                },
-                {}
-            ),
+            createPreviewPlugin({
+                enabled: true,
+                shownByDefault: true,
+                parentContainer: () => pluginContainer,
+                renderDelayMs: 0,
+                renderer,
+            }),
         ]);
 
         createView(state);
 
         expect(pluginContainer.querySelector(".js-md-preview")).toBeTruthy();
+        expect(renderer).toHaveBeenCalledTimes(1);
     });
 
     it.each([
@@ -80,38 +104,38 @@ describe("preview plugin", () => {
     ])(
         "should not initially render when disabled or not shown by default",
         ({ enabled, shownByDefault }) => {
+            const renderer = jest.fn(() => Promise.resolve());
             pluginContainer = document.createElement("div");
 
             const state = createState("", [
-                createPreviewPlugin(
-                    {
-                        enabled: enabled,
-                        shownByDefault: shownByDefault,
-                        parentContainer: () => pluginContainer,
-                    },
-                    {}
-                ),
+                createPreviewPlugin({
+                    enabled: enabled,
+                    shownByDefault: shownByDefault,
+                    parentContainer: () => pluginContainer,
+                    renderDelayMs: 0,
+                    renderer,
+                }),
             ]);
 
             createView(state);
 
             expect(pluginContainer.querySelector(".js-md-preview")).toBeNull();
+            expect(renderer).toHaveBeenCalledTimes(0);
         }
     );
 
     it("should allow toggling the visibility of the preview", () => {
+        const renderer = jest.fn(() => Promise.resolve());
         pluginContainer = document.createElement("div");
 
         const state = createState("", [
-            createPreviewPlugin(
-                {
-                    enabled: true,
-                    shownByDefault: false,
-                    parentContainer: () => pluginContainer,
-                    renderDelayMs: 0,
-                },
-                {}
-            ),
+            createPreviewPlugin({
+                enabled: true,
+                shownByDefault: false,
+                parentContainer: () => pluginContainer,
+                renderDelayMs: 0,
+                renderer,
+            }),
         ]);
 
         const view = createView(state);
@@ -119,17 +143,20 @@ describe("preview plugin", () => {
         // expect it to not be rendered
         expect(previewIsVisible(view)).toBe(false);
         expect(pluginContainer.querySelector(".js-md-preview")).toBeNull();
+        expect(renderer).toHaveBeenCalledTimes(0);
 
         togglePreviewVisibility(view, true);
 
         // expect it to be rendered
         expect(previewIsVisible(view)).toBe(true);
         expect(pluginContainer.querySelector(".js-md-preview")).toBeTruthy();
+        expect(renderer).toHaveBeenCalledTimes(1);
 
         togglePreviewVisibility(view, false);
 
         // expect it not to be rendered again
         expect(previewIsVisible(view)).toBe(false);
         expect(pluginContainer.querySelector(".js-md-preview")).toBeNull();
+        expect(renderer).toHaveBeenCalledTimes(1);
     });
 });

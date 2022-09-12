@@ -154,6 +154,7 @@ export class StacksEditor implements View {
                 classList: commonClasses,
                 preview: {
                     enabled: false,
+                    renderer: null,
                 },
             },
             richTextOptions: {

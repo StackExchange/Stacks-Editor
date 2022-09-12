@@ -28,16 +28,30 @@ import {
 } from "../shared/view";
 import { allKeymaps } from "./key-bindings";
 import { commonmarkSchema } from "./schema";
-import type MarkdownIt from "markdown-it";
 import { textCopyHandlerPlugin } from "./plugins/text-copy-handler";
 import { markdownHighlightPlugin } from "./plugins/markdown-highlight";
 import { createMenuEntries } from "../shared/menu";
+
+/**
+ * Describes the callback for when an html preview should be rendered
+ * @param content The plain text content of the codeblock
+ * @param container The element that the content should be rendered into
+ */
+export type PreviewRenderer = (
+    content: string,
+    container: HTMLElement
+) => Promise<void>;
 
 export interface CommonmarkOptions extends CommonViewOptions {
     /** Settings for showing a static rendered preview of the editor's contents */
     preview?: {
         /** Whether the preview is enabled */
         enabled: boolean;
+        /**
+         * Custom renderer method to use to render the markdown;
+         * This method must handle rendering into the passed container itself
+         */
+        renderer: (content: string, container: HTMLElement) => Promise<void>;
         /** Whether the preview is shown on editor startup */
         shownByDefault?: boolean;
         /**
@@ -45,13 +59,6 @@ export interface CommonmarkOptions extends CommonViewOptions {
          * defaults to returning this editor's target's parentNode
          */
         parentContainer?: (view: EditorView) => Element;
-        /**
-         * Custom renderer instance to use to render the markdown;
-         * defaults to the markdown-it instance used by this editor;
-         * WARNING: The passed renderer will need to properly sanitize html,
-         * SANITIZATION IS NOT PROVIDED FOR CUSTOM RENDERERS
-         */
-        renderer?: MarkdownIt;
         /** The number of milliseconds to delay rendering between updates */
         renderDelayMs?: number;
     };
@@ -97,10 +104,7 @@ export class CommonmarkEditor extends BaseView {
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
                         menu,
-                        createPreviewPlugin(
-                            this.options.preview,
-                            this.options.parserFeatures
-                        ),
+                        createPreviewPlugin(this.options.preview),
                         markdownHighlightPlugin(this.options.parserFeatures),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer

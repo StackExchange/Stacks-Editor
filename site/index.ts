@@ -1,12 +1,15 @@
 import "@stackoverflow/stacks";
+import MarkdownIt from "markdown-it";
 import packageJson from "../package.json";
 import {
     registerLocalizationStrings,
     StacksEditor,
     StacksEditorOptions,
 } from "../src";
+import { PreviewRenderer } from "../src/commonmark/editor";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
+import { sleepAsync } from "../test/rich-text/test-helpers";
 import { samplePlugins } from "./sample-plugins";
 import "./site.less";
 
@@ -113,6 +116,35 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
         });
     });
 
+/**
+ * Sample preview renderer that has a fake delay and uses the default Markdown-It renderer
+ * NOTE: synchronous renderers can simply return Promise.resolve()
+ */
+const examplePreviewRenderer: PreviewRenderer = async (content, container) => {
+    const spinner = document.createElement("span");
+    spinner.className = "is-loading";
+    spinner.textContent =
+        "Intentionally delaying render for example purposes...";
+    container.appendChild(spinner);
+
+    // add a fake load delay (because we can)
+    await sleepAsync(500);
+
+    const instance = MarkdownIt("commonmark", {
+        html: false,
+    });
+    // html support is disabled above (and this is a simple demo anyways)
+    // eslint-disable-next-line no-unsanitized/property
+    container.innerHTML = instance.render(content);
+
+    // add a disclaimer to our demo renderer so people don't report unrelated rendering bugs
+    const disclaimer = document.createElement("p");
+    disclaimer.className = "fs-fine fc-light mb4";
+    disclaimer.textContent =
+        "This demo is using the default MarkdownIt renderer, so don't expect anything fancy.";
+    container.prepend(disclaimer);
+};
+
 domReady(() => {
     const versionNumber = document.querySelector(".js-version-number");
     if (versionNumber) {
@@ -191,6 +223,7 @@ domReady(() => {
             preview: {
                 enabled: enableMDPreview,
                 shownByDefault: defaultEditor.previewShown,
+                renderer: examplePreviewRenderer,
             },
         },
         parserFeatures: {

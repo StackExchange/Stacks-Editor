@@ -1,14 +1,12 @@
-import MarkdownIt from "markdown-it";
 import { EditorState, Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { createDefaultMarkdownItInstance } from "../../shared/markdown-parser";
+import { error } from "../../shared/logger";
 import {
     StatefulPlugin,
     StatefulPluginKey,
 } from "../../shared/prosemirror-plugins/plugin-extensions";
 import { docNodeChanged } from "../../shared/utils";
-import { CommonmarkParserFeatures } from "../../shared/view";
-import type { CommonmarkOptions } from "../editor";
+import type { CommonmarkOptions, PreviewRenderer } from "../editor";
 
 /**
  * The amount of time to delay rendering since the last render;
@@ -25,7 +23,7 @@ interface PreviewPluginState {
 class PreviewView implements PluginView {
     dom: HTMLDivElement;
     private container: Element;
-    private renderer: MarkdownIt;
+    private renderer: PreviewRenderer;
     private renderTimeoutId: number | null = null;
     private renderDelayMs: number;
 
@@ -34,22 +32,18 @@ class PreviewView implements PluginView {
     constructor(
         view: EditorView,
         container: Element,
-        parserFeatures: CommonmarkParserFeatures,
         previewOptions: CommonmarkOptions["preview"]
     ) {
         this.container = container;
         this.isShown = previewOptions.enabled && previewOptions.shownByDefault;
         this.dom = document.createElement("div");
         this.dom.classList.add("s-prose", "py16", "js-md-preview");
-        // TODO pass down the ExternalPluginProvider as well
-        this.renderer =
-            previewOptions?.renderer ||
-            createDefaultMarkdownItInstance({
-                ...parserFeatures,
-                // TODO until we handle proper html sanitizing in the renderer,
-                // we need to disable html entirely...
-                html: false,
-            });
+        this.container.appendChild(this.dom);
+        this.renderer = previewOptions?.renderer;
+
+        if (!this.renderer) {
+            throw "CommonmarkOptions.preview.renderer is required when CommonmarkOptions.preview.enabled is true";
+        }
 
         this.renderDelayMs =
             previewOptions?.renderDelayMs ?? DEFAULT_RENDER_DELAY_MS;
@@ -101,15 +95,21 @@ class PreviewView implements PluginView {
 
     /** Renders the preview using the passed markdown text */
     private updatePreview(text: string) {
+        this.container.innerHTML = "";
+
+        // if showing the preview, fire off the renderer async
         if (this.isShown) {
-            // NOTE: This assumes that the renderer is properly sanitizing html;
-            // this is specified in the option docs @see CommonmarkOptions["preview"]
-            // eslint-disable-next-line no-unsanitized/property
-            this.dom.innerHTML = this.renderer.render(text);
+            // always clear the preview before re-rendering
+            this.dom.innerHTML = "";
             this.container.appendChild(this.dom);
-        } else {
-            // should be hidden, so clear the preview
-            this.container.innerHTML = "";
+
+            void this.renderer?.(text, this.dom).catch((e) =>
+                error(
+                    "PreviewView.updatePreview",
+                    `Uncaught exception in preview renderer`,
+                    e
+                )
+            );
         }
     }
 }
@@ -154,11 +154,9 @@ const PREVIEW_KEY = new PreviewPluginKey();
 /**
  * Plugin that renders the editor's markdown content directly and displays it in a preview element
  * @param previewOptions The preview options passed to the commonmark editor
- * @param parserFeatures The features to enable/disable on the commonmark parser
  */
 export function createPreviewPlugin(
-    previewOptions: CommonmarkOptions["preview"],
-    parserFeatures: CommonmarkParserFeatures
+    previewOptions: CommonmarkOptions["preview"]
 ): Plugin {
     if (!previewOptions?.enabled) {
         return new Plugin({});
@@ -194,7 +192,6 @@ export function createPreviewPlugin(
             const previewView = new PreviewView(
                 editorView,
                 container,
-                parserFeatures,
                 previewOptions
             );
 
