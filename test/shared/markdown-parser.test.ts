@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import { Mark, NodeType } from "prosemirror-model";
+import { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
