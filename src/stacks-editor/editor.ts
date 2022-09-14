@@ -330,8 +330,9 @@ export class StacksEditor implements View {
      * @param menuTarget The container to append the created element to
      */
     private createEditorSwitcher(defaultItem: EditorType, menuTarget: Element) {
+        const previewOpts = this.options.commonmarkOptions.preview;
         const previewIsShowing =
-            this.options.commonmarkOptions.preview.shownByDefault || false;
+            (previewOpts?.enabled && previewOpts?.shownByDefault) || false;
         const richCheckedProp =
             defaultItem === EditorType.RichText ? "checked" : "";
         const markCheckedProp =
