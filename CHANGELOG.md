@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.8.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.7.1...v0.8.0) (2022-09-14)
+
+
+### ⚠ BREAKING CHANGES
+
+* **preview:** changed type of CommonmarkOptions.preview.renderer from a MarkdownIt instance to
+an arbitrary rendering function; removed default preview renderer in favor of always requiring a
+renderer method when enabled
+
+### Features
+
+* **preview:** update markdown preview renderer to support an arbitrary renderer callback ([13bc4df](https://github.com/StackExchange/Stacks-Editor/commit/13bc4df8b3e9d2781faf801d46511578cb38b5a9))
+
+
+### Bug Fixes
+
+* **interface-manager:** partial fix for race condition causing multiple buildInterface calls ([1353dab](https://github.com/StackExchange/Stacks-Editor/commit/1353dab70403271928ba005536f00d561b379f58))
+* **link-editor:** fix link-editor dispatching on blur when not shown ([8785030](https://github.com/StackExchange/Stacks-Editor/commit/8785030ec45c37a17d68d11922bc1a0eee858551))
+* **stacks-editor:** fix mode toggle when preview is disabled and `shownByDefault` is enabled ([149f67f](https://github.com/StackExchange/Stacks-Editor/commit/149f67f3646aa027168cd3a4fd5b4f54ed7db20c))
+
 ### [0.7.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.7.0...v0.7.1) (2022-08-30)
 
 
