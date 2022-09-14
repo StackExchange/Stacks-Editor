@@ -359,12 +359,12 @@ export abstract class PluginInterfaceView<
         // only show/hide if the state has changed
         if (this.isShown && !shouldShow) {
             // hide the interface
-            this.destroyInterface(this.key.getContainer(view));
             this.isShown = false;
+            this.destroyInterface(this.key.getContainer(view));
         } else if (!this.isShown && shouldShow) {
             // show the interface
-            this.buildInterface(this.key.getContainer(view));
             this.isShown = true;
+            this.buildInterface(this.key.getContainer(view));
         }
     }
 
