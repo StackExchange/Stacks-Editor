@@ -266,7 +266,7 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
         const meta = this.getState(state);
 
         // if the tooltip is not showing, just return
-        if (meta.decorations === DecorationSet.empty) {
+        if (!tooltipIsShowing(meta.decorations)) {
             return state.tr;
         }
 
@@ -582,6 +582,10 @@ class LinkTooltip {
     }
 }
 
+function tooltipIsShowing(linkDecos: DecorationSet): boolean {
+    return linkDecos && linkDecos !== DecorationSet.empty;
+}
+
 /**
  * A plugin view that shows a tooltip when selecting a link in rich-text mode.
  * The tooltip shows the href attribute of the selected link and allows removing
@@ -619,8 +623,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                 return {
                     ...meta,
                     forceHideTooltip:
-                        value.forceHideTooltip &&
-                        decorations !== DecorationSet.empty,
+                        value.forceHideTooltip && tooltipIsShowing(decorations),
                     linkTooltip: value.linkTooltip,
                     decorations: decorations,
                 };
@@ -636,12 +639,15 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
             handleDOMEvents: {
                 /** Handle editor blur and close the tooltip if it isn't focused */
                 blur(view, e: FocusEvent) {
-                    const linkTooltip = LINK_EDITOR_KEY.getState(
-                        view.state
-                    ).linkTooltip;
+                    const { linkTooltip, decorations } =
+                        LINK_EDITOR_KEY.getState(view.state);
 
                     // if the editor blurs, but NOT because of the tooltip, hide the tooltip
-                    if (!view.hasFocus() && !linkTooltip.hasFocus(e)) {
+                    if (
+                        tooltipIsShowing(decorations) &&
+                        !view.hasFocus() &&
+                        !linkTooltip.hasFocus(e)
+                    ) {
                         view.dispatch(
                             LINK_EDITOR_KEY.forceHideTooltipTr(view.state)
                         );
