@@ -1,13 +1,36 @@
 {
     "version": "0.2.0",
-    "configurations": [{
-        "name": "Launch Chrome",
-        "type": "chrome",
-        "request": "launch",
-        "url": "http://localhost:8080",
-        "preLaunchTask": "start",
-        "pathMapping": {
-            "webpack:///": "${workspaceFolder}/"
-        }
-    }]
+    "configurations": [
+        {
+            "name": "Launch Chrome",
+            "type": "chrome",
+            "request": "launch",
+            "url": "http://localhost:8080",
+            "preLaunchTask": "start",
+            "pathMapping": {
+                "webpack:///": "${workspaceFolder}/"
+            }
+        },
+        {
+            "name": "Debug Jest tests",
+            "type": "node",
+            "request": "launch",
+            "runtimeExecutable": "${workspaceRoot}/node_modules/.bin/jest",
+            "args": [
+                "${fileBasenameNoExtension}",
+                "--runInBand",
+                "--coverage=false",
+                "--no-cache",
+                "--config",
+                "config/jest-unit.config.js"
+            ],
+            "cwd": "${workspaceRoot}",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "sourceMaps": true,
+            "windows": {
+                "program": "${workspaceFolder}/node_modules/jest/bin/jest"
+            }
+        },
+    ]
 }
