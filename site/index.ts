@@ -248,7 +248,7 @@ domReady(() => {
         imageUpload: imageUploadOptions,
         editorPlugins: enableSamplePlugin ? samplePlugins : [],
         ariaLabeledby: "editor-label",
-        id: "editor",        
+        id: "editor",
     };
 
     const editorInstance = new StacksEditor(place, content.value, options);
