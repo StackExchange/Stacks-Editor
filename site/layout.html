@@ -11,7 +11,7 @@
     </head>
 
     <body class="p24">
-        <div class="d-flex ai-center ps-fixed t8 r8 sm:d-none">
+        <nav class="d-flex ai-center ps-fixed t8 r8 sm:d-none">
             <a
                 href="#"
                 class="s-btn js-repo-link"
@@ -41,12 +41,11 @@
             >
                 Settings
             </button>
-            <div class="s-popover" id="js-settings-popover" role="menu">
+            <div class="s-popover px0 py4" id="js-settings-popover" role="menu">
                 <div class="s-popover--arrow"></div>
-                <ul
-                    class="s-sidebarwidget--content s-sidebarwidget__items btw0 p0"
-                >
-                    <li class="d-flex ai-center s-sidebarwidget--item">
+                <ul class="s-menu">
+                    <li class="s-menu--title" role="separator">Settings</li>
+                    <li class="d-flex ai-center s-block-link">
                         <div class="flex--item s-toggle-switch">
                             <input id="js-toggle-dark" type="checkbox" />
                             <div class="s-toggle-switch--indicator"></div>
@@ -55,7 +54,7 @@
                             Dark mode
                         </label>
                     </li>
-                    <li class="d-flex ai-center s-sidebarwidget--item">
+                    <li class="d-flex ai-center s-block-link">
                         <div class="flex--item s-toggle-switch">
                             <input id="js-toggle-contrast" type="checkbox" />
                             <div class="s-toggle-switch--indicator"></div>
@@ -64,7 +63,7 @@
                             High contrast
                         </label>
                     </li>
-                    <li class="d-flex ai-center s-sidebarwidget--item">
+                    <li class="d-flex ai-center s-block-link">
                         <div class="flex--item s-toggle-switch">
                             <input id="js-toggle-readonly" type="checkbox" />
                             <div class="s-toggle-switch--indicator"></div>
@@ -73,39 +72,51 @@
                             Readonly
                         </label>
                     </li>
-                    <li class="s-sidebarwidget--item">
-                        <a href="./index.html" class="s-link">Example editor</a>
+                    <li class="s-menu--divider" role="separator"></li>
+                    <li class="s-menu--title" role="separator">Playgrounds</li>
+                    <li role="menuitem">
+                        <a href="./index.html" class="s-block-link">
+                            Example editor
+                        </a>
                     </li>
-                    <li class="s-sidebarwidget--item">
-                        <a href="./empty.html" class="s-link">Empty editor</a>
+                    <li role="menuitem">
+                        <a href="./empty.html" class="s-block-link">
+                            Empty editor
+                        </a>
                     </li>
-                    <li class="s-sidebarwidget--item">
-                        <a href="./noimage.html" class="s-link">
+                    <li role="menuitem">
+                        <a href="./noimage.html" class="s-block-link">
                             No image upload
                         </a>
                     </li>
-                    <li class="s-sidebarwidget--item">
-                        <a href="./tables.html" class="s-link">
-                            Tables playground
-                        </a>
-                    </li>
-                    <li class="s-sidebarwidget--item">
-                        <a href="./dualeditor.html" class="s-link">
+                    <li role="menuitem">
+                        <a href="./dualeditor.html" class="s-block-link">
                             Dual editor playground
                         </a>
                     </li>
-                    <li class="s-sidebarwidget--item">
+                    <li role="menuitem">
+                        <a href="./plugins.html" class="s-block-link">
+                            Plugins playground
+                        </a>
+                    </li>
+                    <li role="menuitem">
+                        <a href="./md-preview.html" class="s-block-link">
+                            Markdown preview
+                        </a>
+                    </li>
+                    <li class="s-menu--divider" role="separator"></li>
+                    <li class="s-menu--title" role="separator">
                         v<span class="js-version-number">???</span>
                     </li>
                 </ul>
             </div>
-        </div>
-        <div class="wmx6 m-auto mt32">
+        </nav>
+        <main class="wmx6 m-auto mt32">
             {% block content %}
             <h1 class="mt32">Minimum viable example</h1>
             <textarea id="content" name="content" class="d-none"></textarea>
             <div id="example-1"></div>
             {% endblock %}
-        </div>
+        </main>
     </body>
 </html>

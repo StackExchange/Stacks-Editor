@@ -1,7 +1,7 @@
 import {
     insertTableColumnAfterCommand,
     insertTableColumnBeforeCommand,
-    insertTableCommand,
+    insertRichTextTableCommand,
     insertTableRowAfterCommand,
     insertTableRowBeforeCommand,
     moveSelectionAfterTableCommand,
@@ -11,7 +11,6 @@ import {
     removeColumnCommand,
     removeRowCommand,
 } from "../../../src/rich-text/commands";
-import "../../matchers";
 import { applySelection, createState, runCommand } from "../test-helpers";
 
 describe("table commands", () => {
@@ -92,7 +91,7 @@ describe("table commands", () => {
             });
         });
 
-        it("should select newly inserted paragraph. afer table", () => {
+        it("should select newly inserted paragraph. after table", () => {
             let state = applySelection(
                 createState(
                     "<table><thead><tr><th>asdf</td></th></thead></table>",
@@ -619,7 +618,7 @@ describe("table commands", () => {
             let state = applySelection(createState(`some text`, []), 2);
             expect(state.selection.$from.node().type.name).toBe("paragraph");
 
-            state = runCommand(state, insertTableCommand);
+            state = runCommand(state, insertRichTextTableCommand);
 
             expect(state.doc).toMatchNodeTree({
                 "type.name": "doc",
@@ -649,7 +648,7 @@ describe("table commands", () => {
             expect(state.selection.$from.node().type.name).toBe("table_header");
 
             const before = state.doc;
-            state = runCommand(state, insertTableCommand, false);
+            state = runCommand(state, insertRichTextTableCommand, false);
 
             expect(before.nodeSize).toEqual(state.doc.nodeSize);
             expect(state.doc.eq(before)).toBe(true);

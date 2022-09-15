@@ -1,27 +1,21 @@
 name: CI
 
-# Controls when the action will run. Triggers the workflow on push or pull request
-# events but only for the master branch
 on:
     push:
         branches: [main]
     pull_request:
         branches: [main]
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
     lint:
-        # The type of runner that the job will run on
         runs-on: ubuntu-latest
-
-        # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
-            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
             - name: Setup Node.js environment
-              uses: actions/setup-node@v2.2.0
+              uses: actions/setup-node@v3
               with:
                   node-version: lts/*
+                  cache: "npm"
 
             - name: Install dependencies
               run: npm ci
@@ -32,18 +26,15 @@ jobs:
             - name: Run Prettier validation
               run: npm run lint:prettier
     unit-test:
-        # The type of runner that the job will run on
         runs-on: ubuntu-latest
-
-        # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
-            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
 
             - name: Setup Node.js environment
-              uses: actions/setup-node@v2.2.0
+              uses: actions/setup-node@v3
               with:
                   node-version: lts/*
+                  cache: "npm"
 
             - name: Install dependencies
               run: npm ci
@@ -51,18 +42,15 @@ jobs:
             - name: Run tests
               run: npm test
     e2e-test:
-        # The type of runner that the job will run on
         runs-on: ubuntu-latest
-
-        # Steps represent a sequence of tasks that will be executed as part of the job
         steps:
-            # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-            - uses: actions/checkout@v2
+            - uses: actions/checkout@v3
 
             - name: Setup Node.js environment
-              uses: actions/setup-node@v2.2.0
+              uses: actions/setup-node@v3
               with:
                   node-version: lts/*
+                  cache: "npm"
 
             - name: Install dependencies
               run: npm ci
@@ -73,8 +61,13 @@ jobs:
             - name: Run E2E tests
               run: npm run test:e2e
 
-            - uses: actions/upload-artifact@v2
+            - uses: actions/upload-artifact@v3
               if: always()
               with:
                   name: playwright-test-results
                   path: test-results/
+
+# cancel the jobs if another workflow is kicked off for the same branch
+concurrency:
+    group: ${{ github.workflow }}-${{ github.ref }}
+    cancel-in-progress: true

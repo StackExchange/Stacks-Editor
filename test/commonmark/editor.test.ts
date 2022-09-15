@@ -1,7 +1,7 @@
 import { CommonmarkEditor } from "../../src/commonmark/editor";
 import { RichTextEditor } from "../../src/rich-text/editor";
 import { schema } from "prosemirror-markdown";
-import { externalPluginProvider } from "../test-helpers";
+import { externalPluginProvider, normalize } from "../test-helpers";
 
 const target = document.createElement("div");
 const markdownRoundTripData = [
@@ -130,6 +130,21 @@ describe("commonmark editor view", () => {
             expect(view.content).toBe(content);
         }
     );
+
+    describe("external plugins", () => {
+        it.todo("should do all the things");
+    });
+
+    it("should have syntax highlighting", () => {
+        const markdown = "**Hello** _world_!";
+
+        const view = commonmarkView(markdown);
+        const dom = view.dom;
+
+        expect(normalize(dom.innerHTML)).toBe(
+            `<pre class="s-code-block markdown"><code><span class="hljs-strong hljs-symbol">**</span><span class="hljs-strong">Hello</span><span class="hljs-strong hljs-symbol">**</span> <span class="hljs-emphasis hljs-symbol">_</span><span class="hljs-emphasis">world</span><span class="hljs-emphasis hljs-symbol">_</span>!</code></pre>`
+        );
+    });
 });
 
 function commonmarkView(markdown: string): CommonmarkEditor {

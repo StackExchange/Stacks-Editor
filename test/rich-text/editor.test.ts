@@ -1,6 +1,5 @@
 import { RichTextEditor } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
-import "../matchers";
 import { externalPluginProvider, normalize } from "../test-helpers";
 
 // mock the markdown-parser for testing
@@ -360,5 +359,9 @@ _world_.
                 ],
             });
         });
+    });
+
+    describe("external plugins", () => {
+        it.todo("should do all the things");
     });
 });

@@ -61,13 +61,32 @@ class SOMarkdownSerializerState extends MarkdownSerializerState {
 
     /** Writes all saved linked reference definitions to the state */
     writeLinkReferenceDefinitions(): void {
-        const refs = Object.keys(this.linkReferenceDefinitions);
+        let refs = Object.keys(this.linkReferenceDefinitions);
 
         if (!refs.length) {
             return;
         }
 
-        refs.sort().forEach((r) => {
+        // typically, users want numbered references to sort numerically instead of alphabetically
+        // i.e. `1, 2, 10` vs `1, 10, 2`
+        const numberRefs: number[] = [];
+        const otherRefs: string[] = [];
+
+        refs.forEach((ref) => {
+            if (!isNaN(Number(ref))) {
+                numberRefs.push(+ref);
+            } else {
+                otherRefs.push(ref);
+            }
+        });
+
+        // sort first by number, then by string
+        refs = [
+            ...numberRefs.sort((a, b) => a - b).map((r) => r.toString()),
+            ...otherRefs.sort(),
+        ];
+
+        refs.forEach((r) => {
             const def = this.linkReferenceDefinitions[r];
             this.ensureNewLine();
             this.write("[");
@@ -164,10 +183,10 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     },
     code_block(state, node) {
         // TODO could be html...
-        const markup = node.attrs.markup as string;
+        const markup = (node.attrs.markup as string) || "```";
 
-        // lack of a markup indicator means this is an indented code block
-        if (!markup) {
+        // indented code blocks have their markup set to "indented" instead of empty
+        if (markup === "indented") {
             const lines = node.textContent.split("\n");
             lines.forEach((l, i) => {
                 if (i > 0) {
@@ -198,7 +217,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             state.closeBlock(node);
         } else {
             // markup is # (ATX heading) or empty
-            state.write(state.repeat("#", node.attrs.level) + " ");
+            state.write(state.repeat("#", node.attrs.level as number) + " ");
             state.renderInline(node);
             state.closeBlock(node);
         }
@@ -208,7 +227,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             return;
         }
 
-        state.write(node.attrs.markup || "----------");
+        state.write((node.attrs.markup as string) || "----------");
         state.closeBlock(node);
     },
     bullet_list(state, node) {
@@ -257,14 +276,31 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
               " " + state.quote(node.attrs.title)
             : "";
-        state.write(
-            "![" +
-                state.esc(node.attrs.alt || "") +
-                "](" +
-                state.esc(node.attrs.src) +
-                title +
-                ")"
-        );
+
+        const open = "![" + state.esc((node.attrs.alt as string) || "") + "]";
+
+        let close = "(" + state.esc(node.attrs.src as string) + title + ")";
+
+        if (node.attrs.markup === "reference") {
+            (state as SOMarkdownSerializerState).addLinkReferenceDefinition(
+                node.attrs.referenceLabel as string,
+                node.attrs.src as string,
+                node.attrs.title as string
+            );
+            switch (node.attrs.referenceType) {
+                case "full":
+                    close = `[${node.attrs.referenceLabel as string}]`;
+                    break;
+                case "collapsed":
+                    close = "[]";
+                    break;
+                case "shortcut":
+                default:
+                    close = "";
+            }
+        }
+
+        state.write(open + close);
     },
     hard_break(state, node, parent, index) {
         if (renderHtmlTag(state, node, TagType.hardbreak)) {
@@ -274,54 +310,58 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         for (let i = index + 1; i < parent.childCount; i++) {
             if (parent.child(i).type != node.type) {
                 // `[space][space][newline]` or `\[newline]`
-                state.write(node.attrs.markup || "  \n");
+                state.write((node.attrs.markup as string) || "  \n");
                 return;
             }
         }
     },
     text(state, node) {
-        const linkMark = node.marks.find((m) => m.type.name === "link");
-        let text = node.text;
+        const linkMark = node.marks.find(
+            (m) => m.type === m.type.schema.marks.link
+        );
+
+        let text;
 
         // if the text node is from a link, use the original href text if the original markup used it
-        if (["linkify", "autolink"].includes(linkMark?.attrs.markup)) {
+        if (
+            ["linkify", "autolink"].includes(linkMark?.attrs.markup as string)
+        ) {
             text = linkMark.attrs.href as string;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-expect-error
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+            const startOfLine: boolean = state.atBlank() || state.closed;
+            // escape the text using the built in escape code
+            let escapedText = state.esc(node.text, startOfLine);
+
+            // built in escape doesn't get all the cases TODO upstream!
+            escapedText = escapedText
+                .replace(/\\_/g, "_")
+                .replace(/\b_|_\b/g, "\\_");
+            escapedText = escapedText.replace(/([<>])/g, "\\$1");
+
+            text = escapedText;
         }
 
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-expect-error
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-        const startOfLine: boolean = state.atBlank() || state.closed;
-        // escape the text using the built in escape code
-        let escapedText = state.esc(text, startOfLine);
-
-        // built in escape doesn't get all the cases TODO upstream!
-        escapedText = escapedText
-            .replace(/\\_/g, "_")
-            .replace(/\b_|_\b/g, "\\_");
-        escapedText = escapedText.replace(/([<>])/g, "\\$1");
-
-        state.text(escapedText, false);
+        state.text(text, false);
     },
 };
 
 // extend the default markdown serializer's nodes and add our own
 const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
-    // TODO
     html_inline(state, node) {
-        state.write(node.attrs.content);
-        state.ensureNewLine();
-        state.write("\n");
+        state.write(node.attrs.content as string);
     },
 
-    // TODO
     html_block(state, node) {
-        state.write(node.attrs.content);
+        state.write(node.attrs.content as string);
+        state.closeBlock(node);
     },
 
     // TODO
     html_block_container(state, node) {
-        state.write(node.attrs.contentOpen);
+        state.write(node.attrs.contentOpen as string);
 
         // ensure the opening content had a newline and write a newline
         // since that terminated the html_block and caused the container creation
@@ -329,7 +369,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
         state.write("\n");
 
         state.renderContent(node);
-        state.write(node.attrs.contentClose);
+        state.write(node.attrs.contentClose as string);
         state.closeBlock(node);
     },
 
@@ -483,9 +523,9 @@ const extendedLinkMarkDeserializer: typeof defaultLinkMarkDeserializer = {
 
         if (mark.attrs.markup === "reference") {
             (state as SOMarkdownSerializerState).addLinkReferenceDefinition(
-                mark.attrs.referenceLabel,
-                mark.attrs.href,
-                mark.attrs.title
+                mark.attrs.referenceLabel as string,
+                mark.attrs.href as string,
+                mark.attrs.title as string
             );
             return "[";
         }
@@ -561,7 +601,10 @@ const extendedCodeMarkDeserializer: typeof defaultCodeMarkDeserializer = {
         ) as unknown as string;
 
         if (mark.attrs.markup) {
-            defaultResult = defaultResult.replace("`", mark.attrs.markup);
+            defaultResult = defaultResult.replace(
+                "`",
+                mark.attrs.markup as string
+            );
         }
 
         return defaultResult;

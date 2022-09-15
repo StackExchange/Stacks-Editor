@@ -124,6 +124,20 @@ export function docChanged(
     );
 }
 
+/**
+ * Returns the text node the cursor is currently anchored in
+ * @param state The current editor state
+ * @returns A text node or null if the cursor is not in a text node
+ */
+export function getCurrentTextNode(state: EditorState) {
+    if (!state.selection.$anchor.textOffset) {
+        return null;
+    }
+
+    const $anchor = state.selection.$anchor;
+    return $anchor.parent.child($anchor.index());
+}
+
 export type StickyChangeDetails = {
     target: Element;
     stuck: boolean;
@@ -195,7 +209,7 @@ export function stackOverflowValidateLink(url: string): boolean {
 }
 
 /**
- * Template function to escape all html in substitions, but not the rest of the template.
+ * Template function to escape all html in substitutions, but not the rest of the template.
  * For instance, escapeHTML`<p>${"<span>user input</span>"}</p>` will escape the inner span, but not the outer p tags.
  * Uses markdown-it's @see escapeHtml in the background
  */
@@ -211,6 +225,11 @@ export function escapeHTML(
     return output;
 }
 
+/** Gets the modifier key for the current platform; i.e. "Command" on macOS and "Control" elsewhere */
+export function getPlatformModKey(): "Cmd" | "Ctrl" {
+    return /Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl";
+}
+
 /**
  * Returns a string containing the label and readable keyboard shortcut for button tooltips
  * @param mapping Corresponding command mapping (keyboard shortcut)
@@ -220,10 +239,7 @@ export function getShortcut(mapping: string): string {
         return mapping;
     }
 
-    return (
-        (/Mac|iP(hone|[oa]d)/.test(navigator.platform) ? "Cmd" : "Ctrl") +
-        mapping.slice(3)
-    );
+    return getPlatformModKey() + mapping.slice(3);
 }
 
 /**

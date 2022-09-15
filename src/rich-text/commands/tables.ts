@@ -393,7 +393,7 @@ function removeTableCommand(
     return true;
 }
 
-export function insertTableCommand(
+export function insertRichTextTableCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {

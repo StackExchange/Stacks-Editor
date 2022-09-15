@@ -62,7 +62,18 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
 
     code_block: {
         block: "code_block",
-        getAttrs: (tok: Token) => ({ params: tok.info || "" }),
+        noCloseToken: true,
+        getAttrs: (tok: Token) => ({
+            params: tok.info || "",
+            markup: tok.markup || "indented",
+        }),
+    },
+    fence: {
+        block: "code_block",
+        getAttrs: (tok: Token) => ({
+            params: tok.info || "",
+        }),
+        noCloseToken: true,
     },
 
     // add support for the strike mark
@@ -103,13 +114,25 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     // override the default image parser so we can add our own extended attributes
     image: {
         node: "image",
-        getAttrs: (tok: Token) => ({
-            src: tok.attrGet("src"),
-            width: tok.attrGet("width"),
-            height: tok.attrGet("height"),
-            alt: tok.attrGet("alt") || tok.children?.[0]?.content || null,
-            title: tok.attrGet("title"),
-        }),
+        getAttrs: (tok: Token) => {
+            const attrs: Record<string, string> = {
+                src: tok.attrGet("src"),
+                width: tok.attrGet("width"),
+                height: tok.attrGet("height"),
+                alt: tok.attrGet("alt") || tok.children?.[0]?.content || null,
+                title: tok.attrGet("title"),
+            };
+
+            if (tok.markup === "reference") {
+                const meta = tok.meta as {
+                    reference?: { type: string; label: string };
+                };
+                attrs.referenceType = meta?.reference?.type;
+                attrs.referenceLabel = meta?.reference?.label;
+            }
+
+            return attrs;
+        },
     },
 
     tag_link: {
@@ -158,11 +181,10 @@ Object.keys(customMarkdownParserTokens).forEach((k) => {
                 return attrs;
             };
         } else {
-            token.getAttrs = (tok: Token, stream, index) => {
-                const attrs = { ...origGetAttrs(tok, stream, index) };
-                attrs.markup = tok.markup;
-                return attrs;
-            };
+            token.getAttrs = (tok: Token, stream, index) => ({
+                markup: tok.markup,
+                ...origGetAttrs(tok, stream, index),
+            });
         }
 
         return;
@@ -184,7 +206,7 @@ interface MarkdownParserState {
 
 // TODO can we do this more cleanly?
 /**
- * Custom MardownParser that manually adds a low-level handler for `html_inline`.
+ * Custom MarkdownParser that manually adds a low-level handler for `html_inline`.
  * We do this because we need some special functionality that is not exposed by default with the existing
  * handler generation code (from adding tokens)
  */
@@ -243,18 +265,14 @@ class SOMarkdownIt extends MarkdownIt {
 }
 
 /**
- * Builds a custom markdown parser with the passed features toggled
+ * Creates a MarkdownIt instance with default properties
  * @param features The features to toggle on/off
+ * @param externalPluginProvider The external plugin provider TODO should not be optional
  */
-export function buildMarkdownParser(
+export function createDefaultMarkdownItInstance(
     features: CommonmarkParserFeatures,
-    schema: Schema,
-    externalPluginProvider: IExternalPluginProvider
-): SOMarkdownParser {
-    if (!features) {
-        throw "Cannot build markdown parser without passed features.";
-    }
-
+    externalPluginProvider?: IExternalPluginProvider
+): SOMarkdownIt {
     const defaultMarkdownItInstance = new SOMarkdownIt("default", {
         html: features.html, // we can allow the markdown parser to send through arbitrary HTML, but only because we're gonna whitelist it later
         linkify: true, // automatically link plain URLs
@@ -296,7 +314,7 @@ export function buildMarkdownParser(
     // parse spoilers
     defaultMarkdownItInstance.use(spoiler);
 
-    // ensure lists are tighted up for parsing into the doc
+    // ensure lists are tightened up for parsing into the doc
     defaultMarkdownItInstance.use(tight_list);
 
     // ensure links are have their references properly referenced
@@ -305,7 +323,27 @@ export function buildMarkdownParser(
     // ensure we can tell the difference between the different types of hardbreaks
     defaultMarkdownItInstance.use(hardbreak_markup);
 
-    externalPluginProvider.alterMarkdownIt(defaultMarkdownItInstance);
+    // TODO should always exist, so remove the check once the param is made non-optional
+    externalPluginProvider?.alterMarkdownIt(defaultMarkdownItInstance);
+
+    return defaultMarkdownItInstance;
+}
+
+/**
+ * Builds a custom markdown parser with the passed features toggled
+ * @param features The features to toggle on/off
+ * @param schema The finalized schema to use
+ * @param externalPluginProvider The external plugin provider to use
+ */
+export function buildMarkdownParser(
+    features: CommonmarkParserFeatures,
+    schema: Schema,
+    externalPluginProvider: IExternalPluginProvider
+): SOMarkdownParser {
+    const defaultMarkdownItInstance = createDefaultMarkdownItInstance(
+        features,
+        externalPluginProvider
+    );
 
     return new SOMarkdownParser(schema, defaultMarkdownItInstance, {
         ...customMarkdownParserTokens,

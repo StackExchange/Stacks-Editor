@@ -18,13 +18,38 @@ function findTokensOfType(tokens: Token[], type: string): Token[] {
     return retTokens;
 }
 
+function withImageCases(input: [string, string | string[], string?][]): {
+    markdown: string;
+    labels: string[];
+    type: string;
+}[] {
+    return [
+        ...input.map(([markdown, label, type]) => ({
+            markdown,
+            labels: label instanceof Array ? label : [label],
+            type: type || "link_open",
+        })),
+        ...input
+            .map(([markdown, label, type]) =>
+                type
+                    ? null
+                    : {
+                          markdown: "!" + markdown,
+                          labels: label instanceof Array ? label : [label],
+                          type: "image",
+                      }
+            )
+            .filter((i) => !!i),
+    ];
+}
+
 // many test cases taken from commonmark speck
 // see https://spec.commonmark.org/0.30/#reference-link
 describe("reference-link markdown-it plugin", () => {
     const instance = new MarkdownIt("default", { linkify: true });
     instance.use(reference_link);
 
-    const simpleReferenceLinkData = [
+    const referenceLinkData = withImageCases([
         // full
         [`[foo][bar]\n\n[bar]: /url "title"`, "bar"],
         [`[foo][BaR]\n\n[bar]: /url "title"`, "BaR"],
@@ -32,38 +57,28 @@ describe("reference-link markdown-it plugin", () => {
         [`[foo][]\n\n[foo]: /url "title"`, "foo"],
         // shortcut
         [`[foo]\n\n[foo]: /url "title"`, "foo"],
-    ];
-    it.each(simpleReferenceLinkData)(
-        "should detect simple reference links (#%#)",
-        (markdown, label) => {
-            const tokens = instance.parse(markdown, {});
-
-            const links = findTokensOfType(tokens, "link_open");
-
-            // Note: this relies on the fact we're only adding a single link to our input cases
-            expect(links).toHaveLength(1);
-
-            const meta = links[0].meta as { reference: { label: string } };
-            expect(meta.reference.label).toEqual(label);
-        }
-    );
-
-    // TODO merge with above test?
-    const complexReferenceLinkData = [
+        // complex
         ["[link *foo **bar** `#`*][ref]\n\n[ref]: /uri", "ref"],
-        ["[![moon](moon.jpg)][ref]\n\n[ref]: /uri", "ref"],
-        ["[foo]\n[bar]\n\n[foo]: /url1\n[bar]: /url2", ["foo", "bar"]],
-    ];
-    it.each(complexReferenceLinkData)(
-        "should detect complex reference links (#%#)",
-        (markdown: string, labels: string | string[]) => {
-            if (!(labels instanceof Array)) {
-                labels = [labels];
-            }
-
+        // link tests
+        [
+            "[foo]\n[bar]\n\n[foo]: /url1\n[bar]: /url2",
+            ["foo", "bar"],
+            "link_open",
+        ],
+        ["[![moon](moon.jpg)][ref]\n\n[ref]: /uri", "ref", "link_open"],
+        // image tests
+        [
+            "![foo]\n![bar]\n\n[foo]: /url1\n[bar]: /url2",
+            ["foo", "bar"],
+            "image",
+        ],
+    ]);
+    it.each(referenceLinkData)(
+        "should detect reference links (#%#)",
+        ({ markdown, labels, type }) => {
             const tokens = instance.parse(markdown, {});
 
-            const links = findTokensOfType(tokens, "link_open");
+            const links = findTokensOfType(tokens, type);
 
             // Note: this relies on the fact we're only adding a single link to our input cases
             expect(links).toHaveLength(labels.length);

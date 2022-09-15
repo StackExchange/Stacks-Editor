@@ -1,16 +1,7 @@
 {
+    "extends": "@stackoverflow/tsconfig/tsconfig.json",
     "compilerOptions": {
-        "outDir": "./dist/",
-        "sourceMap": true,
-        "noImplicitAny": true,
-        "module": "esnext",
-        "target": "es6",
-        "allowJs": true,
-        "esModuleInterop": true,
-        "moduleResolution": "node",
-        "declaration": true,
-        "skipLibCheck": true,
-        "resolveJsonModule": true
+        "outDir": "./dist/"
     },
     "include": ["src/**/*"]
 }

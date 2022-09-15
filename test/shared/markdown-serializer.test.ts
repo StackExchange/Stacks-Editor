@@ -46,7 +46,7 @@ describe("markdown-serializer", () => {
         /* Nodes */
         [`plain text`, `plain text`],
         [`<blockquote><p>test</p></blockquote>`, `> test`],
-        [`<pre><code>test</code></pre>`, "    test"],
+        [`<pre><code>test</code></pre>`, "```\ntest\n```"],
         [`<h1>test</h1>`, `# test`],
         [`<h2>test</h2>`, `## test`],
         [`<h3>test</h2>`, `### test`],
@@ -197,26 +197,84 @@ describe("markdown-serializer", () => {
         }
     );
 
+    it.each([
+        // just html
+        `<p>test</p>`,
+        // ensure html terminates with a newline
+        `<p>test</p>\ntest\n<p>test</p>`,
+        // ensure that inline_html does not terminate with a newline
+        `inline_html</sub>tag`,
+    ])("should serialize elements from basic html markup", (input) => {
+        const view = richView(input);
+        expect(view.content).toBe(input);
+    });
+
     it.todo("should serialize elements from complex html markup");
+
+    it.each([
+        [
+            `<ul><li><blockquote><p>blockquote in list</p></blockquote></li></ul>`,
+            `- > blockquote in list`,
+        ],
+        [`<ul><li><p>paragraph in list</p></li></ul>`, `- paragraph in list`],
+        [`<ul><li><h1>heading in list</h1></li></ul>`, `- # heading in list`],
+        [
+            `<ul>
+            <li>
+            <pre class="hljs"><code>code in list</code></pre>
+            </li>
+            </ul>`,
+            "- ```\n  code in list\n  ```",
+        ],
+        [
+            `<ul>
+            <li>
+            <ul>
+            <li>list in list</li>
+            </ul>
+            </li>
+            </ul>`,
+            `- - list in list`,
+        ],
+    ])("should serialize lists containing block children", (input, output) => {
+        const view = nonMarkdownRichView(input);
+        expect(view.content).toBe(output);
+    });
 
     // TODO lots of complicated cases in the spec
     // see https://spec.commonmark.org/0.30/#reference-link
     // see https://spec.commonmark.org/0.30/#link-reference-definitions
     const linkReferencesMarkupData = [
-        // full
+        // link full
         [
             `[foo][bar]\n\n[bar]: /url "title"`,
             `[foo][bar]\n\n[BAR]: /url "title"`,
         ],
-        // collapsed
+        // link collapsed
         [`[foo][]\n\n[foo]: /url "title"`, `[foo][]\n\n[FOO]: /url "title"`],
-        // shortcut
+        // link shortcut
         [`[foo]\n\n[foo]: /url "title"`, `[foo]\n\n[FOO]: /url "title"`],
+        // image full
+        [
+            `![foo][bar]\n\n[bar]: /url "title"`,
+            `![foo][bar]\n\n[BAR]: /url "title"`,
+        ],
+        // image collapsed
+        [`![foo][]\n\n[foo]: /url "title"`, `![foo][]\n\n[FOO]: /url "title"`],
+        // image shortcut
+        [`![foo]\n\n[foo]: /url "title"`, `![foo]\n\n[FOO]: /url "title"`],
         // mixed content
         [
             `[ShortCut]: https://stackoverflow.com
 
 This is a test. I want to link to [foo][1] as a full reference link.
+
+I also want to support images: ![unique ref][img] ![shared ref][1]
+
+We also want to ensure that [bar][10] and [baz][2] are sorted numerically, not alphabetically.
+
+[10]: https://stackoverflow.com
+[2]: https://stackexchange.com
 
 I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
 
@@ -224,14 +282,22 @@ I also would like to use a collapsed reference link like [this][], but placing i
 
 And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
 
+[img]: https://placeholder.com
 [1]: https://example.com`,
             `This is a test. I want to link to [foo][1] as a full reference link.
+
+I also want to support images: ![unique ref][img] ![shared ref][1]
+
+We also want to ensure that [bar][10] and [baz][2] are sorted numerically, not alphabetically.
 
 I also would like to use a collapsed reference link like [this][], but placing it somewhere other than at the very bottom of the page.
 
 And finally, how about a [shortcut] link? I'm placing this one all the way at the top. For fun.
 
 [1]: https://example.com
+[2]: https://stackexchange.com
+[10]: https://stackoverflow.com
+[IMG]: https://placeholder.com
 [SHORTCUT]: https://stackoverflow.com
 [THIS]: https://google.com`,
         ],
@@ -249,6 +315,9 @@ And finally, how about a [shortcut] link? I'm placing this one all the way at th
         String.raw`\_not-emphasized\_`,
         String.raw`_intra_text_underscores_are_not_emphasized_`,
         String.raw`http://www.example.com/dont_emphasize_urls`,
+        String.raw`http://www.example.com/_leading`,
+        String.raw`http://www.example.com/trailing_`,
+        String.raw`http://www.example.com/_wrapped_`,
         String.raw`\<Not html\>`,
     ];
 

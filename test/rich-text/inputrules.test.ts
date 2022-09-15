@@ -2,7 +2,6 @@ import { MarkType } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { richTextInputRules } from "../../src/rich-text/inputrules";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
-import "../matchers";
 import {
     applySelection,
     cleanupPasteSupport,
@@ -27,7 +26,7 @@ function dispatchInputAsync(view: EditorView, inputStr: string) {
     }
 
     // TODO HACK
-    // the above is triggered asyncronously via a dom observer,
+    // the above is triggered asynchronously via a dom observer,
     // so defer execution so it can finish and update the state
     return sleepAsync(0);
 }

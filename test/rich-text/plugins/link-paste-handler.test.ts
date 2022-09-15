@@ -1,6 +1,5 @@
 import { linkPasteHandler } from "../../../src/rich-text/plugins/link-paste-handler";
 import { stackOverflowValidateLink } from "../../../src/shared/utils";
-import "../../matchers";
 import {
     applySelection,
     cleanupPasteSupport,

@@ -93,6 +93,7 @@ const nodes: {
         attrs: {
             params: { default: "" },
             detectedHighlightLanguage: { default: "" },
+            isEditingProcessor: { default: false },
         },
         parseDOM: [
             {
@@ -168,7 +169,7 @@ const nodes: {
     },
 
     list_item: {
-        content: "paragraph block*",
+        content: "block+",
         defining: true,
         parseDOM: [{ tag: "li" }],
         toDOM() {
@@ -190,6 +191,8 @@ const nodes: {
             title: { default: null },
             width: { default: null },
             height: { default: null },
+            referenceType: { default: "" },
+            referenceLabel: { default: "" },
         },
         parseDOM: [
             {
