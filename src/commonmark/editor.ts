@@ -55,7 +55,7 @@ export class CommonmarkEditor extends BaseView {
 
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                node.classList.add(...(this.options.classList || []));
+                this.addAttributesToEditorNode(node, options);
                 target.appendChild(node);
             },
             {

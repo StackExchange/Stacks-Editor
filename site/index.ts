@@ -209,7 +209,11 @@ domReady(() => {
             externalPlugins: [],
         };
 
-        const editorInstance = new StacksEditor(place, content.value, options);
+        const editorInstance = new StacksEditor(place, content.value, {
+            ...options,
+            ariaLabeledby: "editor-label",
+            id: "editor",
+        });
 
         // set the instance on the window for developers to poke around in
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any

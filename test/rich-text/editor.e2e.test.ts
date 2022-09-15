@@ -55,8 +55,32 @@ test.describe.serial("rich-text mode", () => {
         await expect(page.locator(menuSelector)).toBeVisible();
     });
 
+    test.describe("should have the correct accesibility attributes", () => {
+        const expected = [
+            ["aria-labeledby", "editor-label"],
+            ["id", "editor"],
+            ["role", "textbox"],
+            ["aria-multiline", "true"],
+        ];
+        for (const markdownMode of [false, true]) {
+            test(`in ${
+                markdownMode ? "markdown" : "rich text"
+            } mode`, async () => {
+                await switchMode(page, markdownMode);
+                const promises = expected.map(([attrName, attrValue]) =>
+                    expect(page.locator(editorSelector)).toHaveAttribute(
+                        attrName,
+                        attrValue
+                    )
+                );
+                await Promise.all(promises);
+            });
+        }
+    });
+
     test("should highlight bold menu button after click", async () => {
         await clearEditor(page);
+        await switchMode(page, false);
 
         await expect(page.locator(boldMenuButtonSelector)).not.toHaveClass(
             /is-selected/,

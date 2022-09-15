@@ -16,6 +16,12 @@ export enum EditorType {
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
     classList?: string[];
+    /** The value for the aria-labeledby attribute to
+     * add to the editor target. */
+    ariaLabeledby?: string;
+    /** The value for the id attribute to add to the
+     * editor target. */
+    id?: string;
     /** The url to where the "Help" button should lead to */
     editorHelpLink?: string;
     /** The features to allow/disallow on the markdown parser */
@@ -139,6 +145,27 @@ export abstract class BaseView implements View {
         tr = tr.replaceWith(0, doc.content.size, newDoc);
 
         this.editorView.dispatch(tr);
+    }
+
+    /** Given the editor html element @param node, sets various attributes
+     * on that element. That includes some necessary ARIA attributes that are
+     * necessary for accessibility, as well as additional attributes specified
+     * by the @param options. CSS classes specified by the options will be
+     * *added* to any existing classes, but all other attribute values will
+     * *overwrite* existing values. */
+    addAttributesToEditorNode(
+        node: HTMLElement,
+        options: CommonViewOptions
+    ): void {
+        node.classList.add(...(options.classList || []));
+        node.setAttribute("role", "textbox");
+        node.setAttribute("aria-multiline", "true");
+        if (options.ariaLabeledby) {
+            node.setAttribute("aria-labeledby", options.ariaLabeledby);
+        }
+        if (options.id) {
+            node.setAttribute("id", options.id);
+        }
     }
 
     /**
