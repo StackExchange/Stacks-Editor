@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-import type { Mark } from "prosemirror-model";
+import { Mark } from "prosemirror-model";
 import { buildMarkdownParser } from "../../src/shared/markdown-parser";
-import { richTextSchema } from "../../src/shared/schema";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import { CommonmarkParserFeatures } from "../../src/shared/view";
-import "../matchers";
+import { testRichTextSchema } from "../rich-text/test-helpers";
+import { externalPluginProvider } from "../test-helpers";
 
 // mark features as required to ensure our tests have all the features set
 const features: Required<CommonmarkParserFeatures> = {
@@ -12,14 +12,15 @@ const features: Required<CommonmarkParserFeatures> = {
     html: true,
     extraEmphasis: true,
     tables: true,
-    tagLinks: {
-        allowNonAscii: false,
-        allowMetaTags: false,
-    },
+    tagLinks: {},
     validateLink: stackOverflowValidateLink,
 };
 
-const markdownParser = buildMarkdownParser(features, richTextSchema, null);
+const markdownParser = buildMarkdownParser(
+    features,
+    testRichTextSchema,
+    externalPluginProvider()
+);
 
 describe("SOMarkdownParser", () => {
     describe("html support", () => {
@@ -210,8 +211,8 @@ console.log("test");
         it("should not parse tag links", () => {
             const mdParserWithoutTagLinks = buildMarkdownParser(
                 {},
-                richTextSchema,
-                null
+                testRichTextSchema,
+                externalPluginProvider()
             );
             const doc = mdParserWithoutTagLinks.parse("[tag:python]");
 
@@ -275,6 +276,7 @@ console.log("test");
             "mailto:test@example.com",
             "ftp://example.com/path/to/file",
         ])("should autolink valid links (%s)", (input) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toBe("paragraph");
             expect(doc.content[0].content).toHaveLength(1);
@@ -289,6 +291,7 @@ console.log("test");
             "test@example.com",
             "127.0.0.1",
         ])("should not autolink invalid links (%s)", (input) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toBe("paragraph");
             expect(doc.content[0].content).toHaveLength(1);
@@ -304,10 +307,28 @@ console.log("test");
             ["1. test1\n1. test2", true],
             ["1. test1\n\n1. test2", false],
         ])("should parse tight/loose lists", (input, isTight) => {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = markdownParser.parse(input).toJSON();
             expect(doc.content[0].type).toContain("_list");
             expect(doc.content[0].attrs.tight).toBe(isTight);
         });
+
+        it.each([
+            [`- > blockquote in list`, "bullet_list>list_item>blockquote"],
+            [`- paragraph in list`, "bullet_list>list_item>paragraph"],
+            [`- # heading in list`, "bullet_list>list_item>heading"],
+            [
+                `- ~~~\n  code in list\n  ~~~`,
+                "bullet_list>list_item>code_block",
+            ],
+            [`- - list in list`, "bullet_list>list_item>bullet_list"],
+        ])(
+            "should parse lists with direct block children",
+            (input, expected) => {
+                const doc = markdownParser.parse(input);
+                expect(doc).toMatchNodeTreeString(expected);
+            }
+        );
     });
 
     describe("reference links", () => {
@@ -323,6 +344,7 @@ console.log("test");
         it.each(referenceLinkData)(
             "should add reference attributes to reference links",
             (input, type, label) => {
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 const doc = markdownParser.parse(input).toJSON();
                 expect(doc.content[0].type).toBe("paragraph");
                 expect(doc.content[0].content).toHaveLength(1);
@@ -331,6 +353,37 @@ console.log("test");
                 expect(mark.type).toBe("link");
                 expect(mark.attrs.referenceType).toBe(type);
                 expect(mark.attrs.referenceLabel).toBe(label);
+            }
+        );
+
+        const referenceImageData = [
+            // full
+            [`![foo][bar]\n\n[bar]: /url "title"`, "full", "bar"],
+            [`![foo][BaR]\n\n[bar]: /url "title"`, "full", "BaR"],
+            // collapsed
+            [`![foo][]\n\n[foo]: /url "title"`, "collapsed", "foo"],
+            // shortcut
+            [`![foo]\n\n[foo]: /url "title"`, "shortcut", "foo"],
+        ];
+        it.each(referenceImageData)(
+            "should add reference attributes to reference images",
+            (input, type, label) => {
+                const doc = markdownParser.parse(input);
+
+                expect(doc).toMatchNodeTree({
+                    content: [
+                        {
+                            "type.name": "paragraph",
+                            "content": [
+                                {
+                                    "type.name": "image",
+                                    "attrs.referenceType": type,
+                                    "attrs.referenceLabel": label,
+                                },
+                            ],
+                        },
+                    ],
+                });
             }
         );
     });
@@ -343,9 +396,10 @@ console.log("test");
                     // only allow links from www.example.com
                     validateLink: (url) => /www.example.com/.test(url),
                 },
-                richTextSchema,
-                null
+                testRichTextSchema,
+                externalPluginProvider()
             );
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const doc = mdParser
                 .parse(
                     "[foo](www.example.com/test1) [bar](www.notexample.com/test2)"
@@ -359,5 +413,61 @@ console.log("test");
             );
             expect(doc.content[0].content[1].marks).toBeUndefined();
         });
+    });
+
+    describe("headings", () => {
+        it.each([
+            // hard breaks
+            ["# heading <br> test", ["text", "hard_break", "text"]],
+            ["heading  \ntest\n---", ["text", "hard_break", "text"]],
+            // soft breaks
+            ["heading\ntest\n---", ["text", "softbreak", "text"]],
+            // images
+            [
+                "# heading ![alt](http://www.example.com/image.png)",
+                ["text", "image"],
+            ],
+        ])("should allow all inline nodes", (input, childNodeTypes) => {
+            const doc = markdownParser.parse(input);
+
+            expect(doc).toMatchNodeTree({
+                "type.name": "doc",
+                "content": [
+                    {
+                        "type.name": "heading",
+                        "content": [
+                            ...childNodeTypes.map((t) => ({
+                                "type.name": t,
+                            })),
+                        ],
+                    },
+                ],
+            });
+        });
+    });
+
+    describe("code blocks", () => {
+        it.each([
+            ["    indented code", { markup: "indented", params: "" }],
+            ["```\nfence 1\n```", { markup: "```", params: "" }],
+            ["~~~\nfence 2\n~~~", { markup: "~~~", params: "" }],
+            ["```js\nfence with lang\n```", { markup: "```", params: "js" }],
+        ])(
+            "should parse indented code and code fences (%#)",
+            (input, attrs) => {
+                const doc = markdownParser.parse(input);
+
+                expect(doc).toMatchNodeTree({
+                    "type.name": "doc",
+                    "content": [
+                        {
+                            "type.name": "code_block",
+                            "attrs.markup": attrs.markup,
+                            "attrs.params": attrs.params,
+                        },
+                    ],
+                });
+            }
+        );
     });
 });

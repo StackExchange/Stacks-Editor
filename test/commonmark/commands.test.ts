@@ -1,6 +1,6 @@
 import { CodeStringParser } from "../../src/shared/schema";
 import { EditorState, TextSelection } from "prosemirror-state";
-import { commonmarkSchema } from "../../src/shared/schema";
+import { commonmarkSchema } from "../../src/commonmark/schema";
 import * as commands from "../../src/commonmark/commands";
 import { MenuCommand } from "../../src/shared/menu";
 import { getSelectedText } from "../test-helpers";
@@ -137,7 +137,20 @@ describe("commonmark editor commands", () => {
             const state = createSelectedState(content);
 
             expect(state).transactionSuccess(
-                commands.wrapInCommand("**"),
+                commands.wrapInCommand("**", null),
+                result,
+                result
+            );
+        });
+
+        it("should wrap with different leading and trailing text", () => {
+            const content = "some text";
+            const result = "<kbd>some text</kbd>";
+
+            const state = createSelectedState(content);
+
+            expect(state).transactionSuccess(
+                commands.wrapInCommand("<kbd>", "</kbd>"),
                 result,
                 result
             );
@@ -150,18 +163,41 @@ describe("commonmark editor commands", () => {
             const state = createSelectedState(content);
 
             expect(state).transactionSuccess(
-                commands.wrapInCommand("**"),
+                commands.wrapInCommand("**", null),
                 result,
                 result
             );
         });
 
-        it("should inject character", () => {
+        it("should unwrap with different leading and trailing text", () => {
+            const content = "<kbd>some text</kbd>";
+            const result = "some text";
+
+            const state = createSelectedState(content);
+
+            expect(state).transactionSuccess(
+                commands.wrapInCommand("<kbd>", "</kbd>"),
+                result,
+                result
+            );
+        });
+
+        it("should inject dummy text on empty selection", () => {
             const state = createState("");
 
             expect(state).transactionSuccess(
-                commands.wrapInCommand("**"),
+                commands.wrapInCommand("**", null),
                 "**your text**",
+                "your text"
+            );
+        });
+
+        it("should inject dummy text on empty selection with differing leading and trailing text", () => {
+            const state = createState("");
+
+            expect(state).transactionSuccess(
+                commands.wrapInCommand("<kbd>", "</kbd>"),
+                "<kbd>your text</kbd>",
                 "your text"
             );
         });
@@ -304,14 +340,14 @@ some text`;
                 );
             });
 
-            it("single line, arbitary selection", () => {
+            it("single line, arbitrary selection", () => {
                 const state = createState("test", 2, 4);
                 const command = commands.setBlockTypeCommand(">");
 
                 expect(state).transactionSuccess(command, "> test", null);
             });
 
-            it("multi line, arbitary selection spanning multiple lines, insert newline", () => {
+            it("multi line, arbitrary selection spanning multiple lines, insert newline", () => {
                 const state = createState(
                     "test\n\nthis is a test\nuntouched line",
                     2,
@@ -326,7 +362,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, don't insert newline", () => {
+            it("multi line, arbitrary selection spanning multiple lines, don't insert newline", () => {
                 const state = createState(
                     "test\n\nthis is a test\nuntouched line",
                     0,
@@ -341,7 +377,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, partial exists", () => {
+            it("multi line, arbitrary selection spanning multiple lines, partial exists", () => {
                 const state = createState(
                     "test\n> \nthis is a test\nuntouched line",
                     2,
@@ -356,7 +392,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, partial exists + swap", () => {
+            it("multi line, arbitrary selection spanning multiple lines, partial exists + swap", () => {
                 const state = createState(
                     "test\n# \nthis is a test\nuntouched line",
                     2,
@@ -416,14 +452,14 @@ some text`;
                 );
             });
 
-            it("single line, arbitary selection", () => {
+            it("single line, arbitrary selection", () => {
                 const state = createState("> test", 2, 4);
                 const command = commands.setBlockTypeCommand(">");
 
                 expect(state).transactionSuccess(command, "test", "te");
             });
 
-            it("multi line, arbitary selection spanning multiple lines", () => {
+            it("multi line, arbitrary selection spanning multiple lines", () => {
                 const state = createState(
                     "test\n> \n> this is a test\nuntouched line",
                     5,
@@ -483,14 +519,14 @@ some text`;
                 );
             });
 
-            it("single line, arbitary selection", () => {
+            it("single line, arbitrary selection", () => {
                 const state = createState("# test", 2, 4);
                 const command = commands.setBlockTypeCommand(">");
 
                 expect(state).transactionSuccess(command, "> test", null);
             });
 
-            it("multi line, arbitary selection spanning multiple lines", () => {
+            it("multi line, arbitrary selection spanning multiple lines", () => {
                 const state = createState(
                     "te\n# st\n# \n# this is a test\nuntouched line",
                     3,
@@ -505,7 +541,7 @@ some text`;
                 );
             });
 
-            it("multi line, arbitary selection spanning multiple lines, partial exists", () => {
+            it("multi line, arbitrary selection spanning multiple lines, partial exists", () => {
                 const state = createState(
                     "te\n# st\n> \n# this is a test\nuntouched line",
                     3,
@@ -519,6 +555,110 @@ some text`;
                     "> st\n> \n> this"
                 );
             });
+        });
+    });
+
+    describe("matchLeadingBlockCharacters", () => {
+        it("return no leading characters", () => {
+            const command = commands.matchLeadingBlockCharacters(
+                "42 shouldn't be returned"
+            );
+
+            expect(command).toBe("");
+        });
+
+        it("return ordered list leading characters", () => {
+            let command = commands.matchLeadingBlockCharacters("23. -ol item");
+
+            expect(command).toBe("23. ");
+
+            command = commands.matchLeadingBlockCharacters("23) -ol item");
+
+            expect(command).toBe("23) ");
+        });
+
+        it("return unordered list leading characters", () => {
+            const command = commands.matchLeadingBlockCharacters("- 1 ul item");
+
+            expect(command).toBe("- ");
+        });
+
+        it("return heading leading characters", () => {
+            const command =
+                commands.matchLeadingBlockCharacters("## Heading level 2");
+
+            expect(command).toBe("## ");
+        });
+    });
+
+    describe("insertTagLinkCommand", () => {
+        it("should insert empty tags", () => {
+            const state = createState("");
+
+            expect(state).transactionSuccess(
+                commands.insertTagLinkCommand(() => true, false),
+                "[tag:tag-name]",
+                "tag-name"
+            );
+        });
+
+        it("should insert empty meta tags when allowed", () => {
+            const state = createState("");
+
+            expect(state).transactionSuccess(
+                commands.insertTagLinkCommand(() => true, true),
+                "[meta-tag:tag-name]",
+                "tag-name"
+            );
+        });
+
+        it("should wrap valid tag text", () => {
+            const state = createSelectedState("valid");
+
+            expect(state).transactionSuccess(
+                commands.insertTagLinkCommand(() => true, false),
+                "[tag:valid]",
+                "valid"
+            );
+        });
+
+        it("should wrap valid meta tag text", () => {
+            const state = createSelectedState("valid");
+
+            expect(state).transactionSuccess(
+                commands.insertTagLinkCommand(() => true, true),
+                "[meta-tag:valid]",
+                "valid"
+            );
+        });
+
+        it("should be inactive when invalid text is selected", () => {
+            const state = createSelectedState("invalid");
+            const command = commands.insertTagLinkCommand(() => false, false);
+            const isValid = command(state, null);
+            expect(isValid).toBeFalsy();
+        });
+
+        it("should pass appropriate params to validate call", () => {
+            const spy = jest.fn();
+
+            // check for isMetaTag = false; text = "text1"
+            commands.insertTagLinkCommand(spy, false)(
+                createSelectedState("text1"),
+                null
+            );
+            expect(spy).toHaveBeenCalledWith("text1", false);
+
+            // check for isMetaTag = true; text = "text2"
+            commands.insertTagLinkCommand(spy, true)(
+                createSelectedState("text2"),
+                null
+            );
+            expect(spy).toHaveBeenCalledWith("text2", true);
+
+            // check that validate is not called on empty selection
+            commands.insertTagLinkCommand(spy, false)(createState(""), null);
+            expect(spy).toHaveBeenCalledTimes(2);
         });
     });
 });

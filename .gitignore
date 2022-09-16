@@ -4,6 +4,7 @@ node_modules/
 !.vscode/extensions.json
 !.vscode/launch.json
 !.vscode/settings.json
+!.vscode/tasks.json
 stats.json
 dist/
 test-results/

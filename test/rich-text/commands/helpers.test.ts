@@ -1,6 +1,5 @@
 import { insertParagraphIfAtDocEnd } from "../../../src/rich-text/commands/helpers";
-import { createState, setSelection } from "../test-helpers";
-import { richTextSchema } from "../../../src/shared/schema";
+import { createState, setSelection, testRichTextSchema } from "../test-helpers";
 
 describe("commands helpers", () => {
     describe("insertParagraphIfAtDocEnd", () => {
@@ -10,7 +9,7 @@ describe("commands helpers", () => {
             // add in a new node to get a doc altering transaction
             let tr = state.tr.insert(
                 state.tr.doc.content.size,
-                richTextSchema.nodes.code_block.create()
+                testRichTextSchema.nodes.code_block.create()
             );
 
             // place the cursor after the start of the newly inserted node
@@ -33,7 +32,7 @@ describe("commands helpers", () => {
             // add in a new node to get a doc altering transaction
             let tr = state.tr.insert(
                 3,
-                richTextSchema.nodes.code_block.create()
+                testRichTextSchema.nodes.code_block.create()
             );
 
             // place the cursor after the start of the newly inserted node

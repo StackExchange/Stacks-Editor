@@ -1,6 +1,7 @@
 import { ImageView } from "../../../src/rich-text/node-views/image";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { RichTextEditor } from "../../../src/rich-text/editor";
+import { externalPluginProvider } from "../../test-helpers";
 
 jest.useFakeTimers();
 
@@ -15,7 +16,8 @@ describe("image node views", () => {
 
     const richView = new RichTextEditor(
         document.createElement("div"),
-        "![some image](https://example.com/initial.png 'some title')"
+        "![some image](https://example.com/initial.png 'some title')",
+        externalPluginProvider()
     );
 
     it("should render image node as image tag", () => {
@@ -73,6 +75,7 @@ function findInput(form: HTMLFormElement, inputName: string): HTMLInputElement {
 
 function prosemirrorNode(attrs: ProsemirrorNode["attrs"]): ProsemirrorNode {
     const node = new ProsemirrorNode();
+    // @ts-expect-error TODO
     node.attrs = attrs;
     return node;
 }

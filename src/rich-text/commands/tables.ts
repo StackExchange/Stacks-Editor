@@ -3,23 +3,35 @@ import {
     NodeType,
     Node as ProsemirrorNode,
     ResolvedPos,
+    Schema,
 } from "prosemirror-model";
 import { EditorState, Transaction, Selection } from "prosemirror-state";
-import { richTextSchema as schema, tableNodes } from "../../shared/schema";
 import { insertParagraphIfAtDocEnd } from "./helpers";
 
-export function inTable(selection: Selection): boolean {
-    return tableNodes.includes(selection.$head.parent.type);
+function isTableType(schema: Schema, type: NodeType): boolean {
+    const tableNodes = [
+        schema.nodes.table,
+        schema.nodes.table_head,
+        schema.nodes.table_body,
+        schema.nodes.table_row,
+        schema.nodes.table_cell,
+        schema.nodes.table_header,
+    ];
+    return tableNodes.includes(type);
 }
 
-function inTableHead(selection: Selection): boolean {
+export function inTable(schema: Schema, selection: Selection): boolean {
+    return isTableType(schema, selection.$head.parent.type);
+}
+
+function inTableHead(schema: Schema, selection: Selection): boolean {
     return selection.$head.parent.type === schema.nodes.table_header;
 }
 
 export const exitBlockCommand = chainCommands(exitCode, (state, dispatch) => {
     dispatch(
         state.tr
-            .replaceSelectionWith(schema.nodes.hard_break.create())
+            .replaceSelectionWith(state.schema.nodes.hard_break.create())
             .scrollIntoView()
     );
     return true;
@@ -44,7 +56,7 @@ function exitTableCommand(
     dispatch: (tr: Transaction) => void,
     before = false
 ): boolean {
-    if (!inTable(state.selection)) {
+    if (!inTable(state.schema, state.selection)) {
         return false;
     }
 
@@ -52,7 +64,7 @@ function exitTableCommand(
         // our hierarchy is table > table_head | table_body > table_row > table_cell
         // and we're relying on that to be always true.
         // That's why .after(-3) selects the parent _table_ node from a table_cell node
-        const type = schema.nodes.paragraph;
+        const type = state.schema.nodes.paragraph;
         const newPosition = before
             ? state.selection.$head.before(-3) - 1
             : state.selection.$head.after(-3) + 1;
@@ -95,7 +107,10 @@ function insertTableRowCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (!inTable(state.selection) || inTableHead(state.selection)) {
+    if (
+        !inTable(state.schema, state.selection) ||
+        inTableHead(state.schema, state.selection)
+    ) {
         return false;
     }
 
@@ -105,9 +120,14 @@ function insertTableRowCommand(
 
         const newTableCells: ProsemirrorNode[] = [];
         tableRowNode.forEach((cell) => {
-            newTableCells.push(schema.nodes.table_cell.create(cell.attrs));
+            newTableCells.push(
+                state.schema.nodes.table_cell.create(cell.attrs)
+            );
         });
-        const newTableRow = schema.nodes.table_row.create(null, newTableCells);
+        const newTableRow = state.schema.nodes.table_row.create(
+            null,
+            newTableCells
+        );
         const positionToInsert = before ? $head.before(-1) : $head.after(-1);
         const tr = state.tr.insert(positionToInsert, newTableRow);
 
@@ -143,7 +163,7 @@ function insertTableColumnCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (!inTable(state.selection)) {
+    if (!inTable(state.schema, state.selection)) {
         return false;
     }
     if (dispatch) {
@@ -157,11 +177,11 @@ function insertTableColumnCommand(
         let targetCell: ProsemirrorNode;
         // traverse the current table to find the absolute positions of our cells to be inserted
         selectedTable.descendants((node: ProsemirrorNode, pos: number) => {
-            if (!tableNodes.includes(node.type)) {
+            if (!isTableType(state.schema, node.type)) {
                 return false; // don't descend into non-table nodes
             }
 
-            if (node.type === schema.nodes.table_row) {
+            if (node.type === state.schema.nodes.table_row) {
                 targetCell = node.child(selectedCellIndex);
             }
 
@@ -191,7 +211,10 @@ export function removeRowCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (!inTable(state.selection) || inTableHead(state.selection)) {
+    if (
+        !inTable(state.schema, state.selection) ||
+        inTableHead(state.schema, state.selection)
+    ) {
         return false;
     }
 
@@ -215,7 +238,7 @@ export function removeColumnCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (!inTable(state.selection)) {
+    if (!inTable(state.schema, state.selection)) {
         return false;
     }
 
@@ -233,11 +256,11 @@ export function removeColumnCommand(
         const resolvedPositions: ResolvedPos[] = [];
         const tableOffset = $head.start(-3);
         table.descendants((node: ProsemirrorNode, pos: number) => {
-            if (!tableNodes.includes(node.type)) {
+            if (!isTableType(state.schema, node.type)) {
                 return false; // don't descend into non-table nodes
             }
 
-            if (node.type === schema.nodes.table_row) {
+            if (node.type === state.schema.nodes.table_row) {
                 targetCell =
                     node.childCount >= cellIndex + 1
                         ? node.child(cellIndex)
@@ -267,7 +290,7 @@ export function removeTableContentCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (!inTable(state.selection)) {
+    if (!inTable(state.schema, state.selection)) {
         return false;
     }
 
@@ -302,7 +325,7 @@ function moveToCellCommand(
         return false;
     }
 
-    if (!inTable(state.selection)) return false;
+    if (!inTable(state.schema, state.selection)) return false;
 
     const $head = state.selection.$head;
 
@@ -370,11 +393,11 @@ function removeTableCommand(
     return true;
 }
 
-export function insertTableCommand(
+export function insertRichTextTableCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    if (!setBlockType(schema.nodes.table)(state)) {
+    if (!setBlockType(state.schema.nodes.table)(state)) {
         return false;
     }
 
@@ -383,23 +406,23 @@ export function insertTableCommand(
     let headerIndex = 1;
     let cellIndex = 1;
     const cell = () =>
-        schema.nodes.table_cell.create(
+        state.schema.nodes.table_cell.create(
             null,
-            schema.text(`cell ${cellIndex++}`)
+            state.schema.text(`cell ${cellIndex++}`)
         );
     const header = () =>
-        schema.nodes.table_header.create(
+        state.schema.nodes.table_header.create(
             null,
-            schema.text(`header ${headerIndex++}`)
+            state.schema.text(`header ${headerIndex++}`)
         );
     const row = (...cells: ProsemirrorNode[]) =>
-        schema.nodes.table_row.create(null, cells);
+        state.schema.nodes.table_row.create(null, cells);
     const head = (row: ProsemirrorNode) =>
-        schema.nodes.table_head.create(null, row);
+        state.schema.nodes.table_head.create(null, row);
     const body = (...rows: ProsemirrorNode[]) =>
-        schema.nodes.table_body.create(null, rows);
+        state.schema.nodes.table_body.create(null, rows);
     const table = (head: ProsemirrorNode, body: ProsemirrorNode) =>
-        schema.nodes.table.createChecked(null, [head, body]);
+        state.schema.nodes.table.createChecked(null, [head, body]);
 
     const t = table(
         head(row(header(), header())),

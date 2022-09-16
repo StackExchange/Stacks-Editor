@@ -43,9 +43,13 @@ function setLinkReference(
 
         const normalizedLabel = normalizeReference(label);
         reference = references[normalizedLabel];
+        const href =
+            token.type === "image"
+                ? token.attrGet("src")
+                : token.attrGet("href");
 
         // if the reference doesn't exist, or if we found the wrong reference, bail
-        if (!reference || reference.href !== token.attrGet("href")) {
+        if (!reference || reference.href !== href) {
             reference = undefined;
             continue;
         }
@@ -96,6 +100,11 @@ function setLinkReferences(
         if (token.type === "link_close" && foundLinkOpen) {
             token.markup = "reference";
             foundLinkOpen = false;
+        }
+
+        // attempt the find link references for images as well, but don't bother with tracking the result
+        if (token.type === "image" && !token.markup) {
+            setLinkReference(references, token, parent);
         }
 
         if (token.children) {

@@ -1,13 +1,19 @@
 // NOTE: It is important that these are all `type` only imports!
 // This keeps code that relies on this file from accidentally introducing cyclical dependencies
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
-import type { Schema, Node } from "prosemirror-model";
-import type { EditorState } from "prosemirror-state";
+import type { Node } from "prosemirror-model";
 import type { EditorView } from "prosemirror-view";
-import type { ExternalEditorPlugin } from "./external-editor-plugin";
+import { EditorPlugin } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { stackOverflowValidateLink } from "./utils";
 
+/** Describes each distinct editor type the StacksEditor handles */
+export enum EditorType {
+    RichText,
+    Commonmark,
+}
+
+/** Describes the options that are common to all view types */
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
     classList?: string[];
@@ -15,6 +21,8 @@ export interface CommonViewOptions {
     editorHelpLink?: string;
     /** The features to allow/disallow on the markdown parser */
     parserFeatures?: CommonmarkParserFeatures;
+    /** The placeholder text for an empty editor */
+    placeholderText?: string;
     /**
      * Function to get the container to place the menu bar;
      * defaults to returning this editor's target's parentNode
@@ -29,7 +37,7 @@ export interface CommonViewOptions {
     /** Image uploader options */
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
-    externalPlugins?: ExternalEditorPlugin[];
+    editorPlugins?: EditorPlugin[];
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
@@ -39,16 +47,23 @@ export interface CommonViewOptions {
  * @property {string} linkTitle - Text to be placed in the 'title' attribute on the rendered link
  */
 export interface TagLinkOptions {
-    /** Indicates whether meta tags are allowed in this instance */
-    allowMetaTags: boolean;
-    /** Indicates characters outside of the ASCII set are allowed in tag names */
-    allowNonAscii: boolean;
+    /**
+     * Callback to check if a tagname is valid; a return value of false fails the token parsing
+     * @param tagName The name of the tag being validated
+     * @param isMetaTag Whether the tag is a meta tag; may not be passed depending on the calling context
+     * @param totalMarkup The full parsed markup of the tag link; may not be passed depending on the calling context
+     */
+    validate?: (
+        tagName: string,
+        isMetaTag?: boolean,
+        totalMarkup?: string
+    ) => boolean;
     /** Provide the necessary information to render the parsed tag as a link
      * @param tagName - the name of the tag
      * @param isMetaTag - whether the tag was specified via [meta-tag:*] or not
      * @return {TagLinkInfo}
      */
-    renderer?: (
+    render?: (
         tagName: string,
         isMetaTag: boolean
     ) => { link: string; additionalClasses: string[]; linkTitle: string };
@@ -80,8 +95,7 @@ export const defaultParserFeatures: Required<CommonmarkParserFeatures> = {
     extraEmphasis: true,
     tables: true,
     tagLinks: {
-        allowMetaTags: true,
-        allowNonAscii: false,
+        validate: () => true,
     },
     validateLink: stackOverflowValidateLink,
 };
@@ -144,9 +158,4 @@ export abstract class BaseView implements View {
      * Serializes the current document's contents into a markdown string
      */
     abstract serializeContent(): string;
-}
-
-export interface PluginView {
-    update?(view: EditorView<Schema>, prevState?: EditorState<Schema>): void;
-    destroy?(): void;
 }

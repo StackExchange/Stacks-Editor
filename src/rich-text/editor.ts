@@ -1,14 +1,9 @@
 import { history } from "prosemirror-history";
-import { MarkdownSerializer } from "prosemirror-markdown";
-import { Node as ProseMirrorNode } from "prosemirror-model";
+import { MarkdownParser, MarkdownSerializer } from "prosemirror-markdown";
+import { Node as ProseMirrorNode, Schema } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { Transform } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
-import {
-    collapseExternalPlugins,
-    combineSchemas,
-    ExternalEditorPlugin,
-} from "../shared/external-editor-plugin";
 import { CodeBlockHighlightPlugin } from "../shared/highlighting/highlight-plugin";
 import { error, log } from "../shared/logger";
 import { buildMarkdownParser } from "../shared/markdown-parser";
@@ -20,27 +15,34 @@ import {
     editableCheck,
     readonlyPlugin,
 } from "../shared/prosemirror-plugins/readonly";
-import { CodeStringParser, richTextSchema } from "../shared/schema";
+import { CodeStringParser } from "../shared/schema";
 import { deepMerge } from "../shared/utils";
 import {
     BaseView,
     CommonViewOptions,
     defaultParserFeatures,
+    EditorType,
 } from "../shared/view";
-import { createMenu } from "./commands";
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
-import { stackOverflowMarkdownSerializer } from "./markdown-serializer";
+import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
-import { codePasteHandler } from "./plugins/code-paste-handler";
+import { richTextCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
-import { linkTooltipPlugin } from "./plugins/link-tooltip";
+import { linkEditorPlugin } from "./plugins/link-editor";
+import { placeholderPlugin } from "../shared/prosemirror-plugins/placeholder";
+import { plainTextPasteHandler } from "./plugins/plain-text-paste-handler";
 import { spoilerToggle } from "./plugins/spoiler-toggle";
 import { tables } from "./plugins/tables";
+import { richTextSchemaSpec } from "./schema";
+import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-manager";
+import { IExternalPluginProvider } from "../shared/editor-plugin";
+import { createMenuEntries } from "../shared/menu/index";
+import { createMenuPlugin } from "../shared/menu/plugin";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -54,26 +56,55 @@ export interface RichTextOptions extends CommonViewOptions {
 export class RichTextEditor extends BaseView {
     private options: RichTextOptions;
     private markdownSerializer: MarkdownSerializer;
-    private externalPlugins: ExternalEditorPlugin;
+    private markdownParser: MarkdownParser;
+    private finalizedSchema: Schema;
+    private externalPluginProvider: IExternalPluginProvider;
 
-    constructor(target: Node, content: string, options: RichTextOptions = {}) {
+    constructor(
+        target: Node,
+        content: string,
+        pluginProvider: IExternalPluginProvider,
+        options: RichTextOptions = {}
+    ) {
         super();
         this.options = deepMerge(RichTextEditor.defaultOptions, options);
 
-        this.externalPlugins = collapseExternalPlugins(
-            this.options.externalPlugins
-        );
+        this.externalPluginProvider = pluginProvider;
 
         this.markdownSerializer = stackOverflowMarkdownSerializer(
-            this.externalPlugins
+            this.externalPluginProvider
+        );
+
+        this.finalizedSchema = new Schema(
+            this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
+        );
+        this.markdownParser = buildMarkdownParser(
+            this.options.parserFeatures,
+            this.finalizedSchema,
+            this.externalPluginProvider
         );
 
         const doc = this.parseContent(content);
 
+        const menuEntries = this.externalPluginProvider.getFinalizedMenu(
+            createMenuEntries(
+                this.finalizedSchema,
+                this.options,
+                EditorType.RichText
+            ),
+            doc.type.schema
+        );
+
+        const menu = createMenuPlugin(
+            menuEntries,
+            this.options.menuParentContainer,
+            EditorType.RichText
+        );
+
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                node.classList.add(...this.options.classList);
+                node.classList.add(...(this.options.classList || []));
                 target.appendChild(node);
             },
             {
@@ -82,33 +113,47 @@ export class RichTextEditor extends BaseView {
                     doc: doc,
                     plugins: [
                         history(),
-                        ...allKeymaps(this.options.parserFeatures),
-                        createMenu(this.options),
-                        richTextInputRules(this.options.parserFeatures),
+                        ...allKeymaps(
+                            this.finalizedSchema,
+                            this.options.parserFeatures
+                        ),
+                        menu,
+                        richTextInputRules(
+                            this.finalizedSchema,
+                            this.options.parserFeatures
+                        ),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
                         CodeBlockHighlightPlugin(
                             this.options.codeblockOverrideLanguage
                         ),
-                        linkTooltipPlugin(this.options.parserFeatures),
+                        interfaceManagerPlugin(
+                            this.options.pluginParentContainer
+                        ),
+                        linkEditorPlugin(this.options.parserFeatures),
+                        placeholderPlugin(this.options.placeholderText),
                         richTextImageUpload(
                             this.options.imageUpload,
-                            this.options.pluginParentContainer
+                            this.options.parserFeatures.validateLink,
+                            this.finalizedSchema
                         ),
                         readonlyPlugin(),
                         spoilerToggle,
                         tables,
-                        codePasteHandler,
+                        richTextCodePasteHandler,
                         linkPasteHandler(this.options.parserFeatures),
-                        ...this.externalPlugins.plugins,
+                        ...this.externalPluginProvider.plugins.richText,
+                        // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers
+                        plainTextPasteHandler,
                     ],
                 }),
                 nodeViews: {
-                    code_block(
-                        node: ProseMirrorNode,
-                        view: EditorView,
-                        getPos: () => number
-                    ) {
-                        return new CodeBlockView(node, view, getPos);
+                    code_block: (node, view, getPos) => {
+                        return new CodeBlockView(
+                            node,
+                            view,
+                            getPos,
+                            this.externalPluginProvider.codeblockProcessors
+                        );
                     },
                     image(
                         node: ProseMirrorNode,
@@ -126,7 +171,7 @@ export class RichTextEditor extends BaseView {
                     html_block_container: function (node: ProseMirrorNode) {
                         return new HtmlBlockContainer(node);
                     },
-                    ...this.externalPlugins.nodeViews,
+                    ...this.externalPluginProvider.nodeViews,
                 },
                 plugins: [],
             }
@@ -134,6 +179,7 @@ export class RichTextEditor extends BaseView {
 
         log(
             "prosemirror rich-text document",
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
             this.editorView.state.doc.toJSON().content
         );
     }
@@ -148,26 +194,15 @@ export class RichTextEditor extends BaseView {
             imageUpload: {
                 handler: defaultImageUploadHandler,
             },
-            externalPlugins: [],
+            editorPlugins: [],
         };
     }
 
     parseContent(content: string): ProseMirrorNode {
-        const alteredSchema = combineSchemas(
-            richTextSchema,
-            this.externalPlugins?.schema
-        );
-
-        const markdownParser = buildMarkdownParser(
-            this.options.parserFeatures,
-            alteredSchema,
-            this.externalPlugins
-        );
-
         let doc: ProseMirrorNode;
 
         try {
-            doc = markdownParser.parse(content);
+            doc = this.markdownParser.parse(content);
         } catch (e) {
             // there was a catastrophic error! Try not to lose the user's doc...
             error(
@@ -176,15 +211,17 @@ export class RichTextEditor extends BaseView {
                 e
             );
 
-            doc = CodeStringParser.fromSchema(alteredSchema).parseCode(content);
+            doc = CodeStringParser.fromSchema(this.finalizedSchema).parseCode(
+                content
+            );
 
             // manually add an h1 warning to the newly parsed doc
             const tr = new Transform(doc).insert(
                 0,
-                alteredSchema.node(
+                this.finalizedSchema.node(
                     "heading",
                     { level: 1 },
-                    alteredSchema.text(
+                    this.finalizedSchema.text(
                         "WARNING! There was an error parsing the document"
                     )
                 )

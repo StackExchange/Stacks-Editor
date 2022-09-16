@@ -3,21 +3,22 @@ import {
     EditorState,
     Transaction,
     TextSelection,
+    PluginView,
 } from "prosemirror-state";
-import { NodeSpec } from "prosemirror-model";
+import { NodeSpec, Schema } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
-import { richTextSchema } from "../schema";
-import { PluginView } from "../view";
-import { StatefulPlugin, StatefulPluginKey } from "./plugin-extensions";
-import { dispatchEditorEvent, escapeHTML, generateRandomId } from "../utils";
+import { CommonmarkParserFeatures } from "../view";
+import { StatefulPlugin } from "./plugin-extensions";
+import { escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
+import { ManagedInterfaceKey, PluginInterfaceView } from "./interface-manager";
 
 /**
- * Async image upload callback that is passed the uploaded file and retuns a resolvable path to the image
- * @param {File} file The uploaded image file
+ * Async image upload callback that is passed the uploaded file and returns a resolvable path to the image
+ * @param {File} file The uploaded image file or user entered image url
  * @returns {string} The resolvable path to where the file was uploaded
  */
-type ImageUploadHandlerCallback = (file: File) => Promise<string>;
+type ImageUploadHandlerCallback = (file: File | string) => Promise<string>;
 
 /**
  * Image upload options
@@ -42,6 +43,15 @@ export interface ImageUploadOptions {
      * If true, wraps all images in links that point to the uploaded image url
      */
     wrapImagesInLinks?: boolean;
+    /**
+     * If true, all uploaded images will embedded as links to the image, rather than the image itself
+     * NOTE: this is only supported for images that are uploaded via the image uploader
+     */
+    embedImagesAsLinks?: boolean;
+    /**
+     * If true, allow users to add images via an external url
+     */
+    allowExternalUrls?: boolean;
 }
 
 /**
@@ -88,30 +98,36 @@ type addTransactionDispatcher = (
     position: number
 ) => Transaction;
 
-export class ImageUploader implements PluginView {
+export class ImageUploader extends PluginInterfaceView<
+    ImageUploadState,
+    typeof INTERFACE_KEY
+> {
     uploadOptions?: ImageUploadOptions;
     uploadContainer: HTMLElement;
     uploadField: HTMLInputElement;
     image: File = null;
     isVisible: boolean;
-    pluginContainer: Element;
+    // TODO do external image urls need to support a different link validator?
+    private validateLink: CommonmarkParserFeatures["validateLink"];
     private addTransactionDispatcher: addTransactionDispatcher;
 
     constructor(
         view: EditorView,
         uploadOptions: ImageUploadOptions,
-        pluginContainer: Element,
+        validateLink: CommonmarkParserFeatures["validateLink"],
         addTransactionDispatcher: addTransactionDispatcher
     ) {
+        super(INTERFACE_KEY);
+
         const randomId = generateRandomId();
         this.isVisible = false;
         this.uploadOptions = uploadOptions;
-        this.pluginContainer = pluginContainer;
+        this.validateLink = validateLink;
         this.addTransactionDispatcher = addTransactionDispatcher;
 
         this.uploadContainer = document.createElement("div");
         this.uploadContainer.className =
-            "mt6 bt bb bc-black-400 d-none js-image-uploader";
+            "mt6 bt bb bc-black-400 js-image-uploader";
 
         this.uploadField = document.createElement("input");
         this.uploadField.type = "file";
@@ -120,19 +136,32 @@ export class ImageUploader implements PluginView {
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + randomId;
 
+        // TODO i18n
         this.uploadContainer.innerHTML = escapeHTML`
-            <div class="fs-body2 p12 pb0">
+            <div class="fs-body2 p12 pb0 js-cta-container">
                 <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" role="button" aria-controls="image-preview-${randomId}">
                     Browse
-                </label>, drag & drop, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span></div>
+                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span>
+            </div>
+
+            <div class="js-external-url-input-container p12 d-none">
+                <div class="d-flex fd-row ai-center sm:fd-column sm:ai-start">
+                    <label class="d-block s-label ws-nowrap mr4" for="external-url-input-${randomId}">
+                        External url
+                    </label>
+                    <input id="external-url-input-${randomId}" type="text" class="s-input js-external-url-input" placeholder="https://example.com/img.png" />
+                </div>
+            </div>
 
             <div id="image-preview-${randomId}" class="js-image-preview wmx100 pt12 px12 d-none"></div>
             <aside class="s-notice s-notice__warning d-none m8 js-validation-message" role="status" aria-hidden="true"></aside>
 
-            <div class="d-flex ai-center p12">
-                <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
-                <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
-                <div class="ml64 d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
+            <div class="d-flex jc-space-between ai-center p12 sm:fd-column sm:ai-start sm:g16">
+                <div>
+                    <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
+                    <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
+                </div>
+                <div class="d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
                     <div class="js-branding-html"></div>
                     <div class="js-content-policy-html"></div>
                 </div>
@@ -159,17 +188,14 @@ export class ImageUploader implements PluginView {
             this.handleFileSelection(view);
         });
 
-        // add the upload container to the menu area
-        pluginContainer.appendChild(this.uploadContainer);
-
         this.uploadContainer.addEventListener(
             "dragenter",
-            this.highlightDropArea.bind(this)
+            this.highlightDropArea.bind(this) as EventListener
         );
 
         this.uploadContainer.addEventListener(
             "dragover",
-            this.highlightDropArea.bind(this)
+            this.highlightDropArea.bind(this) as EventListener
         );
 
         // we need this handler on top of the plugin's handleDrop() to make
@@ -190,28 +216,42 @@ export class ImageUploader implements PluginView {
 
         this.uploadContainer.addEventListener(
             "dragleave",
-            this.unhighlightDropArea.bind(this)
-        );
-
-        // TODO should likely be attached to the document (or better yet, handled via EditorProps.handleKeyDown)
-        view.dom.parentNode.addEventListener(
-            "keydown",
-            (event: KeyboardEvent) => {
-                if (event.key === "Escape") {
-                    hideImageUploader(view);
-                }
-            }
+            this.unhighlightDropArea.bind(this) as EventListener
         );
 
         this.uploadContainer
             .querySelector(".js-cancel-button")
-            .addEventListener("click", () => hideImageUploader(view));
+            .addEventListener("click", () => {
+                const tr = this.tryHideInterfaceTr(view.state);
+                if (tr) {
+                    view.dispatch(tr);
+                }
+            });
 
         this.uploadContainer
             .querySelector(".js-add-image")
             .addEventListener("click", (e: Event) =>
                 this.handleUploadTrigger(e, this.image, view)
             );
+
+        if (this.uploadOptions.allowExternalUrls) {
+            this.uploadContainer
+                .querySelector(".js-external-url-trigger-container")
+                .classList.remove("d-none");
+            this.uploadContainer
+                .querySelector(".js-external-url-trigger")
+                .addEventListener("click", () => {
+                    this.toggleExternalUrlInput(true);
+                });
+
+            this.uploadContainer
+                .querySelector(".js-external-url-input")
+                .addEventListener("input", (e) => {
+                    this.validateExternalUrl(
+                        (e.target as HTMLInputElement).value
+                    );
+                });
+        }
     }
 
     highlightDropArea(event: DragEvent): void {
@@ -355,6 +395,39 @@ export class ImageUploader implements PluginView {
         reader.readAsDataURL(file);
     }
 
+    toggleExternalUrlInput(show: boolean): void {
+        const cta = this.uploadContainer.querySelector(".js-cta-container");
+        const container = this.uploadContainer.querySelector(
+            ".js-external-url-input-container"
+        );
+
+        cta.classList.toggle("d-none", show);
+        container.classList.toggle("d-none", !show);
+
+        container.querySelector<HTMLInputElement>(
+            ".js-external-url-input"
+        ).value = "";
+    }
+
+    validateExternalUrl(url: string): void {
+        this.resetImagePreview();
+        const addImageButton =
+            this.uploadContainer.querySelector<HTMLButtonElement>(
+                ".js-add-image"
+            );
+
+        if (!this.validateLink(url)) {
+            this.showValidationError(
+                _t("image_upload.external_url_validation_error"),
+                "danger"
+            );
+            addImageButton.disabled = true;
+        } else {
+            this.hideValidationError();
+            addImageButton.disabled = false;
+        }
+    }
+
     resetImagePreview(): void {
         this.uploadContainer.querySelector(".js-image-preview").innerHTML = "";
         this.image = null;
@@ -365,34 +438,44 @@ export class ImageUploader implements PluginView {
 
     resetUploader(): void {
         this.resetImagePreview();
+        this.toggleExternalUrlInput(false);
         this.hideValidationError();
 
         this.uploadField.value = null;
     }
 
     handleUploadTrigger(event: Event, file: File, view: EditorView): void {
-        if (!file) {
+        const externalUrl =
+            this.uploadContainer.querySelector<HTMLInputElement>(
+                ".js-external-url-input"
+            ).value;
+        const urlIsValue = externalUrl && this.validateLink(externalUrl);
+
+        if (!file && !urlIsValue) {
             return;
         }
 
-        void this.startImageUpload(view, file);
+        void this.startImageUpload(view, file || externalUrl);
         this.resetUploader();
-        hideImageUploader(view);
+        const tr = this.tryHideInterfaceTr(view.state);
+        if (tr) {
+            view.dispatch(tr);
+        }
         view.focus();
     }
 
-    startImageUpload(view: EditorView, file: File): Promise<void> {
+    startImageUpload(view: EditorView, file: File | string): Promise<void> {
         // A fresh object to act as the ID for this upload
         const id = {};
 
         // Replace the selection with a placeholder
         const tr = view.state.tr;
         if (!tr.selection.empty) tr.deleteSelection();
-        IMAGE_UPLOADER_KEY.setMeta(tr, {
+        this.key.setMeta(tr, {
             add: { id, pos: tr.selection.from },
             // explicitly clear out any pasted/dropped file on upload
             file: null,
-            visible: false,
+            shouldShow: false,
         });
         view.dispatch(tr);
 
@@ -408,10 +491,9 @@ export class ImageUploader implements PluginView {
 
         return this.uploadOptions.handler(file).then(
             (url) => {
+                // ON SUCCESS
                 // find where we inserted our placeholder so the content insert knows where to go
-                const decos = IMAGE_UPLOADER_KEY.getState(
-                    view.state
-                ).decorations;
+                const decos = this.key.getState(view.state).decorations;
                 const found = decos.find(
                     null,
                     null,
@@ -426,26 +508,28 @@ export class ImageUploader implements PluginView {
                 let tr = this.addTransactionDispatcher(view.state, url, pos);
 
                 // let the plugin know it can remove the upload decoration
-                tr = IMAGE_UPLOADER_KEY.setMeta(tr, {
+                tr = this.key.setMeta(tr, {
                     remove: { id },
-                    visible: false,
+                    shouldShow: false,
                     file: null,
                 });
 
                 view.dispatch(tr);
             },
             () => {
-                // let the plugin know it can remove the upload decoration
-                view.dispatch(
-                    IMAGE_UPLOADER_KEY.setMeta(view.state.tr, {
-                        remove: { id },
-                        visible: false,
-                        file: null,
-                    })
-                );
+                // ON ERROR
 
                 // reshow the image uploader along with an error message
-                showImageUploader(view);
+                let tr = this.tryShowInterfaceTr(view.state) || view.state.tr;
+
+                // let the plugin know it can remove the upload decoration
+                tr = this.key.setMeta(tr, {
+                    remove: { id },
+                    shouldShow: false,
+                    file: null,
+                });
+
+                view.dispatch(tr);
                 this.showValidationError(
                     _t("image_upload.upload_error_generic"),
                     "error"
@@ -455,36 +539,9 @@ export class ImageUploader implements PluginView {
     }
 
     update(view: EditorView): void {
-        const state = IMAGE_UPLOADER_KEY.getState(view.state);
-        let isVisible = state?.visible;
-
-        if (typeof isVisible !== "boolean") {
-            isVisible = false;
-        }
-
-        // states already match, nothing to do
-        if (isVisible === this.isVisible) {
-            return;
-        }
-
-        this.isVisible = isVisible;
+        const state = this.key.getState(view.state);
         this.image = state?.file || this.image;
-
-        if (this.isVisible) {
-            this.uploadContainer.classList.remove("d-none");
-
-            this.uploadContainer
-                .querySelector<HTMLElement>(".js-image-uploader-input")
-                .focus();
-
-            if (this.image) {
-                void this.showImagePreview(this.image);
-            }
-        } else {
-            this.resetUploader();
-            this.uploadContainer.classList.add("d-none");
-            this.uploadContainer.classList.remove("outline-ring");
-        }
+        super.update(view);
     }
 
     destroy(): void {
@@ -492,56 +549,63 @@ export class ImageUploader implements PluginView {
         this.uploadContainer.remove();
         this.image = null;
     }
-}
 
-export function hideImageUploader(view: EditorView): void {
-    const state = IMAGE_UPLOADER_KEY.getState(view.state);
+    buildInterface(container: Element): void {
+        if (this.image) {
+            void this.showImagePreview(this.image);
+        }
 
-    // already hidden, don't dispatch the event
-    if (!state || !state.visible) {
-        return;
+        // add the upload container to the menu area
+        container.appendChild(this.uploadContainer);
+
+        this.uploadContainer
+            .querySelector<HTMLElement>(".js-image-uploader-input")
+            .focus();
     }
 
-    const tr = view.state.tr;
-    IMAGE_UPLOADER_KEY.setMeta(tr, {
-        visible: false,
-        // explicitly clear out any pasted/dropped file on hide
+    destroyInterface(container: Element): void {
+        this.resetUploader();
+        this.uploadContainer.classList.remove("outline-ring");
+        container.removeChild(this.uploadContainer);
+    }
+}
+
+/**
+ * Hides the image uploader
+ * @param view The current editor view
+ */
+export function hideImageUploader(view: EditorView): void {
+    const tr = INTERFACE_KEY.hideInterfaceTr(view.state, {
         file: null,
     });
-    const newState = view.state.apply(tr);
-    view.updateState(newState);
+
+    if (tr) {
+        view.dispatch(tr);
+    }
 }
 
+/** Shows the image uploader
+ * @param view The current editor view
+ * @param file The file to upload
+ */
 export function showImageUploader(view: EditorView, file?: File): void {
-    const state = IMAGE_UPLOADER_KEY.getState(view.state);
-
-    // already visible, don't dispatch the event
-    if (!state || state.visible) {
-        return;
-    }
-
-    // TODO find a way to add this event to StacksEditor TSDocs
-    // dispatch a browser event and return early if it is cancelled
-    if (!dispatchEditorEvent(view.dom, "image-uploader-show", { file })) {
-        return;
-    }
-
-    const tr = view.state.tr;
-
-    IMAGE_UPLOADER_KEY.setMeta(tr, {
-        visible: true,
-        // explicitly clear the file if one wasn't passed (essentially resetting the preview)
+    const tr = INTERFACE_KEY.showInterfaceTr(view.state, {
         file: file || null,
     });
-    const newState = view.state.apply(tr);
-    view.updateState(newState);
+
+    if (tr) {
+        view.dispatch(tr);
+    }
 }
 
-/** Checks if the image-upload functionality is enabled */
-export function imageUploaderEnabled(view: EditorView): boolean {
-    const state = IMAGE_UPLOADER_KEY.getState(view.state);
+/**
+ * Checks if the image-upload functionality is enabled
+ * @param state The current editor state
+ */
+export function imageUploaderEnabled(state: EditorState): boolean {
+    const pluginState = INTERFACE_KEY.getState(state);
 
-    return !!state;
+    return !!pluginState;
 }
 
 /**
@@ -562,6 +626,7 @@ function createPlaceholder(): HTMLDivElement {
     return placeholder;
 }
 
+/** The state of the image uploader plugin */
 type ImageUploadState = {
     add?: {
         id: unknown;
@@ -572,7 +637,7 @@ type ImageUploadState = {
     remove?: {
         id: unknown;
     };
-    visible: boolean;
+    shouldShow: boolean;
 };
 
 /**
@@ -591,7 +656,7 @@ type ImageUploadState = {
  */
 function imageUploaderPlaceholderPlugin(
     uploadOptions: ImageUploadOptions,
-    containerFn: (view: EditorView) => Element,
+    validateLink: CommonmarkParserFeatures["validateLink"],
     addTransactionDispatcher: addTransactionDispatcher
 ) {
     // if the required image upload options are missing, don't enable the plugin at all
@@ -600,13 +665,13 @@ function imageUploaderPlaceholderPlugin(
     }
 
     return new StatefulPlugin<ImageUploadState>({
-        key: IMAGE_UPLOADER_KEY,
+        key: INTERFACE_KEY,
         state: {
             init() {
                 return {
-                    visible: false,
                     decorations: DecorationSet.empty,
                     file: null,
+                    shouldShow: false,
                 };
             },
             apply(tr: Transaction, state: ImageUploadState) {
@@ -618,9 +683,9 @@ function imageUploaderPlaceholderPlugin(
                 const metadata = this.getMeta(tr);
 
                 const returnValue: ImageUploadState = {
-                    visible: state.visible,
                     file: state.file,
                     decorations: set,
+                    shouldShow: state.shouldShow,
                 };
 
                 // if no metadata was set, do not alter this state further
@@ -628,15 +693,14 @@ function imageUploaderPlaceholderPlugin(
                     return returnValue;
                 }
 
-                // if the "visible" flag was set, use it
-                if ("visible" in metadata) {
-                    returnValue.visible = metadata.visible;
-                }
-
                 if ("file" in metadata) {
                     returnValue.file = metadata.file;
                 } else {
                     returnValue.file = null;
+                }
+
+                if ("shouldShow" in metadata) {
+                    returnValue.shouldShow = metadata.shouldShow;
                 }
 
                 // See if the transaction adds or removes any placeholders
@@ -663,12 +727,8 @@ function imageUploaderPlaceholderPlugin(
             },
         },
         props: {
-            decorations(state) {
+            decorations(this: StatefulPlugin<ImageUploadState>, state) {
                 return this.getState(state).decorations;
-            },
-            handleClick(view: EditorView) {
-                hideImageUploader(view);
-                return false;
             },
             handleDrop(view: EditorView, event: DragEvent) {
                 const files = event.dataTransfer.files;
@@ -683,7 +743,6 @@ function imageUploaderPlaceholderPlugin(
 
                 return false;
             },
-
             handlePaste(view: EditorView, event: ClipboardEvent) {
                 const files = event.clipboardData.files;
 
@@ -691,7 +750,6 @@ function imageUploaderPlaceholderPlugin(
                     view.state.selection.$from.parent.inlineContent &&
                     files.length
                 ) {
-                    hideImageUploader(view); // always hide + show in case it's already open
                     showImageUploader(view, files[0]);
                     return true;
                 }
@@ -700,25 +758,19 @@ function imageUploaderPlaceholderPlugin(
             },
         },
         view(editorView): PluginView {
-            // TODO centralize! done in menu.ts too
-            containerFn =
-                containerFn ||
-                function (view) {
-                    return view.dom.parentElement;
-                };
             return new ImageUploader(
                 editorView,
                 uploadOptions,
-                containerFn(editorView),
+                validateLink,
                 addTransactionDispatcher
             );
         },
     });
 }
 
-/** The plugin key the image uploader plugin is tied to */
-const IMAGE_UPLOADER_KEY = new StatefulPluginKey<ImageUploadState>(
-    ImageUploader.name
+/** Singleton instance of the plugin key for exported show/hide methods to reference */
+const INTERFACE_KEY = new ManagedInterfaceKey<ImageUploadState>(
+    "image-uploader"
 );
 
 /**
@@ -735,21 +787,28 @@ const IMAGE_UPLOADER_KEY = new StatefulPluginKey<ImageUploadState>(
  */
 export function richTextImageUpload(
     uploadOptions: ImageUploadOptions,
-    containerFn: (view: EditorView) => Element
+    validateLink: CommonmarkParserFeatures["validateLink"],
+    schema: Schema
 ): Plugin {
     return imageUploaderPlaceholderPlugin(
         uploadOptions,
-        containerFn,
+        validateLink,
         (state, url, pos) => {
-            const marks = uploadOptions.wrapImagesInLinks
-                ? [richTextSchema.marks.link.create({ href: url })]
-                : null;
+            const defaultAltText = _t("image_upload.default_image_alt_text");
 
-            const imgNode = richTextSchema.nodes.image.create(
-                { src: url },
-                null,
-                marks
-            );
+            const marks =
+                uploadOptions.wrapImagesInLinks ||
+                uploadOptions.embedImagesAsLinks
+                    ? [schema.marks.link.create({ href: url })]
+                    : null;
+
+            const imgNode = uploadOptions.embedImagesAsLinks
+                ? schema.text(defaultAltText, marks)
+                : schema.nodes.image.create(
+                      { src: url, alt: defaultAltText },
+                      null,
+                      marks
+                  );
 
             return state.tr.replaceWith(pos, pos, imgNode);
         }
@@ -771,19 +830,24 @@ export function richTextImageUpload(
  */
 export function commonmarkImageUpload(
     uploadOptions: ImageUploadOptions,
-    containerFn: (view: EditorView) => Element
+    validateLink: CommonmarkParserFeatures["validateLink"]
 ): Plugin {
     return imageUploaderPlaceholderPlugin(
         uploadOptions,
-        containerFn,
+        validateLink,
         (state, url, pos) => {
+            const defaultAltText = _t("image_upload.default_image_alt_text");
             // construct the raw markdown
-            const defaultAltText = "enter image description here";
             let mdString = `![${defaultAltText}](${url})`;
             let selectionStart = pos + 2;
             let selectionEnd = selectionStart + defaultAltText.length;
 
-            if (uploadOptions.wrapImagesInLinks) {
+            if (uploadOptions.embedImagesAsLinks) {
+                // strip off the leading `!`
+                mdString = mdString.slice(1);
+                selectionStart -= 1;
+                selectionEnd -= 1;
+            } else if (uploadOptions.wrapImagesInLinks) {
                 mdString = `[${mdString}](${url})`;
                 selectionStart += 1;
                 selectionEnd += 1;

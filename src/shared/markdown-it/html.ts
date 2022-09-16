@@ -40,7 +40,7 @@ function getTagInfo(tag: string): TagInfo {
     // check if this tag looks like `</div>` or `</div malformed>`
     const isClosingTag = /^<\/\S+?.*?>$/.test(tag);
 
-    // strip away all html characters and potential attibutes
+    // strip away all html characters and potential attributes
     const tagName = tag.replace(/[<>/]/g, "").trim().split(/\s/)[0];
 
     if (["del", "strike", "s"].includes(tagName)) {
@@ -96,7 +96,9 @@ function getTagInfo(tag: string): TagInfo {
     if (isSelfClosing) {
         // sanitize the original markup for output
         // <img title="asdfas" src="asdfasdf" /> becomes <img />
-        markup = tag.replace(/^(<[a-z]+).*?(\s?\/?>)$/i, "$1$2");
+        // the `s` flag makes `.` match newlines, while `[^\S\r\n]` is `\s` without newline matches
+        // this essentially strips out extraneous newlines that are found intertwined with the rest of the attributes
+        markup = tag.replace(/^(<[a-z]+).*?([^\S\r\n]?\/?>)$/is, "$1$2");
     }
 
     const attributes: { [name: string]: string } = {};
@@ -202,7 +204,7 @@ function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
     const content = token.content;
     // checks if a token matches `<open>content</close>` OR `<br />`
     const matches =
-        /^(?:(<[a-z0-9]+.*?>)([^<>]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
+        /^(?:(<[a-z0-9]+.*?>)([^<>\n]+?)(<\/[a-z0-9]+>))$|^(<[a-z0-9]+(?:\s.+?)?\s?\/?>)$/i.exec(
             content
         );
 
@@ -229,7 +231,7 @@ function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
         const text = matches[2];
         const closeTag = getTagInfo(matches[3]);
 
-        // the tag is only valid if both tags are known and match eachother
+        // the tag is only valid if both tags are known and match each other
         if (
             openTag.type !== TagType.unknown &&
             closeTag.type !== TagType.unknown &&

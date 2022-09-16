@@ -1,9 +1,16 @@
 import "@stackoverflow/stacks";
+import MarkdownIt from "markdown-it";
 import packageJson from "../package.json";
-import type { StacksEditor, StacksEditorOptions } from "../src";
-import { StackSnippetsPlugin } from "../src/external-plugins/stack-snippets";
+import {
+    registerLocalizationStrings,
+    StacksEditor,
+    StacksEditorOptions,
+} from "../src";
+import { PreviewRenderer } from "../src/commonmark/editor";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
+import { sleepAsync } from "../test/rich-text/test-helpers";
+import { samplePlugins } from "./sample-plugins";
 import "./site.less";
 
 function domReady(callback: (e: Event) => void) {
@@ -14,12 +21,16 @@ function domReady(callback: (e: Event) => void) {
     }
 }
 
-function getDefaultEditor(): number {
-    return +localStorage.getItem("defaultEditor") || 0;
+function getDefaultEditor(): { type: number; previewShown: boolean } {
+    return {
+        type: +localStorage.getItem("defaultEditor") || 0,
+        previewShown: localStorage.getItem("previewShownByDefault") === "true",
+    };
 }
 
-function setDefaultEditor(value: number) {
+function setDefaultEditor(value: number, previewShown: boolean) {
     localStorage.setItem("defaultEditor", value.toString());
+    localStorage.setItem("previewShownByDefault", previewShown.toString());
 }
 
 function setTimeoutAsync(delay: number): Promise<void> {
@@ -81,6 +92,11 @@ export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
 const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
     setTimeoutAsync(2000).then(() => {
         return new Promise(function (resolve) {
+            if (typeof file === "string") {
+                resolve(file);
+                return;
+            }
+
             // if the serviceworker is registered, send it the image and use the local image url hack instead
             if (navigator.serviceWorker.controller) {
                 const id = Math.floor(Math.random() * 1000);
@@ -99,6 +115,35 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
             }
         });
     });
+
+/**
+ * Sample preview renderer that has a fake delay and uses the default Markdown-It renderer
+ * NOTE: synchronous renderers can simply return Promise.resolve()
+ */
+const examplePreviewRenderer: PreviewRenderer = async (content, container) => {
+    const spinner = document.createElement("span");
+    spinner.className = "is-loading";
+    spinner.textContent =
+        "Intentionally delaying render for example purposes...";
+    container.appendChild(spinner);
+
+    // add a fake load delay (because we can)
+    await sleepAsync(500);
+
+    const instance = MarkdownIt("commonmark", {
+        html: false,
+    });
+    // html support is disabled above (and this is a simple demo anyways)
+    // eslint-disable-next-line no-unsanitized/property
+    container.innerHTML = instance.render(content);
+
+    // add a disclaimer to our demo renderer so people don't report unrelated rendering bugs
+    const disclaimer = document.createElement("p");
+    disclaimer.className = "fs-fine fc-light mb4";
+    disclaimer.textContent =
+        "This demo is using the default MarkdownIt renderer, so don't expect anything fancy.";
+    container.prepend(disclaimer);
+};
 
 domReady(() => {
     const versionNumber = document.querySelector(".js-version-number");
@@ -144,8 +189,9 @@ domReady(() => {
     const place = document.querySelector<HTMLElement>("#example-1");
     const place2 = document.querySelector<HTMLElement>("#example-2");
     const content = document.querySelector<HTMLTextAreaElement>("#content");
-    const enableTables = place.classList.contains("js-tables-enabled");
     const enableImages = !place.classList.contains("js-images-disabled");
+    const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
+    const enableMDPreview = place.classList.contains("js-md-preview-enabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -153,6 +199,7 @@ domReady(() => {
         contentPolicyHtml:
             "These images are uploaded nowhere, so no content policy applies",
         wrapImagesInLinks: true,
+        allowExternalUrls: true,
     };
 
     // TODO should null out entire object, but that currently just defaults back to the original on merge
@@ -161,80 +208,90 @@ domReady(() => {
         imageUploadOptions["handler"] = null;
     }
 
-    // asynchronously load the required bundles
-    void import("../src/index").then(function ({
-        StacksEditor,
-        registerLocalizationStrings,
-    }) {
-        registerLocalizationStrings({
-            menubar: {
-                mode_toggle_title: "Localization test: Toggle editor mode",
-            },
-        });
+    registerLocalizationStrings({
+        menubar: {
+            mode_toggle_richtext_title: "Localization test: Rich text mode",
+            mode_toggle_markdown_title: "Localization test: Markdown mode",
+        },
+    });
 
-        const options: StacksEditorOptions = {
-            defaultView: getDefaultEditor(),
-            editorHelpLink: "#TODO",
-            commonmarkOptions: {},
-            parserFeatures: {
-                tables: enableTables,
-                tagLinks: {
-                    allowNonAscii: false,
-                    allowMetaTags: true,
-                    renderer: (tagName, isMetaTag) => {
-                        return {
-                            link: "#" + tagName,
-                            linkTitle:
-                                "Show questions tagged '" + tagName + "'",
-                            additionalClasses: isMetaTag
-                                ? ["s-tag__muted"]
-                                : [],
-                        };
-                    },
+    const defaultEditor = getDefaultEditor();
+    const options: StacksEditorOptions = {
+        defaultView: defaultEditor.type,
+        editorHelpLink: "#HELP_LINK",
+        commonmarkOptions: {
+            preview: {
+                enabled: enableMDPreview,
+                shownByDefault: defaultEditor.previewShown,
+                renderer: examplePreviewRenderer,
+            },
+        },
+        parserFeatures: {
+            tables: true,
+            tagLinks: {
+                render: (tagName, isMetaTag) => {
+                    return {
+                        link: "#" + tagName,
+                        linkTitle: "Show questions tagged '" + tagName + "'",
+                        additionalClasses: isMetaTag ? ["s-tag__muted"] : [],
+                    };
                 },
             },
-            richTextOptions: {
-                linkPreviewProviders: [
-                    ExampleTextOnlyLinkPreviewProvider,
-                    ExampleLinkPreviewProvider,
-                ],
-            },
-            imageUpload: imageUploadOptions,
-            externalPlugins: [StackSnippetsPlugin],
-        };
+        },
+        placeholderText: "This is placeholder text, so start typing…",
+        richTextOptions: {
+            linkPreviewProviders: [
+                ExampleTextOnlyLinkPreviewProvider,
+                ExampleLinkPreviewProvider,
+            ],
+        },
+        imageUpload: imageUploadOptions,
+        editorPlugins: enableSamplePlugin ? samplePlugins : [],
+    };
 
-        const editorInstance = new StacksEditor(place, content.value, options);
+    const editorInstance = new StacksEditor(place, content.value, options);
+
+    // set the instance on the window for developers to poke around in
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
+    (window as any)["editorInstance"] = editorInstance;
+
+    if (place2) {
+        const secondEditorInstance = new StacksEditor(
+            place2,
+            content.value,
+            options
+        );
 
         // set the instance on the window for developers to poke around in
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-        (window as any)["editorInstance"] = editorInstance;
-
-        if (place2) {
-            const secondEditorInstance = new StacksEditor(
-                place2,
-                content.value,
-                options
-            );
-
-            // set the instance on the window for developers to poke around in
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
-            (window as any)["secondEditorInstance"] = secondEditorInstance;
-        }
-    });
+        (window as any)["secondEditorInstance"] = secondEditorInstance;
+    }
 
     place.addEventListener(
         "StacksEditor:view-change",
-        (e: CustomEvent<{ editorType: number }>) => {
-            setDefaultEditor(e.detail.editorType);
+        (e: CustomEvent<{ editorType: number; previewShown: boolean }>) => {
+            setDefaultEditor(e.detail.editorType, e.detail.previewShown);
         }
     );
 
     place2?.addEventListener(
         "StacksEditor:view-change",
-        (e: CustomEvent<{ editorType: number }>) => {
-            setDefaultEditor(e.detail.editorType);
+        (e: CustomEvent<{ editorType: number; previewShown: boolean }>) => {
+            setDefaultEditor(e.detail.editorType, e.detail.previewShown);
         }
     );
+
+    // if the help link button is clicked, show the user an alert instead of opening the non-existent help page
+    document.querySelectorAll(".js-help-link").forEach((el) => {
+        el.addEventListener("click", (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // eslint-disable-next-line no-alert
+            alert(
+                "The demo help link doesn't actually go anywhere, so enjoy this alert instead. :)"
+            );
+        });
+    });
 });
 
 if ("serviceWorker" in navigator) {

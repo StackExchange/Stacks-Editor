@@ -8,31 +8,45 @@ import {
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
 import { keymap } from "prosemirror-keymap";
+import { Schema } from "prosemirror-model";
 import {
     liftListItem,
     sinkListItem,
     splitListItem,
 } from "prosemirror-schema-list";
 import type { Plugin } from "prosemirror-state";
-import { richTextSchema as schema } from "../shared/schema";
 import { bindLetterKeymap } from "../shared/utils";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import {
-    insertLinkCommand,
-    insertImageCommand,
-    insertHorizontalRuleCommand,
+    insertRichTextLinkCommand,
+    insertRichTextImageCommand,
+    insertRichTextHorizontalRuleCommand,
     exitBlockCommand,
     removeTableContentCommand,
     moveToNextCellCommand,
     moveToPreviousCellCommand,
     moveSelectionAfterTableCommand,
-    insertTableCommand,
+    insertRichTextTableCommand,
     exitInclusiveMarkCommand,
+    indentCodeBlockLinesCommand,
+    unindentCodeBlockLinesCommand,
+    toggleHeadingLevel,
+    toggleTagLinkCommand,
 } from "./commands";
 
-export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
+export function allKeymaps(
+    schema: Schema,
+    parserFeatures: CommonmarkParserFeatures
+): Plugin[] {
+    const codeBlockKeymap = keymap({
+        "Tab": indentCodeBlockLinesCommand,
+        "Shift-Tab": unindentCodeBlockLinesCommand,
+        "Mod-]": indentCodeBlockLinesCommand,
+        "Mod-[": unindentCodeBlockLinesCommand,
+    });
+
     const tableKeymap = keymap({
-        ...bindLetterKeymap("Mod-e", insertTableCommand),
+        ...bindLetterKeymap("Mod-e", insertRichTextTableCommand),
         "Mod-Enter": moveSelectionAfterTableCommand,
         "Shift-Enter": moveSelectionAfterTableCommand,
         "Enter": moveToNextCellCommand,
@@ -56,22 +70,35 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         "Shift-Enter": exitBlockCommand,
         ...bindLetterKeymap("Mod-b", toggleMark(schema.marks.strong)),
         ...bindLetterKeymap("Mod-i", toggleMark(schema.marks.em)),
-        ...bindLetterKeymap("Mod-l", insertLinkCommand),
+        ...bindLetterKeymap("Mod-l", insertRichTextLinkCommand),
         ...bindLetterKeymap("Ctrl-q", wrapIn(schema.nodes.blockquote)),
         ...bindLetterKeymap("Mod-k", toggleMark(schema.marks.code)),
-        ...bindLetterKeymap("Mod-g", insertImageCommand),
-        ...bindLetterKeymap("Ctrl-g", insertImageCommand),
+        ...bindLetterKeymap("Mod-g", insertRichTextImageCommand),
+        ...bindLetterKeymap("Ctrl-g", insertRichTextImageCommand),
         ...bindLetterKeymap("Mod-o", wrapIn(schema.nodes.ordered_list)),
         ...bindLetterKeymap("Mod-u", wrapIn(schema.nodes.bullet_list)),
-        ...bindLetterKeymap("Mod-h", setBlockType(schema.nodes.heading)),
-        ...bindLetterKeymap("Mod-r", insertHorizontalRuleCommand),
+        ...bindLetterKeymap("Mod-h", toggleHeadingLevel()),
+        ...bindLetterKeymap("Mod-r", insertRichTextHorizontalRuleCommand),
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
+        ...bindLetterKeymap(
+            "Mod-[",
+            toggleTagLinkCommand(parserFeatures.tagLinks.validate, false)
+        ),
+        ...bindLetterKeymap(
+            "Mod-]",
+            toggleTagLinkCommand(parserFeatures.tagLinks.validate, true)
+        ),
+        ...bindLetterKeymap("Mod-/", wrapIn(schema.nodes.spoiler)),
+        ...bindLetterKeymap("Mod-,", toggleMark(schema.marks.sub)),
+        ...bindLetterKeymap("Mod-.", toggleMark(schema.marks.sup)),
+        ...bindLetterKeymap("Mod-'", toggleMark(schema.marks.kbd)),
+
         // users expect to be able to leave certain blocks/marks using the arrow keys
         "ArrowRight": exitInclusiveMarkCommand,
         "ArrowDown": exitCode,
     });
 
-    const keymaps = [richTextKeymap, keymap(baseKeymap)];
+    const keymaps = [richTextKeymap, keymap(baseKeymap), codeBlockKeymap];
 
     if (parserFeatures.tables) {
         keymaps.unshift(tableKeymap);

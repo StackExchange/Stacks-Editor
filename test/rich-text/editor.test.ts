@@ -1,7 +1,6 @@
 import { RichTextEditor } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
-import "../matchers";
-import { normalize } from "../test-helpers";
+import { externalPluginProvider, normalize } from "../test-helpers";
 
 // mock the markdown-parser for testing
 jest.mock("../../src/shared/markdown-parser");
@@ -22,7 +21,12 @@ function editorDom(editorView: RichTextEditor): string {
 }
 
 function richView(markdownInput: string) {
-    return new RichTextEditor(document.createElement("div"), markdownInput, {});
+    return new RichTextEditor(
+        document.createElement("div"),
+        markdownInput,
+        externalPluginProvider(),
+        {}
+    );
 }
 
 describe("rich text editor view", () => {
@@ -120,7 +124,7 @@ describe("rich text editor view", () => {
             const richEditorView = richView(markdown);
 
             const preElement = richEditorView.dom.querySelector("pre");
-            const expectedCodeHtml = `<code class="content-dom">console.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
+            const expectedCodeHtml = `<code class="content-dom"><span class="hljs-built_in">console</span>.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
             expect(preElement.innerHTML).toEqual(normalize(expectedCodeHtml));
         });
     });
@@ -223,13 +227,13 @@ describe("rich text editor view", () => {
 **Hello**,
 
 _world_.
-</pre>
+</pre>Some text to prevent addition of browser hack nodes
 </blockquote>`;
 
             const richEditorView = richView(markdown);
 
             const expectedHtml = normalize(
-                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span><br class="ProseMirror-trailingBreak"></p></div></pre></blockquote></div>`
+                `<div class="html_block_container ProseMirror-widget"><blockquote>\n<pre>**Hello**,\n<div class="ProseMirror-contentdom"><p><em>world</em>.<span softbreak=""> </span><span class="html_inline">&lt;/pre&gt;</span>Some text to prevent addition of browser hack nodes</p></div></pre></blockquote></div>`
             );
             expect(normalize(editorDom(richEditorView))).toEqual(expectedHtml);
         });
@@ -238,7 +242,7 @@ _world_.
             const markdown = "<strong><em><del>wtf?</del></em></strong>";
             const richEditorView = richView(markdown);
 
-            const expectedHtml = `<p><em><del><strong>wtf?</strong></del></em></p>`;
+            const expectedHtml = `<p><em><strong><del>wtf?</del></strong></em></p>`;
             expect(editorDom(richEditorView)).toEqual(normalize(expectedHtml));
         });
 
@@ -323,7 +327,8 @@ _world_.
 
             const editor = new RichTextEditor(
                 document.createElement("div"),
-                "*This* is some **test** content"
+                "*This* is some **test** content",
+                externalPluginProvider()
             );
 
             // on a catastrophic crash, the raw string content gets
@@ -354,5 +359,9 @@ _world_.
                 ],
             });
         });
+    });
+
+    describe("external plugins", () => {
+        it.todo("should do all the things");
     });
 });
