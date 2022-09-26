@@ -6,7 +6,7 @@ import { externalPluginProvider, normalize } from "../test-helpers";
 jest.mock("../../src/shared/markdown-parser");
 
 // set the typings for easy function mocking
-const mockedMdp = jest.mocked(mdp, true);
+const mockedMdp = jest.mocked(mdp, { shallow: false });
 
 // import the "actual" buildMarkdownParser function to use in our mock implementations
 const { buildMarkdownParser } = jest.requireActual<typeof mdp>(

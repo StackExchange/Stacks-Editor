@@ -684,6 +684,49 @@ export function insertCommonmarkTableCommand(
     }
 }
 
+/**
+ * Inserts a horizontal rule at the cursor
+ * @param state The current editor state
+ * @param dispatch the dispatch function used to dispatch the transaction, set to "null" if you don't want to dispatch
+ */
+export function insertCommonmarkHorizontalRuleCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    // figure out how many leading newlines we need to add
+    // adding only a single newline after text will result in the thematic break
+    // being parsed as an setext heading; e.g. header1\n---
+    const precedingText = state.doc.cut(0, state.selection.from).textContent;
+    const lastNewlineIdx = precedingText.lastIndexOf("\n");
+    const currentLine = precedingText.slice(lastNewlineIdx + 1);
+
+    // check the previous line as well
+    let prevLine: string = null;
+    if (lastNewlineIdx > -1) {
+        const prevNewlineIdx = precedingText.lastIndexOf(
+            "\n",
+            lastNewlineIdx - 1
+        );
+        // even if no additional newline is found, we can assume an index of (-1 + 1), which is the beginning of the text
+        prevLine = precedingText.slice(prevNewlineIdx + 1, lastNewlineIdx);
+    }
+
+    let newlines: string;
+
+    if (!precedingText || (!prevLine && !currentLine)) {
+        // beginning of doc or multiple empty lines - no newlines
+        newlines = "";
+    } else if (!currentLine) {
+        // no text in current line - one newline
+        newlines = "\n";
+    } else {
+        // text in current line - two newlines
+        newlines = "\n\n";
+    }
+
+    return insertRawTextCommand(newlines + "---\n", 4, 4)(state, dispatch);
+}
+
 //TODO
 function indentBlockCommand(): boolean {
     return false;
@@ -740,8 +783,6 @@ export const strikethroughCommand = wrapInCommand("~~", null);
 export const blockquoteCommand = setBlockTypeCommand(">");
 export const orderedListCommand = setBlockTypeCommand("1.");
 export const unorderedListCommand = setBlockTypeCommand("-");
-export const insertCommonmarkHorizontalRuleCommand =
-    insertRawTextCommand("\n---\n");
 export const insertCodeblockCommand = blockWrapInCommand("```");
 export const spoilerCommand = setBlockTypeCommand(">!");
 export const supCommand = wrapInCommand("<sup>", "</sup>");

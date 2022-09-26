@@ -661,4 +661,56 @@ some text`;
             expect(spy).toHaveBeenCalledTimes(2);
         });
     });
+
+    describe("insertCommonmarkHorizontalRuleCommand", () => {
+        it.each([
+            // empty doc
+            ["", "---\n"],
+            // no text in current or previous line
+            ["test\n\n", "test\n\n---\n"],
+            // no text in current line
+            ["test\n", "test\n\n---\n"],
+            // text in current line
+            ["test1\ntest2", "test1\ntest2\n\n---\n"],
+        ])(
+            "should detect and prepend whitespace correctly (%#)",
+            (content, expected) => {
+                // create a state with the cursor at the end of the doc
+                const state = createState(content, content.length);
+
+                expect(state).transactionSuccess(
+                    commands.insertCommonmarkHorizontalRuleCommand,
+                    expected,
+                    ""
+                );
+            }
+        );
+
+        it("should replace selected text", () => {
+            const state = createSelectedState("text");
+
+            expect(state).transactionSuccess(
+                commands.insertCommonmarkHorizontalRuleCommand,
+                "---\n",
+                ""
+            );
+        });
+
+        it("should place the cursor after the inserted text", () => {
+            // create a state with the cursor at the end of the doc
+            let state = createState("");
+
+            const isValid = commands.insertCommonmarkHorizontalRuleCommand(
+                state,
+                (t) => {
+                    state = state.apply(t);
+                }
+            );
+
+            expect(isValid).toBe(true);
+            expect(state.doc.textContent).toBe("---\n");
+            expect(state.selection.from).toBe(5);
+            expect(state.selection.to).toBe(5);
+        });
+    });
 });
