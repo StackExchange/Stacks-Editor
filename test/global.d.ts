@@ -20,19 +20,18 @@ interface CustomMatchers<R = unknown> {
      */
     toMatchNodeTreeString(tree: string): R;
 }
+/**
+ * A tree used to compare against a ProsemirrorNode
+ * All keys are properties or property chains that will be resolved against the node
+ * The resolved property value will be checked against the tree's value for that key
+ * `content` contains one compare tree for each child of the ProsemirrorNode and can be arbitrarily deeply nested
+ */
+export interface CompareTree {
+    [propertyChain: string]: unknown;
+    content?: CompareTree[];
+}
 
 declare global {
-    /**
-     * A tree used to compare against a ProsemirrorNode
-     * All keys are properties or property chains that will be resolved against the node
-     * The resolved property value will be checked against the tree's value for that key
-     * `content` contains one compare tree for each child of the ProsemirrorNode and can be arbitrarily deeply nested
-     */
-    interface CompareTree {
-        [propertyChain: string]: unknown;
-        content?: CompareTree[];
-    }
-
     // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace jest {
         // eslint-disable-next-line @typescript-eslint/no-empty-interface

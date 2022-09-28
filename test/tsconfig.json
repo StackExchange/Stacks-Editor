@@ -2,5 +2,6 @@
     "extends": "../config/tsconfig.eslint.json",
     "compilerOptions": {
         "target": "es6"
-    }
+    },
+    "types": ["jest", "./global.d.ts"]
 }

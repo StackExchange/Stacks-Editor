@@ -1,4 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
+import { CompareTree } from "./global";
 
 /**
  * Reflects into an object to get a property by name
