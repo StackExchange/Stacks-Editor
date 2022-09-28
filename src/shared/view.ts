@@ -156,12 +156,24 @@ export abstract class BaseView implements View {
         this.editorView.dispatch(tr);
     }
 
+    /**
+     * Sets all attributes on the target contenteditable element
+     * @param el The node to set the attributes on
+     * @param options The options passed to the editor
+     */
     protected setTargetNodeAttributes(
-        node: HTMLElement,
+        el: HTMLElement,
         options: CommonViewOptions
     ): void {
-        node.classList.add(...(options.classList || []));
-        setAttributesOnElement(node, options.elementAttributes || {});
+        // add in the passed in classes
+        el.classList.add(...(options.classList || []));
+
+        // add some a11y attributes for screen readers
+        el.setAttribute("role", "textbox");
+        el.setAttribute("aria-multiline", "true");
+
+        // add the rest of the attributes passed in via options
+        setAttributesOnElement(el, options.elementAttributes || {});
     }
 
     /**
