@@ -5,6 +5,7 @@ import {
     stackOverflowValidateLink,
     getShortcut,
     getPlatformModKey,
+    setAttributesOnElement,
 } from "../../src/shared/utils";
 
 const setNavigatorProperty = (
@@ -202,6 +203,67 @@ describe("utils", () => {
         it("should return unmodified string when `Mod` isn't passed", () => {
             const shortcut = getShortcut("Cmd-y");
             expect(shortcut).toBe("Cmd-y" + navigator.platform);
+        });
+    });
+
+    describe("setAttributesOnElement", () => {
+        it("should set valid attributes on an element", () => {
+            const el = document.createElement("div");
+            setAttributesOnElement(el, {
+                id: "string-value",
+                dataFooBar: "camelCaseKey",
+                dataNumber: 42,
+                dataBoolean: true,
+                dataComplex: [{}],
+            });
+
+            expect(el.hasAttribute("id")).toBe(true);
+            expect(el.getAttribute("id")).toBe("string-value");
+            expect(el.hasAttribute("data-foo-bar")).toBe(true);
+            expect(el.getAttribute("data-foo-bar")).toBe("camelCaseKey");
+            expect(el.hasAttribute("data-number")).toBe(true);
+            expect(el.getAttribute("data-number")).toBe("42");
+            expect(el.hasAttribute("data-boolean")).toBe(true);
+            expect(el.getAttribute("data-boolean")).toBe("");
+            expect(el.hasAttribute("data-complex")).toBe(true);
+            expect(el.getAttribute("data-complex")).toBe("[object Object]");
+        });
+
+        it("should set valid falsy valued attributes on an element", () => {
+            const el = document.createElement("div");
+            setAttributesOnElement(el, {
+                dataString: "",
+                dataNumber: 0,
+                dataNull: null,
+                dataUndefined: undefined,
+            });
+
+            expect(el.hasAttribute("data-string")).toBe(true);
+            expect(el.getAttribute("data-string")).toBe("");
+
+            expect(el.hasAttribute("data-number")).toBe(true);
+            expect(el.getAttribute("data-number")).toBe("0");
+
+            expect(el.hasAttribute("data-null")).toBe(true);
+            expect(el.getAttribute("data-null")).toBe("null");
+
+            expect(el.hasAttribute("data-undefined")).toBe(true);
+            expect(el.getAttribute("data-undefined")).toBe("undefined");
+        });
+
+        it("should not set invalid attributes on an element", () => {
+            const el = document.createElement("div");
+            setAttributesOnElement(el, {
+                style: "background: red;",
+                class: "foo",
+                className: "bar",
+                onClick: (): void => void 0,
+            });
+
+            expect(el.hasAttribute("style")).toBe(false);
+            expect(el.hasAttribute("class")).toBe(false);
+            expect(el.hasAttribute("className")).toBe(false);
+            expect(el.hasAttribute("onClick")).toBe(false);
         });
     });
 });

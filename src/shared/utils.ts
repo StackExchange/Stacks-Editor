@@ -1,5 +1,6 @@
 import { escapeHtml } from "markdown-it/lib/common/utils";
 import { Command, EditorState } from "prosemirror-state";
+import { error } from "./logger";
 
 /**
  * Recursively deep merges two objects into a new object, leaving the original two untouched
@@ -307,4 +308,44 @@ export function bindLetterKeymap(
         [prefix + letter]: command,
         [prefix + letter.toUpperCase()]: command,
     };
+}
+
+/**
+ * Kebab cases a string e.g. "backgroundColor" to "background-color"
+ * @param str input string
+ */
+function toKebabCase(str: string) {
+    return str.replace(/[A-Z]/g, (m) => "-" + m.toLowerCase());
+}
+
+/**
+ * Sets attributes from an object onto an html element;
+ * style, class* and on* attributes will be ignored;
+ * @param el The element to set the attributes on
+ * @param attrs The key/value attributes to set onto the element
+ * @internal
+ */
+export function setAttributesOnElement(
+    el: HTMLElement,
+    attrs: Record<string, unknown>
+): void {
+    Object.entries(attrs).forEach(([key, val]) => {
+        if (
+            key === "style" ||
+            key.startsWith("class") ||
+            key.startsWith("on")
+        ) {
+            error(
+                "setAttributesOnElement",
+                `Setting the "${key}" attribute is not supported`
+            );
+            return;
+        }
+
+        if (val !== false) {
+            // set falsy values, but don't set properties that are explicitly false
+            // otherwise, use setAttribute to set the string representation
+            el.setAttribute(toKebabCase(key), val === true ? "" : String(val));
+        }
+    });
 }

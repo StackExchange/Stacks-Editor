@@ -129,7 +129,6 @@ export class StacksEditor implements View {
             "pt6",
             "w100",
             "s-prose",
-            //"s-prose", //TODO re-add once s-prose is the default in Core and we can hardcode here
             // in case this needs to be reference by outside code or e2e tests
             "js-editor",
             // added automatically, but let's be explicit for code clarity
@@ -149,6 +148,7 @@ export class StacksEditor implements View {
                 "fd-column",
                 "s-editor-resizable",
             ],
+            elementAttributes: {},
             parserFeatures: RichTextEditor.defaultOptions.parserFeatures,
             commonmarkOptions: {
                 classList: commonClasses,

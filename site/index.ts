@@ -247,6 +247,10 @@ domReady(() => {
         },
         imageUpload: imageUploadOptions,
         editorPlugins: enableSamplePlugin ? samplePlugins : [],
+        elementAttributes: {
+            id: "a11y-editor-id",
+            ariaLabeledby: "a11y-editor-label",
+        },
     };
 
     const editorInstance = new StacksEditor(place, content.value, options);
@@ -256,6 +260,10 @@ domReady(() => {
     (window as any)["editorInstance"] = editorInstance;
 
     if (place2) {
+        // update element attributes that should be unique per editor
+        options.elementAttributes.id = "a11y-editor-id-2";
+        options.elementAttributes.ariaLabeledby = "a11y-editor-id-2";
+
         const secondEditorInstance = new StacksEditor(
             place2,
             content.value,

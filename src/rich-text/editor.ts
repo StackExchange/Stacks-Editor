@@ -104,7 +104,7 @@ export class RichTextEditor extends BaseView {
         const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
             (node: HTMLElement) => {
-                node.classList.add(...(this.options.classList || []));
+                this.setTargetNodeAttributes(node, this.options);
                 target.appendChild(node);
             },
             {

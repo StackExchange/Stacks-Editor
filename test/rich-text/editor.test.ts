@@ -359,6 +359,28 @@ _world_.
                 ],
             });
         });
+
+        it("should set element attributes correctly from options", () => {
+            const view = new RichTextEditor(
+                document.createElement("div"),
+                "",
+                externalPluginProvider(),
+                {
+                    classList: ["foo", "bar"],
+                    elementAttributes: {
+                        id: "element-test-id",
+                    },
+                }
+            );
+
+            const el = view.dom;
+
+            expect(el).toBeTruthy();
+            expect(el.classList).toContain("foo");
+            expect(el.classList).toContain("bar");
+            expect(el.hasAttribute("id")).toBe(true);
+            expect(el.getAttribute("id")).toBe("element-test-id");
+        });
     });
 
     describe("external plugins", () => {

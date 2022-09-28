@@ -5,7 +5,7 @@ import type { Node } from "prosemirror-model";
 import type { EditorView } from "prosemirror-view";
 import { EditorPlugin } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
-import { stackOverflowValidateLink } from "./utils";
+import { setAttributesOnElement, stackOverflowValidateLink } from "./utils";
 
 /** Describes each distinct editor type the StacksEditor handles */
 export enum EditorType {
@@ -17,6 +17,14 @@ export enum EditorType {
 export interface CommonViewOptions {
     /** The classes to add to the editor target */
     classList?: string[];
+    /**
+     * Attributes to add to the editor target element;
+     * attributes with a value of `true` will be set without a value;
+     * likewise, attributes with a value of `false` will not be set at all;
+     * camelCased keys will be translated to kebab-case
+     * e.g. "dataFooBar" will become "data-foo-bar"
+     */
+    elementAttributes?: Record<string, unknown>;
     /** The url to where the "Help" button should lead to */
     editorHelpLink?: string;
     /** The features to allow/disallow on the markdown parser */
@@ -146,6 +154,14 @@ export abstract class BaseView implements View {
         tr = tr.replaceWith(0, doc.content.size, newDoc);
 
         this.editorView.dispatch(tr);
+    }
+
+    protected setTargetNodeAttributes(
+        node: HTMLElement,
+        options: CommonViewOptions
+    ): void {
+        node.classList.add(...(options.classList || []));
+        setAttributesOnElement(node, options.elementAttributes || {});
     }
 
     /**

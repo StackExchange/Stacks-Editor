@@ -145,6 +145,28 @@ describe("commonmark editor view", () => {
             `<pre class="s-code-block markdown"><code><span class="hljs-strong hljs-symbol">**</span><span class="hljs-strong">Hello</span><span class="hljs-strong hljs-symbol">**</span> <span class="hljs-emphasis hljs-symbol">_</span><span class="hljs-emphasis">world</span><span class="hljs-emphasis hljs-symbol">_</span>!</code></pre>`
         );
     });
+
+    it("should set element attributes correctly from options", () => {
+        const view = new CommonmarkEditor(
+            document.createElement("div"),
+            "",
+            externalPluginProvider(),
+            {
+                classList: ["foo", "bar"],
+                elementAttributes: {
+                    id: "element-test-id",
+                },
+            }
+        );
+
+        const el = view.dom;
+
+        expect(el).toBeTruthy();
+        expect(el.classList).toContain("foo");
+        expect(el.classList).toContain("bar");
+        expect(el.hasAttribute("id")).toBe(true);
+        expect(el.getAttribute("id")).toBe("element-test-id");
+    });
 });
 
 function commonmarkView(markdown: string): CommonmarkEditor {
