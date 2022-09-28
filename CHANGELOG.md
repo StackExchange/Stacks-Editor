@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.0...v0.8.1) (2022-09-28)
+
+
+### Features
+
+* **a11y:** add `aria-multiline` and `role` attributes to contenteditable element ([a363120](https://github.com/StackExchange/Stacks-Editor/commit/a3631201099c528b3995fed1df34577b96b042fe))
+* **options:** add new `elementAttributes` option for setting arbitrary attributes onto the target ([8220dd6](https://github.com/StackExchange/Stacks-Editor/commit/8220dd6a3a317578b574a800f8b3dfbb65a0beb4))
+
+
+### Bug Fixes
+
+* **commands:** be more context aware when inserting a horizontal rule to avoid creating a heading ([a15551b](https://github.com/StackExchange/Stacks-Editor/commit/a15551b65e7f64d4e6c0eebb1209e196223228ee)), closes [#192](https://github.com/StackExchange/Stacks-Editor/issues/192)
+
 ## [0.8.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.7.1...v0.8.0) (2022-09-14)
 
 
