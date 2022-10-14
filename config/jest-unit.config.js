@@ -9,7 +9,7 @@ module.exports = {
     testPathIgnorePatterns: ["/node_modules/", String.raw`\.e2e\.test`],
     setupFilesAfterEnv: ["<rootDir>/test/matchers.ts"],
     transform: {
-        "\\.ts$": [
+        "^.+\\.ts$": [
             "ts-jest",
             {
                 tsconfig: "<rootDir>/test/tsconfig.json",
