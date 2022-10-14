@@ -1,4 +1,3 @@
-import { keymap } from "prosemirror-keymap";
 import { redo, undo } from "prosemirror-history";
 import {
     boldCommand,
@@ -24,48 +23,42 @@ import {
 import type { CommonmarkParserFeatures } from "../shared/view";
 import { baseKeymap } from "prosemirror-commands";
 import type { Plugin } from "prosemirror-state";
-import { bindLetterKeymap } from "../shared/utils";
+import { caseNormalizeKeymap } from "../shared/prosemirror-plugins/case-normalize-keymap";
 
 export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
-    const commonmarkKeymap = keymap({
-        ...bindLetterKeymap("Mod-z", undo),
-        ...bindLetterKeymap("Mod-y", redo),
-        ...bindLetterKeymap("Mod-Shift-z", redo),
+    const commonmarkKeymap = caseNormalizeKeymap({
+        "Mod-z": undo,
+        "Mod-y": redo,
+        "Shift-Mod-z": redo,
         "Tab": indentCommand,
         "Shift-Tab": indentCommand,
-        ...bindLetterKeymap("Mod-b", boldCommand),
-        ...bindLetterKeymap("Mod-i", emphasisCommand),
-        ...bindLetterKeymap("Mod-l", insertCommonmarkLinkCommand),
-        ...bindLetterKeymap("Ctrl-q", blockquoteCommand),
-        ...bindLetterKeymap("Mod-k", inlineCodeCommand),
-        ...bindLetterKeymap("Mod-g", insertCommonmarkImageCommand),
-        ...bindLetterKeymap("Ctrl-g", insertCommonmarkImageCommand),
-        ...bindLetterKeymap("Mod-o", orderedListCommand),
-        ...bindLetterKeymap("Mod-u", unorderedListCommand),
-        ...bindLetterKeymap("Mod-h", headerCommand),
-        ...bindLetterKeymap("Mod-r", insertCommonmarkHorizontalRuleCommand),
-        ...bindLetterKeymap("Mod-m", insertCodeblockCommand),
-        ...bindLetterKeymap(
-            "Mod-[",
-            insertTagLinkCommand(parserFeatures.tagLinks.validate, false)
-        ),
-        ...bindLetterKeymap(
-            "Mod-]",
-            insertTagLinkCommand(parserFeatures.tagLinks.validate, true)
-        ),
-        ...bindLetterKeymap("Mod-/", spoilerCommand),
-        ...bindLetterKeymap("Mod-,", subCommand),
-        ...bindLetterKeymap("Mod-.", supCommand),
-        ...bindLetterKeymap("Mod-'", kbdCommand),
+        "Mod-b": boldCommand,
+        "Mod-i": emphasisCommand,
+        "Mod-l": insertCommonmarkLinkCommand,
+        "Ctrl-q": blockquoteCommand,
+        "Mod-k": inlineCodeCommand,
+        "Mod-g": insertCommonmarkImageCommand,
+        "Ctrl-g": insertCommonmarkImageCommand,
+        "Mod-o": orderedListCommand,
+        "Mod-u": unorderedListCommand,
+        "Mod-h": headerCommand,
+        "Mod-r": insertCommonmarkHorizontalRuleCommand,
+        "Mod-m": insertCodeblockCommand,
+        "Mod-[": insertTagLinkCommand(parserFeatures.tagLinks.validate, false),
+        "Mod-]": insertTagLinkCommand(parserFeatures.tagLinks.validate, true),
+        "Mod-/": spoilerCommand,
+        "Mod-,": subCommand,
+        "Mod-.": supCommand,
+        "Mod-'": kbdCommand,
         // selectAll selects the outermost node and messes up our other commands
-        ...bindLetterKeymap("Mod-a", selectAllTextCommand),
+        "Mod-a": selectAllTextCommand,
     });
 
-    const tableKeymap = keymap({
-        ...bindLetterKeymap("Mod-e", insertCommonmarkTableCommand),
+    const tableKeymap = caseNormalizeKeymap({
+        "Mod-e": insertCommonmarkTableCommand,
     });
 
-    const keymaps = [commonmarkKeymap, keymap(baseKeymap)];
+    const keymaps = [commonmarkKeymap, caseNormalizeKeymap(baseKeymap)];
 
     if (parserFeatures.tables) {
         keymaps.unshift(tableKeymap);

@@ -1,5 +1,4 @@
 import {
-    bindLetterKeymap,
     deepMerge,
     escapeHTML,
     stackOverflowValidateLink,
@@ -137,24 +136,6 @@ describe("utils", () => {
         ])("should escape html", (input, output) => {
             expect(escapeHTML`${input}`).toBe(output);
         });
-    });
-
-    describe("bindLetterKeymap", () => {
-        it.each([
-            ["Mod-z", true],
-            ["Mod-Z", true],
-            ["Mod-`", false],
-            ["Mod-Backspace", false],
-        ])(
-            "should double bind lower/upper letter keys",
-            (input, shouldDouble) => {
-                const result = bindLetterKeymap(input, null);
-                const keys = Object.keys(result);
-                expect(keys).toHaveLength(shouldDouble ? 2 : 1);
-                expect(keys).toContain(input);
-                expect(keys[0]).not.toBe(keys[1]);
-            }
-        );
     });
 
     describe("getPlatformModKey", () => {

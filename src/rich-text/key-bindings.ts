@@ -7,7 +7,6 @@ import {
 } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
 import { undoInputRule } from "prosemirror-inputrules";
-import { keymap } from "prosemirror-keymap";
 import { Schema } from "prosemirror-model";
 import {
     liftListItem,
@@ -15,7 +14,7 @@ import {
     splitListItem,
 } from "prosemirror-schema-list";
 import type { Plugin } from "prosemirror-state";
-import { bindLetterKeymap } from "../shared/utils";
+import { caseNormalizeKeymap } from "../shared/prosemirror-plugins/case-normalize-keymap";
 import type { CommonmarkParserFeatures } from "../shared/view";
 import {
     insertRichTextLinkCommand,
@@ -38,15 +37,15 @@ export function allKeymaps(
     schema: Schema,
     parserFeatures: CommonmarkParserFeatures
 ): Plugin[] {
-    const codeBlockKeymap = keymap({
+    const codeBlockKeymap = caseNormalizeKeymap({
         "Tab": indentCodeBlockLinesCommand,
         "Shift-Tab": unindentCodeBlockLinesCommand,
         "Mod-]": indentCodeBlockLinesCommand,
         "Mod-[": unindentCodeBlockLinesCommand,
     });
 
-    const tableKeymap = keymap({
-        ...bindLetterKeymap("Mod-e", insertRichTextTableCommand),
+    const tableKeymap = caseNormalizeKeymap({
+        "Mod-e": insertRichTextTableCommand,
         "Mod-Enter": moveSelectionAfterTableCommand,
         "Shift-Enter": moveSelectionAfterTableCommand,
         "Enter": moveToNextCellCommand,
@@ -58,47 +57,44 @@ export function allKeymaps(
         "Shift-Tab": moveToPreviousCellCommand,
     });
 
-    const richTextKeymap = keymap({
-        ...bindLetterKeymap("Mod-z", undo),
-        ...bindLetterKeymap("Mod-y", redo),
-        ...bindLetterKeymap("Mod-Shift-z", redo),
+    const richTextKeymap = caseNormalizeKeymap({
+        "Mod-z": undo,
+        "Mod-y": redo,
+        "Shift-Mod-z": redo,
         "Backspace": undoInputRule,
         "Enter": splitListItem(schema.nodes.list_item),
         "Tab": sinkListItem(schema.nodes.list_item),
         "Shift-Tab": liftListItem(schema.nodes.list_item),
         "Mod-Enter": exitBlockCommand,
         "Shift-Enter": exitBlockCommand,
-        ...bindLetterKeymap("Mod-b", toggleMark(schema.marks.strong)),
-        ...bindLetterKeymap("Mod-i", toggleMark(schema.marks.em)),
-        ...bindLetterKeymap("Mod-l", insertRichTextLinkCommand),
-        ...bindLetterKeymap("Ctrl-q", wrapIn(schema.nodes.blockquote)),
-        ...bindLetterKeymap("Mod-k", toggleMark(schema.marks.code)),
-        ...bindLetterKeymap("Mod-g", insertRichTextImageCommand),
-        ...bindLetterKeymap("Ctrl-g", insertRichTextImageCommand),
-        ...bindLetterKeymap("Mod-o", wrapIn(schema.nodes.ordered_list)),
-        ...bindLetterKeymap("Mod-u", wrapIn(schema.nodes.bullet_list)),
-        ...bindLetterKeymap("Mod-h", toggleHeadingLevel()),
-        ...bindLetterKeymap("Mod-r", insertRichTextHorizontalRuleCommand),
-        ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
-        ...bindLetterKeymap(
-            "Mod-[",
-            toggleTagLinkCommand(parserFeatures.tagLinks.validate, false)
-        ),
-        ...bindLetterKeymap(
-            "Mod-]",
-            toggleTagLinkCommand(parserFeatures.tagLinks.validate, true)
-        ),
-        ...bindLetterKeymap("Mod-/", wrapIn(schema.nodes.spoiler)),
-        ...bindLetterKeymap("Mod-,", toggleMark(schema.marks.sub)),
-        ...bindLetterKeymap("Mod-.", toggleMark(schema.marks.sup)),
-        ...bindLetterKeymap("Mod-'", toggleMark(schema.marks.kbd)),
-
+        "Mod-b": toggleMark(schema.marks.strong),
+        "Mod-i": toggleMark(schema.marks.em),
+        "Mod-l": insertRichTextLinkCommand,
+        "Ctrl-q": wrapIn(schema.nodes.blockquote),
+        "Mod-k": toggleMark(schema.marks.code),
+        "Mod-g": insertRichTextImageCommand,
+        "Ctrl-g": insertRichTextImageCommand,
+        "Mod-o": wrapIn(schema.nodes.ordered_list),
+        "Mod-u": wrapIn(schema.nodes.bullet_list),
+        "Mod-h": toggleHeadingLevel(),
+        "Mod-r": insertRichTextHorizontalRuleCommand,
+        "Mod-m": setBlockType(schema.nodes.code_block),
+        "Mod-[": toggleTagLinkCommand(parserFeatures.tagLinks.validate, false),
+        "Mod-]": toggleTagLinkCommand(parserFeatures.tagLinks.validate, true),
+        "Mod-/": wrapIn(schema.nodes.spoiler),
+        "Mod-,": toggleMark(schema.marks.sub),
+        "Mod-.": toggleMark(schema.marks.sup),
+        "Mod-'": toggleMark(schema.marks.kbd),
         // users expect to be able to leave certain blocks/marks using the arrow keys
         "ArrowRight": exitInclusiveMarkCommand,
         "ArrowDown": exitCode,
     });
 
-    const keymaps = [richTextKeymap, keymap(baseKeymap), codeBlockKeymap];
+    const keymaps = [
+        richTextKeymap,
+        caseNormalizeKeymap(baseKeymap),
+        codeBlockKeymap,
+    ];
 
     if (parserFeatures.tables) {
         keymaps.unshift(tableKeymap);
