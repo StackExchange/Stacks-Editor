@@ -136,10 +136,13 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     },
 
     tag_link: {
-        block: "tagLink",
+        block: "tag_link",
         getAttrs: (tok: Token) => ({
             tagName: tok.attrGet("tagName"),
             tagType: tok.attrGet("tagType"),
+            href: tok.attrGet("href"),
+            additionalClasses: tok.attrGet("additionalClasses"),
+            title: tok.attrGet("title"),
         }),
     },
 

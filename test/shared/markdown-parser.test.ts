@@ -198,7 +198,7 @@ console.log("test");
                         "childCount": 1,
                         "content": [
                             {
-                                "type.name": "tagLink",
+                                "type.name": "tag_link",
                                 "childCount": 1,
                                 "content": [{ text: "python" }],
                             },

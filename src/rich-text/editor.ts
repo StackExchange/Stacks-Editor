@@ -29,7 +29,6 @@ import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
 import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
-import { TagLink } from "./node-views/tag-link";
 import { richTextCodePasteHandler } from "../shared/prosemirror-plugins/code-paste-handler";
 import { linkPasteHandler } from "./plugins/link-paste-handler";
 import { linkPreviewPlugin, LinkPreviewProvider } from "./plugins/link-preview";
@@ -101,7 +100,6 @@ export class RichTextEditor extends BaseView {
             EditorType.RichText
         );
 
-        const tagLinkOptions = this.options.parserFeatures.tagLinks;
         this.editorView = new EditorView(
             (node: HTMLElement) => {
                 this.setTargetNodeAttributes(node, this.options);
@@ -161,9 +159,6 @@ export class RichTextEditor extends BaseView {
                         getPos: () => number
                     ) {
                         return new ImageView(node, view, getPos);
-                    },
-                    tagLink(node: ProseMirrorNode) {
-                        return new TagLink(node, tagLinkOptions);
                     },
                     html_block: function (node: ProseMirrorNode) {
                         return new HtmlBlock(node);

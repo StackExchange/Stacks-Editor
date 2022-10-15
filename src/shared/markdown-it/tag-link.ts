@@ -1,5 +1,6 @@
 import MarkdownIt from "markdown-it/lib";
 import StateInline from "markdown-it/lib/rules_inline/state_inline";
+import { error } from "../logger";
 import type { TagLinkOptions } from "../view";
 
 function parse_tag_link(
@@ -33,7 +34,7 @@ function parse_tag_link(
 
     const totalContent = state.src.slice(state.pos, labelEnd + 1);
     const isMeta = totalContent.slice(0, 10) === "[meta-tag:";
-    const tagName = totalContent.slice(isMeta ? 10 : 5, -1);
+    const tagName = totalContent.slice(isMeta ? 10 : 5, -1).trim();
 
     if (options.validate && !options.validate(tagName, isMeta, totalContent)) {
         return false;
@@ -43,7 +44,24 @@ function parse_tag_link(
         let token = state.push("tag_link_open", "a", 1);
         token.attrSet("tagName", tagName);
         token.attrSet("tagType", isMeta ? "meta-tag" : "tag");
-        token.content = totalContent;
+
+        // call the renderer as if it exists
+        if (options.render) {
+            const rendered = options.render(tagName, isMeta);
+
+            if (rendered && rendered.link) {
+                const additionalClasses = rendered.additionalClasses || [];
+                token.attrSet("href", rendered.link);
+                token.attrSet("title", rendered.linkTitle);
+                token.attrSet("additionalClasses", additionalClasses.join(" "));
+            } else {
+                // We don't want to crash the parsing process here since we can still display a passable version of the tag link.
+                // However, we should at least log a console error.
+                error(
+                    `Unable to fully render taglink for [${tagName}] due to invalid response from options.renderer.`
+                );
+            }
+        }
 
         token = state.push("text", "", 0);
         token.content = tagName;

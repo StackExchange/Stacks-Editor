@@ -171,7 +171,7 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                         options.parserFeatures?.tagLinks?.validate,
                         false
                     ),
-                    active: nodeTypeActive(schema.nodes.tagLink),
+                    active: nodeTypeActive(schema.nodes.tag_link),
                 },
                 commonmark: insertTagLinkCommand(
                     options.parserFeatures?.tagLinks?.validate,
@@ -188,7 +188,7 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
                         options.parserFeatures?.tagLinks?.validate,
                         true
                     ),
-                    active: nodeTypeActive(schema.nodes.tagLink),
+                    active: nodeTypeActive(schema.nodes.tag_link),
                 },
                 commonmark: insertTagLinkCommand(
                     options.parserFeatures?.tagLinks?.validate,
