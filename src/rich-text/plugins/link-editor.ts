@@ -331,11 +331,11 @@ class LinkTooltip {
         });
 
         // don't bind the exact listener, call whatever is currently set on `this` at event time
-        const removeListener = (e: Event) => {
-            this.removeListener.call(this, e);
+        const removeListener = () => {
+            this.removeListener.call(this);
         };
-        const editListener = (e: Event) => {
-            this.editListener.call(this, e);
+        const editListener = () => {
+            this.editListener.call(this);
         };
 
         // hook up the click/keyboard events for the supporting buttons

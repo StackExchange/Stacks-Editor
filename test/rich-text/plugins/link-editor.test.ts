@@ -591,7 +591,8 @@ describe("link-editor", () => {
 
             // call the prop fn directly instead of playing around with event dispatching
             // regular click
-            let result = plugin.props.handleClick(
+            let result = plugin.props.handleClick.call(
+                plugin,
                 view,
                 6,
                 new MouseEvent("click", {})
@@ -601,7 +602,8 @@ describe("link-editor", () => {
             expect(mock).toHaveBeenCalledTimes(0);
 
             // mod-click
-            result = plugin.props.handleClick(
+            result = plugin.props.handleClick.call(
+                plugin,
                 view,
                 6,
                 new MouseEvent("click", {
@@ -613,7 +615,8 @@ describe("link-editor", () => {
             expect(mock).toHaveBeenCalledTimes(1);
 
             // mod-click, but not on a link
-            result = plugin.props.handleClick(
+            result = plugin.props.handleClick.call(
+                plugin,
                 view,
                 1,
                 new MouseEvent("click", {
