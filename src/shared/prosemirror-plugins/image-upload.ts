@@ -727,7 +727,7 @@ function imageUploaderPlaceholderPlugin(
             },
         },
         props: {
-            decorations(this: StatefulPlugin<ImageUploadState>, state) {
+            decorations(state) {
                 return this.getState(state).decorations;
             },
             handleDrop(view: EditorView, event: DragEvent) {

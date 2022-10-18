@@ -630,10 +630,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
             },
         },
         props: {
-            decorations(
-                this: StatefulPlugin<LinkEditorPluginState>,
-                state: EditorState
-            ) {
+            decorations(state: EditorState) {
                 return this.getState(state).decorations || DecorationSet.empty;
             },
             handleDOMEvents: {

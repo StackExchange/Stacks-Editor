@@ -46,7 +46,7 @@ export function placeholderPlugin(placeholder: string): Plugin {
             },
         },
         props: {
-            decorations(this: Plugin<DecorationSet>, state) {
+            decorations(state) {
                 return this.getState(state);
             },
         },
