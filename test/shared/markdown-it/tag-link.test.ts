@@ -77,4 +77,22 @@ describe("tagLinks markdown-it plugin", () => {
         instance.parseInline("[meta-tag:discussion]", {});
         instance.parseInline("[tag:discussion]", {});
     });
+
+    it("should reject meta tag links when disableMetaTags is set", () => {
+        const instance = new MarkdownIt().use(tagLinks, {
+            // disable meta tags entirely
+            disableMetaTags: true,
+            validate: () => {
+                throw "This should never be called!";
+            },
+        });
+        const tokens = instance.parseInline("[meta-tag:discussion]", {});
+
+        expect(tokens).toHaveLength(1);
+        expect(tokens[0].type).toBe("inline");
+        expect(tokens[0].content).toBe("[meta-tag:discussion]");
+        // no tag_link_open/close tokens, just the original text
+        expect(tokens[0].children).toHaveLength(1);
+        expect(tokens[0].children[0].type).toBe("text");
+    });
 });

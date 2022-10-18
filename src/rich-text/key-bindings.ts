@@ -82,12 +82,14 @@ export function allKeymaps(
         ...bindLetterKeymap("Mod-m", setBlockType(schema.nodes.code_block)),
         ...bindLetterKeymap(
             "Mod-[",
-            toggleTagLinkCommand(parserFeatures.tagLinks.validate, false)
+            toggleTagLinkCommand(parserFeatures.tagLinks, false)
         ),
-        ...bindLetterKeymap(
-            "Mod-]",
-            toggleTagLinkCommand(parserFeatures.tagLinks.validate, true)
-        ),
+        ...(!parserFeatures.tagLinks.disableMetaTags
+            ? bindLetterKeymap(
+                  "Mod-]",
+                  toggleTagLinkCommand(parserFeatures.tagLinks, true)
+              )
+            : {}),
         ...bindLetterKeymap("Mod-/", wrapIn(schema.nodes.spoiler)),
         ...bindLetterKeymap("Mod-,", toggleMark(schema.marks.sub)),
         ...bindLetterKeymap("Mod-.", toggleMark(schema.marks.sup)),

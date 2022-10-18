@@ -168,34 +168,37 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
             {
                 richText: {
                     command: toggleTagLinkCommand(
-                        options.parserFeatures?.tagLinks?.validate,
+                        options.parserFeatures?.tagLinks,
                         false
                     ),
                     active: nodeTypeActive(schema.nodes.tagLink),
                 },
                 commonmark: insertTagLinkCommand(
-                    options.parserFeatures?.tagLinks?.validate,
+                    options.parserFeatures?.tagLinks,
                     false
                 ),
             },
             "tag-btn"
         ),
-        makeDropdownItem(
-            _t("commands.metaTagLink", { shortcut: getShortcut("Mod-]") }),
-            {
-                richText: {
-                    command: toggleTagLinkCommand(
-                        options.parserFeatures?.tagLinks?.validate,
+        addIf(
+            makeDropdownItem(
+                _t("commands.metaTagLink", { shortcut: getShortcut("Mod-]") }),
+                {
+                    richText: {
+                        command: toggleTagLinkCommand(
+                            options.parserFeatures?.tagLinks,
+                            true
+                        ),
+                        active: nodeTypeActive(schema.nodes.tagLink),
+                    },
+                    commonmark: insertTagLinkCommand(
+                        options.parserFeatures?.tagLinks,
                         true
                     ),
-                    active: nodeTypeActive(schema.nodes.tagLink),
                 },
-                commonmark: insertTagLinkCommand(
-                    options.parserFeatures?.tagLinks?.validate,
-                    true
-                ),
-            },
-            "meta-tag-btn"
+                "meta-tag-btn"
+            ),
+            !options.parserFeatures?.tagLinks?.disableMetaTags
         ),
         makeDropdownItem(
             _t("commands.spoiler", { shortcut: getShortcut("Mod-/") }),

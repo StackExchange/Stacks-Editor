@@ -47,11 +47,11 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         ...bindLetterKeymap("Mod-m", insertCodeblockCommand),
         ...bindLetterKeymap(
             "Mod-[",
-            insertTagLinkCommand(parserFeatures.tagLinks.validate, false)
+            insertTagLinkCommand(parserFeatures.tagLinks, false)
         ),
         ...bindLetterKeymap(
             "Mod-]",
-            insertTagLinkCommand(parserFeatures.tagLinks.validate, true)
+            insertTagLinkCommand(parserFeatures.tagLinks, true)
         ),
         ...bindLetterKeymap("Mod-/", spoilerCommand),
         ...bindLetterKeymap("Mod-,", subCommand),
