@@ -123,7 +123,7 @@ const headingDropdown = (schema: Schema) =>
                 commonmark: null,
             },
             "h1-btn",
-            ["fs-body3", "mt8"]
+            ["fs-body3"]
         ),
         makeDropdownItem(
             _t("commands.heading.entry", { level: 2 }),
