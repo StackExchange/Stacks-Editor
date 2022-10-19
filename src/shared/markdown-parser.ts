@@ -160,9 +160,7 @@ Object.keys(customMarkdownParserTokens).forEach((k) => {
 
     // if an existing getAttrs function exists, make sure we wrap it and add our attributes in
     if (token.getAttrs) {
-        const origGetAttrs = token.getAttrs.bind(
-            token
-        ) as typeof token.getAttrs;
+        const origGetAttrs = token.getAttrs.bind(token);
 
         // reference links require special handling
         if (k === "link") {

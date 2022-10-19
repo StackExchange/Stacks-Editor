@@ -310,10 +310,7 @@ _world_.
             // update the mock of buildMarkdownParser to add in a faulty md plugin
             mockedMdp.buildMarkdownParser.mockImplementation((...args) => {
                 // go ahead and get the usual parser
-                const parser = buildMarkdownParser.call(
-                    null,
-                    ...args
-                ) as ReturnType<typeof buildMarkdownParser>;
+                const parser = buildMarkdownParser.call(null, ...args);
 
                 // add our purposefully busted plugin to force a crash
                 parser.tokenizer.use((md) => {
