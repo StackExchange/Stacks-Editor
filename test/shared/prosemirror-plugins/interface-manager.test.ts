@@ -40,9 +40,9 @@ describe("interface-manager plugin", () => {
             const childMetadata = tr.getMeta(childKey1) as unknown;
 
             expect(parentMetadata).toEqual({
-                dom: expect.any(Element) as Element,
+                dom: expect.any(Element),
                 currentlyShown: childKey1,
-                containerGetter: expect.any(Function) as unknown,
+                containerGetter: expect.any(Function),
             });
 
             expect(childMetadata).toEqual({
@@ -64,7 +64,7 @@ describe("interface-manager plugin", () => {
             const childMetadata = tr.getMeta(childKey1) as unknown;
 
             expect(parentMetadata).toEqual({
-                dom: expect.any(Element) as Element,
+                dom: expect.any(Element),
                 currentlyShown: null,
                 containerGetter: expect.any(Function) as unknown,
             });
@@ -85,7 +85,7 @@ describe("interface-manager plugin", () => {
             let child2Metadata = tr.getMeta(childKey2) as unknown;
 
             expect(parentMetadata).toEqual({
-                dom: expect.any(Element) as Element,
+                dom: expect.any(Element),
                 currentlyShown: childKey1,
                 containerGetter: expect.any(Function) as unknown,
             });
@@ -107,9 +107,9 @@ describe("interface-manager plugin", () => {
             child2Metadata = tr.getMeta(childKey2) as unknown;
 
             expect(parentMetadata).toEqual({
-                dom: expect.any(Element) as Element,
+                dom: expect.any(Element),
                 currentlyShown: childKey2,
-                containerGetter: expect.any(Function) as unknown,
+                containerGetter: expect.any(Function),
             });
 
             expect(child1Metadata).toEqual({
@@ -133,7 +133,7 @@ describe("interface-manager plugin", () => {
                 }
                 expect(e.detail).toEqual({
                     arbitraryData: "foo",
-                    shouldShow: expect.any(Boolean) as boolean,
+                    shouldShow: expect.any(Boolean),
                 });
             };
             view.dom.addEventListener("StacksEditor:child1-show", callback);
@@ -190,9 +190,9 @@ describe("interface-manager plugin", () => {
             let parentMetadata = tr.getMeta("interface-manager$") as unknown;
 
             expect(parentMetadata).toEqual({
-                dom: expect.any(Element) as Element,
+                dom: expect.any(Element),
                 currentlyShown: childKey1,
-                containerGetter: expect.any(Function) as unknown,
+                containerGetter: expect.any(Function),
             });
 
             view.dom.dispatchEvent(
@@ -205,9 +205,9 @@ describe("interface-manager plugin", () => {
             parentMetadata = tr.getMeta("interface-manager$") as unknown;
 
             expect(parentMetadata).toEqual({
-                dom: expect.any(Element) as Element,
+                dom: expect.any(Element),
                 currentlyShown: null,
-                containerGetter: expect.any(Function) as unknown,
+                containerGetter: expect.any(Function),
             });
         });
     });
