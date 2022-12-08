@@ -145,15 +145,30 @@ export const commonmarkCodePasteHandler = new Plugin({
                 return false;
             }
 
-            const { $from } = view.state.selection;
+            const { $from, $to } = view.state.selection;
+
+            const isSelectionBetweenBackticks =
+                view.state.doc.textBetween($from.pos - 1, $from.pos) === "`" &&
+                view.state.doc.textBetween($to.pos, $to.pos + 1) === "`";
+
+            const insertionRange = {
+                from: isSelectionBetweenBackticks ? $from.pos - 1 : $from.pos,
+                to: isSelectionBetweenBackticks ? $to.pos + 1 : $to.pos,
+            };
 
             // wrap the code in a markdown code fence
             codeData = "```\n" + codeData + "\n```\n";
 
             // add a newline if we're not at the beginning of the document
-            codeData = ($from.pos === 1 ? "" : "\n") + codeData;
+            codeData = (insertionRange.from === 1 ? "" : "\n") + codeData;
 
-            view.dispatch(view.state.tr.insertText(codeData));
+            view.dispatch(
+                view.state.tr.insertText(
+                    codeData,
+                    insertionRange.from,
+                    insertionRange.to
+                )
+            );
 
             return true;
         },

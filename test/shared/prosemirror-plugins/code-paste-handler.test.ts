@@ -367,5 +367,22 @@ ${startText.slice(endIndex)}`;
 
             expect(view.state.doc.textContent).toBe(expected);
         });
+
+        it("should ignore inline code block single backticks when code is pasted between them", () => {
+            let state = createState(`\`your text\``, [
+                commonmarkCodePasteHandler,
+            ]);
+
+            // select the inline code block (backticks excluded)
+            state = applySelection(state, 1, 10);
+
+            const view = createView(state);
+
+            dispatchPasteEvent(view.dom, {
+                "text/plain": "\tcode",
+            });
+
+            expect(view.state.doc.textContent).toBe("```\n\tcode\n```\n");
+        });
     });
 });
