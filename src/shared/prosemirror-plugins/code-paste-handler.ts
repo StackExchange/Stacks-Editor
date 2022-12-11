@@ -1,4 +1,4 @@
-import { Plugin } from "prosemirror-state";
+import { Plugin, EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Slice, Node, DOMParser, Schema } from "prosemirror-model";
 import { richTextSchemaSpec } from "../../rich-text/schema";
@@ -107,6 +107,56 @@ export function parseCodeFromPasteData(
     return codeData;
 }
 
+/**
+ * Calculates the range of text that should be replaced when inserting code data.
+ * If the state selection is between backticks, the range will be expanded to include the backticks.
+ * @param editorState The state of the editor
+ */
+export function getInsertionRange(editorState: EditorState): {
+    from: number;
+    to: number;
+} {
+    const { selection } = editorState;
+
+    const textBeforeSelection = editorState.doc.textBetween(
+        selection.$from.before(),
+        selection.$from.pos
+    );
+    const textAfterSelection = editorState.doc.textBetween(
+        selection.$to.pos,
+        selection.$to.after()
+    );
+
+    const whitespacesBeforeSelectionCount =
+        textBeforeSelection.length - textBeforeSelection.trimEnd().length;
+    const whitespacesAfterSelectionCount =
+        textAfterSelection.length - textAfterSelection.trimStart().length;
+
+    const selectionPlusWhitespaces = {
+        from: selection.from - whitespacesBeforeSelectionCount,
+        to: selection.to + whitespacesAfterSelectionCount,
+    };
+
+    const isSelectionBetweenBackticks =
+        editorState.doc.textBetween(
+            selectionPlusWhitespaces.from - 1,
+            selectionPlusWhitespaces.from
+        ) === "`" &&
+        editorState.doc.textBetween(
+            selectionPlusWhitespaces.to,
+            selectionPlusWhitespaces.to + 1
+        ) === "`";
+
+    return {
+        from: isSelectionBetweenBackticks
+            ? selectionPlusWhitespaces.from - 1
+            : selection.from,
+        to: isSelectionBetweenBackticks
+            ? selectionPlusWhitespaces.to + 1
+            : selection.to,
+    };
+}
+
 /** Plugin for the rich-text editor that auto-detects if code was pasted and handles it specifically */
 export const richTextCodePasteHandler = new Plugin({
     props: {
@@ -145,30 +195,15 @@ export const commonmarkCodePasteHandler = new Plugin({
                 return false;
             }
 
-            const { $from, $to } = view.state.selection;
-
-            const isSelectionBetweenBackticks =
-                view.state.doc.textBetween($from.pos - 1, $from.pos) === "`" &&
-                view.state.doc.textBetween($to.pos, $to.pos + 1) === "`";
-
-            const insertionRange = {
-                from: isSelectionBetweenBackticks ? $from.pos - 1 : $from.pos,
-                to: isSelectionBetweenBackticks ? $to.pos + 1 : $to.pos,
-            };
+            const { from, to } = getInsertionRange(view.state);
 
             // wrap the code in a markdown code fence
             codeData = "```\n" + codeData + "\n```\n";
 
             // add a newline if we're not at the beginning of the document
-            codeData = (insertionRange.from === 1 ? "" : "\n") + codeData;
+            codeData = (from === 1 ? "" : "\n") + codeData;
 
-            view.dispatch(
-                view.state.tr.insertText(
-                    codeData,
-                    insertionRange.from,
-                    insertionRange.to
-                )
-            );
+            view.dispatch(view.state.tr.insertText(codeData, from, to));
 
             return true;
         },

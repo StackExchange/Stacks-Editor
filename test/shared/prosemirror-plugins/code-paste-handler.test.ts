@@ -368,13 +368,13 @@ ${startText.slice(endIndex)}`;
             expect(view.state.doc.textContent).toBe(expected);
         });
 
-        it("should ignore inline code block single backticks when code is pasted between them", () => {
-            let state = createState(`\`your text\``, [
+        it("should ignore inline code block single backticks (and potential whitespaces) when code is pasted between them", () => {
+            let state = createState(`\` your text \``, [
                 commonmarkCodePasteHandler,
             ]);
 
-            // select the inline code block (backticks excluded)
-            state = applySelection(state, 1, 10);
+            // select the text inside the inline code block (backticks and whitespaces excluded)
+            state = applySelection(state, 2, 11);
 
             const view = createView(state);
 
