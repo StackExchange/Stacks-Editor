@@ -28,7 +28,7 @@ describe("preview plugin", () => {
 
         expect(renderer).toHaveBeenCalledWith<[string, HTMLElement]>(
             "test content",
-            expect.any(HTMLElement)
+            expect.any(HTMLElement) as HTMLElement
         );
     });
 
