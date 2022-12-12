@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.3](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.2...v0.8.3) (2022-12-12)
+
+
+### Features
+
+* **code-paste-handler:** remove support for auto-fencing pasted code in markdown mode ([008d0f3](https://github.com/StackExchange/Stacks-Editor/commit/008d0f3796e405ce6d1a065e39146979c8ae5b28)), closes [#230](https://github.com/StackExchange/Stacks-Editor/issues/230)
+
 ### [0.8.2](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.1...v0.8.2) (2022-10-20)
 
 
