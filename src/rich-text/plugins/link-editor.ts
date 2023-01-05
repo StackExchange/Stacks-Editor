@@ -316,12 +316,12 @@ class LinkTooltip {
                         class="flex--item s-btn mr4 js-link-tooltip-edit"
                         title="${_t(
                             "link_tooltip.edit_button_title"
-                        )}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
+                        )}"><span class="svg-icon-bg iconPencilSm"></span></button>
                 <button type="button"
                         class="flex--item s-btn js-link-tooltip-remove"
                         title="${_t(
                             "link_tooltip.remove_button_title"
-                        )}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
+                        )}"><span class="svg-icon-bg iconTrashSm"></span></button>
             </div>
         </div>`;
 

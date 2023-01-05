@@ -354,7 +354,7 @@ export class StacksEditor implements View {
     <label class="s-btn s-editor-btn px6"
         for="mode-toggle-rich-${this.internalId}"
         title="${_t("menubar.mode_toggle_richtext_title")}">
-        <span class="icon-bg iconRichText"></span>
+        <span class="svg-icon-bg iconRichText"></span>
         <span class="v-visible-sr">${_t(
             "menubar.mode_toggle_richtext_title"
         )}</span>
@@ -368,7 +368,7 @@ export class StacksEditor implements View {
     <label class="s-btn s-editor-btn px6"
         for="mode-toggle-markdown-${this.internalId}"
         title="${_t("menubar.mode_toggle_markdown_title")}">
-        <span class="icon-bg iconMarkdown"></span>
+        <span class="svg-icon-bg iconMarkdown"></span>
         <span class="v-visible-sr">${_t(
             "menubar.mode_toggle_markdown_title"
         )}</span>
@@ -389,7 +389,7 @@ export class StacksEditor implements View {
 <label class="s-btn s-editor-btn px6"
     for="mode-toggle-preview-${this.internalId}"
     title="${_t("menubar.mode_toggle_preview_title")}">
-    <span class="icon-bg iconMarkdownPreview"></span>
+    <span class="svg-icon-bg iconMarkdownPreview"></span>
     <span class="v-visible-sr">${_t("menubar.mode_toggle_preview_title")}</span>
 </label>`;
 

@@ -90,7 +90,7 @@
         "@lezer/highlight": "^1.1.2",
         "@lezer/markdown": "^1.0.2",
         "@stackoverflow/stacks": "^1.5.0",
-        "@stackoverflow/stacks-icons": "^4.0.0",
+        "@stackoverflow/stacks-icons": "^5.0.1",
         "@types/markdown-it": "12.2.3",
         "markdown-it": "^13.0.1",
         "orderedmap": "^2.1.0",
