@@ -1,6 +1,6 @@
-@import (inline) "@stackoverflow/stacks-icons/dist/icons.css";
+@import "@stackoverflow/stacks-icons/dist/icons.css";
 
-// TODO get rid of these once they're exposed in the upstream Stacks-Icons package
+/* TODO get rid of these once they're exposed in the upstream Stacks-Icons package */
 
 .svg-icon-bg.iconRichText {
     width: 21px;

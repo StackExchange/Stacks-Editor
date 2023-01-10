@@ -1,8 +1,7 @@
 @import "~@stackoverflow/stacks/dist/css/stacks.css";
+@import "../src/styles/index.css";
 
-@import "../src/styles/index.less";
-
-// Place demo specific styles here
+/* Place demo specific styles here */
 .svg-icon-bg.iconGitHub {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/GitHub.svg");
 }
@@ -11,7 +10,7 @@
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/CodeSnippet.svg");
 }
 
-// SAMPLE-PLUGINS
+/* SAMPLE-PLUGINS */
 
 .jse-furigana {
     position: relative;

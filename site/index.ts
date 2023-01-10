@@ -11,7 +11,7 @@ import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview"
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
 import { samplePlugins } from "./sample-plugins";
-import "./site.less";
+import "./site.css";
 
 function domReady(callback: (e: Event) => void) {
     if (document.readyState === "loading") {
