@@ -468,7 +468,12 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(() => true, false)
+                toggleTagLinkCommand(
+                    {
+                        validate: () => true,
+                    },
+                    false
+                )
             );
 
             expect(isValid).toBeFalsy();
@@ -490,7 +495,12 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(() => false, false)
+                toggleTagLinkCommand(
+                    {
+                        validate: () => false,
+                    },
+                    false
+                )
             );
 
             expect(isValid).toBeFalsy();
@@ -523,7 +533,12 @@ describe("commands", () => {
 
                 const tagLinkResult = executeTransaction(
                     markResult.newState,
-                    toggleTagLinkCommand(() => true, false)
+                    toggleTagLinkCommand(
+                        {
+                            validate: () => true,
+                        },
+                        false
+                    )
                 );
 
                 expect(tagLinkResult.isValid).toBeFalsy();
@@ -550,7 +565,12 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(() => true, false)
+                toggleTagLinkCommand(
+                    {
+                        validate: () => true,
+                    },
+                    false
+                )
             );
 
             expect(isValid).toBeTruthy();
@@ -585,7 +605,12 @@ describe("commands", () => {
 
             const { newState, isValid } = executeTransaction(
                 state,
-                toggleTagLinkCommand(() => true, false)
+                toggleTagLinkCommand(
+                    {
+                        validate: () => true,
+                    },
+                    false
+                )
             );
 
             expect(isValid).toBeTruthy();
@@ -609,7 +634,12 @@ describe("commands", () => {
             const { newState: newerState, isValid: isStillValid } =
                 executeTransaction(
                     nodeSelection,
-                    toggleTagLinkCommand(() => true, false)
+                    toggleTagLinkCommand(
+                        {
+                            validate: () => true,
+                        },
+                        false
+                    )
                 );
 
             expect(isStillValid).toBeTruthy();
@@ -628,6 +658,37 @@ describe("commands", () => {
                     },
                 ],
             });
+        });
+
+        it("should disallow meta tags when option is set", () => {
+            let state = createState("this is my state", []);
+
+            state = applySelection(state, 5, 7); //"is"
+
+            const { newState, isValid } = executeTransaction(
+                state,
+                toggleTagLinkCommand(
+                    {
+                        // disable meta tags entirely
+                        disableMetaTags: true,
+                        validate: () => {
+                            throw "This should never be called!";
+                        },
+                    },
+                    true
+                )
+            );
+
+            expect(isValid).toBeFalsy();
+            let containsTagLink = false;
+
+            newState.doc.nodesBetween(0, newState.doc.content.size, (node) => {
+                containsTagLink = node.type.name === "tagLink";
+
+                return !containsTagLink;
+            });
+
+            expect(containsTagLink).toBeFalsy();
         });
     });
 

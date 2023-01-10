@@ -316,12 +316,12 @@ class LinkTooltip {
                         class="flex--item s-btn mr4 js-link-tooltip-edit"
                         title="${_t(
                             "link_tooltip.edit_button_title"
-                        )}"><span class="svg-icon icon-bg iconPencilSm"></span></button>
+                        )}"><span class="svg-icon-bg iconPencilSm"></span></button>
                 <button type="button"
                         class="flex--item s-btn js-link-tooltip-remove"
                         title="${_t(
                             "link_tooltip.remove_button_title"
-                        )}"><span class="svg-icon icon-bg iconTrashSm"></span></button>
+                        )}"><span class="svg-icon-bg iconTrashSm"></span></button>
             </div>
         </div>`;
 
@@ -331,11 +331,11 @@ class LinkTooltip {
         });
 
         // don't bind the exact listener, call whatever is currently set on `this` at event time
-        const removeListener = (e: Event) => {
-            this.removeListener.call(this, e);
+        const removeListener = () => {
+            this.removeListener.call(this);
         };
-        const editListener = (e: Event) => {
-            this.editListener.call(this, e);
+        const editListener = () => {
+            this.editListener.call(this);
         };
 
         // hook up the click/keyboard events for the supporting buttons
@@ -630,10 +630,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
             },
         },
         props: {
-            decorations(
-                this: StatefulPlugin<LinkEditorPluginState>,
-                state: EditorState
-            ) {
+            decorations(state: EditorState) {
                 return this.getState(state).decorations || DecorationSet.empty;
             },
             handleDOMEvents: {

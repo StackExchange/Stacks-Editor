@@ -85,3 +85,20 @@ Generate a `stats.json` file for analysis using
     npm run print-stats
 
 You can upload your `stats.json` file [here](http://webpack.github.io/analyse/) or [here](https://chrisbateman.github.io/webpack-visualizer/) for visualization. See more resources [here](https://webpack.js.org/guides/code-splitting/#bundle-analysis).
+
+## Creating a new release
+
+First, bump the package version and push the commit + tags:
+
+```
+> npm run release
+> git push --follow-tags
+```
+
+Next, publish the package (this will run the build step before publishing):
+
+```
+> npm publish
+```
+
+Afterwards, create a GitHub release with the new content from `CHANGELOG.md`.

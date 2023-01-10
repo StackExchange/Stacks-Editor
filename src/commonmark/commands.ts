@@ -621,15 +621,19 @@ export function insertCommonmarkLinkCommand(
 
 /**
  * Inserts a tagLink at the cursor, optionally placing it around the currently selected text if able
- * @param validate The validation method that will be used to validate the selected text
+ * @param options The passed TagLinkOptions
  * @param isMetaTag Whether or not the inserted tagLink is for a meta tag
  */
 export function insertTagLinkCommand(
-    validate: TagLinkOptions["validate"],
+    options: TagLinkOptions,
     isMetaTag: boolean
 ): MenuCommand {
     return (state, dispatch) => {
         const leading = isMetaTag ? "[meta-tag:" : "[tag:";
+
+        if (isMetaTag && options.disableMetaTags) {
+            return false;
+        }
 
         if (state.selection.empty) {
             const dummyText = "tag-name";
@@ -645,7 +649,7 @@ export function insertTagLinkCommand(
         const { from, to } = state.selection;
         const selectedText = state.doc.textBetween(from, to);
 
-        if (!validate(selectedText.trim(), isMetaTag)) {
+        if (!options.validate(selectedText.trim(), isMetaTag)) {
             return false;
         }
 

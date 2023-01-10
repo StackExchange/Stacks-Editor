@@ -128,9 +128,9 @@ export function makeMenuLinkEntry(
     dom.dataset.controller = "s-tooltip";
     dom.dataset.sTooltipPlacement = "top";
 
-    // create the svg icon-bg element
+    // create the svg svg-icon-bg element
     const icon = document.createElement("span");
-    icon.className = "icon-bg icon" + iconName;
+    icon.className = "svg-icon-bg icon" + iconName;
 
     dom.append(icon);
 
@@ -250,9 +250,9 @@ export function makeMenuButton(
     button.dataset.key = key;
     button.type = "button";
 
-    // create the svg icon-bg element
+    // create the svg svg-icon-bg element
     const icon = document.createElement("span");
-    icon.className = "icon-bg icon" + iconName;
+    icon.className = "svg-icon-bg icon" + iconName;
 
     button.append(icon);
 

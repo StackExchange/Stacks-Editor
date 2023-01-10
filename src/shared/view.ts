@@ -55,6 +55,8 @@ export interface CommonViewOptions {
  * @property {string} linkTitle - Text to be placed in the 'title' attribute on the rendered link
  */
 export interface TagLinkOptions {
+    /** Disables meta tag support entirely, removing entries from the menu and skipping calls to validate */
+    disableMetaTags?: boolean;
     /**
      * Callback to check if a tagname is valid; a return value of false fails the token parsing
      * @param tagName The name of the tag being validated

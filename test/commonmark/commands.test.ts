@@ -596,7 +596,12 @@ some text`;
             const state = createState("");
 
             expect(state).transactionSuccess(
-                commands.insertTagLinkCommand(() => true, false),
+                commands.insertTagLinkCommand(
+                    {
+                        validate: () => true,
+                    },
+                    false
+                ),
                 "[tag:tag-name]",
                 "tag-name"
             );
@@ -606,17 +611,44 @@ some text`;
             const state = createState("");
 
             expect(state).transactionSuccess(
-                commands.insertTagLinkCommand(() => true, true),
+                commands.insertTagLinkCommand(
+                    {
+                        validate: () => true,
+                    },
+                    true
+                ),
                 "[meta-tag:tag-name]",
                 "tag-name"
             );
+        });
+
+        it("should disallow meta tags when option is set", () => {
+            const command = commands.insertTagLinkCommand(
+                {
+                    // disable meta tags entirely
+                    disableMetaTags: true,
+                    validate: () => {
+                        throw "This should never be called!";
+                    },
+                },
+                true
+            );
+
+            const isValid = command(createState(""), null);
+
+            expect(isValid).toBeFalsy();
         });
 
         it("should wrap valid tag text", () => {
             const state = createSelectedState("valid");
 
             expect(state).transactionSuccess(
-                commands.insertTagLinkCommand(() => true, false),
+                commands.insertTagLinkCommand(
+                    {
+                        validate: () => true,
+                    },
+                    false
+                ),
                 "[tag:valid]",
                 "valid"
             );
@@ -626,7 +658,12 @@ some text`;
             const state = createSelectedState("valid");
 
             expect(state).transactionSuccess(
-                commands.insertTagLinkCommand(() => true, true),
+                commands.insertTagLinkCommand(
+                    {
+                        validate: () => true,
+                    },
+                    true
+                ),
                 "[meta-tag:valid]",
                 "valid"
             );
@@ -634,7 +671,12 @@ some text`;
 
         it("should be inactive when invalid text is selected", () => {
             const state = createSelectedState("invalid");
-            const command = commands.insertTagLinkCommand(() => false, false);
+            const command = commands.insertTagLinkCommand(
+                {
+                    validate: () => false,
+                },
+                false
+            );
             const isValid = command(state, null);
             expect(isValid).toBeFalsy();
         });
@@ -643,21 +685,30 @@ some text`;
             const spy = jest.fn();
 
             // check for isMetaTag = false; text = "text1"
-            commands.insertTagLinkCommand(spy, false)(
-                createSelectedState("text1"),
-                null
-            );
+            commands.insertTagLinkCommand(
+                {
+                    validate: spy,
+                },
+                false
+            )(createSelectedState("text1"), null);
             expect(spy).toHaveBeenCalledWith("text1", false);
 
             // check for isMetaTag = true; text = "text2"
-            commands.insertTagLinkCommand(spy, true)(
-                createSelectedState("text2"),
-                null
-            );
+            commands.insertTagLinkCommand(
+                {
+                    validate: spy,
+                },
+                true
+            )(createSelectedState("text2"), null);
             expect(spy).toHaveBeenCalledWith("text2", true);
 
             // check that validate is not called on empty selection
-            commands.insertTagLinkCommand(spy, false)(createState(""), null);
+            commands.insertTagLinkCommand(
+                {
+                    validate: spy,
+                },
+                false
+            )(createState(""), null);
             expect(spy).toHaveBeenCalledTimes(2);
         });
     });

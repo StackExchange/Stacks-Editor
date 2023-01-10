@@ -64,14 +64,14 @@ describe("preview plugin", () => {
 
         expect(renderer).toHaveBeenCalledWith(
             "test content",
-            expect.any(HTMLElement) as HTMLElement
+            expect.any(HTMLElement)
         );
 
         view.dispatch(view.state.tr.insertText("new text ", 0));
 
         expect(renderer).toHaveBeenCalledWith(
             "new text test content",
-            expect.any(HTMLElement) as HTMLElement
+            expect.any(HTMLElement)
         );
     });
 

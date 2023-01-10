@@ -2,6 +2,25 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.3](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.2...v0.8.3) (2022-12-12)
+
+
+### Features
+
+* **code-paste-handler:** remove support for auto-fencing pasted code in markdown mode ([008d0f3](https://github.com/StackExchange/Stacks-Editor/commit/008d0f3796e405ce6d1a065e39146979c8ae5b28)), closes [#230](https://github.com/StackExchange/Stacks-Editor/issues/230)
+
+### [0.8.2](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.1...v0.8.2) (2022-10-20)
+
+
+### Features
+
+* **tag-link:** add TagLinkOptions.disableMetaTags option ([eec8fef](https://github.com/StackExchange/Stacks-Editor/commit/eec8fefed0bb57e209c7fda95e2452a36c1a4bb3)), closes [#226](https://github.com/StackExchange/Stacks-Editor/issues/226)
+
+
+### Bug Fixes
+
+* **menu:** ensure consistent y padding for all dropdown menus ([150363e](https://github.com/StackExchange/Stacks-Editor/commit/150363ea67eb3dde507e952b8e9d059197ab08b6))
+
 ### [0.8.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.0...v0.8.1) (2022-09-28)
 
 

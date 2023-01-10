@@ -132,30 +132,3 @@ export const richTextCodePasteHandler = new Plugin({
         },
     },
 });
-
-/** Plugin for the commonmark editor that auto-detects if code was pasted and handles it specifically */
-export const commonmarkCodePasteHandler = new Plugin({
-    props: {
-        handlePaste(view: EditorView, event: ClipboardEvent) {
-            // unlike the rich-text schema, the commonmark schema doesn't allow code_blocks in the root node
-            // so pass in a null slice so the code manually parses instead
-            let codeData = parseCodeFromPasteData(event.clipboardData, null);
-
-            if (!codeData) {
-                return false;
-            }
-
-            const { $from } = view.state.selection;
-
-            // wrap the code in a markdown code fence
-            codeData = "```\n" + codeData + "\n```\n";
-
-            // add a newline if we're not at the beginning of the document
-            codeData = ($from.pos === 1 ? "" : "\n") + codeData;
-
-            view.dispatch(view.state.tr.insertText(codeData));
-
-            return true;
-        },
-    },
-});

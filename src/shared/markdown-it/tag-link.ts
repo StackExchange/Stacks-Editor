@@ -35,6 +35,10 @@ function parse_tag_link(
     const isMeta = totalContent.slice(0, 10) === "[meta-tag:";
     const tagName = totalContent.slice(isMeta ? 10 : 5, -1);
 
+    if (isMeta && options.disableMetaTags) {
+        return false;
+    }
+
     if (options.validate && !options.validate(tagName, isMeta, totalContent)) {
         return false;
     }

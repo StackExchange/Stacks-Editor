@@ -323,7 +323,7 @@ export class MenuView implements PluginView {
         button.dataset.key = entry.key;
 
         const popover = document.createElement("div");
-        popover.className = "s-popover wmn-initial w-auto px0 pt0 pb8";
+        popover.className = "s-popover wmn-initial w-auto px0 pt0 py8";
         popover.id = popoverId;
         popover.setAttribute("role", "menu");
 

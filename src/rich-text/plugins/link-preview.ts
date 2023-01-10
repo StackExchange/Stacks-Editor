@@ -346,10 +346,7 @@ export function linkPreviewPlugin(
             },
         },
         props: {
-            decorations(
-                this: AsyncPlugin<LinkPreviewState, FetchLinkPreviewResult[]>,
-                state
-            ) {
+            decorations(state) {
                 return this.getState(state).decorations;
             },
         },

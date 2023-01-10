@@ -273,14 +273,18 @@ function getHeadingLevel(state: EditorState): number {
 
 /**
  * Creates a command that toggles tagLink formatting for a node
- * @param validate The function to validate the tagName with
+ * @param options The passed TagLinkOptions
  * @param isMetaTag Whether the tag to be created is a meta tag or not
  */
 export function toggleTagLinkCommand(
-    validate: TagLinkOptions["validate"],
+    options: TagLinkOptions,
     isMetaTag: boolean
 ) {
     return (state: EditorState, dispatch?: (tr: Transaction) => void) => {
+        if (options.disableMetaTags && isMetaTag) {
+            return false;
+        }
+
         if (state.selection.empty) {
             return false;
         }
@@ -310,7 +314,7 @@ export function toggleTagLinkCommand(
                 state.selection = TextSelection.create(state.doc, from, to - 1);
             }
 
-            if (!validate(selectedText.trim(), isMetaTag)) {
+            if (!options.validate(selectedText.trim(), isMetaTag)) {
                 return false;
             }
 

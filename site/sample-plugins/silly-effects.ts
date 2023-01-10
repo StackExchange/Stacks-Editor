@@ -37,7 +37,7 @@ const sillyEffectPlugin = new Plugin<{ decorations: DecorationSet }>({
         },
     },
     props: {
-        decorations(this: Plugin<{ decorations: DecorationSet }>, state) {
+        decorations(state) {
             return this.getState(state).decorations;
         },
     },
