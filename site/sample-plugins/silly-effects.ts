@@ -161,9 +161,13 @@ export const sillyPlugin: EditorPlugin = () => ({
                 return [
                     "div",
                     {
-                        class: `silly-effect silly-effect--${
-                            node.attrs.effect as string
-                        }`,
+                        class:
+                            `silly-effect silly-effect--${
+                                node.attrs.effect as string
+                            }` +
+                            (node.attrs.effect === "🎉"
+                                ? " bg-confetti-animated"
+                                : ""),
                     },
                     0,
                 ];

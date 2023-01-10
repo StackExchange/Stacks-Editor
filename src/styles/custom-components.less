@@ -1,20 +1,9 @@
-@import (reference) "@stackoverflow/stacks/lib/css/exports/mixins";
-@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-type";
-@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-colors";
-@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-helpers";
-@import (reference) "@stackoverflow/stacks/lib/css/components/inputs";
-
 /* Applies if the device would need a virtual keyboard */
 /* has no hover (touchscreens) or has only coarse input (non-stylus touchscreens / controllers) */
 @media (hover: none), (pointer: coarse) {
     .vk\:d-inline-flex {
         display: inline-flex !important;
     }
-}
-
-// TODO open PR upstream... again
-.s-textarea.is-readonly {
-    &:extend(.is-readonly .s-textarea all);
 }
 
 // TODO UPSTREAM
@@ -238,7 +227,7 @@
             pointer-events: none;
         }
 
-        .is-readonly &::before {
+        [readonly] &::before {
             color: inherit;
         }
     }
