@@ -35,7 +35,19 @@ module.exports = (_, argv) => {
                                 },
                             },
                         },
-                        "less-loader",
+                        {
+                            loader: "less-loader",
+                            options: {
+                                lessOptions: {
+                                    paths: [
+                                        path.resolve(
+                                            __dirname,
+                                            "../node_modules"
+                                        ),
+                                    ],
+                                },
+                            },
+                        },
                     ],
                 },
             ],
