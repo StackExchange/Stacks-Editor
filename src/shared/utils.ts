@@ -1,5 +1,5 @@
 import { escapeHtml } from "markdown-it/lib/common/utils";
-import { Command, EditorState } from "prosemirror-state";
+import { EditorState } from "prosemirror-state";
 import { error } from "./logger";
 
 /**
@@ -282,33 +282,6 @@ export function dispatchEditorEvent(
 
 /** Helper type that recursively makes an object and all its children Partials */
 export type PartialDeep<T> = { [key in keyof T]?: PartialDeep<T[key]> };
-
-/**
- * Binds a keymap containing a letter to both the lowercase and uppercase version of that letter;
- * this is done so that when the user has CAPS LOCK on, the keymap will still work
- * @param mapping The keymap string to bind
- * @param command The command to bind to all generated keymaps
- */
-export function bindLetterKeymap(
-    mapping: string,
-    command: Command
-): {
-    [key: string]: Command;
-} {
-    const letter = mapping.split("-")[1]?.toLowerCase().trim();
-
-    // not a single letter, so just return the mapping
-    if (!letter || !letter.match(/^[a-z]{1}$/)) {
-        return { [mapping]: command };
-    }
-
-    const prefix = mapping.slice(0, -1);
-
-    return {
-        [prefix + letter]: command,
-        [prefix + letter.toUpperCase()]: command,
-    };
-}
 
 /**
  * Kebab cases a string e.g. "backgroundColor" to "background-color"
