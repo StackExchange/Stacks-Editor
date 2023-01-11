@@ -60,8 +60,6 @@ export class StacksEditor implements View {
     /** Singleton instance of a plugin provider that is passed to backing views */
     private pluginProvider: IExternalPluginProvider;
 
-    private static readonly READONLY_CLASSES = ["is-readonly"];
-
     constructor(
         target: HTMLElement,
         content: string,
@@ -188,7 +186,8 @@ export class StacksEditor implements View {
             this.editorView.state,
             this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
-        this.innerTarget.classList.remove(...StacksEditor.READONLY_CLASSES);
+        this.innerTarget.removeAttribute("readonly");
+        this.innerTarget.removeAttribute("aria-readonly");
     }
 
     /**
@@ -201,7 +200,8 @@ export class StacksEditor implements View {
             this.editorView.dispatch.bind(null) as (tr: Transaction) => void
         );
 
-        this.innerTarget.classList.add(...StacksEditor.READONLY_CLASSES);
+        this.innerTarget.setAttribute("readonly", "");
+        this.innerTarget.setAttribute("aria-readonly", "true");
     }
 
     /**

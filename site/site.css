@@ -1,15 +1,7 @@
-@import (reference) "@stackoverflow/stacks/lib/css/exports/mixins";
-@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-type";
-@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-colors";
-@import (reference) "@stackoverflow/stacks/lib/css/exports/constants-helpers";
-@import (reference) "@stackoverflow/stacks/lib/css/base/internals";
-@import (reference) "@stackoverflow/stacks/lib/css/atomic/misc";
-
 @import "~@stackoverflow/stacks/dist/css/stacks.css";
+@import "../src/styles/index.css";
 
-@import "../src/styles/index.less";
-
-// Place demo specific styles here
+/* Place demo specific styles here */
 .svg-icon-bg.iconGitHub {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/GitHub.svg");
 }
@@ -18,7 +10,7 @@
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/CodeSnippet.svg");
 }
 
-// SAMPLE-PLUGINS
+/* SAMPLE-PLUGINS */
 
 .jse-furigana {
     position: relative;
@@ -51,10 +43,6 @@
 
 .svg-icon-bg.iconWave {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Wave.svg");
-}
-
-.silly-effect--🎉 {
-    .bg-confetti-animated;
 }
 
 .silly-effect--💯 {

@@ -20,10 +20,10 @@ module.exports = (_, argv) => {
                         dataUrl: (content) =>
                             svgToMiniDataURI(content.toString()),
                     },
-                    issuer: /\.less$/i,
+                    issuer: /\.css$/i,
                 },
                 {
-                    test: /\.less$/i,
+                    test: /\.css$/i,
                     use: [
                         MiniCssExtractPlugin.loader,
                         { loader: "css-loader", options: { importLoaders: 2 } },
@@ -32,19 +32,6 @@ module.exports = (_, argv) => {
                             options: {
                                 postcssOptions: {
                                     config: "./config/postcss.config.js",
-                                },
-                            },
-                        },
-                        {
-                            loader: "less-loader",
-                            options: {
-                                lessOptions: {
-                                    paths: [
-                                        path.resolve(
-                                            __dirname,
-                                            "../node_modules"
-                                        ),
-                                    ],
                                 },
                             },
                         },
