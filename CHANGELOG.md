@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.4](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.3...v0.8.4) (2023-01-11)
+
+
+### Features
+
+* **bindings:** add Cmd/Ctrl+Shift+Z hot key for history redo ([#227](https://github.com/StackExchange/Stacks-Editor/issues/227)) ([e5ac816](https://github.com/StackExchange/Stacks-Editor/commit/e5ac816cc8444cffd4a3ad2d6e0b9693703acf3c)), closes [#187](https://github.com/StackExchange/Stacks-Editor/issues/187)
+
 ### [0.8.3](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.2...v0.8.3) (2022-12-12)
 
 
