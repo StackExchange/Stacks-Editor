@@ -225,14 +225,15 @@ export function addIf(item: MenuItem, flag: boolean): MenuItem {
 /**
  * Helper function to create consistent menu entry doms
  * @param iconName The html of the svg to use as the icon
- * @param title The text to place in the button's title attribute
+ * @param content Either a string containing the text to place in the button's title attribute
+ * or an object containing the title and helpText to be used in the hover tooltip
  * @param key A unique identifier used for identifying the command to be executed on click
  * @param cssClasses extra CSS classes to be applied to this menu icon (optional)
  * @internal
  */
 export function makeMenuButton(
     iconName: string,
-    title: string,
+    content: string | { title: string; helpText: string },
     key: string,
     cssClasses?: string[]
 ): HTMLButtonElement {
@@ -241,6 +242,13 @@ export function makeMenuButton(
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
+    }
+
+    const title = typeof content === "string" ? content : content.title;
+    const helpText = typeof content === "string" ? null : content.helpText;
+
+    if (helpText) {
+        button.dataset.sTooltipHtmlTitle = `<p class="m0">${title}</p><p class="fs-caption fc-black-600 m0">${helpText}</p>`;
     }
 
     button.title = title;

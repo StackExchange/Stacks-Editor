@@ -16,16 +16,28 @@ describe("menu helpers", () => {
         const title = "test title";
         const cssClasses = ["testClass1", "testClass2"];
 
-        const icon = makeMenuButton(iconName, title, key, cssClasses);
-        expect(icon.nodeName).toBe("BUTTON");
-        expect(icon.classList).toContain(`js-${key}`);
-        expect(icon.title).toBe(title);
+        const button = makeMenuButton(iconName, title, key, cssClasses);
+        expect(button.nodeName).toBe("BUTTON");
+        expect(button.classList).toContain(`js-${key}`);
+        expect(button.title).toBe(title);
         (cssClasses || []).forEach((c) => {
-            expect(icon.classList).toContain(c);
+            expect(button.classList).toContain(c);
         });
-        expect(icon.children).toHaveLength(1);
-        expect(icon.firstChild.nodeName).toBe("SPAN");
-        expect(icon.firstElementChild.classList).toContain(`icon${iconName}`);
+        expect(button.children).toHaveLength(1);
+        expect(button.firstChild.nodeName).toBe("SPAN");
+        expect(button.firstElementChild.classList).toContain(`icon${iconName}`);
+        expect(button.dataset.sTooltipHtmlTitle).toBeUndefined();
+    });
+
+    it("should makeMenuButton with title and helpText", () => {
+        const content = { title: "test-title", helpText: "test-help-text" };
+
+        const button = makeMenuButton("testIcon", content, "testKey");
+
+        expect(button.title).toBe(content.title);
+        expect(button.dataset.sTooltipHtmlTitle).toBe(
+            `<p class="m0">${content.title}</p><p class="fs-caption fc-black-600 m0">${content.helpText}</p>`
+        );
     });
 
     it("should makeMenuLinkEntry", () => {

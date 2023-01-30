@@ -17,7 +17,10 @@ export const defaultStrings = {
     commands: {
         blockquote: shortcut("Blockquote"),
         bold: shortcut("Bold"),
-        code_block: shortcut("Code block"),
+        code_block: {
+            title: shortcut("Code block"),
+            helpText: "Use for code that is more than one line",
+        },
         emphasis: shortcut("Italic"),
         heading: {
             dropdown: shortcut("Heading"),
