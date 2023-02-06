@@ -248,7 +248,7 @@ export function makeMenuButton(
     const helpText = typeof content === "string" ? null : content.helpText;
 
     if (helpText) {
-        button.dataset.sTooltipHtmlTitle = `<p class="m0">${title}</p><p class="fs-caption fc-black-600 m0">${helpText}</p>`;
+        button.dataset.sTooltipHtmlTitle = `<p class="mb4">${title}</p><p class="fs-caption fc-black-600 m0">${helpText}</p>`;
     }
 
     button.title = title;
