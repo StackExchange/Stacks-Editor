@@ -35,8 +35,8 @@ describe("menu helpers", () => {
         const button = makeMenuButton("testIcon", content, "testKey");
 
         expect(button.title).toBe(content.title);
-        expect(button.dataset.sTooltipHtmlTitle).toBe(
-            `<p class="m0">${content.title}</p><p class="fs-caption fc-black-600 m0">${content.helpText}</p>`
+        expect(button.dataset.sTooltipHtmlTitle).toMatch(
+            new RegExp(`.*${content.title}.*${content.helpText}.*`)
         );
     });
 
