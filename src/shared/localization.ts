@@ -29,7 +29,10 @@ export const defaultStrings = {
         help: "Help",
         horizontal_rule: shortcut("Horizontal rule"),
         image: shortcut("Image"),
-        inline_code: shortcut("Inline code"),
+        inline_code: {
+            title: shortcut("Inline code"),
+            description: "Single line code span for use within a block of text",
+        },
         kbd: shortcut("Keyboard"),
         link: shortcut("Link"),
         metaTagLink: shortcut("Meta tag"),

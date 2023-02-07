@@ -335,9 +335,12 @@ export const createMenuEntries = (
                 commonmark: inlineCodeCommand,
                 display: makeMenuButton(
                     "Code",
-                    _t("commands.inline_code", {
-                        shortcut: getShortcut("Mod-K"),
-                    }),
+                    {
+                        title: _t("commands.inline_code.title", {
+                            shortcut: getShortcut("Mod-K"),
+                        }),
+                        description: _t("commands.inline_code.description"),
+                    },
                     "code-btn"
                 ),
             },
