@@ -304,21 +304,6 @@ export const createMenuEntries = (
                     "italic-btn"
                 ),
             },
-            {
-                key: "toggleCode",
-                richText: {
-                    command: toggleMark(schema.marks.code),
-                    active: markActive(schema.marks.code),
-                },
-                commonmark: inlineCodeCommand,
-                display: makeMenuButton(
-                    "Code",
-                    _t("commands.inline_code", {
-                        shortcut: getShortcut("Mod-K"),
-                    }),
-                    "code-btn"
-                ),
-            },
             addIf(
                 {
                     key: "toggleStrike",
@@ -335,6 +320,48 @@ export const createMenuEntries = (
                 },
                 options.parserFeatures?.extraEmphasis
             ),
+        ],
+    },
+    {
+        name: "code-formatting",
+        priority: 5,
+        entries: [
+            {
+                key: "toggleCode",
+                richText: {
+                    command: toggleMark(schema.marks.code),
+                    active: markActive(schema.marks.code),
+                },
+                commonmark: inlineCodeCommand,
+                display: makeMenuButton(
+                    "Code",
+                    {
+                        title: _t("commands.inline_code.title", {
+                            shortcut: getShortcut("Mod-K"),
+                        }),
+                        description: _t("commands.inline_code.description"),
+                    },
+                    "code-btn"
+                ),
+            },
+            {
+                key: "toggleCodeblock",
+                richText: {
+                    command: toggleBlockType(schema.nodes.code_block),
+                    active: nodeTypeActive(schema.nodes.code_block),
+                },
+                commonmark: insertCodeblockCommand,
+                display: makeMenuButton(
+                    "CodeblockAlt",
+                    {
+                        title: _t("commands.code_block.title", {
+                            shortcut: getShortcut("Mod-M"),
+                        }),
+                        description: _t("commands.code_block.description"),
+                    },
+                    "code-block-btn"
+                ),
+            },
         ],
     },
     {
@@ -364,21 +391,6 @@ export const createMenuEntries = (
                         shortcut: getShortcut("Mod-Q"),
                     }),
                     "blockquote-btn"
-                ),
-            },
-            {
-                key: "toggleCodeblock",
-                richText: {
-                    command: toggleBlockType(schema.nodes.code_block),
-                    active: nodeTypeActive(schema.nodes.code_block),
-                },
-                commonmark: insertCodeblockCommand,
-                display: makeMenuButton(
-                    "Codeblock",
-                    _t("commands.code_block", {
-                        shortcut: getShortcut("Mod-M"),
-                    }),
-                    "code-block-btn"
                 ),
             },
             addIf(

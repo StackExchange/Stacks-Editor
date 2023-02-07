@@ -17,7 +17,10 @@ export const defaultStrings = {
     commands: {
         blockquote: shortcut("Blockquote"),
         bold: shortcut("Bold"),
-        code_block: shortcut("Code block"),
+        code_block: {
+            title: shortcut("Code block"),
+            description: "Multiline block of code with syntax highlighting",
+        },
         emphasis: shortcut("Italic"),
         heading: {
             dropdown: shortcut("Heading"),
@@ -26,7 +29,10 @@ export const defaultStrings = {
         help: "Help",
         horizontal_rule: shortcut("Horizontal rule"),
         image: shortcut("Image"),
-        inline_code: shortcut("Inline code"),
+        inline_code: {
+            title: shortcut("Inline code"),
+            description: "Single line code span for use within a block of text",
+        },
         kbd: shortcut("Keyboard"),
         link: shortcut("Link"),
         metaTagLink: shortcut("Meta tag"),

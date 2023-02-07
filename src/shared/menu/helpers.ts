@@ -1,5 +1,6 @@
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { escapeHTML } from "../utils";
 
 /**
  * Callback function signature for all menu entries
@@ -225,14 +226,15 @@ export function addIf(item: MenuItem, flag: boolean): MenuItem {
 /**
  * Helper function to create consistent menu entry doms
  * @param iconName The html of the svg to use as the icon
- * @param title The text to place in the button's title attribute
+ * @param content Either a string containing the text to place in the button's title attribute
+ * or an object containing the title and helpText to be used in the hover tooltip
  * @param key A unique identifier used for identifying the command to be executed on click
  * @param cssClasses extra CSS classes to be applied to this menu icon (optional)
  * @internal
  */
 export function makeMenuButton(
     iconName: string,
-    title: string,
+    content: string | { title: string; description: string },
     key: string,
     cssClasses?: string[]
 ): HTMLButtonElement {
@@ -241,6 +243,18 @@ export function makeMenuButton(
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
+    }
+
+    let title = content as string;
+    let description = null;
+
+    if (typeof content !== "string") {
+        title = content.title;
+        description = content.description;
+    }
+
+    if (description) {
+        button.dataset.sTooltipHtmlTitle = escapeHTML`<p class="mb4">${title}</p><p class="fs-caption fc-light m0">${description}</p>`;
     }
 
     button.title = title;
