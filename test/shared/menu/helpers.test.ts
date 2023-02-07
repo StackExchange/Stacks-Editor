@@ -29,14 +29,18 @@ describe("menu helpers", () => {
         expect(button.dataset.sTooltipHtmlTitle).toBeUndefined();
     });
 
-    it("should makeMenuButton with title and helpText", () => {
-        const content = { title: "test-title", helpText: "test-help-text" };
+    it("should makeMenuButton with title and description", () => {
+        // add a title/description, checking for XSS protection
+        const content = {
+            title: "test-title",
+            description: "<span>test-help-text</span>",
+        };
 
         const button = makeMenuButton("testIcon", content, "testKey");
 
         expect(button.title).toBe(content.title);
         expect(button.dataset.sTooltipHtmlTitle).toMatch(
-            new RegExp(`.*${content.title}.*${content.helpText}.*`)
+            /test-title.*&lt;span&gt;test-help-text&lt;\/span&gt/
         );
     });
 

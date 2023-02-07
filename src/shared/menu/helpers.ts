@@ -1,5 +1,6 @@
 import { EditorState, Transaction } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
+import { escapeHTML } from "../utils";
 
 /**
  * Callback function signature for all menu entries
@@ -233,7 +234,7 @@ export function addIf(item: MenuItem, flag: boolean): MenuItem {
  */
 export function makeMenuButton(
     iconName: string,
-    content: string | { title: string; helpText: string },
+    content: string | { title: string; description: string },
     key: string,
     cssClasses?: string[]
 ): HTMLButtonElement {
@@ -244,11 +245,16 @@ export function makeMenuButton(
         button.classList.add(...cssClasses);
     }
 
-    const title = typeof content === "string" ? content : content.title;
-    const helpText = typeof content === "string" ? null : content.helpText;
+    let title = content as string;
+    let description = null;
 
-    if (helpText) {
-        button.dataset.sTooltipHtmlTitle = `<p class="mb4">${title}</p><p class="fs-caption fc-black-600 m0">${helpText}</p>`;
+    if (typeof content !== "string") {
+        title = content.title;
+        description = content.description;
+    }
+
+    if (description) {
+        button.dataset.sTooltipHtmlTitle = escapeHTML`<p class="mb4">${title}</p><p class="fs-caption fc-black-600 m0">${description}</p>`;
     }
 
     button.title = title;

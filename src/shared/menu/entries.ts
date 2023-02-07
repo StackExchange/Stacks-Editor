@@ -354,7 +354,7 @@ export const createMenuEntries = (
                         title: _t("commands.code_block.title", {
                             shortcut: getShortcut("Mod-M"),
                         }),
-                        helpText: _t("commands.code_block.help_text"),
+                        description: _t("commands.code_block.description"),
                     },
                     "code-block-btn"
                 ),
