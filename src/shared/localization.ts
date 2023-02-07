@@ -19,7 +19,7 @@ export const defaultStrings = {
         bold: shortcut("Bold"),
         code_block: {
             title: shortcut("Code block"),
-            help_text: "Use for code that is more than one line",
+            help_text: "Multiline block of code with syntax highlighting",
         },
         emphasis: shortcut("Italic"),
         heading: {
