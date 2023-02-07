@@ -254,7 +254,7 @@ export function makeMenuButton(
     }
 
     if (description) {
-        button.dataset.sTooltipHtmlTitle = escapeHTML`<p class="mb4">${title}</p><p class="fs-caption fc-black-600 m0">${description}</p>`;
+        button.dataset.sTooltipHtmlTitle = escapeHTML`<p class="mb4">${title}</p><p class="fs-caption fc-light m0">${description}</p>`;
     }
 
     button.title = title;
