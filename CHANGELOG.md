@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.5](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.4...v0.8.5) (2023-02-09)
+
+
+### Features
+
+* **menu:** place code block and inline code menu buttons side by side ([#237](https://github.com/StackExchange/Stacks-Editor/issues/237)) ([e526265](https://github.com/StackExchange/Stacks-Editor/commit/e526265b9ec795891cc55122c4d96e7a6164e239))
+
 ### [0.8.4](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.3...v0.8.4) (2023-01-11)
 
 
