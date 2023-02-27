@@ -764,4 +764,26 @@ some text`;
             expect(state.selection.to).toBe(5);
         });
     });
+
+    describe("insertCommonmarkLinkCommand", () => {
+        it("should insert empty links", () => {
+            const state = createState("");
+
+            expect(state).transactionSuccess(
+                commands.insertCommonmarkLinkCommand,
+                "[text](http://localhost)",
+                "text"
+            );
+        });
+
+        it("should insert links containing selected text", () => {
+            const state = createSelectedState("existing");
+
+            expect(state).transactionSuccess(
+                commands.insertCommonmarkLinkCommand,
+                "[existing](http://localhost)",
+                "http://localhost"
+            );
+        });
+    });
 });

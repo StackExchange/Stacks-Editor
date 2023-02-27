@@ -593,10 +593,10 @@ export function insertCommonmarkLinkCommand(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
-    // TODO what dummy link to use?
-    const dummyLink = "https://www.stackoverflow.com/";
+    // attempt to use the current origin, falling back to "url" otherwise
+    const dummyLink = globalThis.location.origin ?? "url";
 
-    // TODO what should we select - text or link?
+    // insert a new link with the text selected
     if (state.selection.empty) {
         return insertRawText(
             "[text](" + dummyLink + ")",
@@ -611,7 +611,6 @@ export function insertCommonmarkLinkCommand(
     const selectedText = state.doc.textBetween(from, to);
 
     const insertedText = `[${selectedText}](${dummyLink})`;
-    //TODO magic numbers!
     const selectFrom = 3 + selectedText.length;
     const selectTo = selectFrom + dummyLink.length;
 
