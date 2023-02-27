@@ -64,15 +64,15 @@ new StacksEditor(
 
 1. Install dependencies with `npm i`
 2. Build and start using `npm start`
-3. Point your browser to the address listed in the output - typically <http://localhost:8080/>
+3. Point your browser to the address listed in the output - typically <http://localhost:8080/>.
 
 ## Run Tests
 
-Run all unit tests (no end-to-end tests) using
+Run all unit tests (no end-to-end tests) using:
 
     npm test
 
-Run all end-to-end tests (written in Playwright) using
+Run all end-to-end tests (written in Playwright) using:
 
     npm run test:e2e
 
@@ -80,7 +80,7 @@ End-to-end tests need to follow the convention of using `someName.e2e.test.ts` a
 
 ## Browser Bundle analysis
 
-Generate a `stats.json` file for analysis using
+Generate a `stats.json` file for analysis using:
 
     npm run print-stats
 
