@@ -50,6 +50,7 @@ export function allKeymaps(parserFeatures: CommonmarkParserFeatures): Plugin[] {
         "Mod-,": subCommand,
         "Mod-.": supCommand,
         "Mod-'": kbdCommand,
+        "Shift-Enter": baseKeymap["Enter"],
         // selectAll selects the outermost node and messes up our other commands
         "Mod-a": selectAllTextCommand,
     });
