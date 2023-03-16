@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.6](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.5...v0.8.6) (2023-03-16)
+
+
+### Bug Fixes
+
+* **commands:** update commonmark link insert to use the current origin instead of hardcoded url ([151c4a8](https://github.com/StackExchange/Stacks-Editor/commit/151c4a8609e5b9719e616fdfcc0837c3c3e285c2))
+* **commonmark:** allow shift-enter command ([#241](https://github.com/StackExchange/Stacks-Editor/issues/241)) ([0e9d659](https://github.com/StackExchange/Stacks-Editor/commit/0e9d659d4416eca60b2865d76758da2c2b7b27ab))
+
 ### [0.8.5](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.4...v0.8.5) (2023-02-09)
 
 
