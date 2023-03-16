@@ -22,7 +22,7 @@ test.describe.serial("rich-text inputrules", () => {
             await clearEditor(page);
             await typeText(page, input);
             const text = await page.innerText(editorSelector);
-            expect(text).toMatch(input);
+            expect(text).toBe(input);
         });
     }
 
