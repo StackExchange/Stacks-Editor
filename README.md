@@ -32,11 +32,11 @@ new StacksEditor(
 
 ```html
 <!--include Stacks -->
-<link rel="stylesheet" src="path/to/node_modules/@stackoverflow/stacks/dist/css/stacks.css" />
+<link rel="stylesheet" href="path/to/node_modules/@stackoverflow/stacks/dist/css/stacks.css" />
 <!-- include the bundled styles -->
 <link
     rel="stylesheet"
-    src="path/to/node_modules/@stackoverflow/stacks-editor/dist/styles.css"
+    href="path/to/node_modules/@stackoverflow/stacks-editor/dist/styles.css"
 />
 
 <div id="editor-container"></div>
