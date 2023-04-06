@@ -600,8 +600,8 @@ export function insertCommonmarkLinkCommand(
     if (state.selection.empty) {
         return insertRawText(
             "[text](" + dummyLink + ")",
-            1,
-            5,
+            7, // length of "[text](" before the dummyLink
+            7 + dummyLink.length,
             state,
             dispatch
         );

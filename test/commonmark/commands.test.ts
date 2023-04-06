@@ -772,7 +772,7 @@ some text`;
             expect(state).transactionSuccess(
                 commands.insertCommonmarkLinkCommand,
                 "[text](http://localhost)",
-                "text"
+                "http://localhost"
             );
         });
 
