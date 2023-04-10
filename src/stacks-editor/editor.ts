@@ -345,13 +345,13 @@ export class StacksEditor implements View {
         const container = document.createElement("div");
         container.className = "flex--item d-flex ai-center ml24 fc-medium";
 
-        container.innerHTML = escapeHTML`<div class="s-btn-group__radio">
+        container.innerHTML = escapeHTML`<div class="s-btn-group s-btn-group--radio fw-nowrap">
     <input type="radio" name="mode-toggle-${this.internalId}"
         id="mode-toggle-rich-${this.internalId}"
-        class="js-editor-toggle-btn"
+        class="s-btn--radio js-editor-toggle-btn"
         data-mode="${EditorType.RichText}"
         ${richCheckedProp} />
-    <label class="s-btn s-editor-btn px6"
+    <label class="s-btn s-btn__muted s-btn__outlined s-editor-btn px6"
         for="mode-toggle-rich-${this.internalId}"
         title="${_t("menubar.mode_toggle_richtext_title")}">
         <span class="svg-icon-bg iconRichText"></span>
@@ -361,11 +361,11 @@ export class StacksEditor implements View {
     </label>
     <input type="radio" name="mode-toggle-${this.internalId}"
         id="mode-toggle-markdown-${this.internalId}"
-        class="js-editor-toggle-btn"
+        class="s-btn--radio js-editor-toggle-btn"
         data-mode="${EditorType.Commonmark}"
         data-preview="false"
         ${markCheckedProp} />
-    <label class="s-btn s-editor-btn px6"
+    <label class="s-btn s-btn__muted s-btn__outlined s-editor-btn px6"
         for="mode-toggle-markdown-${this.internalId}"
         title="${_t("menubar.mode_toggle_markdown_title")}">
         <span class="svg-icon-bg iconMarkdown"></span>
@@ -382,11 +382,11 @@ export class StacksEditor implements View {
             tmp.innerHTML = escapeHTML`
 <input type="radio" name="mode-toggle-${this.internalId}"
     id="mode-toggle-preview-${this.internalId}"
-    class="js-editor-toggle-btn"
+    class="s-btn--radio js-editor-toggle-btn"
     data-mode="${EditorType.Commonmark}"
     data-preview="${previewEnabled.toString()}"
     ${previewCheckedProp} />
-<label class="s-btn s-editor-btn px6"
+<label class="s-btn s-btn__muted s-btn__outlined s-editor-btn px6"
     for="mode-toggle-preview-${this.internalId}"
     title="${_t("menubar.mode_toggle_preview_title")}">
     <span class="svg-icon-bg iconMarkdownPreview"></span>
@@ -447,8 +447,5 @@ export class StacksEditor implements View {
             previewShown:
                 this.currentViewType !== EditorType.RichText && showPreview,
         });
-
-        // TODO do we always want to focus the editor?
-        this.focus();
     }
 }
