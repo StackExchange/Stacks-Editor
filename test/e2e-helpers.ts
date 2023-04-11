@@ -19,10 +19,9 @@ export async function switchMode(
     switchToMarkdown: boolean
 ): Promise<void> {
     if ((await getIsMarkdown(page)) !== switchToMarkdown) {
-        return await page.dispatchEvent(
-            getEditorToggleBtn(switchToMarkdown),
-            "change"
-        );
+        const checkedModeRadio = await page.$(".js-editor-toggle-btn[checked]");
+        await checkedModeRadio.focus();
+        return await page.keyboard.press("ArrowRight");
     }
 }
 
