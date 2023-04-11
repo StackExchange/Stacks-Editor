@@ -9,7 +9,11 @@ module.exports = (env, argv) => {
     return [
         merge(common(env, argv), {
             entry: {
-                app: "./site/index.ts",
+                app: {
+                    import: "./site/index.ts",
+                    dependOn: "serviceworker",
+                },
+                serviceworker: "./site/serviceworker.ts",
             },
             mode: emulateProdServer ? "production" : "development",
             devtool: emulateProdServer ? false : "inline-source-map",
@@ -65,12 +69,6 @@ module.exports = (env, argv) => {
                         },
                     },
                 },
-            },
-        }),
-        merge(common(env, argv), {
-            target: "webworker",
-            entry: {
-                serviceworker: "./site/serviceworker.ts",
             },
         }),
     ];
