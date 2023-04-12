@@ -3,26 +3,39 @@ import type { Page } from "@playwright/test";
 export const editorSelector = ".js-editor";
 export const menuSelector = ".js-editor-menu";
 
-function getEditorToggleBtn(isMarkdown: boolean) {
-    return `.js-editor-toggle-btn[data-mode="${isMarkdown ? 1 : 0}"]`;
+type Mode = "markdown" | "rich-text";
+
+const modeIds: { [id: string]: Mode } = {
+    "0": "rich-text",
+    "1": "markdown",
+};
+
+export async function getMode(page: Page): Promise<"markdown" | "rich-text"> {
+    const checkedModeRadio = page.getByRole("radio", {
+        name: "mode",
+        checked: true,
+    });
+
+    const modeId = await checkedModeRadio.getAttribute("data-mode");
+
+    return modeIds[modeId];
 }
 
-export async function getIsMarkdown(page: Page): Promise<boolean> {
-    return await page.$eval(
-        getEditorToggleBtn(true),
-        (el: HTMLInputElement) => el.checked
-    );
-}
+export async function switchMode(page: Page, mode: Mode): Promise<void> {
+    const currentMode = await getMode(page);
+    if (currentMode !== mode) {
+        const checkedModeRadio = page.getByRole("radio", {
+            name: "mode",
+            checked: true,
+        });
 
-export async function switchMode(
-    page: Page,
-    switchToMarkdown: boolean
-): Promise<void> {
-    if ((await getIsMarkdown(page)) !== switchToMarkdown) {
-        return await page.dispatchEvent(
-            getEditorToggleBtn(switchToMarkdown),
-            "change"
-        );
+        await checkedModeRadio.focus();
+
+        // webkit doesn't loop through the radio buttons when it reaches the last one in the list
+        // so we need to be specific about which arrow key to press
+        currentMode === "rich-text"
+            ? await page.keyboard.press("ArrowRight")
+            : await page.keyboard.press("ArrowLeft");
     }
 }
 
@@ -55,9 +68,9 @@ export async function typeText(
  */
 export async function enterTextAsMarkdown(page: Page, text: string) {
     await clearEditor(page);
-    await switchMode(page, true);
+    await switchMode(page, "markdown");
     await typeText(page, text);
-    await switchMode(page, false);
+    await switchMode(page, "rich-text");
 }
 
 /**

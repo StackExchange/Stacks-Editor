@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 import {
     clearEditor,
-    getIsMarkdown,
+    getMode,
     menuSelector,
     typeText,
     switchMode,
@@ -13,16 +13,16 @@ const boldMenuButtonSelector = ".js-bold-btn";
 test.describe.serial("markdown mode", () => {
     test.beforeEach(async ({ page }) => {
         await page.goto("/empty.html");
-        await switchMode(page, true);
+        await switchMode(page, "markdown");
     });
     test.afterEach(async ({ page }) => {
         await page.close();
     });
 
     test("should show toggle switch", async ({ page }) => {
-        const isMarkdown = await getIsMarkdown(page);
+        const mode = await getMode(page);
 
-        expect(isMarkdown).toBeTruthy();
+        expect(mode).toBe("markdown");
     });
 
     test("should render menu bar", async ({ page }) => {
