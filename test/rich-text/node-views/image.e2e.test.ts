@@ -8,7 +8,7 @@ test.describe.serial("rich-text image nodeview", () => {
     test.beforeAll(async ({ browser }) => {
         page = await browser.newPage();
         await page.goto("/");
-        await switchMode(page, false);
+        await switchMode(page, "rich-text");
     });
     test.afterAll(async () => {
         await page.close();

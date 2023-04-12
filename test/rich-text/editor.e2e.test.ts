@@ -1,8 +1,8 @@
 import { test, expect, Page } from "@playwright/test";
 import {
     switchMode,
-    getIsMarkdown,
     clearEditor,
+    getMode,
     editorSelector,
     menuSelector,
     enterTextAsMarkdown,
@@ -14,12 +14,10 @@ const headingPopoverSelector = `[id^="heading-dropdown-popover-"]`;
 const insertH1ButtonSelector = "button[data-key='h1-btn']";
 
 const getMarkdownContent = async (page: Page) => {
-    const wasMarkdownModeActive = await getIsMarkdown(page);
-    await switchMode(page, true);
+    const initialMode = await getMode(page);
+    await switchMode(page, "markdown");
     const text = await page.innerText(editorSelector);
-    if (!wasMarkdownModeActive) {
-        await switchMode(page, false);
-    }
+    await switchMode(page, initialMode);
     return text;
 };
 
@@ -28,15 +26,15 @@ test.describe.serial("rich-text mode", () => {
     test.beforeAll(async ({ browser }) => {
         page = await browser.newPage();
         await page.goto("/");
-        await switchMode(page, false);
+        await switchMode(page, "rich-text");
     });
     test.afterAll(async () => {
         await page.close();
     });
 
     test("should show toggle switch", async () => {
-        const isMarkdown = await getIsMarkdown(page);
-        expect(isMarkdown).toBeFalsy();
+        const mode = await getMode(page);
+        expect(mode).toBe("rich-text");
     });
 
     test("should render menu bar", async () => {
