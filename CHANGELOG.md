@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.7](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.6...v0.8.7) (2023-04-12)
+
+
+### Bug Fixes
+
+* **a11y:** accessible mode switcher ([#244](https://github.com/StackExchange/Stacks-Editor/issues/244)) ([e77f4af](https://github.com/StackExchange/Stacks-Editor/commit/e77f4affc9e655120c2ca1acbd8636cbc014c8d8))
+* **commands:** update commonmark to select link instead of text ([608562a](https://github.com/StackExchange/Stacks-Editor/commit/608562a297f077e7547ac4315d11f61e25ef47c3))
+
 ### [0.8.6](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.5...v0.8.6) (2023-03-16)
 
 
