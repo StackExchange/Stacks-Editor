@@ -200,6 +200,7 @@ export function makeDropdownItem(
     button.dataset.key = key;
     button.textContent = title;
     button.dataset.action = "s-popover#hide";
+    button.setAttribute("role", "menuitem");
     button.className = `s-block-link s-editor--dropdown-item js-editor-btn`;
 
     if (cssClasses) {
