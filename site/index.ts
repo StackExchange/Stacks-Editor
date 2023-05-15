@@ -1,4 +1,4 @@
-import "@stackoverflow/stacks";
+import { showModal, hideModal } from "@stackoverflow/stacks";
 import MarkdownIt from "markdown-it";
 import packageJson from "../package.json";
 import {
@@ -117,6 +117,78 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
     });
 
 /**
+ * Intercept image handler that processes the uploaded image TODO: finish this
+ */
+const InterceptImageUploadHandler: ImageUploadOptions["handler"] = async (
+    file
+) => {
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const modal = document.querySelector(
+        ".js-intercept-image-modal"
+    ) as HTMLElement;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    const imagePreview = document.querySelector(
+        ".js-intercept-image-preview"
+    ) as HTMLImageElement;
+    const scanButton = document.querySelector(".js-intercept-image-scan");
+    const cancelScanButton = document.querySelector(
+        ".js-intercept-image-cancel-scan"
+    );
+
+    showModal(modal);
+
+    if (typeof file === "string") {
+        imagePreview.src = file;
+    } else {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        const base64Image: string = await new Promise((resolve) => {
+            reader.addEventListener("load", () =>
+                resolve(reader.result as string)
+            );
+        });
+        imagePreview.src = base64Image;
+    }
+
+    const cancelScanPromise = new Promise<string>((resolve) =>
+        cancelScanButton.addEventListener("click", () => resolve("cancel"))
+    );
+    const scanPromise = new Promise<string>((resolve) =>
+        scanButton.addEventListener("click", () => resolve("scan"))
+    );
+
+    const promises: Promise<string>[] = [cancelScanPromise, scanPromise];
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const userDecision: string = (await Promise.any(promises)) as string;
+
+    if (userDecision === "scan") {
+        // call to some service in azure to detect code from the image
+        const scannedData = `
+        <div class="s-card">
+            <h2 class="fs-body3 lh-sm fc-dark">…</h2>
+            <p class="fs-body1 fc-medium">…</p>
+            <button class="s-btn s-btn__primary s-btn__sm">…</button>
+        </div>`;
+
+        // ISSUE
+        // we need to insert the scanned data into the editor as a code block
+        // we are unable to do this from here because we need access to editor primitives
+
+        hideModal(modal);
+
+        // no image should be uploaded, so reject the promise
+        return Promise.reject();
+    }
+
+    // if the user doesn't want to scan the image, just upload it as normal
+    hideModal(modal);
+    return ImageUploadHandler(file);
+};
+
+/**
  * Sample preview renderer that has a fake delay and uses the default Markdown-It renderer
  * NOTE: synchronous renderers can simply return Promise.resolve()
  */
@@ -192,9 +264,13 @@ domReady(() => {
     const enableImages = !place.classList.contains("js-images-disabled");
     const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
     const enableMDPreview = place.classList.contains("js-md-preview-enabled");
+    const enableImageInterception =
+        place.classList.contains("js-intercept-image");
 
     const imageUploadOptions: ImageUploadOptions = {
-        handler: ImageUploadHandler,
+        handler: enableImageInterception
+            ? InterceptImageUploadHandler
+            : ImageUploadHandler,
         brandingHtml: "Powered by... <strong>Nothing!</strong>",
         contentPolicyHtml:
             "These images are uploaded nowhere, so no content policy applies",

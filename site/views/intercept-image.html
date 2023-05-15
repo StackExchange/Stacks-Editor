@@ -1,0 +1,24 @@
+{% layout "layout.html" %} {% block content %}
+<textarea id="content" name="content" class="d-none">
+Upload an image via the menu item above in rich-text mode.
+</textarea>
+<h1 class="mt32">Intercept Image Flow</h1>
+<div id="example-1" class="js-tables-enabled js-intercept-image"></div>
+
+<aside class="s-modal js-intercept-image-modal" role="dialog" aria-labelledby="intercept-image-modal-title"
+    aria-describedby="intercept-image-modal-description" aria-hidden="true" data-controller="s-modal"
+    data-s-modal-target="modal">
+    <div class="s-modal--dialog" role="document">
+        <h1 class="s-modal--header" id="intercept-image-modal-title">This image has been intercepted</h1>
+        <img class="js-intercept-image-preview d-block w100 mb24" alt="image preview" />
+        <p class="s-modal--body" id="intercept-image-modal-description">
+            Do you want to detect code from the image and add that in a code block?</p>
+        <div class="d-flex gx8 s-modal--footer">
+            <button class="flex--item s-btn s-btn__primary js-intercept-image-scan" type="button">Yes, insert
+                formatted code</button>
+            <button class="flex--item s-btn js-intercept-image-cancel-scan" type="button">No, upload the
+                image as is</button>
+        </div>
+    </div>
+</aside>
+{% endblock %}
