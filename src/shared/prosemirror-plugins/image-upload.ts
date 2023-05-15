@@ -9,7 +9,7 @@ import { NodeSpec, Schema } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { CommonmarkParserFeatures } from "../view";
 import { StatefulPlugin } from "./plugin-extensions";
-import { escapeHTML, generateRandomId } from "../utils";
+import { dispatchEditorEvent, escapeHTML, generateRandomId } from "../utils";
 import { _t } from "../localization";
 import { ManagedInterfaceKey, PluginInterfaceView } from "./interface-manager";
 
@@ -455,7 +455,14 @@ export class ImageUploader extends PluginInterfaceView<
             return;
         }
 
-        void this.startImageUpload(view, file || externalUrl);
+        const uncanceled = dispatchEditorEvent(view.dom, "image-upload", {
+            file,
+        });
+
+        if (uncanceled) {
+            void this.startImageUpload(view, file || externalUrl);
+        }
+
         this.resetUploader();
         const tr = this.tryHideInterfaceTr(view.state);
         if (tr) {
