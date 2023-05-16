@@ -9,7 +9,7 @@ import { NodeSpec, Schema } from "prosemirror-model";
 import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { CommonmarkParserFeatures } from "../view";
 import { StatefulPlugin } from "./plugin-extensions";
-import { escapeHTML, generateRandomId } from "../utils";
+import { escapeHTML, generateRandomId, dispatchEditorEvent } from "../utils";
 import { _t } from "../localization";
 import { ManagedInterfaceKey, PluginInterfaceView } from "./interface-manager";
 
@@ -230,9 +230,9 @@ export class ImageUploader extends PluginInterfaceView<
 
         this.uploadContainer
             .querySelector(".js-add-image")
-            .addEventListener("click", (e: Event) =>
-                this.handleUploadTrigger(e, this.image, view)
-            );
+            .addEventListener("click", (e: Event) => {
+                void this.handleUploadTrigger(e, this.image, view);
+            });
 
         if (this.uploadOptions.allowExternalUrls) {
             this.uploadContainer
@@ -444,7 +444,38 @@ export class ImageUploader extends PluginInterfaceView<
         this.uploadField.value = null;
     }
 
-    handleUploadTrigger(event: Event, file: File, view: EditorView): void {
+    addImagePlaceholder(view: EditorView, id: unknown): void {
+        const tr = view.state.tr;
+        if (!tr.selection.empty) tr.deleteSelection();
+        this.key.setMeta(tr, {
+            add: { id, pos: tr.selection.from },
+            // explicitly clear out any pasted/dropped file on upload
+            file: null,
+            shouldShow: false,
+        });
+        view.dispatch(tr);
+    }
+
+    removeImagePlaceholder(
+        view: EditorView,
+        id: unknown,
+        transaction?: Transaction
+    ): void {
+        let tr = transaction || view.state.tr;
+        tr = this.key.setMeta(tr, {
+            remove: { id },
+            file: null,
+            shouldShow: false,
+        });
+
+        view.dispatch(tr);
+    }
+
+    async handleUploadTrigger(
+        event: Event,
+        file: File,
+        view: EditorView
+    ): Promise<void> {
         const externalUrl =
             this.uploadContainer.querySelector<HTMLInputElement>(
                 ".js-external-url-input"
@@ -455,7 +486,29 @@ export class ImageUploader extends PluginInterfaceView<
             return;
         }
 
-        void this.startImageUpload(view, file || externalUrl);
+        let resume: (resume: boolean) => void;
+        const resumePromise = new Promise((resolve) => {
+            resume = (r) => resolve(r);
+        });
+
+        const canceled = !dispatchEditorEvent(view.dom, "image-upload", {
+            file: file || externalUrl,
+            resume,
+        });
+
+        if (canceled) {
+            const id = {};
+            this.addImagePlaceholder(view, id);
+            const resume = await resumePromise;
+            this.removeImagePlaceholder(view, id);
+
+            if (resume) {
+                void this.startImageUpload(view, file || externalUrl);
+            }
+        } else {
+            void this.startImageUpload(view, file || externalUrl);
+        }
+
         this.resetUploader();
         const tr = this.tryHideInterfaceTr(view.state);
         if (tr) {
@@ -467,17 +520,7 @@ export class ImageUploader extends PluginInterfaceView<
     startImageUpload(view: EditorView, file: File | string): Promise<void> {
         // A fresh object to act as the ID for this upload
         const id = {};
-
-        // Replace the selection with a placeholder
-        const tr = view.state.tr;
-        if (!tr.selection.empty) tr.deleteSelection();
-        this.key.setMeta(tr, {
-            add: { id, pos: tr.selection.from },
-            // explicitly clear out any pasted/dropped file on upload
-            file: null,
-            shouldShow: false,
-        });
-        view.dispatch(tr);
+        this.addImagePlaceholder(view, id);
 
         if (!this.uploadOptions?.handler) {
             // purposefully log an error to the dev console
@@ -505,31 +548,14 @@ export class ImageUploader extends PluginInterfaceView<
                 if (pos === null) return;
 
                 // get the transaction from the dispatcher
-                let tr = this.addTransactionDispatcher(view.state, url, pos);
-
-                // let the plugin know it can remove the upload decoration
-                tr = this.key.setMeta(tr, {
-                    remove: { id },
-                    shouldShow: false,
-                    file: null,
-                });
-
-                view.dispatch(tr);
+                const tr = this.addTransactionDispatcher(view.state, url, pos);
+                this.removeImagePlaceholder(view, id, tr);
             },
             () => {
                 // ON ERROR
-
                 // reshow the image uploader along with an error message
-                let tr = this.tryShowInterfaceTr(view.state) || view.state.tr;
-
-                // let the plugin know it can remove the upload decoration
-                tr = this.key.setMeta(tr, {
-                    remove: { id },
-                    shouldShow: false,
-                    file: null,
-                });
-
-                view.dispatch(tr);
+                const tr = this.tryShowInterfaceTr(view.state) || view.state.tr;
+                this.removeImagePlaceholder(view, id, tr);
                 this.showValidationError(
                     _t("image_upload.upload_error_generic"),
                     "error"
