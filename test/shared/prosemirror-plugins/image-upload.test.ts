@@ -8,6 +8,7 @@ import {
     commonmarkImageUpload,
     richTextImageUpload,
     imageUploaderEnabled,
+    ImageUploadOptions,
 } from "../../../src/shared/prosemirror-plugins/image-upload";
 import {
     externalPluginProvider,
@@ -203,6 +204,140 @@ describe("image upload plugin", () => {
 
         it.todo("should handleDrop on pane");
         it.todo("should handlePaste on pane");
+    });
+
+    describe("image upload flow interception", () => {
+        type InterceptImageUploadEvent = CustomEvent<{
+            file: File;
+            resume: (resume: boolean) => void;
+        }>;
+
+        it("should dispatch an image-upload custom event when the image upload is triggered by the user", async () => {
+            setupTestVariables();
+            const eventSpy = jest.fn() as jest.Mock<
+                void,
+                [InterceptImageUploadEvent]
+            >;
+            view.editorView.dom.addEventListener(
+                "StacksEditor:image-upload",
+                eventSpy
+            );
+
+            showImageUploader(view.editorView);
+            const file = mockFile("some image", "image/png");
+            await uploader.showImagePreview(file);
+
+            const addImageButton = findAddButton(uploader);
+            addImageButton.click();
+
+            expect(eventSpy.mock.calls[0][0].detail.file).toBe(file);
+            expect(eventSpy.mock.calls[0][0].detail.resume).toBeInstanceOf(
+                Function
+            );
+        });
+
+        it("should pause the image upload flow if the image-upload event is prevented", async () => {
+            const handlerSpy = jest.fn().mockResolvedValue("image url");
+            setupTestVariables({
+                handler: handlerSpy,
+            });
+            view.editorView.dom.addEventListener(
+                "StacksEditor:image-upload",
+                // pause the image upload flow
+                (e) => e.preventDefault()
+            );
+
+            showImageUploader(view.editorView);
+            const file = mockFile("some image", "image/png");
+            await uploader.showImagePreview(file);
+
+            const addImageButton = findAddButton(uploader);
+            addImageButton.click();
+
+            expect(handlerSpy).not.toHaveBeenCalled();
+
+            const uploadContainer = uploader.uploadContainer.parentElement;
+            expect(uploadContainer).toBeNull();
+
+            const uploadPlaceholder = view.editorView.dom.querySelector(
+                ".js-image-upload-placeholder"
+            );
+            expect(uploadPlaceholder).toBeTruthy();
+        });
+
+        it("should abort the image upload flow if the resume function is called with false", async () => {
+            const handlerSpy = jest.fn().mockResolvedValue("image url");
+            setupTestVariables({
+                handler: handlerSpy,
+            });
+
+            let resume: (resume: boolean) => void;
+            view.editorView.dom.addEventListener(
+                "StacksEditor:image-upload",
+                (e: InterceptImageUploadEvent) => {
+                    e.preventDefault();
+                    resume = e.detail.resume;
+                }
+            );
+
+            showImageUploader(view.editorView);
+            const file = mockFile("some image", "image/png");
+            await uploader.showImagePreview(file);
+
+            const addImageButton = findAddButton(uploader);
+            addImageButton.click();
+
+            resume(false);
+            // wait for upload image flow to resume
+            await new Promise((r) => process.nextTick(r));
+
+            expect(handlerSpy).not.toHaveBeenCalled();
+
+            const uploadContainer = uploader.uploadContainer.parentElement;
+            expect(uploadContainer).toBeNull();
+
+            const uploadPlaceholder = view.editorView.dom.querySelector(
+                ".js-image-upload-placeholder"
+            );
+            expect(uploadPlaceholder).toBeNull();
+        });
+
+        it("should resume the regular image upload flow if the resume function is called with true", async () => {
+            const handlerSpy = jest.fn().mockResolvedValue("image url");
+            setupTestVariables({
+                handler: handlerSpy,
+            });
+
+            let resume: (resume: boolean) => void;
+            view.editorView.dom.addEventListener(
+                "StacksEditor:image-upload",
+                (e: InterceptImageUploadEvent) => {
+                    e.preventDefault();
+                    resume = e.detail.resume;
+                }
+            );
+
+            showImageUploader(view.editorView);
+            const file = mockFile("some image", "image/png");
+            await uploader.showImagePreview(file);
+
+            const addImageButton = findAddButton(uploader);
+            addImageButton.click();
+
+            resume(true);
+            // wait for upload image flow to resume
+            await new Promise((r) => process.nextTick(r));
+
+            expect(handlerSpy).toHaveBeenCalled();
+
+            const uploadContainer = uploader.uploadContainer.parentElement;
+            expect(uploadContainer).toBeNull();
+
+            const uploadPlaceholder = view.editorView.dom.querySelector(
+                ".js-image-upload-placeholder"
+            );
+            expect(uploadPlaceholder).toBeNull();
+        });
     });
 
     describe("wrapImagesInLinks", () => {
@@ -500,7 +635,7 @@ describe("image upload plugin", () => {
         describe("plugin view", () => {
             beforeEach(() => {
                 pluginContainer = document.createElement("div");
-                view = richTextView("", () => pluginContainer);
+                view = richTextView("", () => pluginContainer, {});
                 uploader = new ImageUploader(
                     view.editorView,
                     {
@@ -646,9 +781,9 @@ describe("image upload plugin", () => {
     }
 });
 
-function setupTestVariables() {
+function setupTestVariables(imageUploadOptions: ImageUploadOptions = {}) {
     pluginContainer = document.createElement("div");
-    view = richTextView("", () => pluginContainer);
+    view = richTextView("", () => pluginContainer, imageUploadOptions);
     uploader = getPluginViewInstance(view.editorView, ImageUploader);
 }
 
@@ -658,7 +793,8 @@ function mockFile(filename: string, type: string): File {
 
 function richTextView(
     markdown: string,
-    containerFn: () => Element
+    containerFn: () => Element,
+    imageUploadOptions: ImageUploadOptions
 ): RichTextEditor {
     return new RichTextEditor(
         document.createElement("div"),
@@ -666,6 +802,7 @@ function richTextView(
         externalPluginProvider(),
         {
             pluginParentContainer: containerFn,
+            imageUpload: imageUploadOptions,
         }
     );
 }

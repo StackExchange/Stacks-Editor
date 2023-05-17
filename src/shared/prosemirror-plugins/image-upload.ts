@@ -640,7 +640,7 @@ export function imageUploaderEnabled(state: EditorState): boolean {
  */
 function createPlaceholder(): HTMLDivElement {
     const placeholder = document.createElement("div");
-    placeholder.className = "ws-normal d-block m8";
+    placeholder.className = "ws-normal d-block m8 js-image-upload-placeholder";
     placeholder.innerHTML = `
 <div class="py6 px6 bg-black-050 bar-sm gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
     <span class="s-spinner s-spinner__sm flex--item">
