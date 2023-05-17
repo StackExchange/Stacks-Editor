@@ -1,16 +1,37 @@
 import { Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import type { EditorPlugin } from "../../src";
+import { EditorType, type EditorPlugin } from "../../src";
 
 type InterceptImageUploadEvent = CustomEvent<{
     file: File;
     resume: (resume: boolean) => void;
 }>;
 
+const insertRichTextCodeBlock = (view: EditorView, code: string) => {
+    let tr = view.state.tr;
+    tr = tr.replaceSelectionWith(
+        view.state.schema.nodes.code_block.create(
+            {},
+            view.state.schema.text(code)
+        )
+    );
+    view.dispatch(tr);
+};
+
+const insertCommonmarkCodeBlock = (view: EditorView, code: string) => {
+    const mdString = "```\n" + code + "\n```\n";
+    let tr = view.state.tr;
+    tr = tr.insertText(mdString, tr.selection.from, tr.selection.to);
+    view.dispatch(tr);
+};
+
 class InterceptImageUploadView implements PluginView {
     private listener: (e: InterceptImageUploadEvent) => void;
 
-    constructor(private view: EditorView) {
+    constructor(
+        private view: EditorView,
+        insertCodeBlock: (view: EditorView, code: string) => void
+    ) {
         this.listener = (e: InterceptImageUploadEvent) =>
             void (async () => {
                 // pause the regular flow so that the image is not uploaded
@@ -20,7 +41,7 @@ class InterceptImageUploadView implements PluginView {
                 // simulation of a call to code detection API
                 const code: string = await new Promise((resolve) =>
                     setTimeout(
-                        () => resolve(`console.log('Hello World!'`),
+                        () => resolve(`console.log('Hello World!')`),
                         1000
                     )
                 );
@@ -46,18 +67,8 @@ class InterceptImageUploadView implements PluginView {
                 // user chose to insert the code - don't resume image upload
                 e.detail.resume(false);
 
-                let tr = view.state.tr;
-
                 // insert the code in a code block
-                tr = tr.insert(
-                    tr.selection.from,
-                    view.state.schema.nodes.code_block.create(
-                        {},
-                        view.state.schema.text(code)
-                    )
-                );
-
-                view.dispatch(tr);
+                insertCodeBlock(view, code);
             })();
 
         view.dom.addEventListener("StacksEditor:image-upload", this.listener);
@@ -71,14 +82,23 @@ class InterceptImageUploadView implements PluginView {
     }
 }
 
-const plugin = new Plugin({
-    view(view) {
-        return new InterceptImageUploadView(view);
-    },
-});
+const createCodeDetectionPlugin = (mode: EditorType) => {
+    const insertCodeBlock = {
+        [EditorType.RichText]: insertRichTextCodeBlock,
+        [EditorType.Commonmark]: insertCommonmarkCodeBlock,
+    };
+    return new Plugin({
+        view(view) {
+            return new InterceptImageUploadView(view, insertCodeBlock[mode]);
+        },
+    });
+};
 
 export const codeDetectionPlugin: EditorPlugin = () => ({
     richText: {
-        plugins: [plugin],
+        plugins: [createCodeDetectionPlugin(EditorType.RichText)],
+    },
+    commonmark: {
+        plugins: [createCodeDetectionPlugin(EditorType.Commonmark)],
     },
 });
