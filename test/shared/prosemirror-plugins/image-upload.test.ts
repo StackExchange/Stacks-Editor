@@ -45,6 +45,29 @@ describe("image upload plugin", () => {
 
             expect(updatedUploadContainer.parentElement).toBeTruthy();
         });
+        
+        it("should have warning hidden by default", () => {
+            expect(uploader.uploadContainer.parentElement).toBeNull();
+
+            showImageUploader(view.editorView);
+            const warningDiv =
+                pluginContainer.querySelector(".js-upload-warning");
+
+            expect(warningDiv.classList.contains("d-none")).toBeTruthy();
+        });
+
+        it("should have warning shown with proper text when option provided", () => {
+            const warningText = "this is <strong>warning</strong> test";
+            setupTestVariables({warningMessage: warningText});
+
+            expect(uploader.uploadContainer.parentElement).toBeNull();
+            showImageUploader(view.editorView);
+            const warningDiv =
+                pluginContainer.querySelector(".js-upload-warning");
+
+            expect(warningDiv.classList.contains("d-none")).toBeFalsy();
+            expect(warningDiv.innerHTML).toEqual(warningText);
+        });
 
         it("should focus 'browse' button when showing image uploader", () => {
             // we need to add our DOM to the doc's body in order to make jsdom's "focus" handling work
@@ -78,6 +101,7 @@ describe("image upload plugin", () => {
         });
 
         it("should disable 'add image' button without preview", () => {
+            
             showImageUploader(view.editorView);
 
             const addButton = findAddButton(uploader);
