@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.8](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.7...v0.8.8) (2023-06-29)
+
+
+### Features
+
+* **image-upload:** add option to show a warning in the upload panel ([#251](https://github.com/StackExchange/Stacks-Editor/issues/251)) ([220f5e7](https://github.com/StackExchange/Stacks-Editor/commit/220f5e732f10927661759354c63fcff01ceeabfc))
+* **image-upload:** dispatch event for intercepting image upload flow ([#249](https://github.com/StackExchange/Stacks-Editor/issues/249)) ([a0d83c9](https://github.com/StackExchange/Stacks-Editor/commit/a0d83c99b622be4e27e14149e54a82ff08298a89))
+
+
+### Bug Fixes
+
+* **a11y:** add menuitem role to dropdown items ([f00095e](https://github.com/StackExchange/Stacks-Editor/commit/f00095e87ab39ef2b05100e98c9cb6305b9ca182))
+* **a11y:** remove illegal (and superfluous) aria role from the image uploader browse label ([#246](https://github.com/StackExchange/Stacks-Editor/issues/246)) ([d388a13](https://github.com/StackExchange/Stacks-Editor/commit/d388a135c66096596fb65850f547724ff41e5086))
+
 ### [0.8.7](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.6...v0.8.7) (2023-04-12)
 
 
