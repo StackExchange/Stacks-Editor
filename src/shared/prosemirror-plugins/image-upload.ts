@@ -40,6 +40,11 @@ export interface ImageUploadOptions {
      */
     contentPolicyHtml?: string;
     /**
+     * If provided, will insert the html into a warning notice at the top of the image uploader
+     * NOTE: this is injected as-is and can potentially be a XSS hazard!
+     */
+    warningNoticeHtml?: string;
+    /**
      * If true, wraps all images in links that point to the uploaded image url
      */
     wrapImagesInLinks?: boolean;
@@ -138,6 +143,8 @@ export class ImageUploader extends PluginInterfaceView<
 
         // TODO i18n
         this.uploadContainer.innerHTML = escapeHTML`
+            <div class="s-notice s-notice__warning m12 mb0 js-warning-notice-html d-none" role="status"></div>
+
             <div class="fs-body2 p12 pb0 js-cta-container">
                 <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" aria-controls="image-preview-${randomId}">
                     Browse
@@ -233,6 +240,17 @@ export class ImageUploader extends PluginInterfaceView<
             .addEventListener("click", (e: Event) => {
                 void this.handleUploadTrigger(e, this.image, view);
             });
+
+        if (this.uploadOptions?.warningNoticeHtml) {
+            const warning = this.uploadContainer.querySelector(
+                ".js-warning-notice-html"
+            );
+            warning.classList.remove("d-none");
+
+            // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
+            // eslint-disable-next-line no-unsanitized/property
+            warning.innerHTML = this.uploadOptions?.warningNoticeHtml;
+        }
 
         if (this.uploadOptions.allowExternalUrls) {
             this.uploadContainer

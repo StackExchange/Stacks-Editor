@@ -46,6 +46,31 @@ describe("image upload plugin", () => {
             expect(updatedUploadContainer.parentElement).toBeTruthy();
         });
 
+        it("should have the warning notice hidden by default", () => {
+            expect(uploader.uploadContainer.parentElement).toBeNull();
+
+            showImageUploader(view.editorView);
+            const warningNoticeContainer = pluginContainer.querySelector(
+                ".js-warning-notice-html"
+            );
+
+            expect(warningNoticeContainer.classList).toContain("d-none");
+        });
+
+        it("should show the warning notice with the related html when option is provided", () => {
+            const warningNoticeHtml = "this is <strong>warning</strong> test";
+            setupTestVariables({ warningNoticeHtml });
+
+            expect(uploader.uploadContainer.parentElement).toBeNull();
+            showImageUploader(view.editorView);
+            const warningNoticeContainer = pluginContainer.querySelector(
+                ".js-warning-notice-html"
+            );
+
+            expect(warningNoticeContainer.classList).not.toContain("d-none");
+            expect(warningNoticeContainer.innerHTML).toBe(warningNoticeHtml);
+        });
+
         it("should focus 'browse' button when showing image uploader", () => {
             // we need to add our DOM to the doc's body in order to make jsdom's "focus" handling work
             // see https://github.com/jsdom/jsdom/issues/2586#issuecomment-742593116
