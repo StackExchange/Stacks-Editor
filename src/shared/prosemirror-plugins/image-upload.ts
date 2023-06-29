@@ -40,6 +40,11 @@ export interface ImageUploadOptions {
      */
     contentPolicyHtml?: string;
     /**
+     * If provided, will insert the html into a warning notice at the top of the image uploader
+     * NOTE: this is injected as-is and can potentially be a XSS hazard!
+     */
+    warningNoticeHtml?: string;
+    /**
      * If true, wraps all images in links that point to the uploaded image url
      */
     wrapImagesInLinks?: boolean;
@@ -52,10 +57,6 @@ export interface ImageUploadOptions {
      * If true, allow users to add images via an external url
      */
     allowExternalUrls?: boolean;
-    /*
-     * If provided, will display this warning message at the top of the image upload menu
-     */
-    warningMessage?: string;
 }
 
 /**
@@ -142,7 +143,7 @@ export class ImageUploader extends PluginInterfaceView<
 
         // TODO i18n
         this.uploadContainer.innerHTML = escapeHTML`
-            <div class="s-notice s-notice__warning m16 mb0 js-upload-warning d-none"></div>
+            <div class="s-notice s-notice__warning m12 mb0 js-warning-notice-html d-none" role="status"></div>
 
             <div class="fs-body2 p12 pb0 js-cta-container">
                 <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" aria-controls="image-preview-${randomId}">
@@ -240,15 +241,17 @@ export class ImageUploader extends PluginInterfaceView<
                 void this.handleUploadTrigger(e, this.image, view);
             });
 
-        if (this.uploadOptions?.warningMessage) {
-            const warning = this.uploadContainer.querySelector(".js-upload-warning");
+        if (this.uploadOptions?.warningNoticeHtml) {
+            const warning = this.uploadContainer.querySelector(
+                ".js-warning-notice-html"
+            );
             warning.classList.remove("d-none");
-            
+
             // XSS "safe": this html is passed in via the editor options; it is not our job to sanitize it
             // eslint-disable-next-line no-unsanitized/property
-            warning.innerHTML = this.uploadOptions?.warningMessage;
+            warning.innerHTML = this.uploadOptions?.warningNoticeHtml;
         }
-        
+
         if (this.uploadOptions.allowExternalUrls) {
             this.uploadContainer
                 .querySelector(".js-external-url-trigger-container")

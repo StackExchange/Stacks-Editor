@@ -45,28 +45,30 @@ describe("image upload plugin", () => {
 
             expect(updatedUploadContainer.parentElement).toBeTruthy();
         });
-        
-        it("should have warning hidden by default", () => {
+
+        it("should have the warning notice hidden by default", () => {
             expect(uploader.uploadContainer.parentElement).toBeNull();
 
             showImageUploader(view.editorView);
-            const warningDiv =
-                pluginContainer.querySelector(".js-upload-warning");
+            const warningNoticeContainer = pluginContainer.querySelector(
+                ".js-warning-notice-html"
+            );
 
-            expect(warningDiv.classList.contains("d-none")).toBeTruthy();
+            expect(warningNoticeContainer.classList).toContain("d-none");
         });
 
-        it("should have warning shown with proper text when option provided", () => {
-            const warningText = "this is <strong>warning</strong> test";
-            setupTestVariables({warningMessage: warningText});
+        it("should show the warning notice with the related html when option is provided", () => {
+            const warningNoticeHtml = "this is <strong>warning</strong> test";
+            setupTestVariables({ warningNoticeHtml });
 
             expect(uploader.uploadContainer.parentElement).toBeNull();
             showImageUploader(view.editorView);
-            const warningDiv =
-                pluginContainer.querySelector(".js-upload-warning");
+            const warningNoticeContainer = pluginContainer.querySelector(
+                ".js-warning-notice-html"
+            );
 
-            expect(warningDiv.classList.contains("d-none")).toBeFalsy();
-            expect(warningDiv.innerHTML).toEqual(warningText);
+            expect(warningNoticeContainer.classList).not.toContain("d-none");
+            expect(warningNoticeContainer.innerHTML).toBe(warningNoticeHtml);
         });
 
         it("should focus 'browse' button when showing image uploader", () => {
@@ -101,7 +103,6 @@ describe("image upload plugin", () => {
         });
 
         it("should disable 'add image' button without preview", () => {
-            
             showImageUploader(view.editorView);
 
             const addButton = findAddButton(uploader);
