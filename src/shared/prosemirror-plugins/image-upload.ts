@@ -168,7 +168,7 @@ export class ImageUploader extends PluginInterfaceView<
                     <button class="s-btn s-btn__primary ws-nowrap mr8 js-add-image" type="button" disabled>Add image</button>
                     <button class="s-btn ws-nowrap js-cancel-button" type="button">Cancel</button>
                 </div>
-                <div class="d-flex fd-column fs-caption fc-black-300 s-anchors s-anchors__muted">
+                <div class="d-flex fd-column fs-caption fc-black-350 s-anchors s-anchors__muted">
                     <div class="js-branding-html"></div>
                     <div class="js-content-policy-html"></div>
                 </div>
@@ -274,14 +274,14 @@ export class ImageUploader extends PluginInterfaceView<
 
     highlightDropArea(event: DragEvent): void {
         this.uploadContainer.classList.add("bs-ring");
-        this.uploadContainer.classList.add("bc-blue-300");
+        this.uploadContainer.classList.add("bc-blue-400");
         event.preventDefault();
         event.stopPropagation();
     }
 
     unhighlightDropArea(event: DragEvent): void {
         this.uploadContainer.classList.remove("bs-ring");
-        this.uploadContainer.classList.remove("bc-blue-300");
+        this.uploadContainer.classList.remove("bc-blue-400");
         event.preventDefault();
         event.stopPropagation();
     }
@@ -660,7 +660,7 @@ function createPlaceholder(): HTMLDivElement {
     const placeholder = document.createElement("div");
     placeholder.className = "ws-normal d-block m8 js-image-upload-placeholder";
     placeholder.innerHTML = `
-<div class="py6 px6 bg-black-050 bar-sm gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
+<div class="py6 px6 bg-black-150 bar-sm gsx gs8 d-inline-flex ai-center fw-normal fs-body1">
     <span class="s-spinner s-spinner__sm flex--item">
         <span class="v-visible-sr">Loading…</span>
     </span>

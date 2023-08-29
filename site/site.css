@@ -24,7 +24,7 @@
     font-size: var(--fs-fine);
     position: absolute;
     transform: translate(-75%, -75%);
-    color: var(--red-500);
+    color: var(--red-400);
     user-select: none;
     pointer-events: none;
 }

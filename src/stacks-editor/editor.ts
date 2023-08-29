@@ -307,11 +307,11 @@ export class StacksEditor implements View {
         // set up focus/blur listeners so we can style the dom to match
         this.backingView.editorView.props.handleDOMEvents = {
             focus: () => {
-                this.innerTarget.classList.add("bs-ring", "bc-blue-300");
+                this.innerTarget.classList.add("bs-ring", "bc-blue-400");
                 return false;
             },
             blur: () => {
-                this.innerTarget.classList.remove("bs-ring", "bc-blue-300");
+                this.innerTarget.classList.remove("bs-ring", "bc-blue-400");
                 return false;
             },
         };
