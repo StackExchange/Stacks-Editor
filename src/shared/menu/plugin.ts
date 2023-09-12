@@ -112,7 +112,18 @@ export class MenuView implements PluginView {
             const key = (target as HTMLElement).dataset.key;
 
             e.preventDefault();
-            view.focus();
+
+            // Conditional added to only focus view on mouse events, so keyboard navigation remains intact
+            // See https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
+            if (e.detail > 0) {
+                // Hide the menu popover if it's visible
+                const menu = (<HTMLElement>e.target).closest(".s-popover");
+                if (target.getAttribute("role") === "menuitem" && menu) {
+                    menu?.classList.remove("is-visible");
+                    target.setAttribute("aria-expanded", "false");
+                }
+                view.focus();
+            }
 
             const found = menuCommands.find((c) => c.key === key);
             const foundCommand = this.command(found);
@@ -319,7 +330,7 @@ export class MenuView implements PluginView {
         button.setAttribute("aria-controls", popoverId);
         button.setAttribute("data-action", "s-popover#toggle");
         button.setAttribute("data-controller", "s-tooltip");
-        button.setAttribute("role", "menuitem");
+        button.setAttribute("role", "menu");
         button.id = buttonId;
         button.dataset.key = entry.key;
 
