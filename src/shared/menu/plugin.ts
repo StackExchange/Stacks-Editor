@@ -112,7 +112,22 @@ export class MenuView implements PluginView {
             const key = (target as HTMLElement).dataset.key;
 
             e.preventDefault();
+            const isMouseEvent = e.detail > 0; // See https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
 
+            // Move focus to the editor exclusively for mouse clicks
+            // For keyboard events, we keep the focus on the menubar
+            if (isMouseEvent) {
+                // When the click is from a menuitem, hide the popover
+                if (target.getAttribute("role") === "menuitem") {
+                    const menuButton = (<HTMLElement>e.target).closest(
+                        '[data-controller="s-popover"]'
+                    );
+                    hidePopover(menuButton);
+                }
+
+                // leave the menubar and focus on the editor
+                view.focus();
+            }
             // Conditional added to only focus view on mouse events, so keyboard navigation remains intact
             // See https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
             if (e.detail > 0) {
