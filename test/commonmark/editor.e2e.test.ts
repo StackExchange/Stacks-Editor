@@ -8,6 +8,7 @@ import {
     clickEditorContent,
 } from "../e2e-helpers";
 
+const moreMenuDropdownSelector = ".js-more-formatting-dropdown";
 const boldMenuButtonSelector = ".js-bold-btn";
 
 test.describe.serial("markdown mode", () => {
@@ -69,5 +70,42 @@ test.describe.serial("markdown mode", () => {
 
         // On some OSes (Windows 10 at least), the selection excludes the trailing newline
         expect(selectedText).toMatch(/^# Heading 1\n?$/);
+    });
+
+    test("should retain focus on the menu item after triggering via keyboard", async ({
+        page,
+    }) => {
+        await expect(page.locator(moreMenuDropdownSelector)).toBeInViewport();
+
+        // Focus the dropdown
+        await page.focus(moreMenuDropdownSelector);
+        const moreDropdownBtnIsFocused = await page.evaluate(() =>
+            document
+                .querySelector(moreMenuDropdownSelector)
+                ?.isEqualNode(document.activeElement)
+        );
+        expect(moreDropdownBtnIsFocused).toBe(true);
+
+        // Open the dropdown
+        await page.keyboard.press("Enter");
+
+        // Tab to "Spoiler (Cmd-/)"
+        await page.keyboard.press("Tab");
+        await page.keyboard.press("Tab");
+        await page.keyboard.press("Tab");
+
+        const activeElementDataKey = await page.evaluate(() =>
+            document.activeElement.getAttribute("data-key")
+        );
+        expect(activeElementDataKey).toBe("spoiler-btn");
+
+        // Trigger the menu item via keyboard
+        await page.keyboard.press("Enter");
+
+        // Ensure the menu item retains focus after triggering via keyboard
+        const newActiveElementDataKey = await page.evaluate(() =>
+            document.activeElement.getAttribute("data-key")
+        );
+        expect(newActiveElementDataKey).toBe("spoiler-btn");
     });
 });
