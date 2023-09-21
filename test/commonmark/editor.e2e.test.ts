@@ -81,7 +81,7 @@ test.describe.serial("markdown mode", () => {
         await page.focus(moreMenuDropdownSelector);
         const moreDropdownBtnIsFocused = await page.evaluate(() =>
             document
-                .querySelector(moreMenuDropdownSelector)
+                .querySelector(".js-more-formatting-dropdown")
                 ?.isEqualNode(document.activeElement)
         );
         expect(moreDropdownBtnIsFocused).toBe(true);
