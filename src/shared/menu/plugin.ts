@@ -335,7 +335,6 @@ export class MenuView implements PluginView {
         button.setAttribute("aria-controls", popoverId);
         button.setAttribute("data-action", "s-popover#toggle");
         button.setAttribute("data-controller", "s-tooltip");
-        button.setAttribute("role", "menu");
         button.id = buttonId;
         button.dataset.key = entry.key;
 
@@ -352,6 +351,7 @@ export class MenuView implements PluginView {
 
         const content = document.createElement("div");
         content.className = "d-flex fd-column";
+        content.setAttribute("role", "presentation");
 
         content.append(...entry.children.map((c) => c.display));
         popover.appendChild(content);
