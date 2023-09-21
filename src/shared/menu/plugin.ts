@@ -15,6 +15,7 @@ import {
     MenuCommand,
     makeMenuButton,
 } from "./helpers";
+import { hidePopover } from "@stackoverflow/stacks";
 
 /** NoOp to use in place of missing commands */
 const commandNoOp = () => false;
@@ -112,7 +113,22 @@ export class MenuView implements PluginView {
             const key = (target as HTMLElement).dataset.key;
 
             e.preventDefault();
-            view.focus();
+            const isMouseEvent = e.detail > 0; // See https://developer.mozilla.org/en-US/docs/Web/API/UIEvent/detail
+
+            // Move focus to the editor exclusively for mouse clicks
+            // For keyboard events, we keep the focus on the menubar
+            if (isMouseEvent) {
+                // When the click is from a menuitem, hide the popover
+                if (target.getAttribute("role") === "menuitem") {
+                    const menuButton = (<HTMLElement>e.target).closest(
+                        '[data-controller="s-popover"]'
+                    );
+                    hidePopover(menuButton);
+                }
+
+                // leave the menubar and focus on the editor
+                view.focus();
+            }
 
             const found = menuCommands.find((c) => c.key === key);
             const foundCommand = this.command(found);
