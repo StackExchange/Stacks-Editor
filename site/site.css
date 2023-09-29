@@ -2,6 +2,27 @@
 @import "../src/styles/index.css";
 
 /* Place demo specific styles here */
+body.themed.theme-custom,
+body.themed.theme-custom * {
+    /* Light mode */
+    --theme-base-primary-color-h: 172;
+    --theme-base-primary-color-s: 37%;
+    --theme-base-primary-color-l: 48%;
+    --theme-base-secondary-color-h: 259;
+    --theme-base-secondary-color-s: 29%;
+    --theme-base-secondary-color-l: 55%;
+
+    /* Dark mode */
+    --theme-dark-primary-color-h: 172;
+    --theme-dark-primary-color-s: 37%;
+    --theme-dark-primary-color-l: 48%;
+    --theme-dark-secondary-color-h: 259;
+    --theme-dark-secondary-color-s: 29%;
+    --theme-dark-secondary-color-l: 55%;
+
+    --theme-button-color: var(--theme-link-color);
+}
+
 .svg-icon-bg.iconGitHub {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/GitHub.svg");
 }

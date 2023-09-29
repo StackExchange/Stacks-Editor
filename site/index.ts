@@ -165,6 +165,16 @@ domReady(() => {
         });
 
     document
+        .querySelector("#js-toggle-theme")
+        ?.addEventListener("change", (e: Event) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            document.body.classList.toggle("theme-custom");
+            document.body.classList.toggle("themed");
+        });
+
+    document
         .querySelector("#js-toggle-contrast")
         ?.addEventListener("change", (e: Event) => {
             e.preventDefault();
