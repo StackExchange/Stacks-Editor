@@ -274,14 +274,14 @@ export class ImageUploader extends PluginInterfaceView<
 
     highlightDropArea(event: DragEvent): void {
         this.uploadContainer.classList.add("bs-ring");
-        this.uploadContainer.classList.add("bc-blue-400");
+        this.uploadContainer.classList.add("bc-theme-secondary-400");
         event.preventDefault();
         event.stopPropagation();
     }
 
     unhighlightDropArea(event: DragEvent): void {
         this.uploadContainer.classList.remove("bs-ring");
-        this.uploadContainer.classList.remove("bc-blue-400");
+        this.uploadContainer.classList.remove("bc-theme-secondary-400");
         event.preventDefault();
         event.stopPropagation();
     }

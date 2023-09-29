@@ -92,37 +92,47 @@
     transition: top 0.2s ease, opacity 0.1s ease;
 }
 
-.s-editor-btn {
-    --theme-button-color: var(--fc-medium);
-    --theme-button-hover-color: var(--fc-medium);
-    --theme-button-hover-background-color: var(--black-150);
-    --theme-button-active-background-color: var(--theme-secondary-300);
-    --theme-button-selected-color: var(--theme-secondary-600);
-    --theme-button-selected-background-color: var(--theme-secondary-300);
-    /* TODO when upstream adopts the ability to change the border color on default buttons, remove this */
-    --editor-button-border-color: transparent;
-    border-color: var(--editor-button-border-color);
+.s-btn.s-editor-btn {
+    border-radius: var(--br-sm);
+    color: var(--black-500) !important;
     padding: var(--su2);
 }
 
-.s-editor-btn.is-selected,
-.s-editor-btn:active {
-    --editor-button-border-color: currentColor;
+.s-btn.s-editor-btn:not(.s-btn__outlined) {
+    border-color: transparent !important;
 }
 
-.s-editor-btn:focus {
-    box-shadow: 0 0 0 var(--su-static4) var(--focus-ring-muted);
+.s-btn.s-editor-btn:focus {
+    box-shadow: 0 0 0 var(--su-static4) var(--focus-ring);
 }
 
-.s-editor-btn.is-disabled {
+.s-btn.s-editor-btn:hover,
+.s-btn.s-editor-btn:focus {
+    background-color: var(--theme-secondary-200) !important;
+    color: var(--black-600) !important;
+}
+
+.s-btn.s-editor-btn.is-selected,
+.s-btn.s-editor-btn:active {
+    background-color: var(--theme-secondary-200) !important;
+    color: var(--theme-secondary-600) !important;
+}
+
+.s-btn.s-editor-btn.is-selected:hover,
+.s-btn.s-editor-btn.is-selected:focus {
+    color: var(--theme-secondary-500) !important;
+}
+
+.s-btn.s-editor-btn.is-disabled {
+    background-color: transparent !important;
     opacity: 0.5;
 }
 
-.s-editor-btn.s-btn__dropdown {
+.s-btn.s-editor-btn.s-btn__dropdown {
     padding-right: var(--su12);
 }
 
-.s-editor-btn.s-btn__dropdown:after {
+.s-btn.s-editor-btn.s-btn__dropdown:after {
     right: var(--su2);
 }
 
@@ -135,7 +145,7 @@
 }
 
 .s-editor--dropdown-item.is-selected {
-    background-color: var(--theme-secondary-300);
+    background-color: var(--theme-secondary-200);
     color: var(--theme-secondary-600);
     font-weight: 400;
 }
