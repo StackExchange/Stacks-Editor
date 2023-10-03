@@ -76,6 +76,7 @@ export const defaultStrings = {
         mode_toggle_richtext_title: "Rich text mode" as string,
     },
     nodes: {
+        codeblock_auto: "auto" as string,
         codeblock_lang_auto: ({ lang }: { lang: string }) => `${lang} (auto)`,
         spoiler_reveal_text: "Reveal spoiler" as string,
     },

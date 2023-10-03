@@ -1,7 +1,10 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { EditorView, NodeView } from "prosemirror-view";
 import type { IExternalPluginProvider } from "../../shared/editor-plugin";
-import { getBlockLanguage } from "../../shared/highlighting/highlight-plugin";
+import {
+    getBlockLanguage,
+    getLoadedLanguages,
+} from "../../shared/highlighting/highlight-plugin";
 import { _t } from "../../shared/localization";
 import { escapeHTML, generateRandomId } from "../../shared/utils";
 
@@ -14,7 +17,7 @@ export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
-    private language: string = null;
+    private language: ReturnType<CodeBlockView["getLanguageFromBlock"]> = null;
 
     constructor(
         node: ProsemirrorNode,
@@ -38,7 +41,7 @@ export class CodeBlockView implements NodeView {
         const rawLanguage = this.getLanguageFromBlock(node);
 
         const processorApplies = this.getValidProcessorResult(
-            rawLanguage,
+            rawLanguage.raw,
             node
         );
 
@@ -57,7 +60,6 @@ export class CodeBlockView implements NodeView {
         const randomId = generateRandomId();
 
         this.dom.innerHTML = escapeHTML`
-        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-300 js-language-indicator" contenteditable=false></div>
         <div class="d-flex ps-absolute t0 r0 js-processor-toggle">
             <label class="flex--item mr4" for="js-editor-toggle-${randomId}">
                 Edit
@@ -68,7 +70,8 @@ export class CodeBlockView implements NodeView {
             </div>
         </div>
         <div class="d-none js-processor-view"></div>
-        <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
+        <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>
+        <div class="s-select s-select__sm ps-absolute t6 r6 js-language-indicator"><select class="js-lang-select"></select></div>`;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
 
@@ -91,6 +94,8 @@ export class CodeBlockView implements NodeView {
                     })
                 );
             });
+
+        this.initializeLanguageSelect(view, getPos);
     }
 
     /** Switches the view between editor mode and processor mode */
@@ -106,24 +111,23 @@ export class CodeBlockView implements NodeView {
 
     /** Gets the codeblock language from the node */
     private getLanguageFromBlock(node: ProsemirrorNode) {
-        let autodetectedLanguage = node.attrs
+        const autodetectedLanguage = node.attrs
             .detectedHighlightLanguage as string;
 
-        if (autodetectedLanguage) {
-            autodetectedLanguage = _t("nodes.codeblock_lang_auto", {
-                lang: autodetectedLanguage,
-            });
-        }
-
-        return autodetectedLanguage || getBlockLanguage(node);
+        return {
+            raw: autodetectedLanguage || getBlockLanguage(node, "auto"),
+            autodetected: !!autodetectedLanguage,
+        };
     }
 
     /** Updates the edit/code view */
-    private updateCodeBlock(rawLanguage: string) {
-        if (this.language !== rawLanguage) {
-            this.dom.querySelector(".js-language-indicator").textContent =
-                rawLanguage;
+    private updateCodeBlock(rawLanguage: CodeBlockView["language"]) {
+        if (this.language?.raw !== rawLanguage.raw) {
+            this.dom.querySelector<HTMLSelectElement>(
+                ".js-language-indicator"
+            ).value = rawLanguage.raw;
             this.language = rawLanguage;
+            this.updateDisplayedLanguage();
         }
     }
 
@@ -181,5 +185,60 @@ export class CodeBlockView implements NodeView {
         }
 
         return processors;
+    }
+
+    private initializeLanguageSelect(view: EditorView, getPos: getPosParam) {
+        const $sel =
+            this.dom.querySelector<HTMLSelectElement>(".js-lang-select");
+
+        // add an "auto" dropdown that we can target via JS
+        const autoOpt = document.createElement("option");
+        autoOpt.textContent = "auto";
+        autoOpt.value = "auto";
+        autoOpt.className = "js-auto-option";
+        $sel.appendChild(autoOpt);
+
+        getLoadedLanguages().forEach((lang) => {
+            const opt = document.createElement("option");
+            opt.value = lang;
+            opt.textContent = lang;
+            opt.defaultSelected = lang === this.language?.raw;
+            $sel.appendChild(opt);
+        });
+
+        if (typeof getPos !== "function") {
+            return;
+        }
+
+        // when the dropdown is changed, update the language on the node
+        $sel.addEventListener("change", (e) => {
+            e.stopPropagation();
+
+            const newLang = $sel.value;
+
+            view.dispatch(
+                view.state.tr.setNodeMarkup(getPos(), null, {
+                    params: newLang === "auto" ? null : newLang,
+                    detectedHighlightLanguage: null,
+                })
+            );
+        });
+    }
+
+    private updateDisplayedLanguage() {
+        const lang = this.language?.raw;
+        const $sel =
+            this.dom.querySelector<HTMLSelectElement>(".js-lang-select");
+        const $auto = $sel.querySelector(".js-auto-option");
+
+        if (this.language?.autodetected) {
+            $sel.value = "auto";
+            $auto.textContent = _t("nodes.codeblock_lang_auto", {
+                lang,
+            });
+        } else {
+            $sel.value = lang;
+            $auto.textContent = _t("nodes.codeblock_auto");
+        }
     }
 }

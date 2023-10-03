@@ -7,44 +7,47 @@ import { getHljsInstance } from "./hljs-instance";
  * Register the languages we're going to use here so we can strongly type our inputs
  */
 //TODO missing: regex
-type Language =
-    | "markdown"
-    | "bash"
-    | "cpp"
-    | "csharp"
-    | "coffeescript"
-    | "xml"
-    | "java"
-    | "json"
-    | "perl"
-    | "python"
-    | "ruby"
-    | "clojure"
-    | "css"
-    | "dart"
-    | "erlang"
-    | "go"
-    | "haskell"
-    | "javascript"
-    | "kotlin"
-    | "tex"
-    | "lisp"
-    | "scheme"
-    | "lua"
-    | "matlab"
-    | "mathematica"
-    | "ocaml"
-    | "pascal"
-    | "protobuf"
-    | "r"
-    | "rust"
-    | "scala"
-    | "sql"
-    | "swift"
-    | "vhdl"
-    | "vbscript"
-    | "yml"
-    | "none";
+const SUPPORTED_LANGS = [
+    "plaintext",
+    "markdown",
+    "bash",
+    "cpp",
+    "csharp",
+    "coffeescript",
+    "xml",
+    "java",
+    "json",
+    "perl",
+    "python",
+    "ruby",
+    "clojure",
+    "css",
+    "dart",
+    "erlang",
+    "go",
+    "haskell",
+    "javascript",
+    "kotlin",
+    "tex",
+    "lisp",
+    "scheme",
+    "lua",
+    "matlab",
+    "mathematica",
+    "ocaml",
+    "pascal",
+    "protobuf",
+    "r",
+    "rust",
+    "scala",
+    "sql",
+    "swift",
+    "vhdl",
+    "vbscript",
+    "yml",
+] as const;
+
+type Language = typeof SUPPORTED_LANGS[number];
 
 // Aliases are neatly grouped onto the same line, so tell prettier not to format
 // prettier-ignore
@@ -101,6 +104,11 @@ export function getBlockLanguage(
 
     // attempt to dealias the language before sending out to the highlighter
     return dealiasLanguage(rawLanguage);
+}
+
+/** Returns all supported language codes */
+export function getLoadedLanguages() {
+    return SUPPORTED_LANGS;
 }
 
 /**
