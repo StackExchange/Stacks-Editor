@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.8.9](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.8...v0.8.9) (2023-09-22)
+
+
+### Bug Fixes
+
+* **a11y:** add menuitem role to menu buttons ([#252](https://github.com/StackExchange/Stacks-Editor/issues/252)) ([25ac29b](https://github.com/StackExchange/Stacks-Editor/commit/25ac29b51b5b55e439b560d0f2fd83c00ba187bc))
+* **a11y:** make dropdown menuitems children of menu ([#255](https://github.com/StackExchange/Stacks-Editor/issues/255)) ([2409a56](https://github.com/StackExchange/Stacks-Editor/commit/2409a56343dafeaea4ece39fa7ddaf0eb2e89ca4))
+* **a11y:** prevent refocus of textarea on keyboard navigation ([#254](https://github.com/StackExchange/Stacks-Editor/issues/254)) ([c86457e](https://github.com/StackExchange/Stacks-Editor/commit/c86457e70ccc1ea525acac73a2478c2858edc952))
+
 ### [0.8.8](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.7...v0.8.8) (2023-06-29)
 
 
