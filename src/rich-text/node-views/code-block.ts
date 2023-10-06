@@ -57,7 +57,7 @@ export class CodeBlockView implements NodeView {
         const randomId = generateRandomId();
 
         this.dom.innerHTML = escapeHTML`
-        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-300 js-language-indicator" contenteditable=false></div>
+        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-350 js-language-indicator" contenteditable=false></div>
         <div class="d-flex ps-absolute t0 r0 js-processor-toggle">
             <label class="flex--item mr4" for="js-editor-toggle-${randomId}">
                 Edit

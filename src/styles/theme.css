@@ -1,5 +1,5 @@
 .s-code-block.markdown .hljs-section {
-    color: var(--black-800) !important;
+    color: var(--black-600) !important;
     font-size: var(--fs-body2);
     font-weight: 700;
 }
@@ -8,11 +8,11 @@
 .s-code-block.markdown .hljs-string,
 .s-code-block.markdown .hljs-symbol,
 .s-code-block.markdown .hljs-tag {
-    color: var(--black-600) !important;
+    color: var(--black-500) !important;
 }
 
 .s-code-block.markdown .hljs-link {
-    color: var(--blue-600) !important;
+    color: var(--blue-500) !important;
     text-decoration: underline;
 }
 
