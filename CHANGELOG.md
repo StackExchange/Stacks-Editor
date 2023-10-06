@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. See [standa
 
 ## [0.9.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.9...v0.9.0) (2023-10-06)
 
+### ⚠ BREAKING CHANGES
+
+* **dependencies:** This version of Stacks-Editor is updated to work with [Stacks v2](https://github.com/StackExchange/Stacks/releases/tag/v2.0.0) and [Stacks-Icons v6.0](https://github.com/StackExchange/Stacks-Icons/releases/tag/v6.0.0). Please update those dependencies if included in your projects before upgrading to Stacks-Editor v0.9.0.
+
 ### [0.8.9](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.8...v0.8.9) (2023-09-22)
 
 
