@@ -44,7 +44,7 @@ new StacksEditor(
 <!-- highlight.js is not included in the bundle, so include it as well if you want it -->
 <script src="//unpkg.com/@highlightjs/cdn-assets@latest/highlight.min.js"></script>
 <!--include Stacks -->
-<script src="path/to/node_modules/@stackoverflow/stacks/dist/stacks.min.js"></script>
+<script src="path/to/node_modules/@stackoverflow/stacks/dist/js/stacks.min.js"></script>
 <!-- include the bundle -->
 <script src="path/to/node_modules/@stackoverflow/stacks-editor/dist/app.bundle.js"></script>
 
