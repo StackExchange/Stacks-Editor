@@ -166,6 +166,11 @@
     max-height: none;
 }
 
+/* MODE OVERRIDES */
+.theme-highcontrast .s-btn.s-editor-btn:not(.s-btn__outlined) {
+    border-color: currentColor !important;
+}
+
 /* EDITOR ONLY STYLE OVERRIDES */
 
 .ProseMirror {
