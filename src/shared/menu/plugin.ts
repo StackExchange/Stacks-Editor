@@ -46,6 +46,7 @@ export class MenuView implements PluginView {
     private readonly: boolean;
     private editorType: EditorType;
 
+    static disabledClass = "is-disabled";
     static activeClass = "is-selected";
     static invisibleClass = "d-none";
 
@@ -105,7 +106,7 @@ export class MenuView implements PluginView {
             }
 
             // if the button is "disabled", return early
-            if (target.hasAttribute("disabled")) {
+            if (target.classList.contains(MenuView.disabledClass)) {
                 return;
             }
 
@@ -225,9 +226,9 @@ export class MenuView implements PluginView {
             !isReadonly &&
             command.command(this.view.state, undefined, this.view);
 
+        dom.classList.remove(MenuView.disabledClass);
         dom.classList.remove(MenuView.activeClass);
         dom.classList.remove(MenuView.invisibleClass);
-        dom.removeAttribute("disabled");
 
         dom.dataset.key = entry.key;
 
@@ -237,7 +238,7 @@ export class MenuView implements PluginView {
         } else if (active) {
             dom.classList.add(MenuView.activeClass);
         } else if (!enabled) {
-            dom.setAttribute("disabled", "");
+            dom.classList.add(MenuView.disabledClass);
         }
 
         // if this is a dropdown, check all of its children as well
