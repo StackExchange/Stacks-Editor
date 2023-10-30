@@ -6,53 +6,6 @@
     }
 }
 
-/* TODO UPSTREAM */
-.s-btn-group__radio {
-    display: flex;
-}
-
-/* TODO altered from upstream .s-btn-group>.s-btn */
-.s-btn-group__radio .s-btn:not(:last-of-type) {
-    margin-right: -1px;
-}
-
-.s-btn-group__radio .s-btn:not(:first-of-type):not(:last-of-type) {
-    border-radius: 0;
-}
-
-.s-btn-group__radio .s-btn:first-of-type:not(:only-of-type) {
-    border-bottom-right-radius: 0;
-    border-top-right-radius: 0;
-}
-
-.s-btn-group__radio .s-btn:last-of-type:not(:only-of-type) {
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
-}
-
-.s-btn-group__radio input[type="checkbox"],
-.s-btn-group__radio input[type="radio"] {
-    display: none;
-}
-
-/* TODO extends .s-btn.is-selected and .s-btn-group>.s-btn.is-selected */
-:is(.s-btn-group__radio input[type="checkbox"]):checked + label.s-btn,
-:is(.s-btn-group__radio input[type="radio"]):checked + label.s-btn {
-    background: var(--theme-button-selected-background-color);
-    box-shadow: none;
-    color: var(--theme-button-selected-color);
-    z-index: var(--zi-selected);
-}
-
-:is(.s-btn-group__radio input[type="checkbox"]):focus + label.s-btn,
-:is(.s-btn-group__radio input[type="radio"]):focus + label.s-btn {
-    box-shadow: 0 0 0 var(--su-static4) var(--focus-ring);
-}
-
-.s-btn-group__radio .s-editor-btn {
-    --editor-button-border-color: currentColor;
-}
-
 .s-editor-shadow {
     transform-style: preserve-3d;
 }
@@ -103,10 +56,14 @@
     color: var(--black-600) !important;
 }
 
+/* TODO remove this override once Stacks Classic includes 3:1 focus state
+ * See https://github.com/StackExchange/Stacks/pull/1547
+ */
 .s-btn.s-editor-btn:focus {
     box-shadow: 0 0 0 var(--su-static4) var(--focus-ring);
 }
 
+/* TODO consider relying solely on the btn styles provided by Stacks Classic */
 .s-btn.s-editor-btn.is-selected,
 .s-btn.s-editor-btn:active {
     background-color: var(--theme-secondary-200) !important;
