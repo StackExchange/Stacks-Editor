@@ -177,7 +177,8 @@ describe("menu plugin view", () => {
         expect(activeCommand(view.state)).toBe(false);
 
         let item = getItem();
-        expect(item.classList).not.toContain("is-disabled");
+        expect(item.attributes).not.toHaveProperty("disabled");
+        expect(item.attributes).not.toContain("disabled");
         expect(item.classList).not.toContain("is-selected");
         expect(item.classList).not.toContain("d-none");
 
@@ -197,7 +198,7 @@ describe("menu plugin view", () => {
         view.updateState(setDisabled(view.state));
         expect(enabledCommand(view.state, null)).toBe(false);
         item = getItem();
-        expect(item.classList).toContain("is-disabled");
+        expect(item.attributes).toHaveProperty("disabled");
     });
 
     it.todo("should dispatch an item's command when clicked");
