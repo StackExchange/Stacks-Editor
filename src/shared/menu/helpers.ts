@@ -121,7 +121,7 @@ export function makeMenuLinkEntry(
     key: string
 ): MenuItem {
     const dom = document.createElement("a");
-    dom.className = `s-editor-btn s-btn flex--item js-editor-btn js-${key}`;
+    dom.className = `s-editor-btn s-btn s-btn__muted flex--item js-editor-btn js-${key}`;
     dom.href = href;
     dom.target = "_blank";
     dom.title = title;
@@ -239,7 +239,7 @@ export function makeMenuButton(
     cssClasses?: string[]
 ): HTMLButtonElement {
     const button = document.createElement("button");
-    button.className = `s-editor-btn s-btn js-editor-btn js-${key}`;
+    button.className = `s-editor-btn s-btn s-btn__muted js-editor-btn js-${key}`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);

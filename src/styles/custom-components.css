@@ -94,22 +94,17 @@
 
 .s-btn.s-editor-btn {
     border-radius: var(--br-sm);
-    color: var(--black-500) !important;
     padding: var(--su2);
 }
 
-.s-btn.s-editor-btn:not(.s-btn__outlined) {
-    border-color: transparent !important;
+.s-btn.s-editor-btn:hover:not(.s-btn-group .s-btn.s-editor-btn),
+.s-btn.s-editor-btn:focus:not(.s-btn-group .s-btn.s-editor-btn) {
+    background-color: var(--theme-secondary-200) !important;
+    color: var(--black-600) !important;
 }
 
 .s-btn.s-editor-btn:focus {
     box-shadow: 0 0 0 var(--su-static4) var(--focus-ring);
-}
-
-.s-btn.s-editor-btn:hover,
-.s-btn.s-editor-btn:focus {
-    background-color: var(--theme-secondary-200) !important;
-    color: var(--black-600) !important;
 }
 
 .s-btn.s-editor-btn.is-selected,
