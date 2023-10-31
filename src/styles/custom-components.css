@@ -123,11 +123,6 @@
     color: var(--theme-secondary-500) !important;
 }
 
-.s-btn.s-editor-btn.is-disabled {
-    background-color: transparent !important;
-    opacity: 0.5;
-}
-
 .s-btn.s-editor-btn.s-btn__dropdown {
     padding-right: var(--su12);
 }
@@ -150,7 +145,7 @@
     font-weight: 400;
 }
 
-.s-editor--dropdown-item.is-disabled {
+.s-editor--dropdown-item[disabled] {
     opacity: 0.5;
 }
 
