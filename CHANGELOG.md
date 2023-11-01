@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.9.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.9.0...v0.9.1) (2023-11-01)
+
+
+### Bug Fixes
+
+* **a11y:** improve btns high contrast mode ([#259](https://github.com/StackExchange/Stacks-Editor/issues/259)) ([f883361](https://github.com/StackExchange/Stacks-Editor/commit/f883361079e06c05d5f141ce12d29e5f5741fcce))
+* **a11y:** use disabled attribute instead of .is-disabled ([#260](https://github.com/StackExchange/Stacks-Editor/issues/260)) ([afda06c](https://github.com/StackExchange/Stacks-Editor/commit/afda06cc2d5596d5030825c3dbd1d9992ff897f4))
+
 ## [0.9.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.8.9...v0.9.0) (2023-10-06)
 
 ### ⚠ BREAKING CHANGES
