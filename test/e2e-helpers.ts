@@ -91,3 +91,17 @@ export async function clickEditorContent(
         clickCount,
     });
 }
+
+/**
+ * Simulate pressing the tab key consistently across browsers
+ * @param page
+ * @param browserName
+ */
+export async function tab(
+    page: Page,
+    browserName: "chromium" | "firefox" | "webkit"
+): Promise<void> {
+    // see https://github.com/microsoft/playwright/issues/2114
+    const tabKey = browserName === "webkit" ? "Alt+Tab" : "Tab";
+    await page.keyboard.press(tabKey);
+}

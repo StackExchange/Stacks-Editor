@@ -6,6 +6,7 @@ import {
     typeText,
     switchMode,
     clickEditorContent,
+    tab,
 } from "../e2e-helpers";
 
 const moreMenuDropdownSelector = ".js-more-formatting-dropdown";
@@ -74,6 +75,7 @@ test.describe.serial("markdown mode", () => {
 
     test("should retain focus on the menu item after triggering via keyboard", async ({
         page,
+        browserName,
     }) => {
         await expect(page.locator(moreMenuDropdownSelector)).toBeInViewport();
 
@@ -90,9 +92,9 @@ test.describe.serial("markdown mode", () => {
         await page.keyboard.press("Enter");
 
         // Tab to "Spoiler (Cmd-/)"
-        await page.keyboard.press("Tab");
-        await page.keyboard.press("Tab");
-        await page.keyboard.press("Tab");
+        await tab(page, browserName);
+        await tab(page, browserName);
+        await tab(page, browserName);
 
         const activeElementDataKey = await page.evaluate(() =>
             document.activeElement.getAttribute("data-key")
