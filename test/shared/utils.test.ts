@@ -107,6 +107,7 @@ describe("utils", () => {
             "should work with many substitution types (%#)",
             (sub: unknown) => {
                 const result = escapeHTML`${sub}`;
+                // eslint-disable-next-line @typescript-eslint/no-base-to-string
                 expect(result).toBe(sub?.toString() || "");
             }
         );

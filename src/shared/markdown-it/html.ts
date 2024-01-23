@@ -134,8 +134,8 @@ function tagInfoToToken(tagInfo: TagInfo, existing?: Token): Token {
     const postfix = tagInfo.isSelfClosing
         ? ""
         : tagInfo.isClosing
-        ? "_close"
-        : "_open";
+          ? "_close"
+          : "_open";
     let tokenType = "";
 
     switch (tagInfo.type) {

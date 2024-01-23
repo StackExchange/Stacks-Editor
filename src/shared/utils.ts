@@ -220,6 +220,7 @@ export function escapeHTML(
 ): string {
     let output = strings[0];
     for (let i = 0, len = subs.length; i < len; i++) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string
         output += escapeHtml(subs[i]?.toString() || "") + strings[i + 1];
     }
 

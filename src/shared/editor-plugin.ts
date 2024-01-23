@@ -110,7 +110,7 @@ export interface EditorPluginSpec {
          * The language this processor applies to.
          * A value of `*` applies to all languages when a more specific processor is not found
          */
-        lang: "*" | string;
+        lang: string;
         callback: AddCodeBlockProcessorCallback;
     }[];
 }

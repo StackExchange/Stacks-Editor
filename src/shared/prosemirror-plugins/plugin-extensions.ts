@@ -16,7 +16,7 @@ import { log } from "../logger";
  */
 interface StatefulPluginStateField<
     T,
-    TThis extends StatefulPlugin<T> = StatefulPlugin<T>
+    TThis extends StatefulPlugin<T> = StatefulPlugin<T>,
 > extends StateField<T> {
     /** @inheritdoc */
     init(this: TThis, config: EditorStateConfig, instance: EditorState): T;
@@ -41,7 +41,7 @@ interface StatefulPluginStateField<
 
 export interface StatefulPluginSpec<
     T,
-    TThis extends StatefulPlugin<T> = StatefulPlugin<T>
+    TThis extends StatefulPlugin<T> = StatefulPlugin<T>,
 > extends PluginSpec<T> {
     /** @inheritdoc */
     key: StatefulPluginKey<T>;

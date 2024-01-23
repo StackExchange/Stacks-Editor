@@ -96,7 +96,7 @@ export interface CommonmarkParserFeatures {
     tables?: boolean;
     tagLinks?: TagLinkOptions;
     /** The method used to validate links; defaults to Stack Overflow's link validation */
-    validateLink?: (url: string) => boolean | false;
+    validateLink?: (url: string) => boolean;
 }
 
 export const defaultParserFeatures: Required<CommonmarkParserFeatures> = {

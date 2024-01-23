@@ -73,7 +73,9 @@
     top: -112px;
     transform: translateZ(-1px);
     /* Transition out */
-    transition: top 1s ease, opacity 1.5s ease;
+    transition:
+        top 1s ease,
+        opacity 1.5s ease;
 }
 
 /* HACK: Remove the transition out for Safari, since the rubberband effect makes that shadow look really bad */
@@ -89,7 +91,9 @@
 .s-editor-shadow.is-stuck:after {
     opacity: 1;
     top: 0;
-    transition: top 0.2s ease, opacity 0.1s ease;
+    transition:
+        top 0.2s ease,
+        opacity 0.1s ease;
 }
 
 .s-btn.s-editor-btn {

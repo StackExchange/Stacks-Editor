@@ -55,6 +55,7 @@ function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
         try {
             expect(propValue).toEqual(tree[k]);
         } catch (e: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             throw `Mismatch on property \`${k}\`\n${e?.toString()}`;
         }
     });
@@ -70,6 +71,7 @@ function expectNodeTree(doc: ProsemirrorNode, tree: CompareTree): void {
         try {
             expect(doc.content.childCount).toEqual(contentLength);
         } catch (e: unknown) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string
             throw `Unexpected number of children \n${e?.toString()}\nReceived: ${JSON.stringify(
                 doc.content.toJSON()
             )}`;

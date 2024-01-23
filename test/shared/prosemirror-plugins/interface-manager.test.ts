@@ -274,7 +274,7 @@ describe("interface-manager plugin", () => {
 
 class ChildInterfacePluginView<
     TData extends { shouldShow: boolean },
-    TKey extends ManagedInterfaceKey<TData>
+    TKey extends ManagedInterfaceKey<TData>,
 > extends PluginInterfaceView<TData, TKey> {
     buildInterface(container: Element): void {
         container.append(document.createTextNode(this.key.name + "build"));

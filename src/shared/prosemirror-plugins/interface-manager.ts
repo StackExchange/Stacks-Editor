@@ -205,7 +205,7 @@ const MAIN_INTERFACE_MANAGER_KEY = new MainInterfaceManagerKey();
  * handles the state changes across all interface-enabled plugins.
  */
 export class ManagedInterfaceKey<
-    T extends ManagedInterfaceState
+    T extends ManagedInterfaceState,
 > extends StatefulPluginKey<T> {
     readonly name: string;
 
@@ -321,7 +321,7 @@ export function interfaceManagerPlugin(
  */
 export abstract class PluginInterfaceView<
     TData extends ManagedInterfaceState,
-    TKey extends ManagedInterfaceKey<TData>
+    TKey extends ManagedInterfaceKey<TData>,
 > implements PluginView
 {
     protected key: TKey;

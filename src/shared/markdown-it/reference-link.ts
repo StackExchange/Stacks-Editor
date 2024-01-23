@@ -64,8 +64,8 @@ function setLinkReference(
     const refLinkType = match[2]
         ? "full"
         : match[0].endsWith("[]")
-        ? "collapsed"
-        : "shortcut";
+          ? "collapsed"
+          : "shortcut";
 
     token.markup = "reference";
     token.meta = (token.meta as Record<string, unknown>) || {};

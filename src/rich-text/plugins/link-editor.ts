@@ -68,16 +68,16 @@ export class LinkEditor extends PluginInterfaceView<
         this.viewContainer.innerHTML = escapeHTML`<div class="d-flex fd-column gsy gs8 p12">
             <div class="flex--item">
                 <label for="link-editor-href-input-${randomId}" class="s-label mb4">${_t(
-            "link_editor.href_label"
-        )}</label>
+                    "link_editor.href_label"
+                )}</label>
                 <input id="link-editor-href-input-${randomId}" class="s-input js-link-editor-href" type="text" name="href" aria-describedby="link-editor-href-error-${randomId}" />
                 <p id="link-editor-href-error-${randomId}" class="s-input-message mt4 d-none js-link-editor-href-error"></p>
             </div>
 
             <div class="flex--item">
                 <label for="link-editor-text-input-${randomId}" class="s-label mb4">${_t(
-            "link_editor.text_label"
-        )}</label>
+                    "link_editor.text_label"
+                )}</label>
                 <input id="link-text-href-input-${randomId}" class="s-input js-link-editor-text" type="text" name="text" />
             </div>
 
