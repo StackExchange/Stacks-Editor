@@ -26,7 +26,20 @@ module.exports = (_, argv) => {
                     test: /\.css$/i,
                     use: [
                         MiniCssExtractPlugin.loader,
-                        { loader: "css-loader", options: { importLoaders: 2 } },
+                        {
+                            loader: "css-loader",
+                            options: {
+                                importLoaders: 2,
+                                url: {
+                                    filter: (_, resourcePath) => {
+                                        // Disable url handling for @stackoverflow/stacks
+                                        return !resourcePath.includes(
+                                            "@stackoverflow/stacks"
+                                        );
+                                    },
+                                },
+                            },
+                        },
                         {
                             loader: "postcss-loader",
                             options: {
