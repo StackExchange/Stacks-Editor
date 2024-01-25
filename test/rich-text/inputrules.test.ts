@@ -99,6 +99,7 @@ describe("mark input rules", () => {
         ["__not a match_", false],
         ["_ no-match_", false],
         ["_no-match _", false],
+        ["text_no-match_", false],
     ];
     // eslint-disable-next-line jest/expect-expect
     it.each(emphasisUnderlineTests)(
