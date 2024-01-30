@@ -15,9 +15,9 @@ const strongRegexAsterisks = /\*\*(\S(?:|.*?\S))\*\*$/;
 // matches: *some text*, but not **text* or * text *
 export const emphasisRegexAsterisk = /\*([^*\s]([^*])*[^*\s]|[^*\s])\*$/;
 // matches: __some text__, but not __ text __
-const strongRegexUnderscores = /__(\S(?:|.*?\S))__$/;
+const strongRegexUnderscores = /(?<!\S)__(\S(?:|.*?\S))__$/;
 // matches: _some text_, but not __text_ or _ text _
-const emphasisRegexUnderscore = /_([^_\s]([^_])*[^_\s]|[^_\s])_$/;
+const emphasisRegexUnderscore = /(?<!\S)_([^_\s]([^_])*[^_\s]|[^_\s])_$/;
 // matches: [ *any* thing ]( any thing )
 const linkRegex = /\[(.+)\]\((.+)\)$/;
 
