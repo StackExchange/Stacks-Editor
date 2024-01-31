@@ -6,53 +6,6 @@
     }
 }
 
-/* TODO UPSTREAM */
-.s-btn-group__radio {
-    display: flex;
-}
-
-/* TODO altered from upstream .s-btn-group>.s-btn */
-.s-btn-group__radio .s-btn:not(:last-of-type) {
-    margin-right: -1px;
-}
-
-.s-btn-group__radio .s-btn:not(:first-of-type):not(:last-of-type) {
-    border-radius: 0;
-}
-
-.s-btn-group__radio .s-btn:first-of-type:not(:only-of-type) {
-    border-bottom-right-radius: 0;
-    border-top-right-radius: 0;
-}
-
-.s-btn-group__radio .s-btn:last-of-type:not(:only-of-type) {
-    border-bottom-left-radius: 0;
-    border-top-left-radius: 0;
-}
-
-.s-btn-group__radio input[type="checkbox"],
-.s-btn-group__radio input[type="radio"] {
-    display: none;
-}
-
-/* TODO extends .s-btn.is-selected and .s-btn-group>.s-btn.is-selected */
-:is(.s-btn-group__radio input[type="checkbox"]):checked + label.s-btn,
-:is(.s-btn-group__radio input[type="radio"]):checked + label.s-btn {
-    background: var(--theme-button-selected-background-color);
-    box-shadow: none;
-    color: var(--theme-button-selected-color);
-    z-index: var(--zi-selected);
-}
-
-:is(.s-btn-group__radio input[type="checkbox"]):focus + label.s-btn,
-:is(.s-btn-group__radio input[type="radio"]):focus + label.s-btn {
-    box-shadow: 0 0 0 var(--su-static4) var(--focus-ring);
-}
-
-.s-btn-group__radio .s-editor-btn {
-    --editor-button-border-color: currentColor;
-}
-
 .s-editor-shadow {
     transform-style: preserve-3d;
 }
@@ -98,17 +51,29 @@
 
 .s-btn.s-editor-btn {
     border-radius: var(--br-sm);
+    color: var(--black-500);
     padding: var(--su2);
 }
 
-.s-btn.s-editor-btn:hover:not(.s-btn-group .s-btn.s-editor-btn),
-.s-btn.s-editor-btn:focus:not(.s-btn-group .s-btn.s-editor-btn) {
-    background-color: var(--theme-secondary-200) !important;
+.s-btn.s-editor-btn:hover {
     color: var(--black-600) !important;
 }
 
-.s-btn.s-editor-btn:focus {
-    box-shadow: 0 0 0 var(--su-static4) var(--focus-ring);
+/*
+    NOTE: These focus-visible styles exist to override the Stacks styles for editor buttons.
+    Since the editor buttons require the focus rings to be applied outside of the button,
+    we need to override the Stacks styles, which place the rings within the button.
+*/
+.s-btn.s-editor-btn:not(.s-btn__link):not(.s-btn__unset):focus-visible {
+    border-color: transparent !important;
+    box-shadow: 0 0 0 var(--su-static2) var(--theme-secondary-400) !important;
+    color: var(--black-500) !important;
+    outline: var(--su-static2) solid transparent !important;
+}
+
+/* NOTE: Transparent focus background only applied when not hovered or in the selected state */
+.s-btn.s-editor-btn:not(.s-btn__link):not(.s-btn__unset):not(.is-selected):not(:hover):focus-visible {
+    background-color: transparent !important;
 }
 
 .s-btn.s-editor-btn.is-selected,
@@ -117,8 +82,7 @@
     color: var(--theme-secondary-600) !important;
 }
 
-.s-btn.s-editor-btn.is-selected:hover,
-.s-btn.s-editor-btn.is-selected:focus {
+.s-btn.s-editor-btn.is-selected:hover {
     color: var(--theme-secondary-500) !important;
 }
 
@@ -128,6 +92,11 @@
 
 .s-btn.s-editor-btn.s-btn__dropdown:after {
     right: var(--su2);
+}
+
+.s-btn-group--radio .s-btn.s-editor-btn {
+    margin: calc(var(--su2) * -1) 0;
+    padding: var(--su4) var(--su6);
 }
 
 .s-editor--dropdown-item {
