@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [0.10.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.9.1...v0.10.0) (2024-02-07)
+
+
+### Bug Fixes
+
+* **autoformatting:** prevent autoformatting when the first underscore is preceded by a non-whitespace character ([#262](https://github.com/StackExchange/Stacks-Editor/issues/262)) ([5e45ac2](https://github.com/StackExchange/Stacks-Editor/commit/5e45ac29b897eaf78c46e0ba02c869b91762dba3))
+* **controls:** improve focus style to meet WCAG 2.2 AA ([#267](https://github.com/StackExchange/Stacks-Editor/issues/267)) ([7cbaf5e](https://github.com/StackExchange/Stacks-Editor/commit/7cbaf5e67de4caafd0dd33c161dba69ef5f0ba52))
+* **deps:** upgrade @stackoverflow/stacks to v2.0.8 ([a19a8a3](https://github.com/StackExchange/Stacks-Editor/commit/a19a8a361c70ca261117ec9eef7caf6737ae7f26))
+* **deps:** upgrade markdown-it to v13.0.2 ([e047893](https://github.com/StackExchange/Stacks-Editor/commit/e047893e337a4ba79a36608831d7ac10270187d9))
+* **deps:** upgrade prosemirror libs to latest minor releases ([869c83d](https://github.com/StackExchange/Stacks-Editor/commit/869c83d6574086e612b603eea72e4ea5b6a708dd))
+* **deps:** upgrade prosemirror libs to latest patches ([a2eeedf](https://github.com/StackExchange/Stacks-Editor/commit/a2eeedfe8f0716d3a76f7e38181186d28cff7b29))
+
 ### [0.9.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.9.0...v0.9.1) (2023-11-01)
 
 
