@@ -106,7 +106,7 @@
         "prosemirror-view": "^1.32.7"
     },
     "peerDependencies": {
-        "@stackoverflow/stacks": "^2.1.0",
+        "@stackoverflow/stacks": "~2.1.0",
         "highlight.js": "^11.6.0"
     }
 }
