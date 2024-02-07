@@ -50,6 +50,7 @@
         "@playwright/test": "^1.41.1",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
+        "@stackoverflow/stacks": "^2.1.0",
         "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^29.5.11",
         "@typescript-eslint/eslint-plugin": "^6.19.1",
@@ -86,7 +87,6 @@
     "dependencies": {
         "@lezer/highlight": "^1.2.0",
         "@lezer/markdown": "^1.2.0",
-        "@stackoverflow/stacks": "^2.0.8",
         "@stackoverflow/stacks-icons": "^6.0.0",
         "@types/markdown-it": "13.0.7",
         "markdown-it": "^13.0.2",
@@ -106,6 +106,7 @@
         "prosemirror-view": "^1.32.7"
     },
     "peerDependencies": {
+        "@stackoverflow/stacks": "~2.1.0",
         "highlight.js": "^11.6.0"
     }
 }

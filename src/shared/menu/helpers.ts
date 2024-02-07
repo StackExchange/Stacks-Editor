@@ -239,7 +239,7 @@ export function makeMenuButton(
     cssClasses?: string[]
 ): HTMLButtonElement {
     const button = document.createElement("button");
-    button.className = `s-editor-btn s-btn s-btn__muted js-editor-btn js-${key}`;
+    button.className = `s-editor-btn s-btn js-editor-btn js-${key}`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
