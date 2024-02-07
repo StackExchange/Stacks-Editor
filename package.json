@@ -50,7 +50,7 @@
         "@playwright/test": "^1.41.1",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
-        "@stackoverflow/stacks": "^2.1.0-rc.0",
+        "@stackoverflow/stacks": "^2.1.0",
         "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^29.5.11",
         "@typescript-eslint/eslint-plugin": "^6.19.1",
