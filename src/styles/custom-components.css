@@ -72,7 +72,9 @@
 }
 
 /* NOTE: Transparent focus background only applied when not hovered or in the selected state */
-.s-btn.s-editor-btn:not(.s-btn__link):not(.s-btn__unset):not(.is-selected):not(:hover):focus-visible {
+.s-btn.s-editor-btn:not(.s-btn__link):not(.s-btn__unset):not(.is-selected):not(
+        :hover
+    ):focus-visible {
     background-color: transparent !important;
 }
 
