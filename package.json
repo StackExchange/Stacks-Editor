@@ -45,7 +45,7 @@
     },
     "prettier": "@stackoverflow/prettier-config",
     "devDependencies": {
-        "@commitlint/cli": "^18.6.1",
+        "@commitlint/cli": "^19.0.3",
         "@commitlint/config-conventional": "^18.6.2",
         "@playwright/test": "^1.41.2",
         "@stackoverflow/commitlint-config": "^1.0.0",
