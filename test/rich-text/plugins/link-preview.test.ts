@@ -60,6 +60,39 @@ describe("link-preview", () => {
         expect(oneboxDom[0].textContent).toBe("https://example.com");
     });
 
+    it("should attempt to retrieve a link preview but simply show the plain link when not available", async () => {
+        const markdown = "https://example.com/not-preview\n";
+
+        // store the promise so we can control when it resolves
+        let resolver: (value: Element | PromiseLike<Element>) => void;
+        const promise = new Promise<Element>((resolve) => {
+            resolver = resolve;
+        });
+
+        const richEditorView = richView(markdown, {
+            domainTest: /^.+$/, // any url
+            renderer: () => promise,
+        });
+
+        // check that the loading indicator is shown
+        let loadingIndicator = richEditorView.dom.querySelectorAll(
+            ".js-link-preview-loading"
+        );
+        expect(loadingIndicator).toHaveLength(1);
+
+        resolver(undefined); // link preview not available
+        await sleepAsync(0); // await next tick
+
+        // check that the loading indicator is no longer showing
+        loadingIndicator = richEditorView.dom.querySelectorAll(
+            ".js-link-preview-loading"
+        );
+        expect(loadingIndicator).toHaveLength(0);
+
+        const link = richEditorView.dom.querySelector("a");
+        expect(link.textContent).toBe("https://example.com/not-preview");
+    });
+
     it("should not add rich previews to links with additional text on the same line", () => {
         const markdown = "here is [some link](https://example.com)\n";
 
