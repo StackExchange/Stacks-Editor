@@ -96,11 +96,6 @@
     right: var(--su2);
 }
 
-.s-btn-group--radio .s-btn.s-editor-btn {
-    margin: calc(var(--su2) * -1) 0;
-    padding: var(--su4) var(--su6);
-}
-
 .s-editor--dropdown-item {
     padding: var(--su4) var(--su12);
 }

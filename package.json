@@ -49,7 +49,7 @@
         "@playwright/test": "^1.41.2",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
-        "@stackoverflow/stacks": "^2.2.0",
+        "@stackoverflow/stacks": "^2.3.0",
         "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^29.5.12",
         "@typescript-eslint/eslint-plugin": "^7.0.2",
