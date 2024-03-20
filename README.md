@@ -70,7 +70,7 @@ new StacksEditor(
 
 Run all unit tests (no end-to-end tests) using
 
-    npm test
+    npm run test:unit
 
 Run all end-to-end tests (written in Playwright) using
 
@@ -82,7 +82,7 @@ End-to-end tests need to follow the convention of using `someName.e2e.test.ts` a
 
 Generate a `stats.json` file for analysis using
 
-    npm run print-stats
+    npm run build:stats
 
 You can upload your `stats.json` file [here](http://webpack.github.io/analyse/) or [here](https://chrisbateman.github.io/webpack-visualizer/) for visualization. See more resources [here](https://webpack.js.org/guides/code-splitting/#bundle-analysis).
 
