@@ -37,7 +37,7 @@ jobs:
               run: npm ci
 
             - name: Run unit tests
-              run: npm test:unit
+              run: npm run test:unit
     e2e-test:
         runs-on: ubuntu-latest
         steps:
