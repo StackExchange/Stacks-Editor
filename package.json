@@ -13,16 +13,16 @@
         "dist/"
     ],
     "scripts": {
-        "test": "jest --config config/jest-unit.config.js",
-        "test:e2e": "npx playwright test --config config/playwright.config.ts",
         "start": "webpack serve --config config/webpack.dev.js",
         "build": "webpack --config config/webpack.prod.js",
         "build:dev": "webpack --config config/webpack.dev.js",
         "build:gh-pages": "webpack --config config/webpack.dev.js --mode=production --",
-        "print-stats": "webpack --config config/webpack.prod.js --entry ./src/index.ts --profile --json > stats.json",
-        "lint:eslint": "eslint .",
-        "lint:prettier": "prettier --check . --end-of-line auto",
-        "lint:prettier:fix": "prettier --check . --end-of-line auto --write",
+        "build:stats": "webpack --config config/webpack.prod.js --entry ./src/index.ts --profile --json > stats.json",
+        "lint": "prettier --check . && eslint .",
+        "format": "prettier --write .",
+        "test": "npm run test:unit && npm run test:e2e",
+        "test:unit": "jest --config config/jest-unit.config.js",
+        "test:e2e": "npx playwright test --config config/playwright.config.ts",
         "release": "standard-version",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
         "prepare": "husky install"
@@ -43,7 +43,6 @@
             "./config/.eslintrc.js"
         ]
     },
-    "prettier": "@stackoverflow/prettier-config",
     "devDependencies": {
         "@commitlint/cli": "^19.0.3",
         "@commitlint/config-conventional": "^18.6.2",
