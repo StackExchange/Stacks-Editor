@@ -351,13 +351,13 @@ export class StacksEditor implements View {
         const container = document.createElement("div");
         container.className = "flex--item d-flex ai-center ml24 fc-medium";
 
-        container.innerHTML = escapeHTML`<div class="s-btn-group s-btn-group--radio fw-nowrap myn2">
+        container.innerHTML = escapeHTML`<div class="s-btn-group s-editor-btn-group fw-nowrap myn2">
     <input type="radio" name="mode-toggle-${this.internalId}"
         id="mode-toggle-rich-${this.internalId}"
         class="s-btn--radio js-editor-toggle-btn"
         data-mode="${EditorType.RichText}"
         ${richCheckedProp} />
-    <label class="s-btn s-btn__muted s-btn__outlined s-editor-btn"
+    <label class="s-btn s-btn__muted s-btn__icon px6 py2 s-editor-btn"
         for="mode-toggle-rich-${this.internalId}"
         title="${_t("menubar.mode_toggle_richtext_title")}">
         <span class="svg-icon-bg iconRichText"></span>
@@ -371,7 +371,7 @@ export class StacksEditor implements View {
         data-mode="${EditorType.Commonmark}"
         data-preview="false"
         ${markCheckedProp} />
-    <label class="s-btn s-btn__muted s-btn__outlined s-editor-btn"
+    <label class="s-btn s-btn__muted px6 py2 s-editor-btn"
         for="mode-toggle-markdown-${this.internalId}"
         title="${_t("menubar.mode_toggle_markdown_title")}">
         <span class="svg-icon-bg iconMarkdown"></span>
@@ -392,7 +392,7 @@ export class StacksEditor implements View {
     data-mode="${EditorType.Commonmark}"
     data-preview="${previewEnabled.toString()}"
     ${previewCheckedProp} />
-<label class="s-btn s-btn__muted s-btn__outlined s-editor-btn px6"
+<label class="s-btn s-btn__muted s-btn__icon px6 py2 s-editor-btn"
     for="mode-toggle-preview-${this.internalId}"
     title="${_t("menubar.mode_toggle_preview_title")}">
     <span class="svg-icon-bg iconMarkdownPreview"></span>
