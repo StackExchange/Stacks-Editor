@@ -40,6 +40,7 @@ import {
     insertRichTextImageCommand,
     insertRichTextHorizontalRuleCommand,
     insertRichTextTableCommand,
+    toggleList,
 } from "../../rich-text/commands";
 import { _t } from "../localization";
 import { makeMenuButton, makeMenuDropdown } from "./helpers";
@@ -440,7 +441,10 @@ export const createMenuEntries = (
             {
                 key: "toggleOrderedList",
                 richText: {
-                    command: toggleWrapIn(schema.nodes.ordered_list),
+                    command: toggleList(
+                        schema.nodes.ordered_list,
+                        schema.nodes.list_item
+                    ),
                     active: nodeTypeActive(schema.nodes.ordered_list),
                 },
                 commonmark: orderedListCommand,
@@ -455,7 +459,10 @@ export const createMenuEntries = (
             {
                 key: "toggleUnorderedList",
                 richText: {
-                    command: toggleWrapIn(schema.nodes.bullet_list),
+                    command: toggleList(
+                        schema.nodes.bullet_list,
+                        schema.nodes.list_item
+                    ),
                     active: nodeTypeActive(schema.nodes.bullet_list),
                 },
                 commonmark: unorderedListCommand,

@@ -31,6 +31,7 @@ import {
     unindentCodeBlockLinesCommand,
     toggleHeadingLevel,
     toggleTagLinkCommand,
+    toggleList,
 } from "./commands";
 
 export function allKeymaps(
@@ -74,8 +75,8 @@ export function allKeymaps(
         "Mod-k": toggleMark(schema.marks.code),
         "Mod-g": insertRichTextImageCommand,
         "Ctrl-g": insertRichTextImageCommand,
-        "Mod-o": wrapIn(schema.nodes.ordered_list),
-        "Mod-u": wrapIn(schema.nodes.bullet_list),
+        "Mod-o": toggleList(schema.nodes.ordered_list, schema.nodes.list_item),
+        "Mod-u": toggleList(schema.nodes.bullet_list, schema.nodes.list_item),
         "Mod-h": toggleHeadingLevel(),
         "Mod-r": insertRichTextHorizontalRuleCommand,
         "Mod-m": setBlockType(schema.nodes.code_block),

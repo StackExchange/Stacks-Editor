@@ -20,6 +20,7 @@ import { insertParagraphIfAtDocEnd } from "./helpers";
 import { inTable } from "./tables";
 
 export * from "./tables";
+export * from "./list";
 
 // indent code with four [SPACE] characters (hope you aren't a "tabs" person)
 const CODE_INDENT_STR = "    ";
