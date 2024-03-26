@@ -148,7 +148,8 @@ export class ImageUploader extends PluginInterfaceView<
             <div class="fs-body2 p12 pb0 js-cta-container">
                 <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" aria-controls="image-preview-${randomId}">
                     Browse
-                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span>
+                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image 
+                <div class="fc-light fs-caption">Supported file types: jpeg, png, gif, or bmp (Max size 2 MiB)</div>
             </div>
 
             <div class="js-external-url-input-container p12 d-none">
