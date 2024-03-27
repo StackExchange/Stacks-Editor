@@ -52,6 +52,7 @@ export function wrapAndMaybeJoinList(nodeType: NodeType) {
 
 /**
  * Joins lists when they are of the same type.
+ * Inspired by https://github.com/remirror/remirror/blob/main/packages/remirror__extension-list/src/list-commands.ts#L535
  *
  * @param tr - the transaction
  */
