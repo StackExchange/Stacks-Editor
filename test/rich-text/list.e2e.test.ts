@@ -38,7 +38,7 @@ test.describe("rich-text list", () => {
         await expect(editor.getByRole("list")).not.toBeVisible();
     });
 
-    test("should attempt to insert an item into existing an existing list of the same type when appropriate", async () => {
+    test("should attempt to insert an item into an existing list of the same type when appropriate", async () => {
         const editor = page.locator(editorSelector);
 
         await editor.pressSequentially("- List Item 1");
