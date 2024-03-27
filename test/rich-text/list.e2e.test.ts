@@ -24,7 +24,7 @@ test.describe("rich-text list", () => {
 
         await editor.selectText();
 
-        await page.getByLabel("Bulleted list (Cmd-U)").click();
+        await page.getByLabel("Bulleted list").click();
 
         await expect(editor.getByRole("list")).toBeVisible();
         await expect(editor.getByRole("listitem")).toHaveText([
@@ -53,7 +53,7 @@ test.describe("rich-text list", () => {
         // move cursor on the second list item
         await editor.getByText("List Item 2").click();
 
-        await page.getByLabel("Bulleted list (Cmd-U)").click();
+        await page.getByLabel("Bulleted list").click();
 
         await expect(editor.getByRole("list")).toHaveCount(1);
         await expect(editor.getByRole("listitem")).toHaveText([
