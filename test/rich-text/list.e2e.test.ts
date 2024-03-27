@@ -33,7 +33,7 @@ test.describe("rich-text list", () => {
             "List Item 3",
         ]);
 
-        await page.getByLabel("Bulleted list (Cmd-U)").click();
+        await page.getByLabel("Bulleted list").click();
 
         await expect(editor.getByRole("list")).not.toBeVisible();
     });
