@@ -150,7 +150,7 @@ function generateRecentPreviewDecorations(
         if (!n.isTextOnly && n.content) {
             // if the url is in the cache, insert the link preview
             linkPreviewDecorations.push(insertLinkPreview(n.pos, n.content));
-        } else if (!n.content) {
+        } else if (n.content === null) {
             // otherwise, add the loading styles
             // attach the node decorations to the text's parent node
             const resolved = doc.resolve(n.pos);
