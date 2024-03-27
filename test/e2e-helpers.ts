@@ -1,4 +1,5 @@
 import type { Page } from "@playwright/test";
+import { StacksEditor } from "../src";
 
 export const editorSelector = ".js-editor";
 export const menuSelector = ".js-editor-menu";
@@ -39,11 +40,14 @@ export async function switchMode(page: Page, mode: Mode): Promise<void> {
     }
 }
 
-export async function clearEditor(page: Page): Promise<string> {
-    return await page.$eval(
-        editorSelector,
-        (editor: HTMLElement) => (editor.innerText = "")
-    );
+export async function clearEditor(page: Page): Promise<void> {
+    return page.evaluate(() => {
+        const view = window.editorInstance.editorView;
+        const state = view.state;
+        view.updateState(
+            state.apply(state.tr.delete(0, state.doc.content.size))
+        );
+    });
 }
 
 /**
@@ -104,4 +108,10 @@ export async function tab(
     // see https://github.com/microsoft/playwright/issues/2114
     const tabKey = browserName === "webkit" ? "Alt+Tab" : "Tab";
     await page.keyboard.press(tabKey);
+}
+
+declare global {
+    interface Window {
+        editorInstance: StacksEditor;
+    }
 }
