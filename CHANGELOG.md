@@ -2,13 +2,55 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.5](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.4...v0.10.5) (2024-03-28)
+
+
+### Features
+
+* **list:** enhance rich text list editing experience ([#298](https://github.com/StackExchange/Stacks-Editor/issues/298)) ([998c820](https://github.com/StackExchange/Stacks-Editor/commit/998c820140fee37f29b2cc6478132197f0135120))
+
+
+### Bug Fixes
+
+* **link-preview:** ensure spinner is not shown indefinetely when no preview results are available ([#289](https://github.com/StackExchange/Stacks-Editor/issues/289)) ([3ae036f](https://github.com/StackExchange/Stacks-Editor/commit/3ae036fa271418b6bba60b52c781a7a5f3898057))
+
+
 ### [0.10.4](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.3...v0.10.4) (2024-03-21)
+
+### Dependencies
+* bump @typescript-eslint/eslint-plugin from 7.0.2 to 7.3.1 https://github.com/StackExchange/Stacks-Editor/pull/290
+* bump @typescript-eslint/parser from 7.1.0 to 7.3.1 https://github.com/StackExchange/Stacks-Editor/pull/291
+* bump @playwright/test from 1.41.2 to 1.42.1 https://github.com/StackExchange/Stacks-Editor/pull/284
+* bump typescript from 5.3.3 to 5.4.2 https://github.com/StackExchange/Stacks-Editor/pull/283
+* bump @stackexchange/stacks from 2.2.0 to 2.3.0 https://github.com/StackExchange/Stacks-Editor/pull/293
+    **Note**: This dependency update includes updates to support the new button group design for the markdown toggle.
+
 
 ### [0.10.3](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.2...v0.10.3) (2024-03-06)
 
+
+### Dependencies
+* build(deps-dev): bump cssnano from 6.0.4 to 6.0.5 by @dependabot in https://github.com/StackExchange/Stacks-Editor/pull/278
+* build(deps-dev): bump eslint from 8.56.0 to 8.57.0 by @dependabot in https://github.com/StackExchange/Stacks-Editor/pull/277
+* build(deps-dev): bump mini-css-extract-plugin from 2.8.0 to 2.8.1 by @dependabot in https://github.com/StackExchange/Stacks-Editor/pull/279
+* build(deps-dev): bump postcss-loader from 8.1.0 to 8.1.1 by @dependabot in https://github.com/StackExchange/Stacks-Editor/pull/281
+* build(deps-dev): bump @typescript-eslint/parser from 7.0.2 to 7.1.0 by @dependabot in https://github.com/StackExchange/Stacks-Editor/pull/282
+* build(deps-dev): bump @commitlint/cli from 18.6.1 to 19.0.3 by @dependabot in https://github.com/StackExchange/Stacks-Editor/pull/280
+
+
 ### [0.10.2](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.1...v0.10.2) (2024-02-23)
 
+
+### Dependencies
+* relax the peer dependency on `@stackoverflow/stacks` to include minor releases ([package.json](https://github.com/StackExchange/Stacks-Editor/blob/v0.10.2/package.json#L109))
+
+
 ### [0.10.1](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.0...v0.10.1) (2024-02-21)
+
+
+### Dependencies
+* build(deps): bump @stackoverflow/stacks-icons from 6.0.0 to [6.0.1](https://github.com/StackExchange/Stacks-Icons/releases/tag/v6.0.1) https://github.com/StackExchange/Stacks-Editor/commit/e16f451d7f6eaf01686df8d5ee0b91a981688222
+
 
 ## [0.10.0](https://github.com/StackExchange/Stacks-Editor/compare/v0.9.1...v0.10.0) (2024-02-07)
 
