@@ -58,7 +58,9 @@ export interface ImageUploadOptions {
      */
     allowExternalUrls?: boolean;
     /**
-     * A string-based list that takes any number of file type names (e.g. bmp, gif, etc.) as input and uses them to populate help text in image uploader
+     * An array of strings containing the accepted file types for the image uploader.
+     * See https://developer.mozilla.org/en-US/docs/Web/Media/Formats/Image_types for appropriate image
+     * file types.
      */
     acceptedFileTypes?: string[];
 }
@@ -141,12 +143,18 @@ export class ImageUploader extends PluginInterfaceView<
         this.uploadField = document.createElement("input");
         this.uploadField.type = "file";
         this.uploadField.className = "js-image-uploader-input v-visible-sr";
-        this.uploadField.accept = "image/*";
+        this.uploadField.accept = uploadOptions.acceptedFileTypes.join(", ");
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + randomId;
-        const acceptedFileTypeString = this.createAcceptedFileTypeString(
-            uploadOptions.acceptedFileTypes
-        );
+
+        // Create caption element
+        const uploadCaptionEl = document.createElement("span");
+        uploadCaptionEl.className = "fc-light fs-caption";
+        const defaultUploadImageCaptionText = "(Max size 2 MiB)";
+        const acceptedFileTypesString =
+            this.getAcceptedFileTypesString(uploadOptions.acceptedFileTypes) +
+            "";
+        uploadCaptionEl.innerText = `${acceptedFileTypesString} ${defaultUploadImageCaptionText}`;
 
         // TODO i18n
         this.uploadContainer.innerHTML = escapeHTML`
@@ -155,11 +163,7 @@ export class ImageUploader extends PluginInterfaceView<
             <div class="fs-body2 p12 pb0 js-cta-container">
                 <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" aria-controls="image-preview-${randomId}">
                     Browse
-                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image. 
-                <div class="fc-light fs-caption d-flex gsx gs4">
-                    <div class="flex--item">${acceptedFileTypeString}</div>
-                    <div class="flex--item">(Max size 2 MiB)</div>
-                </div>
+                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image.
             </div>
 
             <div class="js-external-url-input-container p12 d-none">
@@ -185,6 +189,16 @@ export class ImageUploader extends PluginInterfaceView<
                 </div>
             </div>
         `;
+
+        // add the caption element to the cta container
+        const ctaContainer =
+            this.uploadContainer.querySelector(".js-cta-container");
+
+        if (acceptedFileTypesString) {
+            const breakEl = document.createElement("br");
+            ctaContainer.appendChild(breakEl);
+        }
+        ctaContainer.appendChild(uploadCaptionEl);
 
         // add in the uploadField right after the first child element
         this.uploadContainer
@@ -297,19 +311,24 @@ export class ImageUploader extends PluginInterfaceView<
         event.stopPropagation();
     }
 
-    createAcceptedFileTypeString(acceptedTypes: string[] = []): string {
-        if (acceptedTypes.length === 0) {
-            return "";
-        }
-        let acceptedTypesString = "Supported file types: ";
-        acceptedTypes.forEach((s, i) => {
-            if (i === acceptedTypes.length - 1) {
-                acceptedTypesString += `or ${s}.`;
-            } else {
-                acceptedTypesString += `${s}, `;
+    getAcceptedFileTypesString(types: string[]): string {
+        const acceptedTypes = types.sort();
+        const defaultTypes = ["image/gif", "image/jpeg", "image/png"];
+        let uploadCaptionString = "";
+
+        // If the arrays are different, we modify the caption string
+        if (JSON.stringify(acceptedTypes) !== JSON.stringify(defaultTypes)) {
+            if (acceptedTypes.length > 1) {
+                acceptedTypes[acceptedTypes.length - 1] =
+                    "or " + acceptedTypes[acceptedTypes.length - 1];
             }
-        });
-        return acceptedTypesString;
+            const acceptedTypesString = acceptedTypes
+                .join(", ")
+                .replace(/image\//g, "");
+            uploadCaptionString = `Supported file types: ${acceptedTypesString}`;
+        }
+
+        return uploadCaptionString;
     }
 
     handleFileSelection(view: EditorView): void {
@@ -337,7 +356,7 @@ export class ImageUploader extends PluginInterfaceView<
     }
 
     validateImage(image: File): ValidationResult {
-        const validTypes = ["image/jpeg", "image/png", "image/gif"];
+        const validTypes = this.uploadOptions.acceptedFileTypes;
         const sizeLimit = 0x200000; // 2 MiB
 
         if (validTypes.indexOf(image.type) === -1) {
@@ -411,7 +430,11 @@ export class ImageUploader extends PluginInterfaceView<
                 return;
             case ValidationResult.InvalidFileType:
                 this.showValidationError(
-                    _t("image_upload.upload_error_unsupported_format")
+                    _t("image_upload.upload_error_unsupported_format", {
+                        supportedFormats: this.getAcceptedFileTypesString(
+                            this.uploadOptions.acceptedFileTypes
+                        ),
+                    })
                 );
                 reject("invalid filetype");
                 return;
