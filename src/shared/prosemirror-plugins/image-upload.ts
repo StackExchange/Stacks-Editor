@@ -57,6 +57,10 @@ export interface ImageUploadOptions {
      * If true, allow users to add images via an external url
      */
     allowExternalUrls?: boolean;
+    /**
+     * A string-based list that takes any number of file type names (e.g. bmp, gif, etc.) as input and uses them to populate help text in image uploader
+     */
+    acceptedFileTypes?: string[];
 }
 
 /**
@@ -140,6 +144,9 @@ export class ImageUploader extends PluginInterfaceView<
         this.uploadField.accept = "image/*";
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + randomId;
+        const acceptedFileTypeString = this.createAcceptedFileTypeString(
+            uploadOptions.acceptedFileTypes
+        );
 
         // TODO i18n
         this.uploadContainer.innerHTML = escapeHTML`
@@ -148,7 +155,11 @@ export class ImageUploader extends PluginInterfaceView<
             <div class="fs-body2 p12 pb0 js-cta-container">
                 <label for="${this.uploadField.id}" class="d-inline-flex f:outline-ring s-link js-browse-button" aria-controls="image-preview-${randomId}">
                     Browse
-                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image <span class="fc-light fs-caption">Max size 2 MiB</span>
+                </label>, drag & drop<span class="js-external-url-trigger-container d-none">, <button type="button" class="s-btn s-btn__link js-external-url-trigger">enter a link</button></span>, or paste an image. 
+                <div class="fc-light fs-caption d-flex gsx gs4">
+                    <div class="flex--item">${acceptedFileTypeString}</div>
+                    <div class="flex--item">(Max size 2 MiB)</div>
+                </div>
             </div>
 
             <div class="js-external-url-input-container p12 d-none">
@@ -284,6 +295,21 @@ export class ImageUploader extends PluginInterfaceView<
         this.uploadContainer.classList.remove("bc-theme-secondary-400");
         event.preventDefault();
         event.stopPropagation();
+    }
+
+    createAcceptedFileTypeString(acceptedTypes: string[] = []): string {
+        if (acceptedTypes.length === 0) {
+            return "";
+        }
+        let acceptedTypesString = "Supported file types: ";
+        acceptedTypes.forEach((s, i) => {
+            if (i === acceptedTypes.length - 1) {
+                acceptedTypesString += `or ${s}.`;
+            } else {
+                acceptedTypesString += `${s}, `;
+            }
+        });
+        return acceptedTypesString;
     }
 
     handleFileSelection(view: EditorView): void {
