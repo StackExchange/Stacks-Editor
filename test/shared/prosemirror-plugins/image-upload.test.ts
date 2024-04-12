@@ -151,6 +151,8 @@ describe("image upload plugin", () => {
             expect(validationMessage.classList).not.toContain("d-none");
         });
 
+        it.todo("should respect acceptedFileTypes option");
+
         it("should hide error when hiding uploader", async () => {
             showImageUploader(view.editorView);
 
