@@ -147,15 +147,6 @@ export class ImageUploader extends PluginInterfaceView<
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + randomId;
 
-        // Create caption element
-        const uploadCaptionEl = document.createElement("span");
-        uploadCaptionEl.className = "fc-light fs-caption";
-        const defaultUploadImageCaptionText = "(Max size 2 MiB)";
-        const acceptedFileTypesString =
-            this.getAcceptedFileTypesString(uploadOptions.acceptedFileTypes) +
-            "";
-        uploadCaptionEl.innerText = `${acceptedFileTypesString} ${defaultUploadImageCaptionText}`;
-
         // TODO i18n
         this.uploadContainer.innerHTML = escapeHTML`
             <div class="s-notice s-notice__warning m12 mb0 js-warning-notice-html d-none" role="status"></div>
@@ -193,12 +184,17 @@ export class ImageUploader extends PluginInterfaceView<
         // add the caption element to the cta container
         const ctaContainer =
             this.uploadContainer.querySelector(".js-cta-container");
+        const acceptedFileTypesString = this.getAcceptedFileTypesString(
+            this.uploadOptions.acceptedFileTypes
+        );
 
         if (acceptedFileTypesString) {
             const breakEl = document.createElement("br");
             ctaContainer.appendChild(breakEl);
         }
-        ctaContainer.appendChild(uploadCaptionEl);
+        ctaContainer.appendChild(
+            this.getCaptionElement(acceptedFileTypesString)
+        );
 
         // add in the uploadField right after the first child element
         this.uploadContainer
@@ -322,13 +318,25 @@ export class ImageUploader extends PluginInterfaceView<
                 acceptedTypes[acceptedTypes.length - 1] =
                     "or " + acceptedTypes[acceptedTypes.length - 1];
             }
-            const acceptedTypesString = acceptedTypes
+            uploadCaptionString = acceptedTypes
                 .join(", ")
                 .replace(/image\//g, "");
-            uploadCaptionString = `Supported file types: ${acceptedTypesString}`;
         }
 
         return uploadCaptionString;
+    }
+
+    getCaptionElement(text: string): HTMLElement {
+        const uploadCaptionEl = document.createElement("span");
+        uploadCaptionEl.className = "fc-light fs-caption";
+
+        let captionText = "(Max size 2 MiB)";
+        if (text) {
+            captionText = `Supported file types: ${text} ${captionText}`;
+        }
+        uploadCaptionEl.innerText = captionText;
+
+        return uploadCaptionEl;
     }
 
     handleFileSelection(view: EditorView): void {
@@ -431,9 +439,10 @@ export class ImageUploader extends PluginInterfaceView<
             case ValidationResult.InvalidFileType:
                 this.showValidationError(
                     _t("image_upload.upload_error_unsupported_format", {
-                        supportedFormats: this.getAcceptedFileTypesString(
-                            this.uploadOptions.acceptedFileTypes
-                        ),
+                        supportedFormats:
+                            this.getAcceptedFileTypesString([
+                                ...this.uploadOptions.acceptedFileTypes,
+                            ]) || "jpeg, png, gif",
                     })
                 );
                 reject("invalid filetype");

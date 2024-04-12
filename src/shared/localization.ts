@@ -87,7 +87,7 @@ export const defaultStrings = {
         upload_error_generic:
             "Image upload failed. Please try again." as string,
         upload_error_unsupported_format: ({
-            supportedFormats = "jpeg, png, gif",
+            supportedFormats,
         }: {
             supportedFormats: string;
         }) => `Please select an image (${supportedFormats}) to upload`,
