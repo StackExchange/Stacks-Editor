@@ -146,7 +146,7 @@ describe("image upload plugin", () => {
             expect(findAddButton(uploader).disabled).toBe(true);
             const validationMessage = findValidationMessage(uploader);
             expect(validationMessage.textContent).toBe(
-                "Please select an image (jpeg, png, gif) to upload"
+                "Please select an image (jpeg, png, or gif) to upload"
             );
             expect(validationMessage.classList).not.toContain("d-none");
         });

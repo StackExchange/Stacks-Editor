@@ -133,8 +133,7 @@ export class ImageUploader extends PluginInterfaceView<
         super(INTERFACE_KEY);
 
         const randomId = generateRandomId();
-        const acceptedFileTypes =
-            uploadOptions.acceptedFileTypes || defaultAcceptedFileTypes;
+        const acceptedFileTypes = uploadOptions.acceptedFileTypes || [];
         this.isVisible = false;
         this.uploadOptions = uploadOptions;
         this.validateLink = validateLink;
@@ -371,7 +370,8 @@ export class ImageUploader extends PluginInterfaceView<
     }
 
     validateImage(image: File): ValidationResult {
-        const validTypes = this.uploadOptions.acceptedFileTypes || [];
+        const validTypes =
+            this.uploadOptions.acceptedFileTypes ?? defaultAcceptedFileTypes;
         const sizeLimit = 0x200000; // 2 MiB
 
         if (validTypes.indexOf(image.type) === -1) {
