@@ -213,6 +213,7 @@ domReady(() => {
         warningNoticeHtml: enableSamplePlugin
             ? "Images are useful in a post, but <strong>make sure the post is still clear without them</strong>.  If you post images of code or error messages, copy and paste or type the actual code or message into the post directly."
             : null,
+        acceptedFileTypes: ["image/jpeg", "image/png", "image/gif"],
     };
 
     // TODO should null out entire object, but that currently just defaults back to the original on merge

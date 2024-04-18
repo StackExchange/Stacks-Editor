@@ -86,8 +86,11 @@ export const defaultStrings = {
             "Your image is too large to upload (over 2 MiB)" as string,
         upload_error_generic:
             "Image upload failed. Please try again." as string,
-        upload_error_unsupported_format:
-            "Please select an image (jpeg, png, gif) to upload" as string,
+        upload_error_unsupported_format: ({
+            supportedFormats,
+        }: {
+            supportedFormats: string;
+        }) => `Please select an image (${supportedFormats}) to upload`,
         uploaded_image_preview_alt: "uploaded image preview" as string,
     },
 } as const;
