@@ -90,6 +90,8 @@ export async function defaultImageUploadHandler(file: File): Promise<string> {
     return json.UploadedImage;
 }
 
+const defaultAcceptedFileTypes = ["image/jpeg", "image/png", "image/gif"];
+
 enum ValidationResult {
     Ok,
     FileTooLarge,
@@ -131,7 +133,8 @@ export class ImageUploader extends PluginInterfaceView<
         super(INTERFACE_KEY);
 
         const randomId = generateRandomId();
-        const acceptedFileTypes = uploadOptions.acceptedFileTypes || [];
+        const acceptedFileTypes =
+            uploadOptions.acceptedFileTypes || defaultAcceptedFileTypes;
         this.isVisible = false;
         this.uploadOptions = uploadOptions;
         this.validateLink = validateLink;
@@ -185,8 +188,9 @@ export class ImageUploader extends PluginInterfaceView<
         // add the caption element to the cta container
         const ctaContainer =
             this.uploadContainer.querySelector(".js-cta-container");
-        const acceptedFileTypesString =
-            this.getAcceptedFileTypesString(acceptedFileTypes);
+        const acceptedFileTypesString = acceptedFileTypes?.length
+            ? this.getAcceptedFileTypesString(acceptedFileTypes)
+            : "";
 
         if (acceptedFileTypesString) {
             const breakEl = document.createElement("br");
@@ -308,18 +312,21 @@ export class ImageUploader extends PluginInterfaceView<
     }
 
     getAcceptedFileTypesString(types: string[]): string {
-        let uploadCaptionString = "";
-        const acceptedTypes = types?.sort() || [];
-        const defaultTypes = ["image/gif", "image/jpeg", "image/png"];
+        if (types?.length === 0) {
+            return "";
+        }
 
-        // If the arrays are different, we modify the caption string
-        if (JSON.stringify(acceptedTypes) !== JSON.stringify(defaultTypes)) {
-            if (acceptedTypes.length > 1) {
-                acceptedTypes[acceptedTypes.length - 1] =
-                    "or " + acceptedTypes[acceptedTypes.length - 1];
-            }
-            uploadCaptionString = acceptedTypes
-                .join(", ")
+        let uploadCaptionString = types[0].replace(/image\//g, "");
+        if (types.length > 1) {
+            uploadCaptionString = types
+                .map((type, i) => {
+                    return i === types.length - 1
+                        ? type
+                        : i === types.length - 2
+                          ? `${type}, or`
+                          : `${type},`;
+                })
+                .join(" ")
                 .replace(/image\//g, "");
         }
 
@@ -439,10 +446,10 @@ export class ImageUploader extends PluginInterfaceView<
             case ValidationResult.InvalidFileType:
                 this.showValidationError(
                     _t("image_upload.upload_error_unsupported_format", {
-                        supportedFormats:
-                            this.getAcceptedFileTypesString([
-                                ...(this.uploadOptions.acceptedFileTypes || []),
-                            ]) || "jpeg, png, gif",
+                        supportedFormats: this.getAcceptedFileTypesString(
+                            this.uploadOptions.acceptedFileTypes ||
+                                defaultAcceptedFileTypes
+                        ),
                     })
                 );
                 reject("invalid filetype");

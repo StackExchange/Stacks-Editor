@@ -193,7 +193,6 @@ export class RichTextEditor extends BaseView {
             menuParentContainer: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,
-                acceptedFileTypes: ["image/jpeg", "image/png", "image/gif"],
             },
             editorPlugins: [],
         };
