@@ -188,7 +188,7 @@ export class ImageUploader extends PluginInterfaceView<
         const ctaContainer =
             this.uploadContainer.querySelector(".js-cta-container");
         const acceptedFileTypesString = acceptedFileTypes?.length
-            ? this.getAcceptedFileTypesString(acceptedFileTypes)
+            ? acceptedFileTypes.join(", ").replace(/image\//g, "")
             : "";
 
         if (acceptedFileTypesString) {
@@ -310,19 +310,6 @@ export class ImageUploader extends PluginInterfaceView<
         event.stopPropagation();
     }
 
-    getAcceptedFileTypesString(types: string[]): string {
-        if (types.length === 0) {
-            return "";
-        }
-
-        let uploadCaptionString = types[0].replace(/image\//g, "");
-        if (types.length > 1) {
-            uploadCaptionString = types.join(", ").replace(/image\//g, "");
-        }
-
-        return uploadCaptionString;
-    }
-
     getCaptionElement(text: string): HTMLElement {
         const uploadCaptionEl = document.createElement("span");
         uploadCaptionEl.className = "fc-light fs-caption";
@@ -437,10 +424,12 @@ export class ImageUploader extends PluginInterfaceView<
             case ValidationResult.InvalidFileType:
                 this.showValidationError(
                     _t("image_upload.upload_error_unsupported_format", {
-                        supportedFormats: this.getAcceptedFileTypesString(
+                        supportedFormats: (
                             this.uploadOptions.acceptedFileTypes ||
-                                defaultAcceptedFileTypes
-                        ),
+                            defaultAcceptedFileTypes
+                        )
+                            .join(", ")
+                            .replace(/image\//g, ""),
                     })
                 );
                 reject("invalid filetype");
