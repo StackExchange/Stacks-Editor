@@ -311,22 +311,13 @@ export class ImageUploader extends PluginInterfaceView<
     }
 
     getAcceptedFileTypesString(types: string[]): string {
-        if (types?.length === 0) {
+        if (types.length === 0) {
             return "";
         }
 
         let uploadCaptionString = types[0].replace(/image\//g, "");
         if (types.length > 1) {
-            uploadCaptionString = types
-                .map((type, i) => {
-                    return i === types.length - 1
-                        ? type
-                        : i === types.length - 2
-                          ? `${type}, or`
-                          : `${type},`;
-                })
-                .join(" ")
-                .replace(/image\//g, "");
+            uploadCaptionString = types.join(", ").replace(/image\//g, "");
         }
 
         return uploadCaptionString;
