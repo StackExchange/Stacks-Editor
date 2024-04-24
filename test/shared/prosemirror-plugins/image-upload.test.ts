@@ -151,12 +151,56 @@ describe("image upload plugin", () => {
             expect(validationMessage.classList).not.toContain("d-none");
         });
 
+        it("should accept jpeg, png and gif by default if no acceptedFileTypes option is provided", async () => {
+            showImageUploader(view.editorView);
+            expect(uploader.uploadField.accept).toBe(
+                "image/jpeg, image/png, image/gif"
+            );
+
+            await expect(
+                uploader.showImagePreview(
+                    mockFile("some jpeg file", "image/jpeg")
+                )
+            ).resolves.toBeUndefined();
+            expect(findValidationMessage(uploader).classList).toContain(
+                "d-none"
+            );
+
+            await expect(
+                uploader.showImagePreview(
+                    mockFile("some png file", "image/png")
+                )
+            ).resolves.toBeUndefined();
+            expect(findValidationMessage(uploader).classList).toContain(
+                "d-none"
+            );
+
+            await expect(
+                uploader.showImagePreview(
+                    mockFile("some gif file", "image/gif")
+                )
+            ).resolves.toBeUndefined();
+            expect(findValidationMessage(uploader).classList).toContain(
+                "d-none"
+            );
+
+            await expect(
+                uploader.showImagePreview(
+                    mockFile("some bmp file", "image/bmp")
+                )
+            ).rejects.toBe("invalid filetype");
+            expect(findValidationMessage(uploader).textContent).toBe(
+                "Please select an image (jpeg, png, gif) to upload"
+            );
+        });
+
         it("should accept files that match those provided in the acceptedFileTypes option", async () => {
             setupTestVariables({
                 acceptedFileTypes: ["image/bmp"],
             });
 
             showImageUploader(view.editorView);
+            expect(uploader.uploadField.accept).toBe("image/bmp");
 
             await expect(
                 uploader.showImagePreview(

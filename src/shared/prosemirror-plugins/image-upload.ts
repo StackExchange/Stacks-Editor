@@ -133,7 +133,8 @@ export class ImageUploader extends PluginInterfaceView<
         super(INTERFACE_KEY);
 
         const randomId = generateRandomId();
-        const acceptedFileTypes = uploadOptions.acceptedFileTypes || [];
+        const acceptedFileTypes =
+            uploadOptions.acceptedFileTypes || defaultAcceptedFileTypes;
         this.isVisible = false;
         this.uploadOptions = uploadOptions;
         this.validateLink = validateLink;
@@ -146,7 +147,7 @@ export class ImageUploader extends PluginInterfaceView<
         this.uploadField = document.createElement("input");
         this.uploadField.type = "file";
         this.uploadField.className = "js-image-uploader-input v-visible-sr";
-        this.uploadField.accept = acceptedFileTypes?.join(", ");
+        this.uploadField.accept = acceptedFileTypes.join(", ");
         this.uploadField.multiple = false;
         this.uploadField.id = "fileUpload" + randomId;
 
@@ -187,7 +188,7 @@ export class ImageUploader extends PluginInterfaceView<
         // add the caption element to the cta container
         const ctaContainer =
             this.uploadContainer.querySelector(".js-cta-container");
-        const acceptedFileTypesString = acceptedFileTypes?.length
+        const acceptedFileTypesString = acceptedFileTypes.length
             ? acceptedFileTypes.join(", ").replace(/image\//g, "")
             : "";
 
