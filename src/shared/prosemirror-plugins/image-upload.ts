@@ -313,7 +313,7 @@ export class ImageUploader extends PluginInterfaceView<
 
     getCaptionElement(text: string): HTMLElement {
         const uploadCaptionEl = document.createElement("span");
-        uploadCaptionEl.className = "fc-light fs-caption";
+        uploadCaptionEl.className = "fc-black-500 fs-caption";
 
         let captionText = "(Max size 2 MiB)";
         if (text) {
