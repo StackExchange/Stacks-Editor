@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.6](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.5...v0.10.6) (2024-04-24)
+
+
+### Features
+
+* **image-upload:** add accepted file types option ([#304](https://github.com/StackExchange/Stacks-Editor/issues/304)) ([93bf622](https://github.com/StackExchange/Stacks-Editor/commit/93bf6224401a54177b057c5ad4f45b42150e524d))
+
+
+### Bug Fixes
+
+* **image-upload:** ensure accept attribute of uploader is populated correctly ([9edcb68](https://github.com/StackExchange/Stacks-Editor/commit/9edcb6888ae64f925ccba4167b8e3abe3d63b0b0))
+* **image-upload:** make color contrast of content policy and branding help text accessible ([f57efd3](https://github.com/StackExchange/Stacks-Editor/commit/f57efd31f15668854c832e88b9db852a86c47c88))
+
 ### [0.10.5](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.4...v0.10.5) (2024-03-28)
 
 
