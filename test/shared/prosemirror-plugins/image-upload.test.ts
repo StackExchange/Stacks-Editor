@@ -151,6 +151,47 @@ describe("image upload plugin", () => {
             expect(validationMessage.classList).not.toContain("d-none");
         });
 
+        it("should accept files that match those provided in the acceptedFileTypes option", async () => {
+            setupTestVariables({
+                acceptedFileTypes: ["image/bmp"],
+            });
+
+            showImageUploader(view.editorView);
+
+            await expect(
+                uploader.showImagePreview(
+                    mockFile("some bmp file", "image/bmp")
+                )
+            ).resolves.toBeUndefined();
+            expect(findPreviewElement(uploader).classList).not.toContain(
+                "d-none"
+            );
+            expect(findAddButton(uploader).disabled).toBe(false);
+            const validationMessage = findValidationMessage(uploader);
+            expect(validationMessage.classList).toContain("d-none");
+        });
+
+        it("should reject unaccepted files when acceptedFileTypes option is defined", async () => {
+            setupTestVariables({
+                acceptedFileTypes: ["image/bmp"],
+            });
+
+            showImageUploader(view.editorView);
+
+            await expect(
+                uploader.showImagePreview(
+                    mockFile("some gif file", "image/gif")
+                )
+            ).rejects.toBe("invalid filetype");
+            expect(findPreviewElement(uploader).classList).toContain("d-none");
+            expect(findAddButton(uploader).disabled).toBe(true);
+            const validationMessage = findValidationMessage(uploader);
+            expect(validationMessage.textContent).toBe(
+                "Please select an image (bmp) to upload"
+            );
+            expect(validationMessage.classList).not.toContain("d-none");
+        });
+
         it("should hide error when hiding uploader", async () => {
             showImageUploader(view.editorView);
 
