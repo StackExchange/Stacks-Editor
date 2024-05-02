@@ -29,14 +29,10 @@ module.exports = (_, argv) => {
                         {
                             loader: "css-loader",
                             options: {
-                                importLoaders: 2,
+                                importLoaders: 1,
                                 url: {
-                                    filter: (_, resourcePath) => {
-                                        // Disable url handling for @stackoverflow/stacks
-                                        return !resourcePath.includes(
-                                            "@stackoverflow/stacks"
-                                        );
-                                    },
+                                    // let our svg rule handle importing svg files everywhere
+                                    filter: (url) => url.endsWith(".svg"),
                                 },
                             },
                         },
