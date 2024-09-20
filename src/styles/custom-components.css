@@ -59,6 +59,11 @@
     color: var(--black-600) !important;
 }
 
+.s-btn-group .s-btn--radio:checked + .s-btn {
+    background: var(--black-500) !important;
+    color: var(--white) !important;
+}
+
 /*
     NOTE: These focus-visible styles exist to override the Stacks styles for editor buttons.
     Since the editor buttons require the focus rings to be applied outside of the button,
