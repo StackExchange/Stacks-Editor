@@ -47,7 +47,7 @@ module.exports = (env, argv) => {
                         templateContent: new Function(
                             ["content"],
                             `return \`${htmlLayout}\`;`
-                        )(String(htmlView)),
+                        )(htmlView),
                         filename: f,
                     });
                 }),
