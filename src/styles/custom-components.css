@@ -59,12 +59,12 @@
     color: var(--black-600) !important;
 }
 
-.s-btn-group .s-btn--radio:checked + .s-btn {
+.s-btn-group .s-btn--radio:checked + .s-editor-btn {
     background: var(--black-500) !important;
     color: var(--white) !important;
 }
 
-.s-btn-group .s-btn--radio:focus-visible + .s-btn {
+.s-btn-group .s-btn--radio:focus-visible + .s-editor-btn {
     box-shadow:
         0 0 0 var(--su-static2) var(--focus-neutral),
         0 0 0 var(--su-static4) var(--focus-theme);
