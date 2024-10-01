@@ -3,6 +3,8 @@ const common = require("./webpack.common.js");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const fs = require("fs");
 
+const htmlLayout = fs.readFileSync("./site/layout.html");
+
 module.exports = (env, argv) => {
     // add --mode=production to flip this into a pseudo-production server
     const emulateProdServer = argv.mode === "production";
@@ -17,22 +19,6 @@ module.exports = (env, argv) => {
             },
             mode: emulateProdServer ? "production" : "development",
             devtool: emulateProdServer ? false : "inline-source-map",
-            module: {
-                rules: [
-                    {
-                        test: /\.html$/,
-                        use: [
-                            "html-loader",
-                            {
-                                loader: "liquidjs-loader",
-                                options: {
-                                    root: "./site/",
-                                },
-                            },
-                        ],
-                    },
-                ],
-            },
             devServer: {
                 open: false,
                 host:
@@ -51,13 +37,20 @@ module.exports = (env, argv) => {
             },
             plugins: [
                 // create an html page for every item in ./site/views
-                ...fs.readdirSync("./site/views").map(
-                    (f) =>
-                        new HtmlWebpackPlugin({
-                            template: "./site/views/" + f,
-                            filename: f,
-                        })
-                ),
+                ...fs.readdirSync("./site/views").map((f) => {
+                    const htmlView = fs.readFileSync(
+                        `./site/views/${f}`,
+                        "utf8"
+                    );
+
+                    return new HtmlWebpackPlugin({
+                        templateContent: new Function(
+                            ["content"],
+                            `return \`${htmlLayout}\`;`
+                        )(String(htmlView)),
+                        filename: f,
+                    });
+                }),
             ],
             optimization: {
                 splitChunks: {
