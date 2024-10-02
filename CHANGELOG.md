@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.7](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.6...v0.10.7) (2024-10-02)
+
+
+### Features
+
+* Invert button group icons for better contrast ([#352](https://github.com/StackExchange/Stacks-Editor/issues/352)) ([5cea909](https://github.com/StackExchange/Stacks-Editor/commit/5cea9097e73df6eff76533a7390b56990ec8d0e6))
+
 ### [0.10.6](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.5...v0.10.6) (2024-04-24)
 
 
