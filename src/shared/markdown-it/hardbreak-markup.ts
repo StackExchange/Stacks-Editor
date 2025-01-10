@@ -1,6 +1,5 @@
 import MarkdownIt from "markdown-it";
-import State from "markdown-it/lib/rules_core/state_core";
-import Token from "markdown-it/lib/token";
+import { StateCore, Token }  from "markdown-it";
 
 function addHardbreakMarkup(tokens: Token[], parent: Token = null) {
     for (let i = 0; i < tokens.length; i++) {
@@ -27,7 +26,7 @@ function addHardbreakMarkup(tokens: Token[], parent: Token = null) {
  * TODO UPSTREAM
  */
 export function hardbreak_markup(md: MarkdownIt): void {
-    md.core.ruler.push("hardbreak-markup", function (state: State) {
+    md.core.ruler.push("hardbreak-markup", function (state: StateCore) {
         addHardbreakMarkup(state.tokens);
         return false;
     });

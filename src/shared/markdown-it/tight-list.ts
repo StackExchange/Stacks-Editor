@@ -1,6 +1,4 @@
-import MarkdownIt from "markdown-it";
-import State from "markdown-it/lib/rules_core/state_core";
-import Token from "markdown-it/lib/token";
+import MarkdownIt, { StateCore, Token } from "markdown-it";
 
 function tightenList(tokens: Token[]) {
     let iteratedElements = 0;
@@ -51,7 +49,7 @@ function tightenList(tokens: Token[]) {
  * Searches for and marks tight lists with a "tight" attribute
  */
 export function tight_list(md: MarkdownIt): void {
-    md.core.ruler.push("tight-list", function (state: State) {
+    md.core.ruler.push("tight-list", function (state: StateCore) {
         tightenList(state.tokens);
         return false;
     });

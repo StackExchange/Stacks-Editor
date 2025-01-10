@@ -1,4 +1,4 @@
-import MarkdownIt from "markdown-it/lib";
+import MarkdownIt from "markdown-it";
 import { tagLinks } from "../../../src/shared/markdown-it/tag-link";
 import { TagLinkOptions } from "../../../src/shared/view";
 

@@ -10,8 +10,8 @@ import {
     supportedTagAttributes,
     TagType,
 } from "./html-helpers";
-import { normalizeReference } from "markdown-it/lib/common/utils";
 import { IExternalPluginProvider } from "./editor-plugin";
+import MarkdownIt from "markdown-it";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<
@@ -47,7 +47,7 @@ class SOMarkdownSerializerState extends MarkdownSerializerState {
         href: string,
         title?: string
     ): void {
-        const normalizedLabel = normalizeReference(label);
+        const normalizedLabel = new MarkdownIt().utils.normalizeReference(label);
 
         if (this.linkReferenceDefinitions[normalizedLabel]) {
             return;

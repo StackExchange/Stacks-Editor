@@ -1,4 +1,4 @@
-import MarkdownIt from "markdown-it/lib";
+import MarkdownIt from "markdown-it";
 import { tight_list } from "../../../src/shared/markdown-it/tight-list";
 
 describe("tight-list markdown-it plugin", () => {

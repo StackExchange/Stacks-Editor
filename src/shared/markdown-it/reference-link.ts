@@ -1,7 +1,4 @@
-import MarkdownIt from "markdown-it";
-import { normalizeReference } from "markdown-it/lib/common/utils";
-import State from "markdown-it/lib/rules_core/state_core";
-import Token from "markdown-it/lib/token";
+import MarkdownIt, { StateCore, Token } from "markdown-it";
 
 type LinkReference = { title?: string; href?: string };
 type LinkReferences = { [key: string]: LinkReference };
@@ -41,7 +38,7 @@ function setLinkReference(
             label = match[2];
         }
 
-        const normalizedLabel = normalizeReference(label);
+        const normalizedLabel = new MarkdownIt().utils.normalizeReference(label);
         reference = references[normalizedLabel];
         const href =
             token.type === "image"
@@ -117,7 +114,7 @@ function setLinkReferences(
  * Searches for and marks links that point to a reference with a "reference" meta data
  */
 export function reference_link(md: MarkdownIt): void {
-    md.core.ruler.push("link-reference", function (state: State) {
+    md.core.ruler.push("link-reference", function (state: StateCore) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
         const references = state.env?.references as LinkReferences;
 

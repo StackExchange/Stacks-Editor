@@ -1,5 +1,4 @@
-import MarkdownIt from "markdown-it";
-import Token from "markdown-it/lib/token";
+import MarkdownIt, { Token } from "markdown-it";
 import { hardbreak_markup } from "../../../src/shared/markdown-it/hardbreak-markup";
 
 describe("hardbreak-markup", () => {

@@ -1,6 +1,5 @@
-import MarkdownIt from "markdown-it/lib";
-import StateBlock from "markdown-it/lib/rules_block/state_block";
-import State from "markdown-it/lib/rules_core/state_core";
+import MarkdownIt from "markdown-it";
+import { StateCore, StateBlock }  from "markdown-it";
 
 function langCommentParser(
     matcher: RegExp,
@@ -92,7 +91,7 @@ function stack_lang_all(
 }
 
 // TODO document what the language-all rules are
-function sanitizeCodeBlockLangs(state: State) {
+function sanitizeCodeBlockLangs(state: StateCore) {
     // keep track of which "language-all" has been set
     let currentLanguageAll: string = null;
 

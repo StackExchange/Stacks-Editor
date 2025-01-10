@@ -1,4 +1,4 @@
-import { escapeHtml } from "markdown-it/lib/common/utils";
+import MarkdownIt from "markdown-it";
 import { EditorState } from "prosemirror-state";
 import { error } from "./logger";
 
@@ -221,7 +221,7 @@ export function escapeHTML(
     let output = strings[0];
     for (let i = 0, len = subs.length; i < len; i++) {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        output += escapeHtml(subs[i]?.toString() || "") + strings[i + 1];
+        output += new MarkdownIt().utils.escapeHtml(subs[i]?.toString() || "") + strings[i + 1];
     }
 
     return output;

@@ -1,7 +1,4 @@
-import type MarkdownIt from "markdown-it";
-import type ParserInline from "markdown-it/lib/parser_inline";
-import type StateInline from "markdown-it/lib/rules_inline/state_inline";
-import type Token from "markdown-it/lib/token";
+import MarkdownIt, { ParserInline, StateInline, Token } from "markdown-it";
 import type { EditorPlugin } from "../../src";
 
 // simple proof of concept that adds furigana support from https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807
