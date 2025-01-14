@@ -285,7 +285,6 @@ export function createDefaultMarkdownItInstance(
         defaultMarkdownItInstance.disable("strikethrough");
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     defaultMarkdownItInstance.linkify.set({
         fuzzyLink: false, // disable autolinking of anything that comes without protocol prefix (e.g. https://)
         fuzzyEmail: false, // disable email address (without mailto:) autolinking

@@ -126,7 +126,10 @@ function getTagInfo(tag: string): TagInfo {
  * @param tagInfo The tagInfo to use
  * @param existing The token to alter; creates a new token if this is empty
  */
-function tagInfoToToken(tagInfo: TagInfo, existing?: MarkdownIt.Token): MarkdownIt.Token {
+function tagInfoToToken(
+    tagInfo: TagInfo,
+    existing?: MarkdownIt.Token
+): MarkdownIt.Token {
     // if a token was not passed in, create a new empty one
     const token: MarkdownIt.Token = existing || new Token("", "", 0);
 
@@ -200,7 +203,9 @@ type parsedBlockTokenInfo = {
  * @param token The html_block token to parse
  * @returns The parsed info if able, null if unable
  */
-function isParseableHtmlBlockToken(token: MarkdownIt.Token): parsedBlockTokenInfo {
+function isParseableHtmlBlockToken(
+    token: MarkdownIt.Token
+): parsedBlockTokenInfo {
     const content = token.content;
     // checks if a token matches `<open>content</close>` OR `<br />`
     const matches =
@@ -324,7 +329,9 @@ function sanitizeHtmlInlineToken(token: MarkdownIt.Token): MarkdownIt.Token {
  * Can return `html_inline` tokens that were unable to be sanitized or have a missing pair
  * @param tokens The tokens to sanitize
  */
-function sanitizeInlineHtmlTokens(tokens: MarkdownIt.Token[]): MarkdownIt.Token[] {
+function sanitizeInlineHtmlTokens(
+    tokens: MarkdownIt.Token[]
+): MarkdownIt.Token[] {
     tokens = tokens.map(sanitizeHtmlInlineToken).filter((t) => !!t);
     for (let i = 0, len = tokens.length; i < len; i++) {
         const openToken = tokens[i];
@@ -489,7 +496,9 @@ function sanitizeSimpleHtmlBlockTokens(tokens: MarkdownIt.Token[]) {
  * Sanitize the content of `html_block` tokens by stripping out all unknown tags
  * @param tokens The tokens to sanitize
  */
-function sanitizeBlockHtmlTokens(tokens: MarkdownIt.Token[]): MarkdownIt.Token[] {
+function sanitizeBlockHtmlTokens(
+    tokens: MarkdownIt.Token[]
+): MarkdownIt.Token[] {
     const retTokens: MarkdownIt.Token[] = [];
 
     tokens.forEach((token) => {
@@ -542,7 +551,9 @@ function sanitizeBlockHtmlTokens(tokens: MarkdownIt.Token[]): MarkdownIt.Token[]
  * Attempts to merge `html_block` tokens that were split by a newline character
  * @param tokens The tokens to sanitize
  */
-function mergeSplitBlockHtmlTokens(tokens: MarkdownIt.Token[]): MarkdownIt.Token[] {
+function mergeSplitBlockHtmlTokens(
+    tokens: MarkdownIt.Token[]
+): MarkdownIt.Token[] {
     const returnTokens: MarkdownIt.Token[] = [];
 
     let splitCount = 0;

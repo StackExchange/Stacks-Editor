@@ -1,4 +1,4 @@
-import {Attrs, MarkSpec, NodeSpec} from "prosemirror-model";
+import { Attrs, MarkSpec, NodeSpec } from "prosemirror-model";
 import { _t } from "../shared/localization";
 
 //TODO this relies on Stacks classes, should we abstract?
@@ -448,7 +448,8 @@ const marks: {
             { tag: "em" },
             {
                 style: "font-style",
-                getAttrs: (value: string): Attrs | false | null => value === "italic" && null,
+                getAttrs: (value: string): Attrs | false | null =>
+                    value === "italic" && null,
             },
         ],
         toDOM() {

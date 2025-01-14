@@ -38,7 +38,9 @@ function setLinkReference(
             label = match[2];
         }
 
-        const normalizedLabel = new MarkdownIt().utils.normalizeReference(label);
+        const normalizedLabel = new MarkdownIt().utils.normalizeReference(
+            label
+        );
         reference = references[normalizedLabel];
         const href =
             token.type === "image"

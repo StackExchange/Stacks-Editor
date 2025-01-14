@@ -1,5 +1,5 @@
 import MarkdownIt from "markdown-it";
-import { StateCore, Token }  from "markdown-it";
+import { StateCore, Token } from "markdown-it";
 
 function addHardbreakMarkup(tokens: Token[], parent: Token = null) {
     for (let i = 0; i < tokens.length; i++) {

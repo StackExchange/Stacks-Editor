@@ -47,7 +47,9 @@ class SOMarkdownSerializerState extends MarkdownSerializerState {
         href: string,
         title?: string
     ): void {
-        const normalizedLabel = new MarkdownIt().utils.normalizeReference(label);
+        const normalizedLabel = new MarkdownIt().utils.normalizeReference(
+            label
+        );
 
         if (this.linkReferenceDefinitions[normalizedLabel]) {
             return;

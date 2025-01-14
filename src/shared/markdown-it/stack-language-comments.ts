@@ -1,5 +1,5 @@
 import MarkdownIt from "markdown-it";
-import { StateCore, StateBlock }  from "markdown-it";
+import { StateCore, StateBlock } from "markdown-it";
 
 function langCommentParser(
     matcher: RegExp,
