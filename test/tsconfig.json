@@ -1,7 +1,4 @@
 {
     "extends": "../config/tsconfig.eslint.json",
-    "compilerOptions": {
-        "target": "es2018"
-    },
     "types": ["jest", "./global.d.ts"]
 }

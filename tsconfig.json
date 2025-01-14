@@ -1,8 +1,9 @@
 {
     "extends": "@stackoverflow/tsconfig/tsconfig.json",
     "compilerOptions": {
+        "target": "esnext",
         "outDir": "./dist/",
-        "strictBindCallApply": true
+        "strictBindCallApply": true,
     },
     "include": ["src/**/*"]
 }
