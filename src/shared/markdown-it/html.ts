@@ -1,12 +1,12 @@
-import MarkdownIt from "markdown-it";
-import State from "markdown-it/lib/rules_core/state_core";
-import Token from "markdown-it/lib/token";
+import MarkdownIt, { StateCore } from "markdown-it";
 import {
     blockElements,
     selfClosingElements,
     supportedTagAttributes,
     TagType,
 } from "../html-helpers";
+
+const Token = MarkdownIt().core.State.prototype.Token;
 
 interface TagInfo {
     type: TagType;
@@ -126,9 +126,12 @@ function getTagInfo(tag: string): TagInfo {
  * @param tagInfo The tagInfo to use
  * @param existing The token to alter; creates a new token if this is empty
  */
-function tagInfoToToken(tagInfo: TagInfo, existing?: Token): Token {
+function tagInfoToToken(
+    tagInfo: TagInfo,
+    existing?: MarkdownIt.Token
+): MarkdownIt.Token {
     // if a token was not passed in, create a new empty one
-    const token = existing || new Token("", "", 0);
+    const token: MarkdownIt.Token = existing || new Token("", "", 0);
 
     // determine the markdown-it Token type for this tag
     const postfix = tagInfo.isSelfClosing
@@ -200,7 +203,9 @@ type parsedBlockTokenInfo = {
  * @param token The html_block token to parse
  * @returns The parsed info if able, null if unable
  */
-function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
+function isParseableHtmlBlockToken(
+    token: MarkdownIt.Token
+): parsedBlockTokenInfo {
     const content = token.content;
     // checks if a token matches `<open>content</close>` OR `<br />`
     const matches =
@@ -256,9 +261,9 @@ function isParseableHtmlBlockToken(token: Token): parsedBlockTokenInfo {
  * @param parentType The type of the token's parent
  */
 function wrapBareInlineToken(
-    token: Token,
+    token: MarkdownIt.Token,
     parentType: TagType | null
-): Token[] {
+): MarkdownIt.Token[] {
     // don't wrap block tokens
     if (token.block) {
         return [token];
@@ -286,7 +291,7 @@ function wrapBareInlineToken(
  * Sanitizes a single token if it is of type `html_inline`; otherwise, its children are sanitized
  * @param token The token to sanitize `html_inline` tokens in
  */
-function sanitizeHtmlInlineToken(token: Token): Token {
+function sanitizeHtmlInlineToken(token: MarkdownIt.Token): MarkdownIt.Token {
     let tagInfo: TagInfo = null;
 
     if (token.type === "html_inline") {
@@ -324,7 +329,9 @@ function sanitizeHtmlInlineToken(token: Token): Token {
  * Can return `html_inline` tokens that were unable to be sanitized or have a missing pair
  * @param tokens The tokens to sanitize
  */
-function sanitizeInlineHtmlTokens(tokens: Token[]): Token[] {
+function sanitizeInlineHtmlTokens(
+    tokens: MarkdownIt.Token[]
+): MarkdownIt.Token[] {
     tokens = tokens.map(sanitizeHtmlInlineToken).filter((t) => !!t);
     for (let i = 0, len = tokens.length; i < len; i++) {
         const openToken = tokens[i];
@@ -435,8 +442,8 @@ function sanitizeHtmlString(content: string) {
  * Recursively sanitizes all `html_block` tokens by parsing the ones that are able to be simply parsed
  * @param tokens The tokens to sanitize
  */
-function sanitizeSimpleHtmlBlockTokens(tokens: Token[]) {
-    const retTokens: Token[] = [];
+function sanitizeSimpleHtmlBlockTokens(tokens: MarkdownIt.Token[]) {
+    const retTokens: MarkdownIt.Token[] = [];
 
     tokens.forEach((token) => {
         let parsedInfo: parsedBlockTokenInfo = null;
@@ -454,12 +461,12 @@ function sanitizeSimpleHtmlBlockTokens(tokens: Token[]) {
             return;
         }
 
-        const newTokens: Token[] = [];
+        const newTokens: MarkdownIt.Token[] = [];
 
         parsedInfo.tagInfo.forEach((tag, i, arr) => {
             const lastInfo = arr[i - 1] as TagInfo;
             const isInline = typeof tag === "string" || !tag.isBlock;
-            let tok: Token;
+            let tok: MarkdownIt.Token;
 
             if (typeof tag === "string") {
                 const t = new Token("text", "", 0);
@@ -489,8 +496,10 @@ function sanitizeSimpleHtmlBlockTokens(tokens: Token[]) {
  * Sanitize the content of `html_block` tokens by stripping out all unknown tags
  * @param tokens The tokens to sanitize
  */
-function sanitizeBlockHtmlTokens(tokens: Token[]): Token[] {
-    const retTokens: Token[] = [];
+function sanitizeBlockHtmlTokens(
+    tokens: MarkdownIt.Token[]
+): MarkdownIt.Token[] {
+    const retTokens: MarkdownIt.Token[] = [];
 
     tokens.forEach((token) => {
         if (token.children?.length) {
@@ -542,8 +551,10 @@ function sanitizeBlockHtmlTokens(tokens: Token[]): Token[] {
  * Attempts to merge `html_block` tokens that were split by a newline character
  * @param tokens The tokens to sanitize
  */
-function mergeSplitBlockHtmlTokens(tokens: Token[]): Token[] {
-    const returnTokens: Token[] = [];
+function mergeSplitBlockHtmlTokens(
+    tokens: MarkdownIt.Token[]
+): MarkdownIt.Token[] {
+    const returnTokens: MarkdownIt.Token[] = [];
 
     let splitCount = 0;
     // get all split html_block indexes
@@ -579,7 +590,7 @@ function mergeSplitBlockHtmlTokens(tokens: Token[]): Token[] {
         blockIndexes = blockIndexes.slice(0, -1);
     }
 
-    let lastOpenToken: Token | null = null;
+    let lastOpenToken: MarkdownIt.Token | null = null;
     tokens.forEach((t, i) => {
         if (t.children && t.children.length) {
             t.children = mergeSplitBlockHtmlTokens(t.children);
@@ -619,7 +630,7 @@ function mergeSplitBlockHtmlTokens(tokens: Token[]): Token[] {
  * @param md
  */
 export function html(md: MarkdownIt): void {
-    md.core.ruler.push("so-sanitize-html", function (state: State) {
+    md.core.ruler.push("so-sanitize-html", function (state: StateCore) {
         // TODO there are a lot of loops here. Can we combine a few?
         state.tokens = sanitizeInlineHtmlTokens(state.tokens);
         state.tokens = sanitizeSimpleHtmlBlockTokens(state.tokens);

@@ -1,5 +1,4 @@
-import MarkdownIt from "markdown-it/lib";
-import StateInline from "markdown-it/lib/rules_inline/state_inline";
+import MarkdownIt, { StateInline } from "markdown-it";
 import type { TagLinkOptions } from "../view";
 
 function parse_tag_link(

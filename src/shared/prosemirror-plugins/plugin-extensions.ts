@@ -65,7 +65,7 @@ export class StatefulPluginKey<T> extends PluginKey<T> {
 }
 
 export class StatefulPlugin<T> extends Plugin<T> {
-    spec: StatefulPluginSpec<T>;
+    declare spec: StatefulPluginSpec<T>;
 
     constructor(spec: StatefulPluginSpec<T>) {
         super(spec);

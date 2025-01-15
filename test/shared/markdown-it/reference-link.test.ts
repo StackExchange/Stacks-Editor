@@ -1,5 +1,4 @@
-import MarkdownIt from "markdown-it/lib";
-import type Token from "markdown-it/lib/token";
+import MarkdownIt, { Token } from "markdown-it";
 import { reference_link } from "../../../src/shared/markdown-it/reference-link";
 
 function findTokensOfType(tokens: Token[], type: string): Token[] {

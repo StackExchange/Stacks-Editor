@@ -8,3 +8,5 @@ node_modules/
 stats.json
 dist/
 test-results/
+
+.idea/

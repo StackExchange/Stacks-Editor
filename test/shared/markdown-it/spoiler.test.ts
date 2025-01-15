@@ -1,4 +1,4 @@
-import MarkdownIt from "markdown-it/lib";
+import MarkdownIt from "markdown-it";
 import { spoiler } from "../../../src/shared/markdown-it/spoiler";
 import { normalize } from "../../test-helpers";
 
