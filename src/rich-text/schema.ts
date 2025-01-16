@@ -518,6 +518,12 @@ const marks: {
     sup: genHtmlInlineMarkSpec({}, "sup"),
 
     sub: genHtmlInlineMarkSpec({}, "sub"),
+
+    escape: {
+        toDOM() {
+            return ["span"];
+        }
+    }
 };
 
 // for *every* mark, add in support for the `markup` attribute
