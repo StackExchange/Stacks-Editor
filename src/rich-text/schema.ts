@@ -520,8 +520,11 @@ const marks: {
     sub: genHtmlInlineMarkSpec({}, "sub"),
 
     escape: {
+        parseDOM: [
+            { style: "span.escaped" }
+        ],
         toDOM() {
-            return ["span"];
+            return ["span", { class: "escaped" }];
         }
     }
 };

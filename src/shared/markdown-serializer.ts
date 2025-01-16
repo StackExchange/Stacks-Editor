@@ -317,7 +317,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             }
         }
     },
-    text(state, node) {
+    text(state, node, parent) {
         const linkMark = node.marks.find(
             (m) => m.type === m.type.schema.marks.link
         );
@@ -333,7 +333,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-expect-error
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-            const startOfLine: boolean = state.atBlank() || state.closed;
+            const startOfLine: boolean = state.atBlank() || state.atBlockStart || state.closed;
             // escape the text using the built in escape code
             let escapedText = state.esc(node.text, startOfLine);
 
