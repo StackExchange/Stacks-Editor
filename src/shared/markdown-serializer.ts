@@ -317,7 +317,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
             }
         }
     },
-    text(state, node, parent) {
+    text(state, node) {
         const linkMark = node.marks.find(
             (m) => m.type === m.type.schema.marks.link
         );

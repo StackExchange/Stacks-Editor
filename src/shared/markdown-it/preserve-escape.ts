@@ -21,8 +21,7 @@ function buildPreserveEscapeFn(md: MarkdownIt): MarkdownIt.ParserInline.RuleInli
         //Now we want to retag the type so that
         // - the escape token is ignored by the text_merge
         // - We can enact custom rendering later
-        escapeToken.type = 'escape';
-        console.log(escapeToken);
+        escapeToken.type = 'escape'
 
         return escRet;
     }
