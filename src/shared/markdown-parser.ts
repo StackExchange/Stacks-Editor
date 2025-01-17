@@ -11,7 +11,7 @@ import { stackLanguageComments } from "./markdown-it/stack-language-comments";
 import { tagLinks } from "./markdown-it/tag-link";
 import { tight_list } from "./markdown-it/tight-list";
 import type { CommonmarkParserFeatures } from "./view";
-import {preserve_escape} from "./markdown-it/preserve-escape";
+import { preserve_escape } from "./markdown-it/preserve-escape";
 
 // extend the default markdown parser's tokens and add our own
 const customMarkdownParserTokens: MarkdownParser["tokens"] = {
@@ -152,10 +152,10 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
         mark: "code",
     },
 
-    escape : {
+    escape: {
         mark: "escape",
-        noCloseToken: true
-    }
+        noCloseToken: true,
+    },
 };
 
 // add tag attribute support to all the marks like we did in schema

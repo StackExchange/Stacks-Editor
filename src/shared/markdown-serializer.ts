@@ -330,10 +330,13 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
         ) {
             text = linkMark.attrs.href as string;
         } else {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-            const startOfLine: boolean = state.atBlank() || state.atBlockStart || state.closed;
+            /* eslint-disable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unsafe-assignment */
+            const startOfLine: boolean =
+                // @ts-expect-error
+                // eslint-disable-next-line
+                state.atBlank() || state.atBlockStart || state.closed;
+            /* eslint-enable @typescript-eslint/ban-ts-comment, @typescript-eslint/no-unsafe-assignment */
+
             // escape the text using the built in escape code
             let escapedText = state.esc(node.text, startOfLine);
 
@@ -671,11 +674,11 @@ const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
         expelEnclosingWhitespace: true,
     }),
     escape: {
-        open: '\\',
-        close: '',
+        open: "\\",
+        close: "",
         mixable: false,
-        escape: false,// That's what we're doing!
-    }
+        escape: false, // That's what we're doing!
+    },
 };
 
 // export our custom serializer using the extended nodes/marks taken from the default schema
