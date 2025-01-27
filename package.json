@@ -52,7 +52,7 @@
         "@stackoverflow/stacks": "^2.3.2",
         "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^29.5.12",
-        "@typescript-eslint/eslint-plugin": "^7.4.0",
+        "@typescript-eslint/eslint-plugin": "^8.21.0",
         "@types/markdown-it": "^14.0.0",
         "@typescript-eslint/parser": "^7.4.0",
         "clean-webpack-plugin": "^4.0.0",
