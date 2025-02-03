@@ -9,7 +9,7 @@ function buildPreserveEscapeFn(
 
     const noop = (): boolean => false;
     //The "escape" rule has been disabled or otherwise removed; so there's nothing to replace here.
-    if (escapeFn.length === 0) {
+    if (!escapeFn) {
         return noop;
     }
     return function preserveEscapeFn(
