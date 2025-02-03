@@ -22,9 +22,9 @@ function buildPreserveEscapeFn(
         if (silent || escRet === false) return escRet;
 
         //The escape rule, if executed, always adds a 'text_special' node with 'escape', and we're going to work on that.
-        const escapeToken = state.tokens.findLast((t) => t.info == 'escape')
+        const escapeToken = state.tokens.findLast((t) => t.info == "escape");
 
-        if(escapeToken) {
+        if (escapeToken) {
             //Now we want to retag the type so that
             // - the escape token is ignored by the text_merge
             // - We can enact custom rendering later
