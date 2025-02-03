@@ -35,6 +35,10 @@ function buildPreserveEscapeFn(
     };
 }
 
+/***
+ * Preserves `text_special` nodes marked as `escape` by changing their type to `escape`
+ *  allowing us to preserve the escape characters and parse them downstream.
+ */
 export function preserve_escape(md: MarkdownIt): void {
     const preserveEscapeTokens = buildPreserveEscapeFn(md);
     md.inline.ruler.at("escape", preserveEscapeTokens);
