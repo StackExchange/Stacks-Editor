@@ -10,9 +10,9 @@ jobs:
     lint:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
             - name: Setup Node.js environment
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: lts/*
                   cache: "npm"
@@ -25,10 +25,10 @@ jobs:
     unit-test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
 
             - name: Setup Node.js environment
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: lts/*
                   cache: "npm"
@@ -41,10 +41,10 @@ jobs:
     e2e-test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v3
+            - uses: actions/checkout@v4
 
             - name: Setup Node.js environment
-              uses: actions/setup-node@v3
+              uses: actions/setup-node@v4
               with:
                   node-version: lts/*
                   cache: "npm"
@@ -58,7 +58,7 @@ jobs:
             - name: Run E2E tests
               run: npm run test:e2e
 
-            - uses: actions/upload-artifact@v3
+            - uses: actions/upload-artifact@v4
               if: failure()
               with:
                   name: playwright-test-results
