@@ -673,12 +673,6 @@ const customMarkdownSerializerMarks: MarkdownSerializerMarks = {
         mixable: true,
         expelEnclosingWhitespace: true,
     }),
-    escape: {
-        open: "\\",
-        close: "",
-        mixable: false,
-        escape: false, // That's what we're doing!
-    },
 };
 
 // export our custom serializer using the extended nodes/marks taken from the default schema
