@@ -44,7 +44,7 @@ test.describe.serial("roundtrip tests", () => {
         [String.raw`\# not a header`],
         [String.raw`- \# list item (not header)`],
     ] as const) {
-        test(`should make markdown -> richtext -> markdown round trip '${markdown}'`, async () => {
+        test(`should make markdown -> richtext -> markdown round trip '${JSON.stringify(markdown)}'`, async () => {
             await clearEditor(page);
             await enterTextAsMarkdown(page, markdown);
             await switchMode(page, "markdown");

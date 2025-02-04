@@ -11,7 +11,6 @@ import { stackLanguageComments } from "./markdown-it/stack-language-comments";
 import { tagLinks } from "./markdown-it/tag-link";
 import { tight_list } from "./markdown-it/tight-list";
 import type { CommonmarkParserFeatures } from "./view";
-import { preserve_escape } from "./markdown-it/preserve-escape";
 
 // extend the default markdown parser's tokens and add our own
 const customMarkdownParserTokens: MarkdownParser["tokens"] = {
@@ -150,11 +149,6 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
     // support <code>foo</code> which parses differently from `bar`
     code_inline_split: {
         mark: "code",
-    },
-
-    escape: {
-        mark: "escape",
-        noCloseToken: true,
     },
 };
 
@@ -325,9 +319,6 @@ export function createDefaultMarkdownItInstance(
 
     // ensure we can tell the difference between the different types of hardbreaks
     defaultMarkdownItInstance.use(hardbreak_markup);
-
-    // ensure that we preserve escape characters inside some block contexts
-    defaultMarkdownItInstance.use(preserve_escape);
 
     // TODO should always exist, so remove the check once the param is made non-optional
     externalPluginProvider?.alterMarkdownIt(defaultMarkdownItInstance);
