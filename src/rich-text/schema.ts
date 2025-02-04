@@ -518,13 +518,6 @@ const marks: {
     sup: genHtmlInlineMarkSpec({}, "sup"),
 
     sub: genHtmlInlineMarkSpec({}, "sub"),
-
-    escape: {
-        parseDOM: [{ tag: "span.escaped" }],
-        toDOM() {
-            return ["span", { class: "escaped" }];
-        },
-    },
 };
 
 // for *every* mark, add in support for the `markup` attribute
