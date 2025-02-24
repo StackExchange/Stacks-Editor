@@ -21,6 +21,10 @@ export const defaultStrings = {
             title: shortcut("Code block"),
             description: "Multiline block of code with syntax highlighting",
         },
+        run_code_block: {
+            title: shortcut("Run"),
+            description: "Run the current code block"
+        },
         emphasis: shortcut("Italic"),
         heading: {
             dropdown: shortcut("Heading"),

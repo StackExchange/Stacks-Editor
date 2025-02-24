@@ -21,6 +21,7 @@ import { inTable } from "./tables";
 
 export * from "./tables";
 export * from "./list";
+export * from "./run-code"
 
 // indent code with four [SPACE] characters (hope you aren't a "tabs" person)
 const CODE_INDENT_STR = "    ";
@@ -502,6 +503,27 @@ export function nodeTypeActive(
         });
 
         return isNodeType && passesAttrsCheck;
+    };
+}
+
+export function nodeTypeNotIn(
+    nodeTypes: NodeType[]
+){
+    return function (state: EditorState) {
+        const { from, to } = state.selection;
+        let isExcluded = false;
+        const nodeTypeNames = nodeTypes.map(nt => nt.name);
+
+        // check all nodes in the selection for the right type
+        state.doc.nodesBetween(from, to, (node) => {
+            isExcluded = nodeTypeNames.includes(node.type.name);
+            // stop recursing if the current node is in the exclusion list
+            if(isExcluded){
+                return false;
+            }
+        });
+
+        return !isExcluded;
     };
 }
 

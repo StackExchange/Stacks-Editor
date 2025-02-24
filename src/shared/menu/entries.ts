@@ -41,6 +41,8 @@ import {
     insertRichTextHorizontalRuleCommand,
     insertRichTextTableCommand,
     toggleList,
+    nodeTypeNotIn,
+    runCodeBlockCommand
 } from "../../rich-text/commands";
 import { _t } from "../localization";
 import { makeMenuButton, makeMenuDropdown } from "./helpers";
@@ -112,7 +114,7 @@ const headingDropdown = (schema: Schema) =>
         "Header",
         _t("commands.heading.dropdown", { shortcut: getShortcut("Mod-H") }),
         "heading-dropdown",
-        () => true,
+        nodeTypeNotIn([schema.nodes.code_block]),
         nodeTypeActive(schema.nodes.heading),
         makeDropdownItem(
             _t("commands.heading.entry", { level: 1 }),
@@ -363,6 +365,25 @@ export const createMenuEntries = (
                     "code-block-btn"
                 ),
             },
+            //TODO: Make addIf, should probably lean on plugins more? (how does Image Upload do this, for example?)
+            {
+                key: "runCodeblock",
+                richText: {
+                    command: runCodeBlockCommand,
+                    visible: nodeTypeActive(schema.nodes.code_block)
+                },
+                commonmark: null,
+                display: makeMenuButton(
+                    "Play",
+                    {
+                        title: _t("commands.run_code_block.title", {
+                            shortcut: getShortcut("Mod-9")
+                        }),
+                        description: _t("commands.run_code_block.description")
+                    },
+                    "code-block-run-btn"
+                )
+            }
         ],
     },
     {
@@ -397,7 +418,10 @@ export const createMenuEntries = (
             addIf(
                 {
                     key: "insertImage",
-                    richText: insertRichTextImageCommand,
+                    richText: {
+                        command: insertRichTextImageCommand,
+                        visible: nodeTypeNotIn([schema.nodes.code_block])
+                    },
                     commonmark: insertCommonmarkImageCommand,
                     display: makeMenuButton(
                         "Image",
@@ -414,8 +438,10 @@ export const createMenuEntries = (
                     key: "insertTable",
                     richText: {
                         command: insertRichTextTableCommand,
-                        visible: (state: EditorState) =>
-                            !inTable(state.schema, state.selection),
+                        visible: (state: EditorState) => {
+                            return nodeTypeNotIn([schema.nodes.code_block])(state)
+                                && !inTable(state.schema, state.selection)
+                        },
                     },
                     commonmark: insertCommonmarkTableCommand,
                     display: makeMenuButton(
@@ -476,7 +502,10 @@ export const createMenuEntries = (
             },
             {
                 key: "insertRule",
-                richText: insertRichTextHorizontalRuleCommand,
+                richText: {
+                    command: insertRichTextHorizontalRuleCommand,
+                    visible: nodeTypeNotIn([schema.nodes.code_block])
+                },
                 commonmark: insertCommonmarkHorizontalRuleCommand,
                 display: makeMenuButton(
                     "HorizontalRule",

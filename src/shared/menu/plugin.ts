@@ -1,6 +1,6 @@
 import {
     EditorState,
-    Plugin,
+    Plugin, PluginKey,
     PluginView,
     Transaction,
 } from "prosemirror-state";
@@ -16,6 +16,7 @@ import {
     makeMenuButton,
 } from "./helpers";
 import { hidePopover } from "@stackoverflow/stacks";
+import {log} from "../logger";
 
 /** NoOp to use in place of missing commands */
 const commandNoOp = () => false;
@@ -399,6 +400,8 @@ export class MenuView implements PluginView {
     }
 }
 
+export const MenuKey = new PluginKey("MenuPlugin");
+
 /**
  * Creates a menu plugin with the passed in entries
  * @param blocks The entries to use on the generated menu
@@ -410,6 +413,7 @@ export function createMenuPlugin(
     containerFn: (view: EditorView) => Node,
     editorType: EditorType
 ): Plugin {
+    log("createMenuPlugin blocks", blocks);
     return new Plugin({
         view(editorView) {
             const menuView = new MenuView(blocks, editorView, editorType);

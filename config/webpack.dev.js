@@ -48,6 +48,15 @@ module.exports = (env, argv) => {
                     },
                 },
                 compress: emulateProdServer,
+                //TODO: Remove this when a more sensible paradigm for code-running is established
+                proxy: [
+                    {
+                        context: ["/api/v4"],
+                        target: "https://7f67beaa.compilers.sphere-engine.com",
+                        secure: false,
+                        changeOrigin: true
+                    }
+                ]
             },
             plugins: [
                 // create an html page for every item in ./site/views

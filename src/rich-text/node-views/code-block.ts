@@ -4,6 +4,7 @@ import type { IExternalPluginProvider } from "../../shared/editor-plugin";
 import { getBlockLanguage } from "../../shared/highlighting/highlight-plugin";
 import { _t } from "../../shared/localization";
 import { escapeHTML, generateRandomId } from "../../shared/utils";
+import { log } from "../../shared/logger";
 
 type getPosParam = boolean | (() => number);
 
@@ -22,6 +23,7 @@ export class CodeBlockView implements NodeView {
         getPos: getPosParam,
         private additionalProcessors: IExternalPluginProvider["codeblockProcessors"]
     ) {
+        log("CodeView", "Constructor entered")
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
         this.render(view, getPos);
@@ -36,6 +38,8 @@ export class CodeBlockView implements NodeView {
         }
 
         const rawLanguage = this.getLanguageFromBlock(node);
+
+        log("CodeView", `Detected language : ${rawLanguage}`);
 
         const processorApplies = this.getValidProcessorResult(
             rawLanguage,
@@ -109,11 +113,15 @@ export class CodeBlockView implements NodeView {
         let autodetectedLanguage = node.attrs
             .detectedHighlightLanguage as string;
 
+        log("Codeview", `Autodetected: ${autodetectedLanguage}`)
+
         if (autodetectedLanguage) {
             autodetectedLanguage = _t("nodes.codeblock_lang_auto", {
                 lang: autodetectedLanguage,
             });
         }
+
+        log("Codeview", `Autodetected pp: ${autodetectedLanguage}`)
 
         return autodetectedLanguage || getBlockLanguage(node);
     }

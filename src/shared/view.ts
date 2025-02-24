@@ -6,6 +6,7 @@ import type { EditorView } from "prosemirror-view";
 import { EditorPlugin } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { setAttributesOnElement, stackOverflowValidateLink } from "./utils";
+import {CodeExecutionProvider} from "./code-execution/code-execution-options";
 
 /** Describes each distinct editor type the StacksEditor handles */
 export enum EditorType {
@@ -46,6 +47,7 @@ export interface CommonViewOptions {
     imageUpload?: ImageUploadOptions;
     /** Externally written plugins to add to the editor */
     editorPlugins?: EditorPlugin[];
+    codeExecutionProvider?: CodeExecutionProvider;
 }
 
 /** Configuration options for parsing and rendering [tag:*] and [meta-tag:*] syntax */
