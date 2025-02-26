@@ -2,7 +2,6 @@ import {
     toggleMark,
     wrapIn,
     setBlockType,
-    exitCode,
     baseKeymap,
 } from "prosemirror-commands";
 import { redo, undo } from "prosemirror-history";
@@ -26,7 +25,6 @@ import {
     moveToPreviousCellCommand,
     moveSelectionAfterTableCommand,
     insertRichTextTableCommand,
-    exitInclusiveMarkCommand,
     indentCodeBlockLinesCommand,
     unindentCodeBlockLinesCommand,
     toggleHeadingLevel,
@@ -86,9 +84,6 @@ export function allKeymaps(
         "Mod-,": toggleMark(schema.marks.sub),
         "Mod-.": toggleMark(schema.marks.sup),
         "Mod-'": toggleMark(schema.marks.kbd),
-        // users expect to be able to leave certain blocks/marks using the arrow keys
-        "ArrowRight": exitInclusiveMarkCommand,
-        "ArrowDown": exitCode,
     });
 
     const keymaps = [
