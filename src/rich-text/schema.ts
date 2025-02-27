@@ -1,5 +1,8 @@
 import { Attrs, MarkSpec, NodeSpec } from "prosemirror-model";
 import { _t } from "../shared/localization";
+import {
+    stackSnippetRichTextNodeSpec
+} from "../shared/plugins/stack-snippet/prosemirror-schema";
 
 //TODO this relies on Stacks classes, should we abstract?
 
@@ -28,6 +31,7 @@ const nodes: {
         attrs: { revealed: { default: false } },
         parseDOM: [
             {
+                priority: 1,
                 tag: "blockquote.spoiler",
                 getAttrs(node: HTMLElement) {
                     return {
@@ -437,6 +441,8 @@ const nodes: {
             tagType: { default: "tag" },
         },
     },
+
+    ...stackSnippetRichTextNodeSpec
 };
 
 const marks: {
