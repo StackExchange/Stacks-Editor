@@ -96,8 +96,8 @@ export function allKeymaps(
 
     const keymaps = [
         richTextKeymap,
-        caseNormalizeKeymap(baseKeymap),
         codeBlockKeymap,
+        caseNormalizeKeymap(baseKeymap),
     ];
 
     if (parserFeatures.tables) {
