@@ -30,6 +30,7 @@ import {
     toggleHeadingLevel,
     toggleTagLinkCommand,
     toggleList,
+    exitInclusiveMarkCommand,
 } from "./commands";
 
 export function allKeymaps(
@@ -84,6 +85,8 @@ export function allKeymaps(
         "Mod-,": toggleMark(schema.marks.sub),
         "Mod-.": toggleMark(schema.marks.sup),
         "Mod-'": toggleMark(schema.marks.kbd),
+        // exit inline code block using the right arrow key
+        "ArrowRight": exitInclusiveMarkCommand,
     });
 
     const keymaps = [

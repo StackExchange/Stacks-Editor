@@ -532,7 +532,7 @@ export function exitInclusiveMarkCommand(
     dispatch: (tr: Transaction) => void
 ) {
     const $cursor = (<TextSelection>state.selection).$cursor;
-    const marks = state.storedMarks || $cursor.marks();
+    const marks = state.storedMarks || $cursor?.marks();
 
     if (!marks?.length) {
         return false;
@@ -546,7 +546,7 @@ export function exitInclusiveMarkCommand(
     }
 
     // check if we're at the end of the exitable mark
-    const nextNode = $cursor.nodeAfter;
+    const nextNode = $cursor?.nodeAfter;
     let endExitables: Mark[];
 
     let tr = state.tr;
