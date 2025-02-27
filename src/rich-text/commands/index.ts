@@ -1,4 +1,4 @@
-import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
+import { setBlockType, splitBlock, toggleMark, wrapIn } from "prosemirror-commands";
 import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
 import {
     Command,
@@ -581,3 +581,12 @@ export function exitInclusiveMarkCommand(
 
     return true;
 }
+
+export function maybeSplitCodeBlock(state: EditorState, dispatch: (tr: Transaction) => void) {
+    console.log('maybeSplitCodeBlock');
+    const { $from } = state.selection;
+    if ($from.parentOffset === 0) {
+        return splitBlock(state, dispatch);
+    }
+    return false;
+  }
