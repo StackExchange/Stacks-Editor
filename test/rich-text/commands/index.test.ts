@@ -785,12 +785,13 @@ describe("commands", () => {
         );
 
         it("should handle the case when $cursor is null", () => {
-                let state = createState("this is my state", []);
-                state = state.apply(state.tr.setSelection(TextSelection.create(state.doc, 0, null))); 
-                expect((<TextSelection>state.selection).$cursor).toBeNull();
-                expect(() => exitInclusiveMarkCommand(state, null)).not.toThrow();
-            }
-        );
+            let state = createState("this is my state", []);
+            state = state.apply(
+                state.tr.setSelection(TextSelection.create(state.doc, 0, null))
+            );
+            expect((<TextSelection>state.selection).$cursor).toBeNull();
+            expect(() => exitInclusiveMarkCommand(state, null)).not.toThrow();
+        });
     });
 
     describe("indentCodeBlockLinesCommand", () => {
