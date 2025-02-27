@@ -1,4 +1,6 @@
-import MarkdownIt from "markdown-it";
+import MarkdownIt, {Token} from "markdown-it";
+import type {EditorPlugin} from "../editor-plugin";
+import {Node} from "prosemirror-model";
 
 const validSnippetRegex = /^<!-- (?:begin snippet:|end snippet |language:)(.*)-->$/;
 const langSnippetRegex = /^<!-- language: lang-(?<lang>css|html|js) -->/;
@@ -204,10 +206,122 @@ const parseSnippetBlock: MarkdownIt.ParserBlock.RuleBlock = (state: MarkdownIt.S
     return true;
 };
 
-/**
- * Parses Stack Snippets blocks, between <!-- begin snippet.* --> to <!-- end snippet -->
- * @param md
- */
-export function stackSnippetsPlugin(md: MarkdownIt): void {
-    md.block.ruler.before("fence", "stack_snippet", parseSnippetBlock)
+const assertAttrValue = (node: Node, attrName: string): string => {
+    const attr: unknown = node.attrs[attrName];
+    if(!attr){
+        return "null";
+    }
+    if(typeof attr != "string"){
+        return "null";
+    }
+    return attr;
 }
+
+export const stackSnippetPlugin: EditorPlugin = () => ({
+    markdown: {
+        parser: {
+            stack_snippet: {
+                block: "stack_snippet",
+                getAttrs: (tok: Token) => ({
+                    hide: tok.attrGet("hide"),
+                    console: tok.attrGet("console"),
+                    babel: tok.attrGet("babel"),
+                    babelPresetReact: tok.attrGet("babelPresetReact"),
+                    babelPresetTS: tok.attrGet("babelPresetTS"),
+                }),
+            },
+
+            stack_snippet_lang: {
+                block: "stack_snippet_lang",
+                noCloseToken: true,
+                getAttrs: (tok: Token) => ({
+                    language: tok.attrGet("language"),
+                }),
+            }
+        },
+        serializers: {
+            nodes: {
+                stack_snippet(state, node) {
+                    const hide = assertAttrValue(node, "hide");
+                    const consoleAttr = assertAttrValue(node, "console");
+                    const babel = assertAttrValue(node, "babel");
+                    const babelPresetReact = assertAttrValue(node, "babelPresetReact");
+                    const babelPresetTS = assertAttrValue(node, "babelPresetTS");
+                    state.write(`<!-- begin snippet: js hide: ${hide} console: ${consoleAttr} babel: ${babel} babelPresetReact: ${babelPresetReact} babelPresetTS: ${babelPresetTS} -->`)
+                    state.write("\n\n");
+                    node.forEach((langNode) => {
+                        const language = assertAttrValue(langNode, "language");
+                        state.write(`<!-- language: lang-${language} -->\n\n`)
+                        //Snippets expects a very specific format; no extra padding on empty lines
+                        // but the code itself needs padded with 4 spaces.
+                        const spacedContent = langNode.textContent
+                            .split('\n')
+                            .map(l => l !== "" ? "    " + l : l);
+                        for(let i = 0; i < spacedContent.length; i++){
+                            state.write(spacedContent[i] + "\n");
+                        }
+                        state.write("\n");
+                    });
+                    state.write("<!-- end snippet -->")
+                    state.closeBlock(node);
+                }
+            },
+            marks: {}
+        },
+        alterMarkdownIt: (mdit) => {
+            mdit.use((md: MarkdownIt) => {
+                md.block.ruler.before("fence", "stack_snippet", parseSnippetBlock)
+            });
+        },
+    },
+    extendSchema: (schema) => {
+        schema.nodes = schema.nodes
+            .addToEnd("stack_snippet", {
+                //It can have exactly 3 lang blocks: html, css, js.
+                // These look the same, and I don't think we need to be picky about order.
+                content: "stack_snippet_lang stack_snippet_lang stack_snippet_lang",
+                group: "block",
+                selectable: false,
+                inline: false,
+                defining: true,
+                isolating: true,
+                attrs: {
+                    hide: { default: "null" },
+                    console: { default: "null" },
+                    babel: { default: "null" },
+                    babelPresetReact: { default: "null" },
+                    babelPresetTS: { default: "null" },
+                },
+                toDOM() {
+                    return ["div", { class: "snippet" }, ["div", { class: "snippet-code" }, 0]]
+                }
+            })
+            .addToEnd("stack_snippet_lang", {
+                content: "text*",
+                code: true,
+                defining: true,
+                isolating: true,
+                inline: false,
+                attrs: {
+                    language: {
+                        default: "",
+                        validate: (value) => {
+                            if(typeof value !== "string"){
+                                return false;
+                            }
+                            return ["js", "css", "html"].includes(value)
+                        }
+                    }
+                },
+                toDOM(node) {
+                    const rawLang: unknown = node.attrs.language;
+                    let language = "";
+                    if(rawLang && typeof rawLang == "string"){
+                        language = rawLang;
+                    }
+                    return ["pre", {class: `prettyprint-override snippet-code-${language} lang-${language}`}, ["code", 0]]
+                }
+            });
+        return schema;
+    }
+});

@@ -23,6 +23,7 @@ import {
     togglePreviewVisibility,
     previewIsVisible,
 } from "../commonmark/plugins/preview";
+import { stackSnippetPlugin } from "../shared/plugins/stack-snippets";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -162,6 +163,9 @@ export class StacksEditor implements View {
             richTextOptions: {
                 classList: commonClasses,
             },
+            editorPlugins: [
+                stackSnippetPlugin
+            ]
         };
     }
 

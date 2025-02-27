@@ -481,7 +481,7 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
         state.wrapBlock(">! ", null, node, () => state.renderContent(node));
     },
 
-    ...stackSnippetSerializerNodes
+    //...stackSnippetSerializerNodes
 };
 
 /**

@@ -11,10 +11,6 @@ import { stackLanguageComments } from "./markdown-it/stack-language-comments";
 import { tagLinks } from "./markdown-it/tag-link";
 import { tight_list } from "./markdown-it/tight-list";
 import type { CommonmarkParserFeatures } from "./view";
-import {stackSnippetsPlugin} from "./plugins/stack-snippet/markdown-it-plugin";
-import {
-    stackSnippetParserTokens
-} from "./plugins/stack-snippet/markdown-parser-schema";
 
 // extend the default markdown parser's tokens and add our own
 const customMarkdownParserTokens: MarkdownParser["tokens"] = {
@@ -155,7 +151,7 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
         mark: "code",
     },
 
-    ...stackSnippetParserTokens
+    //...stackSnippetParserTokens
 };
 
 // add tag attribute support to all the marks like we did in schema
@@ -327,7 +323,7 @@ export function createDefaultMarkdownItInstance(
     defaultMarkdownItInstance.use(hardbreak_markup);
 
     // parse Stack Snippet codes
-    defaultMarkdownItInstance.use(stackSnippetsPlugin);
+    //defaultMarkdownItInstance.use(stackSnippetsPlugin);
 
     // TODO should always exist, so remove the check once the param is made non-optional
     externalPluginProvider?.alterMarkdownIt(defaultMarkdownItInstance);

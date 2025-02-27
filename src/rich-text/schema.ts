@@ -442,7 +442,7 @@ const nodes: {
         },
     },
 
-    ...stackSnippetRichTextNodeSpec
+    //...stackSnippetRichTextNodeSpec
 };
 
 const marks: {
