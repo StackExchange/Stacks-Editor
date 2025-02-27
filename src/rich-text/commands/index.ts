@@ -582,11 +582,10 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
-export function maybeSplitCodeBlock(state: EditorState, dispatch: (tr: Transaction) => void) {
-    console.log('maybeSplitCodeBlock');
+export function splitCodeBlockAtStart(state: EditorState, dispatch: (tr: Transaction) => void) {
     const { $from } = state.selection;
-    if ($from.parentOffset === 0) {
+    if ($from.parent.type.name === "code_block" && $from.parentOffset === 0) {
         return splitBlock(state, dispatch);
     }
     return false;
-  }
+}

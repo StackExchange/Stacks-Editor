@@ -32,7 +32,7 @@ import {
     toggleHeadingLevel,
     toggleTagLinkCommand,
     toggleList,
-    maybeSplitCodeBlock,
+    splitCodeBlockAtStart,
 } from "./commands";
 
 export function allKeymaps(
@@ -44,8 +44,7 @@ export function allKeymaps(
         "Shift-Tab": unindentCodeBlockLinesCommand,
         "Mod-]": indentCodeBlockLinesCommand,
         "Mod-[": unindentCodeBlockLinesCommand,
-        "Mod-s": maybeSplitCodeBlock,
-        "Enter": maybeSplitCodeBlock,
+        "Enter": splitCodeBlockAtStart,
     });
 
     const tableKeymap = caseNormalizeKeymap({
