@@ -1,4 +1,9 @@
-import { Selection, NodeSelection, TextSelection, Transaction } from "prosemirror-state";
+import {
+    Selection,
+    NodeSelection,
+    TextSelection,
+    Transaction,
+} from "prosemirror-state";
 
 /**
  * Returns a transaction that inserts a new paragraph if there is no node after the cursor.
