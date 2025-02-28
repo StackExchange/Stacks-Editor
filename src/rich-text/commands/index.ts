@@ -74,33 +74,6 @@ export function toggleWrapIn(nodeType: NodeType): Command {
 }
 
 /**
- * Creates a command that toggles the NodeType of the current node to the passed type
- * @param nodeType The type to toggle to
- * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
- */
-export function toggleBlockType(
-    nodeType: NodeType,
-    attrs?: { [key: string]: unknown }
-) {
-    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
-        const nodeCheck = nodeTypeActive(nodeType, attrs);
-
-        // if the node is set, toggle it off
-        if (nodeCheck(state)) {
-            return setBlockType(state.schema.nodes.paragraph)(state, dispatch);
-        }
-
-        const setBlockTypeCommand = setBlockType(nodeType, attrs);
-        return setBlockTypeCommand(state, (t) => {
-            if (dispatch) {
-                // when adding a block node, make sure the user can navigate past it
-                dispatch(insertParagraphIfAtDocEnd(t));
-            }
-        });
-    };
-}
-
-/**
  * Toggle a code block on/off for the selection, merging multiple blocks.
  *
  * - If selection is collapsed, expand it to the entire parent block (so we don't split a paragraph).

@@ -33,7 +33,6 @@ import {
     toggleHeadingLevel,
     toggleTagLinkCommand,
     toggleWrapIn,
-    toggleBlockType,
     nodeTypeActive,
     markActive,
     insertRichTextLinkCommand,
@@ -349,7 +348,6 @@ export const createMenuEntries = (
             {
                 key: "toggleCodeblock",
                 richText: {
-                    // command: toggleBlockType(schema.nodes.code_block),
                     command: toggleCodeBlock(),
                     active: nodeTypeActive(schema.nodes.code_block),
                 },
