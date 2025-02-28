@@ -1257,11 +1257,6 @@ describe("commands", () => {
             expect(isValid).toBe(true);
 
             // The doc should now have an empty paragraph inserted above the code block.
-            // This is how splitBlock typically behaves. The exact structure may differ by schema,
-            // but we expect at least 2 top-level nodes now.
-            //
-            // You might check the doc structure with your own matchers or "toString".
-            // For a quick check:
             expect(newState.doc.childCount).toBe(2);
 
             // The first node should be an empty paragraph:
@@ -1274,10 +1269,10 @@ describe("commands", () => {
         });
 
         it("returns false if selection is NOT at offset 0 (even if code block is first)", () => {
-            // Same doc: code block is first, but we place the cursor in the middle of the text.
+            // Same doc as above - code block is first child.
             const state = createState("<pre><code>Some code</code></pre>", []);
-            // Let's say "Some code" is ~9 characters (ignoring the space?), so picking pos=5 is "me c" area.
-            // You may need to tweak this, e.g. pos=6, etc.
+            
+            // Place the cursor in the middle of the code block this time.
             const selectionInMiddle = applySelection(state, 5, 5);
 
             const { newState, isValid } = executeTransaction(
@@ -1297,11 +1292,11 @@ describe("commands", () => {
                 "<p>Intro</p><pre><code>Some code</code></pre>",
                 []
             );
+            
             // Even if we place the cursor at offset 0 of the code block, it’s not the doc’s first child.
-            // If the paragraph occupies the first few positions, the code block might start at pos=8 or so.
             const selectionAtStartOfBlock = applySelection(state, 7, 7);
 
-            // Verify we actually landed in the code_block at offset 0.
+            // First, verify that this test is actually valid - we want to be in the code_block at offset 0.
             const sel = selectionAtStartOfBlock.selection;
             expect(sel.$from.parent.type.name).toBe("code_block");
             expect(sel.$from.parentOffset).toBe(0);
