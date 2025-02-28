@@ -4,16 +4,14 @@ import {
     MarkType,
     NodeType,
     Schema,
-    Node as PMNode,
-    ResolvedPos,
+    Node as PMNode
 } from "prosemirror-model";
 import {
     Command,
     EditorState,
     TextSelection,
     Transaction,
-    Selection,
-    NodeSelection,
+    Selection
 } from "prosemirror-state";
 import { liftTarget } from "prosemirror-transform";
 import { EditorView } from "prosemirror-view";
@@ -24,7 +22,7 @@ import {
 import { getCurrentTextNode } from "../../shared/utils";
 import type { TagLinkOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
-import { insertParagraphIfAtDocEnd } from "./helpers";
+import { insertParagraphIfAtDocEnd, safeSetSelection } from "./helpers";
 import { inTable } from "./tables";
 
 export * from "./tables";
@@ -292,42 +290,6 @@ function buildParagraphFromText(
     });
 
     return paragraphType.create(null, paragraphContent);
-}
-
-/**
- * Attempts to create a TextSelection at `newPos`. If that position does not lie
- * in an inline (text) context (i.e., if the parent node is not a textblock),
- * this function falls back to a NodeSelection on the block at `blockStart`.
- *
- * This is useful in commands (e.g. toggling a code block) where you might end up
- * with an empty block or a position outside a valid text context. Using this
- * helper avoids console warnings and ensures we have a valid selection in the doc.
- *
- * @param tr         The current Transaction to update.
- * @param blockStart The start position of the block node (e.g., paragraph/code_block).
- * @param newPos     The desired position for the text cursor.
- * @returns          The updated Transaction with a valid selection set.
- */
-export function safeSetSelection(
-    tr: Transaction,
-    blockPos: number,
-    newPos: number
-): Transaction {
-    const doc = tr.doc;
-    const $pos = doc.resolve(newPos);
-
-    // 1) If the position’s parent is a textblock, we can safely place a text cursor there.
-    if ($pos.parent.isTextblock) {
-        return tr.setSelection(TextSelection.create(doc, newPos));
-    }
-
-    // 2) Otherwise, try a NodeSelection at blockPos, if there's actually a node there.
-    if (doc.nodeAt(blockPos)) {
-        return tr.setSelection(NodeSelection.create(doc, blockPos));
-    }
-
-    // 3) Final fallback: place the selection at the very start of the document.
-    return tr.setSelection(Selection.atStart(doc));
 }
 
 /**
