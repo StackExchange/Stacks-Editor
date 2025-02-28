@@ -16,7 +16,6 @@ import {
 } from "../test-helpers";
 import { toggleMark } from "prosemirror-commands";
 import { MarkType } from "prosemirror-model";
-import { EditorView } from "prosemirror-view";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;
