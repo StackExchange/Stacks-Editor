@@ -16,7 +16,7 @@ import {
 import { getCurrentTextNode } from "../../shared/utils";
 import type { TagLinkOptions } from "../../shared/view";
 import { showLinkEditor } from "../plugins/link-editor";
-import { insertParagraphIfAtDocEnd, safeSetSelection } from "./helpers";
+import { insertParagraphIfAtDocEnd } from "./helpers";
 import { inTable } from "./tables";
 
 export * from "./tables";
