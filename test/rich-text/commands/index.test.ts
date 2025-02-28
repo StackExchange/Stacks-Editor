@@ -1,4 +1,4 @@
-import { EditorState, Transaction } from "prosemirror-state";
+import { EditorState, TextSelection, Transaction } from "prosemirror-state";
 import {
     exitInclusiveMarkCommand,
     insertRichTextHorizontalRuleCommand,
@@ -734,7 +734,7 @@ describe("commands", () => {
         );
     });
 
-    describe("exitMarkCommand", () => {
+    describe("exitInclusiveMarkCommand", () => {
         it("all exitable marks should also be inclusive: true", () => {
             Object.keys(testRichTextSchema.marks).forEach((markName) => {
                 const mark = testRichTextSchema.marks[markName];
@@ -784,6 +784,23 @@ describe("commands", () => {
                 expect(exitInclusiveMarkCommand(state, null)).toBe(true);
             }
         );
+
+        it("should handle the case when $cursor is null", () => {
+            // suppress console.warn
+            const consoleWarnSpy = jest
+                .spyOn(console, "warn")
+                .mockImplementation(() => {});
+
+            let state = createState("this is my state", []);
+            state = state.apply(
+                state.tr.setSelection(TextSelection.create(state.doc, 0, null))
+            );
+            expect((<TextSelection>state.selection).$cursor).toBeNull();
+            expect(() => exitInclusiveMarkCommand(state, null)).not.toThrow();
+
+            // restore console.warn
+            consoleWarnSpy.mockRestore();
+        });
     });
 
     describe("indentCodeBlockLinesCommand", () => {
