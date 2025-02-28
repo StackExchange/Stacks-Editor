@@ -1,5 +1,12 @@
 import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
-import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
+import {
+    Mark,
+    MarkType,
+    NodeType,
+    Schema,
+    Node as PMNode,
+    ResolvedPos,
+} from "prosemirror-model";
 import {
     Command,
     EditorState,
@@ -92,6 +99,175 @@ export function toggleBlockType(
             }
         });
     };
+}
+
+/**
+ * Toggle a code block on/off, preserving line breaks in both directions:
+ *
+ * - If cursor/selection is in a paragraph (or any non-code_block block),
+ *   replace that *entire* block with a code_block. We gather all text and
+ *   transform paragraph boundaries or hard_breaks into "\n".
+ *
+ * - If cursor/selection is in a code_block, replace that entire code_block
+ *   with a paragraph. We split the code block text by "\n" and insert
+ *   `hard_break` nodes so line breaks are preserved visually in the paragraph.
+ *
+ * Crucially, we expand the selection to the entire parent block, so we
+ * don't leave behind partial paragraphs or empty code blocks.
+ */
+export function toggleCodeBlock() {
+    return (
+        state: EditorState,
+        dispatch?: (tr: Transaction) => void
+    ): boolean => {
+        const { schema, selection, doc } = state;
+        const { code_block, paragraph, hard_break } = schema.nodes as {
+            code_block: NodeType;
+            paragraph: NodeType;
+            hard_break: NodeType;
+        };
+
+        const $from = doc.resolve(selection.from);
+        // Expand selection to the entire block we’re in
+        const { blockStart, blockEnd, parentBlock } = findBlockRange($from);
+
+        if (!parentBlock) {
+            // No parent block found for some reason
+            return false;
+        }
+
+        // ----- CASE 1: Already in a code block => Convert to paragraph -----
+        if (parentBlock.type === code_block) {
+            if (!dispatch) return true;
+            // Gather the entire text from the code block
+            const codeText = doc.textBetween(blockStart, blockEnd, "\n", "\n");
+
+            // Split by '\n' and build paragraph content
+            const lines = codeText.split("\n");
+            const paragraphContent: PMNode[] = [];
+            lines.forEach((line, i) => {
+                if (line.length > 0) {
+                    paragraphContent.push(schema.text(line));
+                }
+                if (i < lines.length - 1) {
+                    // Insert a hard_break for every line except the last
+                    paragraphContent.push(hard_break.create());
+                }
+            });
+
+            // Create the new paragraph node (can be empty)
+            const paragraphNode = paragraph.create(null, paragraphContent);
+
+            // Replace the entire code block node with our paragraph
+            let tr = state.tr.replaceRangeWith(
+                blockStart,
+                blockEnd,
+                paragraphNode
+            );
+
+            // Place cursor at end of newly inserted paragraph
+            // blockStart + nodeSize - 1 is typically "just inside the end"
+            let newPos = blockStart + paragraphNode.nodeSize - 1;
+            newPos = clampPosition(tr.doc, newPos);
+            tr = tr.setSelection(TextSelection.create(tr.doc, newPos));
+
+            dispatch(tr.scrollIntoView());
+            return true;
+        }
+
+        // ----- CASE 2: Not in a code block => Convert block to code_block -----
+        if (!dispatch) return true;
+
+        // Gather the entire block’s text, turning block boundaries or hard_break
+        // into "\n". Since we only have one block here, we mainly watch for
+        // `hard_break`s.
+        const blockText = gatherTextWithNewlines(
+            doc,
+            blockStart,
+            blockEnd,
+            hard_break
+        );
+
+        // Create a single code_block node with the text (if any)
+        const codeBlockContent: PMNode[] = [];
+        if (blockText.length > 0) {
+            codeBlockContent.push(schema.text(blockText));
+        }
+        const codeBlockNode = code_block.create(null, codeBlockContent);
+
+        let tr = state.tr.replaceRangeWith(blockStart, blockEnd, codeBlockNode);
+
+        // Place cursor inside the new code block
+        let newPos: number;
+        if (blockText.length > 0) {
+            // Position near the end of the text
+            newPos = blockStart + codeBlockNode.nodeSize - 1;
+        } else {
+            // If empty, just put it at blockStart+1
+            newPos = blockStart + 1;
+        }
+        newPos = clampPosition(tr.doc, newPos);
+        tr = tr.setSelection(TextSelection.create(tr.doc, newPos));
+
+        dispatch(tr.scrollIntoView());
+        return true;
+    };
+}
+
+/**
+ * Find the entire block range (start..end) that $pos is inside.
+ */
+function findBlockRange($pos: ResolvedPos) {
+    const parentBlock = $pos.parent;
+    // Start of this block = (the node start minus 1 is where the node "starts" in the doc)
+    const blockStart = $pos.start($pos.depth);
+    // blockEnd is blockStart + nodeSize - 2, because ProseMirror counts
+    // the node boundary as 2.
+    const blockEnd = blockStart + parentBlock.nodeSize - 2;
+
+    return { blockStart, blockEnd, parentBlock };
+}
+
+/**
+ * Walk through nodes in [from..to], converting:
+ * - A `hard_break` node => "\n"
+ * - Text node => text
+ * - A new block boundary in [from..to] => "\n" (but since we are only dealing
+ *   with one block, we typically won't see multiple blocks. This is mostly relevant
+ *   if you adapt this to handle multi-block toggling.)
+ */
+function gatherTextWithNewlines(
+    doc: PMNode,
+    from: number,
+    to: number,
+    hardBreakType: NodeType
+): string {
+    let text = "";
+    let prevBlockPos = -1;
+
+    doc.nodesBetween(from, to, (node, pos) => {
+        // If we see a new block boundary in [from..to], insert a newline
+        if (node.isBlock && pos >= from && pos > prevBlockPos && pos > from) {
+            text += "\n";
+            prevBlockPos = pos;
+        }
+        if (node.isText) {
+            text += node.text;
+        } else if (node.type === hardBreakType) {
+            text += "\n";
+        }
+    });
+
+    return text;
+}
+
+/**
+ * Clamp a position so it doesn't exceed the doc’s valid text range.
+ */
+function clampPosition(doc: PMNode, pos: number): number {
+    const minPos = 1;
+    const maxPos = doc.nodeSize - 2; // doc.openStart + doc.openEnd
+    return Math.max(minPos, Math.min(pos, maxPos));
 }
 
 /**

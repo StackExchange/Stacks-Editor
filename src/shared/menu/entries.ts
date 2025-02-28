@@ -41,6 +41,7 @@ import {
     insertRichTextHorizontalRuleCommand,
     insertRichTextTableCommand,
     toggleList,
+    toggleCodeBlock,
 } from "../../rich-text/commands";
 import { _t } from "../localization";
 import { makeMenuButton, makeMenuDropdown } from "./helpers";
@@ -348,7 +349,8 @@ export const createMenuEntries = (
             {
                 key: "toggleCodeblock",
                 richText: {
-                    command: toggleBlockType(schema.nodes.code_block),
+                    // command: toggleBlockType(schema.nodes.code_block),
+                    command: toggleCodeBlock(),
                     active: nodeTypeActive(schema.nodes.code_block),
                 },
                 commonmark: insertCodeblockCommand,
