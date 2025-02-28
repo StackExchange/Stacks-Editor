@@ -1,6 +1,7 @@
 import MarkdownIt, {Token} from "markdown-it";
 import type {EditorPlugin} from "../editor-plugin";
 import {Node} from "prosemirror-model";
+import {Plugin} from "prosemirror-state";
 
 const validSnippetRegex = /^<!-- (?:begin snippet:|end snippet |language:)(.*)-->$/;
 const langSnippetRegex = /^<!-- language: lang-(?<lang>css|html|js) -->/;

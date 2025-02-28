@@ -12,9 +12,6 @@ import {
 } from "./html-helpers";
 import { IExternalPluginProvider } from "./editor-plugin";
 import MarkdownIt from "markdown-it";
-import {
-    stackSnippetSerializerNodes
-} from "./plugins/stack-snippet/markdown-serializer-schema";
 
 // helper type so the code is a tad less messy
 export type MarkdownSerializerNodes = ConstructorParameters<
