@@ -1271,7 +1271,7 @@ describe("commands", () => {
         it("returns false if selection is NOT at offset 0 (even if code block is first)", () => {
             // Same doc as above - code block is first child.
             const state = createState("<pre><code>Some code</code></pre>", []);
-            
+
             // Place the cursor in the middle of the code block this time.
             const selectionInMiddle = applySelection(state, 5, 5);
 
@@ -1292,7 +1292,7 @@ describe("commands", () => {
                 "<p>Intro</p><pre><code>Some code</code></pre>",
                 []
             );
-            
+
             // Even if we place the cursor at offset 0 of the code block, it’s not the doc’s first child.
             const selectionAtStartOfBlock = applySelection(state, 7, 7);
 
