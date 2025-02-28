@@ -105,12 +105,10 @@ export function toggleBlockType(
 /**
  * Toggle a code block on/off for the selection, merging multiple blocks.
  *
- * - If selection is collapsed, we expand to the entire parent block, ensuring
- *   we don't split a paragraph at the cursor.
- * - If every block in [from..to] is a code_block, convert them all into one
- *   paragraph with line breaks.
- * - Otherwise, convert all blocks in [from..to] into one code block,
- *   separating them with '\n'.
+ * - If selection is collapsed, expand it to the entire parent block (so we don't split a paragraph).
+ * - If selection covers part or all of multiple blocks, expand to cover those entire blocks.
+ * - If every touched block is a code_block, merge them into one paragraph (with `hard_break`).
+ * - Otherwise, merge them into a single code block, separating blocks by "\n".
  */
 export function toggleCodeBlock() {
     return (
@@ -120,33 +118,27 @@ export function toggleCodeBlock() {
         if (!dispatch) return true;
 
         const { schema, doc, selection } = state;
-        let { from, to } = selection; // note we'll reassign from/to
-
+        const { from: originalFrom, to: originalTo } = selection;
         const { code_block, paragraph, hard_break } = schema.nodes as {
             code_block: NodeType;
             paragraph: NodeType;
             hard_break: NodeType;
         };
 
-        // --- 1) If the user just has a cursor (no range), expand to the entire parent block ---
-        if (from === to) {
-            const $pos = doc.resolve(from);
-            // Start of the block containing the cursor
-            const blockStart = $pos.start($pos.depth);
-            // End of that block
-            const blockEnd = blockStart + $pos.parent.nodeSize - 2;
+        // 1) Expand the selection so it covers entire blocks (not partial).
+        let { from, to } = expandSelectionToBlockBoundaries(
+            doc,
+            originalFrom,
+            originalTo
+        );
 
-            from = blockStart;
-            to = blockEnd;
-        }
-
-        // --- 2) Check if all blocks in [from..to] are code_block ---
+        // 2) Check if *all* blocks in [from..to] are code_block
         const allAreCodeBlocks = isAllCodeBlocks(doc, from, to, code_block);
 
+        let tr = state.tr;
         if (allAreCodeBlocks) {
-            // Toggle OUT of code blocks => single paragraph
+            // --- Toggle OUT of code blocks => single paragraph ---
             const codeText = doc.textBetween(from, to, "\n", "\n");
-            // Build paragraph with text/hard_break
             const paragraphNode = buildParagraphFromText(
                 codeText,
                 paragraph,
@@ -154,16 +146,13 @@ export function toggleCodeBlock() {
                 schema
             );
 
-            let tr = state.tr.replaceRangeWith(from, to, paragraphNode);
+            tr = tr.replaceRangeWith(from, to, paragraphNode);
 
-            // Place cursor near end of paragraph
+            // Place cursor near the end of that paragraph
             const insertPos = from + paragraphNode.nodeSize - 1;
             tr = safeSetSelection(tr, from, insertPos);
-
-            dispatch(tr.scrollIntoView());
-            return true;
         } else {
-            // Toggle INTO a code block => single code block
+            // --- Toggle INTO code block => single code block ---
             const blockText = gatherTextWithNewlines(doc, from, to, hard_break);
 
             const codeBlockContent: PMNode[] = [];
@@ -172,20 +161,70 @@ export function toggleCodeBlock() {
             }
 
             const codeBlockNode = code_block.create(null, codeBlockContent);
-            let tr = state.tr.replaceRangeWith(from, to, codeBlockNode);
+            tr = tr.replaceRangeWith(from, to, codeBlockNode);
 
             // Place cursor near end of code block
             const insertPos = from + codeBlockNode.nodeSize - 1;
             tr = safeSetSelection(tr, from, insertPos);
-
-            dispatch(tr.scrollIntoView());
-            return true;
         }
+
+        dispatch(tr.scrollIntoView());
+        return true;
     };
 }
 
 /**
- * Returns true if every block node within [from..to] is a code_block.
+ * Expand [from..to] so that it covers the *entire* blocks that the selection touches.
+ * In other words, if the user partially selected some text in a block, we extend
+ * from..to to include the entire block node(s).
+ *
+ * @param doc The top-level document node
+ * @param from The original selection start
+ * @param to The original selection end
+ * @returns An object with adjusted `from` and `to`.
+ */
+function expandSelectionToBlockBoundaries(
+    doc: PMNode,
+    from: number,
+    to: number
+) {
+    // If the selection is already covering multiple blocks or partially inside,
+    // we gather the minimal blockStart of all touched blocks, and the maximal blockEnd.
+
+    let blockStart = from;
+    let blockEnd = to;
+
+    doc.nodesBetween(from, to, (node, pos) => {
+        if (node.isBlock) {
+            const startPos = pos; // where the block node starts
+            const endPos = pos + node.nodeSize; // block node ends after nodeSize
+            if (startPos < blockStart) {
+                blockStart = startPos;
+            }
+            if (endPos > blockEnd) {
+                blockEnd = endPos;
+            }
+        }
+    });
+
+    // If selection is collapsed or we found no blocks, we still do the "parent block" approach
+    if (blockStart === blockEnd) {
+        // The selection might be in the middle of a block. We'll expand to that entire block
+        const $from = doc.resolve(from);
+        blockStart = $from.start($from.depth);
+        blockEnd = blockStart + $from.parent.nodeSize;
+    }
+
+    // Subtract 1 from blockEnd to avoid counting the block node's boundary beyond content
+    // Usually, we do -2 for open-close tokens, but to keep it consistent with replaceRangeWith,
+    // let's do blockEnd - 1 or blockEnd - 2. Let's see:
+    // Actually, we typically do: blockStart + node.nodeSize - 2 for one block.
+    // But here, multiple blocks might be considered. We'll do -1 so we replace the entire node.
+    return { from: blockStart, to: blockEnd - 1 };
+}
+
+/**
+ * Returns true if EVERY block node within [from..to] is a `code_block`.
  */
 function isAllCodeBlocks(
     doc: PMNode,
@@ -205,12 +244,7 @@ function isAllCodeBlocks(
 }
 
 /**
- * Gather text in [from..to], converting:
- * - block boundaries => '\n'
- * - hard_break => '\n'
- * - text => appended text
- *
- * Returns a multi-line string for creating a code_block.
+ * Convert [from..to] to multiline text, turning block boundaries/hard_break => "\n".
  */
 function gatherTextWithNewlines(
     doc: PMNode,
@@ -237,8 +271,8 @@ function gatherTextWithNewlines(
 }
 
 /**
- * Build a single paragraph node from multi-line `codeText` by splitting
- * on '\n' and inserting `hard_break` for line breaks.
+ * Build a single paragraph node from `codeText` by splitting on "\n"
+ * and inserting `hard_break` for line breaks.
  */
 function buildParagraphFromText(
     codeText: string,
