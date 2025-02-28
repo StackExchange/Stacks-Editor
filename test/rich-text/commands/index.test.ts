@@ -7,6 +7,7 @@ import {
     toggleHeadingLevel,
     toggleTagLinkCommand,
     toggleWrapIn,
+    splitCodeBlockAtStartOfDoc,
 } from "../../../src/rich-text/commands";
 import {
     applyNodeSelection,
@@ -1236,6 +1237,99 @@ describe("commands", () => {
                     },
                 ],
             });
+        });
+    });
+
+    describe("splitCodeBlockAtStartOfDoc", () => {
+        it("splits if the code block is first in the doc and the selection is at offset 0", () => {
+            // A doc where the *very first* node is a code block with text "Some code".
+            const state = createState("<pre><code>Some code</code></pre>", []);
+
+            // We want to place the cursor at the very start of the code block.
+            const selectionAtStart = applySelection(state, 0, 0);
+
+            const { newState, isValid } = executeTransaction(
+                selectionAtStart,
+                splitCodeBlockAtStartOfDoc
+            );
+
+            // Because it's the first child + offset 0 in code_block, the command should handle it:
+            expect(isValid).toBe(true);
+
+            // The doc should now have an empty paragraph inserted above the code block.
+            // This is how splitBlock typically behaves. The exact structure may differ by schema,
+            // but we expect at least 2 top-level nodes now.
+            //
+            // You might check the doc structure with your own matchers or "toString".
+            // For a quick check:
+            expect(newState.doc.childCount).toBe(2);
+
+            // The first node should be an empty paragraph:
+            expect(newState.doc.firstChild.type.name).toBe("paragraph");
+            expect(newState.doc.firstChild.textContent).toBe("");
+
+            // The second node should be the code block with the original text:
+            expect(newState.doc.lastChild.type.name).toBe("code_block");
+            expect(newState.doc.lastChild.textContent).toBe("Some code");
+        });
+
+        it("returns false if selection is NOT at offset 0 (even if code block is first)", () => {
+            // Same doc: code block is first, but we place the cursor in the middle of the text.
+            const state = createState("<pre><code>Some code</code></pre>", []);
+            // Let's say "Some code" is ~9 characters (ignoring the space?), so picking pos=5 is "me c" area.
+            // You may need to tweak this, e.g. pos=6, etc.
+            const selectionInMiddle = applySelection(state, 5, 5);
+
+            const { newState, isValid } = executeTransaction(
+                selectionInMiddle,
+                splitCodeBlockAtStartOfDoc
+            );
+
+            // Should not handle it:
+            expect(isValid).toBe(false);
+            // Doc should remain unchanged.
+            expect(newState.doc.toString()).toEqual(state.doc.toString());
+        });
+
+        it("returns false if the code block is NOT the first child in the doc", () => {
+            // A doc with a paragraph first, THEN a code block.
+            const state = createState(
+                "<p>Intro</p><pre><code>Some code</code></pre>",
+                []
+            );
+            // Even if we place the cursor at offset 0 of the code block, it’s not the doc’s first child.
+            // If the paragraph occupies the first few positions, the code block might start at pos=8 or so.
+            const selectionAtStartOfBlock = applySelection(state, 7, 7);
+
+            // Verify we actually landed in the code_block at offset 0.
+            const sel = selectionAtStartOfBlock.selection;
+            expect(sel.$from.parent.type.name).toBe("code_block");
+            expect(sel.$from.parentOffset).toBe(0);
+
+            const { newState, isValid } = executeTransaction(
+                selectionAtStartOfBlock,
+                splitCodeBlockAtStartOfDoc
+            );
+
+            // Should not handle it because the code block isn’t the doc's first node:
+            expect(isValid).toBe(false);
+            expect(newState.doc.toString()).toEqual(state.doc.toString());
+        });
+
+        it("returns false if the parent node is not a code_block", () => {
+            // If the first node in the doc is a paragraph instead.
+            const state = createState("<p>First paragraph</p>", []);
+            // Cursor at the start of that paragraph
+            const selectionInParagraph = applySelection(state, 0, 0);
+
+            const { newState, isValid } = executeTransaction(
+                selectionInParagraph,
+                splitCodeBlockAtStartOfDoc
+            );
+
+            // Not a code block, so do nothing:
+            expect(isValid).toBe(false);
+            expect(newState.doc.toString()).toEqual(state.doc.toString());
         });
     });
 });
