@@ -103,139 +103,114 @@ export function toggleBlockType(
 }
 
 /**
- * Toggle a code block on/off, preserving line breaks in both directions:
+ * Toggle a code block on/off for the selection, merging multiple blocks.
  *
- * - If cursor/selection is in a paragraph (or any non-code_block block),
- *   replace that *entire* block with a code_block. We gather all text and
- *   transform paragraph boundaries or hard_breaks into "\n".
- *
- * - If cursor/selection is in a code_block, replace that entire code_block
- *   with a paragraph. We split the code block text by "\n" and insert
- *   `hard_break` nodes so line breaks are preserved visually in the paragraph.
- *
- * Crucially, we expand the selection to the entire parent block, so we
- * don't leave behind partial paragraphs or empty code blocks.
+ * - If selection is collapsed, we expand to the entire parent block, ensuring
+ *   we don't split a paragraph at the cursor.
+ * - If every block in [from..to] is a code_block, convert them all into one
+ *   paragraph with line breaks.
+ * - Otherwise, convert all blocks in [from..to] into one code block,
+ *   separating them with '\n'.
  */
 export function toggleCodeBlock() {
     return (
         state: EditorState,
         dispatch?: (tr: Transaction) => void
     ): boolean => {
-        const { schema, selection, doc } = state;
+        if (!dispatch) return true;
+
+        const { schema, doc, selection } = state;
+        let { from, to } = selection; // note we'll reassign from/to
+
         const { code_block, paragraph, hard_break } = schema.nodes as {
             code_block: NodeType;
             paragraph: NodeType;
             hard_break: NodeType;
         };
 
-        const $from = doc.resolve(selection.from);
-        // Expand selection to the entire block we’re in
-        const { blockStart, blockEnd, parentBlock } = findBlockRange($from);
+        // --- 1) If the user just has a cursor (no range), expand to the entire parent block ---
+        if (from === to) {
+            const $pos = doc.resolve(from);
+            // Start of the block containing the cursor
+            const blockStart = $pos.start($pos.depth);
+            // End of that block
+            const blockEnd = blockStart + $pos.parent.nodeSize - 2;
 
-        if (!parentBlock) {
-            // No parent block found for some reason
-            return false;
+            from = blockStart;
+            to = blockEnd;
         }
 
-        // ----- CASE 1: Already in a code block => Convert to paragraph -----
-        if (parentBlock.type === code_block) {
-            if (!dispatch) return true;
-            // Gather the entire text from the code block
-            const codeText = doc.textBetween(blockStart, blockEnd, "\n", "\n");
+        // --- 2) Check if all blocks in [from..to] are code_block ---
+        const allAreCodeBlocks = isAllCodeBlocks(doc, from, to, code_block);
 
-            // Split by '\n' and build paragraph content
-            const lines = codeText.split("\n");
-            const paragraphContent: PMNode[] = [];
-            lines.forEach((line, i) => {
-                if (line.length > 0) {
-                    paragraphContent.push(schema.text(line));
-                }
-                if (i < lines.length - 1) {
-                    // Insert a hard_break for every line except the last
-                    paragraphContent.push(hard_break.create());
-                }
-            });
-
-            // Create the new paragraph node (can be empty)
-            const paragraphNode = paragraph.create(null, paragraphContent);
-
-            // Replace the entire code block node with our paragraph
-            let tr = state.tr.replaceRangeWith(
-                blockStart,
-                blockEnd,
-                paragraphNode
+        if (allAreCodeBlocks) {
+            // Toggle OUT of code blocks => single paragraph
+            const codeText = doc.textBetween(from, to, "\n", "\n");
+            // Build paragraph with text/hard_break
+            const paragraphNode = buildParagraphFromText(
+                codeText,
+                paragraph,
+                hard_break,
+                schema
             );
 
-            // Place cursor at end of newly inserted paragraph
-            // blockStart + nodeSize - 1 is typically "just inside the end"
-            let newPos = blockStart + paragraphNode.nodeSize - 1;
-            newPos = clampPosition(tr.doc, newPos);
-            tr = safeSetSelection(tr, blockStart, newPos);
+            let tr = state.tr.replaceRangeWith(from, to, paragraphNode);
+
+            // Place cursor near end of paragraph
+            const insertPos = from + paragraphNode.nodeSize - 1;
+            tr = safeSetSelection(tr, from, insertPos);
+
+            dispatch(tr.scrollIntoView());
+            return true;
+        } else {
+            // Toggle INTO a code block => single code block
+            const blockText = gatherTextWithNewlines(doc, from, to, hard_break);
+
+            const codeBlockContent: PMNode[] = [];
+            if (blockText.length > 0) {
+                codeBlockContent.push(schema.text(blockText));
+            }
+
+            const codeBlockNode = code_block.create(null, codeBlockContent);
+            let tr = state.tr.replaceRangeWith(from, to, codeBlockNode);
+
+            // Place cursor near end of code block
+            const insertPos = from + codeBlockNode.nodeSize - 1;
+            tr = safeSetSelection(tr, from, insertPos);
 
             dispatch(tr.scrollIntoView());
             return true;
         }
-
-        // ----- CASE 2: Not in a code block => Convert block to code_block -----
-        if (!dispatch) return true;
-
-        // Gather the entire block’s text, turning block boundaries or hard_break
-        // into "\n". Since we only have one block here, we mainly watch for
-        // `hard_break`s.
-        const blockText = gatherTextWithNewlines(
-            doc,
-            blockStart,
-            blockEnd,
-            hard_break
-        );
-
-        // Create a single code_block node with the text (if any)
-        const codeBlockContent: PMNode[] = [];
-        if (blockText.length > 0) {
-            codeBlockContent.push(schema.text(blockText));
-        }
-        const codeBlockNode = code_block.create(null, codeBlockContent);
-
-        let tr = state.tr.replaceRangeWith(blockStart, blockEnd, codeBlockNode);
-
-        // Place cursor inside the new code block
-        let newPos: number;
-        if (blockText.length > 0) {
-            // Position near the end of the text
-            newPos = blockStart + codeBlockNode.nodeSize - 1;
-        } else {
-            // If empty, just put it at blockStart+1
-            newPos = blockStart + 1;
-        }
-        newPos = clampPosition(tr.doc, newPos);
-        tr = safeSetSelection(tr, blockStart, newPos);
-
-        dispatch(tr.scrollIntoView());
-        return true;
     };
 }
 
 /**
- * Find the entire block range (start..end) that $pos is inside.
+ * Returns true if every block node within [from..to] is a code_block.
  */
-function findBlockRange($pos: ResolvedPos) {
-    const parentBlock = $pos.parent;
-    // Start of this block = (the node start minus 1 is where the node "starts" in the doc)
-    const blockStart = $pos.start($pos.depth);
-    // blockEnd is blockStart + nodeSize - 2, because ProseMirror counts
-    // the node boundary as 2.
-    const blockEnd = blockStart + parentBlock.nodeSize - 2;
-
-    return { blockStart, blockEnd, parentBlock };
+function isAllCodeBlocks(
+    doc: PMNode,
+    from: number,
+    to: number,
+    codeBlockType: NodeType
+): boolean {
+    let allCode = true;
+    doc.nodesBetween(from, to, (node) => {
+        if (node.isBlock && node.type !== codeBlockType) {
+            allCode = false;
+            return false; // stop traversing deeper
+        }
+        return true;
+    });
+    return allCode;
 }
 
 /**
- * Walk through nodes in [from..to], converting:
- * - A `hard_break` node => "\n"
- * - Text node => text
- * - A new block boundary in [from..to] => "\n" (but since we are only dealing
- *   with one block, we typically won't see multiple blocks. This is mostly relevant
- *   if you adapt this to handle multi-block toggling.)
+ * Gather text in [from..to], converting:
+ * - block boundaries => '\n'
+ * - hard_break => '\n'
+ * - text => appended text
+ *
+ * Returns a multi-line string for creating a code_block.
  */
 function gatherTextWithNewlines(
     doc: PMNode,
@@ -247,7 +222,6 @@ function gatherTextWithNewlines(
     let prevBlockPos = -1;
 
     doc.nodesBetween(from, to, (node, pos) => {
-        // If we see a new block boundary in [from..to], insert a newline
         if (node.isBlock && pos >= from && pos > prevBlockPos && pos > from) {
             text += "\n";
             prevBlockPos = pos;
@@ -263,12 +237,27 @@ function gatherTextWithNewlines(
 }
 
 /**
- * Clamp a position so it doesn't exceed the doc’s valid text range.
+ * Build a single paragraph node from multi-line `codeText` by splitting
+ * on '\n' and inserting `hard_break` for line breaks.
  */
-function clampPosition(doc: PMNode, pos: number): number {
-    const minPos = 1;
-    const maxPos = doc.nodeSize - 2; // doc.openStart + doc.openEnd
-    return Math.max(minPos, Math.min(pos, maxPos));
+function buildParagraphFromText(
+    codeText: string,
+    paragraphType: NodeType,
+    hardBreakType: NodeType,
+    schema: any
+): PMNode {
+    const lines = codeText.split("\n");
+    const paragraphContent: PMNode[] = [];
+    lines.forEach((line, index) => {
+        if (line.length > 0) {
+            paragraphContent.push(schema.text(line));
+        }
+        if (index < lines.length - 1) {
+            paragraphContent.push(hardBreakType.create());
+        }
+    });
+
+    return paragraphType.create(null, paragraphContent);
 }
 
 /**
