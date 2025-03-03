@@ -1,6 +1,6 @@
 import { Node as PMNode, NodeType } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
-import { safeSetSelection } from "./helpers";
+import { insertParagraphIfAtDocEnd, safeSetSelection } from "./helpers";
 
 /**
  * Toggle a code block on/off for the selection, merging multiple blocks.
@@ -67,6 +67,8 @@ export function toggleCodeBlock() {
             const insertPos = from + codeBlockNode.nodeSize - 1;
             tr = safeSetSelection(tr, from, insertPos);
         }
+
+        tr = insertParagraphIfAtDocEnd(tr);
 
         dispatch(tr.scrollIntoView());
         return true;
