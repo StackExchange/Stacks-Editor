@@ -31,8 +31,7 @@ describe("toggleCodeBlock command", () => {
         // Apply the command
         state = applyCommand(toggleCodeBlock(), state);
 
-        // The resulting doc should be just a codeBlock node, empty
-        // (In the basic schema, codeBlock is "```" style, but let's just match structure).
+        // The resulting doc should be just a codeBlock node (empty), with a new paragraph after it.
         const expectedDoc = doc(code_block(), p());
 
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
@@ -71,7 +70,7 @@ describe("toggleCodeBlock command", () => {
 
         // We should get a single paragraph with "abc", then a hard_break, then "def".
         // Using test-builder, we can represent a hard break with `br()`.
-        const expectedDoc = doc(p("abc", br(), "def"), p());
+        const expectedDoc = doc(p("abc", br(), "def"));
 
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });

@@ -66,9 +66,9 @@ export function toggleCodeBlock() {
             // Place cursor near end of code block
             const insertPos = from + codeBlockNode.nodeSize - 1;
             tr = safeSetSelection(tr, from, insertPos);
-        }
 
-        tr = insertParagraphIfAtDocEnd(tr);
+            tr = insertParagraphIfAtDocEnd(tr);
+        }
 
         dispatch(tr.scrollIntoView());
         return true;
