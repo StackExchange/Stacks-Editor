@@ -19,7 +19,7 @@ function applyCommand(command: Command, state: EditorState): EditorState {
 }
 
 describe("toggleCodeBlock command", () => {
-    test("turns an empty paragraph into an empty code block", () => {
+    it("turns an empty paragraph into an empty code block", () => {
         // Start with a doc of one empty paragraph, cursor inside it
         const startDoc = doc(p("<cursor>"));
 
@@ -37,7 +37,7 @@ describe("toggleCodeBlock command", () => {
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });
 
-    test("turns a paragraph with text into a code block (no selection, just cursor)", () => {
+    it("turns a paragraph with text into a code block (no selection, just cursor)", () => {
         // Start: paragraph with text, cursor in the middle
         const startDoc = doc(p("ab<cursor>cd"));
 
@@ -56,7 +56,7 @@ describe("toggleCodeBlock command", () => {
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });
 
-    test("turns a multi-line code block into a paragraph with hard breaks", () => {
+    it("turns a multi-line code block into a paragraph with hard breaks", () => {
         // A codeBlock with two lines: "abc\ndef"
         // We'll put the cursor anywhere in that block.
         const startDoc = doc(code_block("abc\ndef<cursor>"));
@@ -75,7 +75,7 @@ describe("toggleCodeBlock command", () => {
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });
 
-    test("turns a paragraph with a hard_break into a multi-line code block", () => {
+    it("turns a paragraph with a hard_break into a multi-line code block", () => {
         // A single paragraph, "abc<break>def"
         const startDoc = doc(p("abc", br(), "def<cursor>"));
 

@@ -1,4 +1,4 @@
-import { Node as ProseMirrorNode, NodeType } from "prosemirror-model";
+import { Node as ProseMirrorNode, NodeType, Schema } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
 import { insertParagraphIfAtDocEnd, safeSetSelection } from "./helpers";
 
@@ -26,7 +26,7 @@ export function toggleCodeBlock() {
         };
 
         // 1) Expand the selection so it covers entire blocks (not partial).
-        let { from, to } = expandSelectionToBlockBoundaries(
+        const { from, to } = expandSelectionToBlockBoundaries(
             doc,
             originalFrom,
             originalTo
@@ -177,7 +177,7 @@ function buildParagraphFromText(
     codeText: string,
     paragraphType: NodeType,
     hardBreakType: NodeType,
-    schema: any
+    schema: Schema
 ): ProseMirrorNode {
     const lines = codeText.split("\n");
     const paragraphContent: ProseMirrorNode[] = [];
