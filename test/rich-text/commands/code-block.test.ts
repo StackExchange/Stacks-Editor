@@ -86,7 +86,7 @@ describe("toggleCodeBlock command", () => {
 
         state = applyCommand(toggleCodeBlock(), state);
 
-        // This should yield one codeBlock node with "abc\ndef".
+        // This should yield one codeBlock node with "abc\ndef", and an empty paragraph.
         const expectedDoc = doc(code_block("abc\ndef"), p());
 
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());

@@ -1,4 +1,4 @@
-import { Node as PMNode, NodeType } from "prosemirror-model";
+import { Node as ProseMirrorNode, NodeType } from "prosemirror-model";
 import { EditorState, Transaction } from "prosemirror-state";
 import { insertParagraphIfAtDocEnd, safeSetSelection } from "./helpers";
 
@@ -37,7 +37,7 @@ export function toggleCodeBlock() {
 
         let tr = state.tr;
         if (allAreCodeBlocks) {
-            // --- Toggle OUT of code blocks => single paragraph ---
+            // Turn this code block into a paragraph
             const codeText = doc.textBetween(from, to, "\n", "\n");
             const paragraphNode = buildParagraphFromText(
                 codeText,
@@ -52,10 +52,10 @@ export function toggleCodeBlock() {
             const insertPos = from + paragraphNode.nodeSize - 1;
             tr = safeSetSelection(tr, from, insertPos);
         } else {
-            // --- Toggle INTO code block => single code block ---
+            // Turn this paragraph into a code block
             const blockText = gatherTextWithNewlines(doc, from, to, hard_break);
 
-            const codeBlockContent: PMNode[] = [];
+            const codeBlockContent: ProseMirrorNode[] = [];
             if (blockText.length > 0) {
                 codeBlockContent.push(schema.text(blockText));
             }
@@ -67,6 +67,7 @@ export function toggleCodeBlock() {
             const insertPos = from + codeBlockNode.nodeSize - 1;
             tr = safeSetSelection(tr, from, insertPos);
 
+            // If we're at the end of the document, add an empty paragraph underneath
             tr = insertParagraphIfAtDocEnd(tr);
         }
 
@@ -86,7 +87,7 @@ export function toggleCodeBlock() {
  * @returns An object with adjusted `from` and `to`.
  */
 function expandSelectionToBlockBoundaries(
-    doc: PMNode,
+    doc: ProseMirrorNode,
     from: number,
     to: number
 ) {
@@ -129,7 +130,7 @@ function expandSelectionToBlockBoundaries(
  * Returns true if EVERY block node within [from..to] is a `code_block`.
  */
 function isAllCodeBlocks(
-    doc: PMNode,
+    doc: ProseMirrorNode,
     from: number,
     to: number,
     codeBlockType: NodeType
@@ -149,7 +150,7 @@ function isAllCodeBlocks(
  * Convert [from..to] to multiline text, turning block boundaries/hard_break => "\n".
  */
 function gatherTextWithNewlines(
-    doc: PMNode,
+    doc: ProseMirrorNode,
     from: number,
     to: number,
     hardBreakType: NodeType
@@ -181,9 +182,9 @@ function buildParagraphFromText(
     paragraphType: NodeType,
     hardBreakType: NodeType,
     schema: any
-): PMNode {
+): ProseMirrorNode {
     const lines = codeText.split("\n");
-    const paragraphContent: PMNode[] = [];
+    const paragraphContent: ProseMirrorNode[] = [];
     lines.forEach((line, index) => {
         if (line.length > 0) {
             paragraphContent.push(schema.text(line));
