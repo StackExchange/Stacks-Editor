@@ -33,7 +33,6 @@ import {
     toggleHeadingLevel,
     toggleTagLinkCommand,
     toggleWrapIn,
-    toggleBlockType,
     nodeTypeActive,
     markActive,
     insertRichTextLinkCommand,
@@ -53,6 +52,7 @@ import {
     makeMenuLinkEntry,
     MenuBlock,
 } from "./helpers";
+import { toggleCodeBlock } from "../../rich-text/commands/code-block";
 
 /**
  * Creates a dropdown menu for table edit functionality
@@ -348,7 +348,7 @@ export const createMenuEntries = (
             {
                 key: "toggleCodeblock",
                 richText: {
-                    command: toggleBlockType(schema.nodes.code_block),
+                    command: toggleCodeBlock(),
                     active: nodeTypeActive(schema.nodes.code_block),
                 },
                 commonmark: insertCodeblockCommand,
