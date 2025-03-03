@@ -78,7 +78,6 @@ export class RichTextEditor extends BaseView {
         this.finalizedSchema = new Schema(
             this.externalPluginProvider.getFinalizedSchema(richTextSchemaSpec)
         );
-        console.log(this.finalizedSchema);
         this.markdownParser = buildMarkdownParser(
             this.options.parserFeatures,
             this.finalizedSchema,

@@ -23,7 +23,9 @@ import {
     togglePreviewVisibility,
     previewIsVisible,
 } from "../commonmark/plugins/preview";
-import { stackSnippetPlugin } from "../shared/plugins/stack-snippets";
+import {
+    stackSnippetPlugin
+} from "../shared/plugins/stack-snippets";
 
 //NOTE relies on Stacks classes. Should we separate out so the editor is more agnostic?
 
@@ -69,6 +71,12 @@ export class StacksEditor implements View {
         // do a deep merge of the passed options with our default options
         this.options = deepMerge(StacksEditor.defaultOptions, options);
         this.target = target;
+
+        //Include any internally developed editors first.
+        this.options.editorPlugins = [
+            stackSnippetPlugin,
+            ...this.options.editorPlugins
+        ];
 
         // naively generate a random internalId for this editor instance
         this.internalId = generateRandomId();
@@ -163,9 +171,6 @@ export class StacksEditor implements View {
             richTextOptions: {
                 classList: commonClasses,
             },
-            editorPlugins: [
-                stackSnippetPlugin
-            ]
         };
     }
 
