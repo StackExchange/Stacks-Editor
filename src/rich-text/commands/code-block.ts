@@ -119,10 +119,6 @@ function expandSelectionToBlockBoundaries(
     }
 
     // Subtract 1 from blockEnd to avoid counting the block node's boundary beyond content
-    // Usually, we do -2 for open-close tokens, but to keep it consistent with replaceRangeWith,
-    // let's do blockEnd - 1 or blockEnd - 2. Let's see:
-    // Actually, we typically do: blockStart + node.nodeSize - 2 for one block.
-    // But here, multiple blocks might be considered. We'll do -1 so we replace the entire node.
     return { from: blockStart, to: blockEnd - 1 };
 }
 
