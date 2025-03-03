@@ -33,7 +33,7 @@ describe("toggleCodeBlock command", () => {
 
         // The resulting doc should be just a codeBlock node, empty
         // (In the basic schema, codeBlock is "```" style, but let's just match structure).
-        const expectedDoc = doc(code_block());
+        const expectedDoc = doc(code_block(), p());
 
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });
@@ -52,7 +52,7 @@ describe("toggleCodeBlock command", () => {
         // The entire paragraph block should become a single codeBlock node.
         // The text is "abcd". The command merges it into one line (since there's
         // only one block, no line breaks).
-        const expectedDoc = doc(code_block("abcd"));
+        const expectedDoc = doc(code_block("abcd"), p());
 
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });
@@ -71,7 +71,7 @@ describe("toggleCodeBlock command", () => {
 
         // We should get a single paragraph with "abc", then a hard_break, then "def".
         // Using test-builder, we can represent a hard break with `br()`.
-        const expectedDoc = doc(p("abc", br(), "def"));
+        const expectedDoc = doc(p("abc", br(), "def"), p());
 
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });
@@ -88,7 +88,7 @@ describe("toggleCodeBlock command", () => {
         state = applyCommand(toggleCodeBlock(), state);
 
         // This should yield one codeBlock node with "abc\ndef".
-        const expectedDoc = doc(code_block("abc\ndef"));
+        const expectedDoc = doc(code_block("abc\ndef"), p());
 
         expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
     });
