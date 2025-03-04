@@ -224,3 +224,23 @@ export function sleepAsync(delayMs: number): Promise<void> {
         setTimeout(() => resolve(), delayMs);
     });
 }
+
+/**
+ * Applies a command to the state and expects the entire doc to resemble
+ * `expected` and the selected text to resemble `expectedSelected`
+ */
+export function executeTransaction(
+    state: EditorState,
+    command: (
+        state: EditorState,
+        dispatch: (tr: Transaction) => void
+    ) => boolean
+) {
+    let newState = state;
+
+    const isValid = command(state, (t) => {
+        newState = state.apply(t);
+    });
+
+    return { newState, isValid };
+}
