@@ -26,9 +26,7 @@ import { inTable } from "./tables";
 
 export * from "./tables";
 export * from "./list";
-
-// indent code with four [SPACE] characters (hope you aren't a "tabs" person)
-const CODE_INDENT_STR = "    ";
+export * from "./code-block";
 
 /**
  * Builds a command which wraps/unwraps the current selection with the passed in node type
@@ -73,33 +71,6 @@ export function toggleWrapIn(nodeType: NodeType): Command {
 }
 
 /**
- * Creates a command that toggles the NodeType of the current node to the passed type
- * @param nodeType The type to toggle to
- * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
- */
-export function toggleBlockType(
-    nodeType: NodeType,
-    attrs?: { [key: string]: unknown }
-) {
-    return (state: EditorState, dispatch: (tr: Transaction) => void) => {
-        const nodeCheck = nodeTypeActive(nodeType, attrs);
-
-        // if the node is set, toggle it off
-        if (nodeCheck(state)) {
-            return setBlockType(state.schema.nodes.paragraph)(state, dispatch);
-        }
-
-        const setBlockTypeCommand = setBlockType(nodeType, attrs);
-        return setBlockTypeCommand(state, (t) => {
-            if (dispatch) {
-                // when adding a block node, make sure the user can navigate past it
-                dispatch(insertParagraphIfAtDocEnd(t));
-            }
-        });
-    };
-}
-
-/**
  * Creates a command that toggles heading and cycles through heading levels
  * @param attrs? A key-value map of attributes that must be present on this node for it to be toggled off
  * @internal
@@ -129,135 +100,6 @@ export function toggleHeadingLevel(attrs?: { [key: string]: unknown }) {
             }
         });
     };
-}
-
-/**
- * Gets the start position of all lines inside code_block nodes in the current selection
- * @param state The current EditorState
- */
-function getCodeBlockLinesWithinSelection(state: EditorState): number[] {
-    const { from, to } = state.selection;
-    const lineStartIndentPos: number[] = [];
-
-    state.doc.nodesBetween(from, to, (node, pos) => {
-        if (node.type.name === "code_block") {
-            let lineStartPos = pos + 1;
-            let lineEndPos;
-
-            node.textContent.split("\n").forEach((line) => {
-                lineEndPos = lineStartPos + line.length;
-                // Selection overlaps with line
-                const selectionIsWithinLine =
-                    // Selection is contained entirely within line
-                    (from >= lineStartPos && to <= lineEndPos) ||
-                    // Line is contained entirely within selection
-                    (lineStartPos >= from && lineEndPos <= to) ||
-                    // Selection start is within line
-                    (from >= lineStartPos && from <= lineEndPos) ||
-                    // Selection end is within line
-                    (to >= lineStartPos && to <= lineEndPos);
-
-                if (selectionIsWithinLine) {
-                    lineStartIndentPos.push(lineStartPos);
-                }
-
-                lineStartPos = lineEndPos + 1;
-            });
-        }
-    });
-
-    return lineStartIndentPos;
-}
-
-/**
- * Indents selected line(s) within a code block
- * @param state The current editor state
- * @param dispatch The dispatch function to use
- * @internal
- */
-export function indentCodeBlockLinesCommand(
-    state: EditorState,
-    dispatch: (tr: Transaction) => void
-): boolean {
-    const linesToIndent = getCodeBlockLinesWithinSelection(state);
-    const lineCount = linesToIndent.length;
-
-    if (lineCount <= 0 || !dispatch) {
-        return lineCount > 0;
-    }
-
-    let tr = state.tr;
-    const { from, to } = state.selection;
-
-    const indentStr = CODE_INDENT_STR;
-    const fromIsCodeBlock =
-        state.selection.$from.node().type.name === "code_block";
-
-    // indent each line in reverse order so that we don't alter the lines' start positions
-    linesToIndent.reverse().forEach((pos) => {
-        tr = tr.insertText(indentStr, pos);
-    });
-
-    tr.setSelection(
-        TextSelection.create(
-            state.apply(tr).doc,
-            fromIsCodeBlock ? from + indentStr.length : from,
-            to + lineCount * indentStr.length
-        )
-    );
-
-    dispatch(tr);
-
-    return true;
-}
-
-/**
- * Unindents selected line(s) within a code block if able
- * @param state The current editor state
- * @param dispatch The dispatch function to use
- * @internal
- */
-export function unindentCodeBlockLinesCommand(
-    state: EditorState,
-    dispatch: (tr: Transaction) => void
-): boolean {
-    const linesToIndent = getCodeBlockLinesWithinSelection(state);
-    const lineCount = linesToIndent.length;
-
-    if (lineCount <= 0 || !dispatch) {
-        return lineCount > 0;
-    }
-
-    let t = state.tr;
-    const { from, to } = state.selection;
-    let unindentedLinesCount = 0;
-    const indentStr = CODE_INDENT_STR;
-    const fromIsCodeBlock =
-        state.selection.$from.node().type.name === "code_block";
-
-    linesToIndent.reverse().forEach((pos) => {
-        const canUnindent =
-            state.doc.textBetween(pos, pos + indentStr.length) === indentStr;
-
-        if (canUnindent) {
-            t = t.insertText("", pos, pos + indentStr.length);
-            unindentedLinesCount++;
-        }
-    });
-
-    t.setSelection(
-        TextSelection.create(
-            state.apply(t).doc,
-            fromIsCodeBlock && unindentedLinesCount
-                ? from - indentStr.length
-                : from,
-            to - unindentedLinesCount * indentStr.length
-        )
-    );
-
-    dispatch(t);
-
-    return true;
 }
 
 /**
