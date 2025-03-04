@@ -52,6 +52,19 @@ describe("SOMarkdownParser", () => {
             });
         });
 
+        it("should support html comments", () => {
+            const doc = markdownParser.parse(`<!-- an html comment -->`);
+            expect(doc).toMatchNodeTree({
+                childCount: 1,
+                content: [
+                    {
+                        "type.name": "html_comment",
+                        "attrs.content": "<!-- an html comment -->",
+                    },
+                ],
+            });
+        });
+
         it.skip("should support single block html without nesting", () => {
             const doc = markdownParser.parse("<h1>test</h1>");
 
