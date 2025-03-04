@@ -1,4 +1,9 @@
-import { setBlockType, toggleMark, wrapIn } from "prosemirror-commands";
+import {
+    setBlockType,
+    splitBlock,
+    toggleMark,
+    wrapIn,
+} from "prosemirror-commands";
 import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
 import {
     Command,
@@ -580,4 +585,27 @@ export function exitInclusiveMarkCommand(
     }
 
     return true;
+}
+
+export function splitCodeBlockAtStartOfDoc(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    const { $from } = state.selection;
+    const parent = $from.parent;
+
+    if (parent.type.name !== "code_block") {
+        return false;
+    }
+
+    if ($from.parentOffset !== 0) {
+        return false;
+    }
+
+    // Is this code block the first child of the doc (i.e. no other nodes above it)?
+    if ($from.depth !== 1 || $from.index(0) !== 0) {
+        return false;
+    }
+
+    return splitBlock(state, dispatch);
 }
