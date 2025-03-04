@@ -40,6 +40,7 @@ import {
     insertRichTextHorizontalRuleCommand,
     insertRichTextTableCommand,
     toggleList,
+    toggleCodeBlock,
 } from "../../rich-text/commands";
 import { _t } from "../localization";
 import { makeMenuButton, makeMenuDropdown } from "./helpers";
@@ -52,7 +53,6 @@ import {
     makeMenuLinkEntry,
     MenuBlock,
 } from "./helpers";
-import { toggleCodeBlock } from "../../rich-text/commands/code-block";
 
 /**
  * Creates a dropdown menu for table edit functionality
