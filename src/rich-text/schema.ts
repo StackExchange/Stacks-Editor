@@ -1,5 +1,6 @@
 import { Attrs, MarkSpec, NodeSpec } from "prosemirror-model";
 import { _t } from "../shared/localization";
+import { stackSnippetRichTextNodeSpec } from "../shared/plugins/stack-snippets/schema";
 
 //TODO this relies on Stacks classes, should we abstract?
 
@@ -439,7 +440,7 @@ const nodes: {
         },
     },
 
-    //...stackSnippetRichTextNodeSpec
+    ...stackSnippetRichTextNodeSpec,
 };
 
 const marks: {

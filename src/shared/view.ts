@@ -6,7 +6,7 @@ import type { EditorView } from "prosemirror-view";
 import { EditorPlugin } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { setAttributesOnElement, stackOverflowValidateLink } from "./utils";
-import { StackSnippetOptions } from "./plugins/stack-snippets";
+import { StackSnippetOptions } from "./plugins/stack-snippets/common";
 
 /** Describes each distinct editor type the StacksEditor handles */
 export enum EditorType {
