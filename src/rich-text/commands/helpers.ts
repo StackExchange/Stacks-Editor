@@ -51,7 +51,7 @@ export function insertParagraphIfAtDocEnd(
  */
 export function safeSetSelection(
     tr: Transaction,
-    blockPos: number,
+    blockStart: number,
     newPos: number
 ): Transaction {
     const doc = tr.doc;
@@ -63,8 +63,8 @@ export function safeSetSelection(
     }
 
     // 2) Otherwise, try a NodeSelection at blockPos, if there's actually a node there.
-    if (doc.nodeAt(blockPos)) {
-        return tr.setSelection(NodeSelection.create(doc, blockPos));
+    if (doc.nodeAt(blockStart)) {
+        return tr.setSelection(NodeSelection.create(doc, blockStart));
     }
 
     // 3) Final fallback: place the selection at the very start of the document.
