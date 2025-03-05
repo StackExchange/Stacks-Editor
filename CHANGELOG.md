@@ -2,6 +2,16 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.8](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.7...v0.10.8) (2025-03-05)
+
+
+### Bug Fixes
+
+* **code-blocks:** preserve line breaks when toggling ([#385](https://github.com/StackExchange/Stacks-Editor/issues/385)) ([cdfade9](https://github.com/StackExchange/Stacks-Editor/commit/cdfade976c38888385f3d771c58028be2fb5e947))
+* **code-blocks:** press Enter at start of first code block to create paragraph ([#384](https://github.com/StackExchange/Stacks-Editor/issues/384)) ([94bac97](https://github.com/StackExchange/Stacks-Editor/commit/94bac97a8680aafc571f934a7f8006d05897a04d))
+* **code-blocks:** remove buggy "exit code block" functionality ([#383](https://github.com/StackExchange/Stacks-Editor/issues/383)) ([2ace7a9](https://github.com/StackExchange/Stacks-Editor/commit/2ace7a97c5d764658cc4e795049648fed8fb026b))
+* **escape-char:** resolve an issue where escape chars were not being preserved when switching between modes ([#366](https://github.com/StackExchange/Stacks-Editor/issues/366)) ([8de12d2](https://github.com/StackExchange/Stacks-Editor/commit/8de12d20a973c8dbc96cb3dfcb12f35a3c1434a6))
+
 ### [0.10.7](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.6...v0.10.7) (2024-10-02)
 
 
