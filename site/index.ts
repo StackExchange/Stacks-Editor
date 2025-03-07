@@ -121,12 +121,6 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
  * NOTE: synchronous renderers can simply return Promise.resolve()
  */
 const examplePreviewRenderer: PreviewRenderer = async (content, container) => {
-    const spinner = document.createElement("span");
-    spinner.className = "is-loading";
-    spinner.textContent =
-        "Intentionally delaying render for example purposes...";
-    container.appendChild(spinner);
-
     // add a fake load delay (because we can)
     await sleepAsync(500);
 

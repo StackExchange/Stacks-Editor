@@ -99,8 +99,6 @@ class PreviewView implements PluginView {
 
         // if showing the preview, fire off the renderer async
         if (this.isShown) {
-            // always clear the preview before re-rendering
-            this.dom.innerHTML = "";
             this.container.appendChild(this.dom);
 
             void this.renderer?.(text, this.dom).catch((e) =>
