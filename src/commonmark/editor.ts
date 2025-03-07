@@ -38,8 +38,7 @@ import { createMenuEntries } from "../shared/menu";
  */
 export type PreviewRenderer = (
     content: string,
-    container: HTMLElement,
-    abortSignal?: AbortSignal
+    container: HTMLElement
 ) => Promise<void>;
 
 export interface CommonmarkOptions extends CommonViewOptions {
