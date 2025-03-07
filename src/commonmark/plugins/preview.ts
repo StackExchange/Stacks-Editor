@@ -26,6 +26,7 @@ class PreviewView implements PluginView {
     private renderer: PreviewRenderer;
     private renderTimeoutId: number | null = null;
     private renderDelayMs: number;
+    private abortController: AbortController;
 
     private isShown: boolean;
 
@@ -101,13 +102,23 @@ class PreviewView implements PluginView {
         if (this.isShown) {
             this.container.appendChild(this.dom);
 
-            void this.renderer?.(text, this.dom).catch((e) =>
-                error(
-                    "PreviewView.updatePreview",
-                    `Uncaught exception in preview renderer`,
-                    e
-                )
-            );
+            if (this.abortController) {
+                this.abortController.abort();
+            }
+
+            // Create a new AbortController for the current render
+            this.abortController = new AbortController();
+            const signal = this.abortController.signal;
+
+            void this.renderer?.(text, this.dom, signal).catch((e: Error) => {
+                if (e.name !== 'AbortError') {
+                    error(
+                        "PreviewView.updatePreview",
+                        `Uncaught exception in preview renderer`,
+                        e
+                    );
+                }
+            });
         }
     }
 }

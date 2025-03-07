@@ -120,15 +120,29 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
  * Sample preview renderer that has a fake delay and uses the default Markdown-It renderer
  * NOTE: synchronous renderers can simply return Promise.resolve()
  */
-const examplePreviewRenderer: PreviewRenderer = async (content, container) => {
+const examplePreviewRenderer: PreviewRenderer = async (content, container, abortSignal) => {
     const spinner = document.createElement("span");
     spinner.className = "is-loading";
     spinner.textContent =
         "Intentionally delaying render for example purposes...";
     container.appendChild(spinner);
 
-    // add a fake load delay (because we can)
-    await sleepAsync(500);
+    const interruptableSleepAsync = (delayMs: number, signal: AbortSignal) => new Promise<void>((resolve, reject) => {
+        const timeoutId = setTimeout(() => {
+            resolve();
+        }, delayMs);
+
+        signal.addEventListener("abort", () => {
+            clearTimeout(timeoutId);
+            reject(new Error('aborted'));
+        });
+    });
+
+    await interruptableSleepAsync(500, abortSignal)
+        .catch(() => {
+            container.removeChild(spinner);
+        })
+
 
     const instance = MarkdownIt("commonmark", {
         html: false,
