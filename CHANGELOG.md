@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.9](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.8...v0.10.9) (2025-03-07)
+
+
+### Bug Fixes
+
+* **preview:** Fix constant layout shift as preview rerenders ([#389](https://github.com/StackExchange/Stacks-Editor/issues/389)) ([be56d39](https://github.com/StackExchange/Stacks-Editor/commit/be56d39e24a81a16e8ab05b5fe196d588b7c6f06))
+
 ### [0.10.8](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.7...v0.10.8) (2025-03-05)
 
 
