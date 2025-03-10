@@ -122,7 +122,6 @@ const parseSnippetBlockForProsemirror = (schema: Schema, content: string): Prose
 export const stackSnippetPasteHandler = new Plugin({
     props: {
         handlePaste(view: EditorView, event: ClipboardEvent, slice: Slice) {
-            console.log(view.state.tr.selection.to);
             const initialPosition = view.state.tr.selection.to;
             // if we're pasting into an existing code block, don't bother checking for code
             // We're talking _about_ snippets, not rendering them

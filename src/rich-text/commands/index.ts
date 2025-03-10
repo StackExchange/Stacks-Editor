@@ -4,7 +4,7 @@ import {
     toggleMark,
     wrapIn,
 } from "prosemirror-commands";
-import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
+import { Mark, MarkType, NodeType, Schema, Node } from "prosemirror-model";
 import {
     Command,
     EditorState,
@@ -427,6 +427,49 @@ export function exitInclusiveMarkCommand(
     }
 
     return true;
+}
+
+
+/**
+ * Ensure there's a next block to move into - Adds an additional blank paragraph block
+ *  if the next node available is unselectable and there is no node afterwards that is selectable.
+ * */
+export function escapeUnselectableCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+): boolean {
+    //A resolved position of the cursor. Functionally: The place we're calculating the next line for.
+    const selectionEndPos = state.selection.$to;
+
+    //If you're already at the end of the document, do the default action (nothing)
+    if(selectionEndPos.pos == state.doc.content.size - 1){
+        return false;
+    }
+
+    //Starting from the next node position, check all the nodes for being a text block.
+    let foundSelectable: boolean = false;
+    state.doc.nodesBetween(selectionEndPos.pos + 1, state.doc.content.size, (node) => {
+        //Already found one, no need to delve deeper.
+        if(foundSelectable) return !foundSelectable;
+
+        //We found one!
+        if(node.isTextblock){
+            foundSelectable = true;
+            return false;
+        }
+
+        //We didn't find something selectable, so keep iterating, and dig into the children while we're at it.
+        return true;
+    })
+
+    //If there's not something to move into, add it now
+    if(!foundSelectable){
+        dispatch(state.tr.insert(state.doc.content.size, state.schema.nodes.paragraph.create()));
+    }
+
+    //No matter what, we want the default behaviour to take over from here.
+    // Either we've created a new line to edit into just in time, or there was already something for it to move to
+    return false;
 }
 
 export function splitCodeBlockAtStartOfDoc(
