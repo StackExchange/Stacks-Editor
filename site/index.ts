@@ -278,6 +278,16 @@ domReady(() => {
             id: "a11y-editor-id",
             ariaLabeledby: "a11y-editor-label",
         },
+        stackSnippet: {
+            renderer: (meta, js, css, html) => {
+                console.log(meta);
+                const lol = document.createElement("div");
+                const rofl =document.createElement("img");
+                rofl.src = "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg"
+                lol.appendChild(rofl);
+                return Promise.resolve(lol);
+            }
+        }
     };
 
     const editorInstance = new StacksEditor(place, content.value, options);

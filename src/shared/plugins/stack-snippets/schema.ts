@@ -1,13 +1,27 @@
 import MarkdownIt, { Token } from "markdown-it";
 import { MarkdownParser } from "prosemirror-markdown";
 import { MarkdownSerializerNodes } from "../../markdown-serializer";
-import { assertAttrValue, getSnippetMetadata } from "./common";
-import { Node as ProsemirrorNode, NodeSpec } from "prosemirror-model";
+import {
+    assertAttrValue,
+    getSnippetMetadata,
+    mapMetaLine,
+    RawContext,
+    validateMetaLines,
+    validSnippetRegex,
+} from "./common";
+import {
+    Node as ProsemirrorNode,
+    NodeSpec,
+} from "prosemirror-model";
+import {generateRandomId} from "../../utils";
 
 export const stackSnippetMarkdownParser: MarkdownParser["tokens"] = {
     stack_snippet: {
         block: "stack_snippet",
         getAttrs: (tok: Token) => ({
+            //This is the entry point for tracking an ID when in rich text mode
+            // Because it's not serialized, we can't track between states - so will be new every time we switch
+            id: tok.attrGet("id"),
             hide: tok.attrGet("hide"),
             console: tok.attrGet("console"),
             babel: tok.attrGet("babel"),
@@ -50,158 +64,7 @@ export const stackSnippetMarkdownSerializer: MarkdownSerializerNodes = {
     },
 };
 
-const validSnippetRegex =
-    /^<!-- (?:begin snippet:|end snippet |language:)(.*)-->$/;
-const langSnippetRegex = /^<!-- language: lang-(?<lang>css|html|js) -->/;
-//Match the start snippet. Original editor is not order resilient.
-const startSnippetRegex =
-    /^<!-- begin snippet: js (?:hide: (?<hide>(?:true|false|null))\s)(?:console: (?<console>(?:true|false|null))\s)(?:babel: (?<babel>(?:true|false|null))\s)(?:babelPresetReact: (?<babelPresetReact>(?:true|false|null))\s)(?:babelPresetTS: (?<babelPresetTS>(?:true|false|null))\s)-->/;
-
-interface RawContext {
-    line: string;
-    index: number;
-}
-
-interface BaseMetaLine {
-    type: "begin" | "end" | "lang";
-    index: number;
-}
-
-interface BeginMetaLine extends BaseMetaLine {
-    type: "begin";
-    //Strictly speaking these are `boolean | null`, but they don't affect operation
-    babel: string;
-    babelPresetReact: string;
-    babelPresetTS: string;
-    console: string;
-    hide: string;
-}
-
-interface EndMetaLine extends BaseMetaLine {
-    type: "end";
-}
-
-interface LangMetaLine extends BaseMetaLine {
-    type: "lang";
-    language: string;
-}
-
-type MetaLine = BeginMetaLine | EndMetaLine | LangMetaLine;
-
-const mapMetaLine = (rawContext: RawContext): MetaLine | null => {
-    //Easiest first - Is it just the end snippet line?
-    const { line, index } = rawContext;
-    if (line === "<!-- end snippet -->") {
-        return { type: "end", index };
-    }
-
-    const langMatch = line.match(langSnippetRegex);
-    if (langMatch) {
-        return {
-            type: "lang",
-            index,
-            language: langMatch.groups["lang"],
-        };
-    }
-
-    const startMatch = line.match(startSnippetRegex);
-    //Stack snippets inserts all these options (true/false/null) If they're not there, it's not valid.
-    if (
-        startMatch &&
-        startMatch.groups["babel"] &&
-        startMatch.groups["babelPresetReact"] &&
-        startMatch.groups["babelPresetTS"] &&
-        startMatch.groups["console"] &&
-        startMatch.groups["hide"]
-    ) {
-        return {
-            type: "begin",
-            index,
-            babel: startMatch.groups["babel"] || "null",
-            babelPresetReact: startMatch.groups["babelPresetReact"] || "null",
-            babelPresetTS: startMatch.groups["babelPresetTS"] || "null",
-            console: startMatch.groups["console"] || "null",
-            hide: startMatch.groups["hide"] || "null",
-        };
-    }
-
-    return null;
-};
-
-interface ValidationResult {
-    valid: boolean;
-    beginIndex?: number;
-    endIndex?: number;
-    htmlIndex?: number;
-    cssIndex?: number;
-    jsIndex?: number;
-    reason?: string;
-}
-
-const validateMetaLines = (metaLines: MetaLine[]): ValidationResult => {
-    //We now have an ordered list of our meta lines, so...
-    const validationResult: ValidationResult = {
-        valid: false,
-        reason: "Did not discover beginning and end",
-    };
-    //Validate, returning immediately on duplicates.
-    for (let i = 0; i < metaLines.length; i++) {
-        const m = metaLines[i];
-        switch (m.type) {
-            case "begin":
-                if (validationResult.beginIndex)
-                    return { valid: false, reason: "Duplicate Begin block" };
-                validationResult.beginIndex = m.index;
-                break;
-            case "end":
-                if (validationResult.endIndex)
-                    return { valid: false, reason: "Duplicate End block" };
-                validationResult.endIndex = m.index;
-                break;
-            case "lang":
-                switch (m.language) {
-                    case "js":
-                        if (validationResult.jsIndex)
-                            return {
-                                valid: false,
-                                reason: "Duplicate JS block",
-                            };
-                        validationResult.jsIndex = m.index;
-                        break;
-                    case "html":
-                        if (validationResult.htmlIndex)
-                            return {
-                                valid: false,
-                                reason: "Duplicate HTML block",
-                            };
-                        validationResult.htmlIndex = m.index;
-                        break;
-                    case "css":
-                        if (validationResult.cssIndex)
-                            return {
-                                valid: false,
-                                reason: "Duplicate CSS block",
-                            };
-                        validationResult.cssIndex = m.index;
-                        break;
-                }
-                break;
-        }
-        //If we've encountered a start and an end without duplicates, that's all the blocks we're processing for now
-        if (
-            validationResult.beginIndex != null &&
-            validationResult.endIndex != null
-        ) {
-            validationResult.valid = true;
-            validationResult.reason = null;
-            break;
-        }
-    }
-
-    return validationResult;
-};
-
-const parseSnippetBlock: MarkdownIt.ParserBlock.RuleBlock = (
+const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
     state: MarkdownIt.StateBlock,
     startLine: number,
     endLine: number,
@@ -262,6 +125,8 @@ const parseSnippetBlock: MarkdownIt.ParserBlock.RuleBlock = (
     if (!langSort.every((l) => l.type === "lang")) return false;
 
     const openToken = state.push("stack_snippet_open", "code", 1);
+    // This value is not serialized, and so is different on every new session of Rich Text (i.e. every mode switch)
+    openToken.attrSet("id", generateRandomId());
     openToken.attrSet("hide", begin.hide);
     openToken.attrSet("console", begin.console);
     openToken.attrSet("babel", begin.babel);
@@ -302,18 +167,13 @@ export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
         defining: true,
         isolating: true,
         attrs: {
+            id: {},
+            content: { default: null },
             hide: { default: "null" },
             console: { default: "null" },
             babel: { default: "null" },
             babelPresetReact: { default: "null" },
             babelPresetTS: { default: "null" },
-        },
-        toDOM() {
-            return [
-                "div",
-                { class: "snippet" },
-                ["div", { class: "snippet-code" }, 0],
-            ];
         },
     },
     stack_snippet_lang: {
@@ -339,10 +199,12 @@ export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
             if (rawLang && typeof rawLang == "string") {
                 language = rawLang;
             }
+            //`s-code-block` enables code block styles at present
+            // The rest are legacy hold-overs from stack-snippets. Maybe not worth keeping.
             return [
                 "pre",
                 {
-                    class: `prettyprint-override snippet-code-${language} lang-${language}`,
+                    class: `s-code-block prettyprint-override snippet-code-${language} lang-${language}`,
                 },
                 ["code", 0],
             ];
@@ -351,5 +213,5 @@ export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
 };
 
 export const stackSnippetPlugin = (md: MarkdownIt) => {
-    md.block.ruler.before("fence", "stack_snippet", parseSnippetBlock);
+    md.block.ruler.before("fence", "stack_snippet", parseSnippetBlockForMarkdownIt);
 };

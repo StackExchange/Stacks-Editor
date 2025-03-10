@@ -43,7 +43,10 @@ import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-
 import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { createMenuEntries } from "../shared/menu/index";
 import { createMenuPlugin } from "../shared/menu/plugin";
-import { stackSnippetRichTextDecoratorPlugin } from "../shared/plugins/stack-snippets/decorations";
+import {
+    stackSnippetPasteHandler
+} from "../shared/plugins/stack-snippets/paste-handler";
+import {StackSnippetView} from "../shared/plugins/stack-snippets/snippet-view";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -142,6 +145,7 @@ export class RichTextEditor extends BaseView {
                         ...this.externalPluginProvider.plugins.richText,
                         // Paste handlers are consuming, so we let external plugins try first
                         tables,
+                        stackSnippetPasteHandler,
                         richTextCodePasteHandler,
                         linkPasteHandler(this.options.parserFeatures),
                         // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers
@@ -168,6 +172,13 @@ export class RichTextEditor extends BaseView {
                     html_block_container: function (node: ProseMirrorNode) {
                         return new HtmlBlockContainer(node);
                     },
+                    stack_snippet: (
+                        node: ProseMirrorNode,
+                        view: EditorView,
+                        getPos: () => number
+                    ) => {
+                        return new StackSnippetView(node, view, getPos, this.options.stackSnippet);
+                    },
                     ...this.externalPluginProvider.nodeViews,
                 },
                 plugins: [],
@@ -192,6 +203,9 @@ export class RichTextEditor extends BaseView {
                 handler: defaultImageUploadHandler,
             },
             editorPlugins: [],
+            stackSnippet: {
+                renderer: () => Promise.resolve(null)
+            }
         };
     }
 
