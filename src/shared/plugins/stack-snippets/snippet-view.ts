@@ -2,7 +2,6 @@ import { Node as ProsemirrorNode } from "prosemirror-model";
 import {
     EditorView,
     NodeView,
-    ViewMutationRecord,
 } from "prosemirror-view";
 import {
     getSnippetMetadata,
@@ -48,7 +47,7 @@ export class StackSnippetView implements NodeView {
         runText.textContent = "Run code snippet";
         runCodeButton.appendChild(runText);
         const id: unknown = node.attrs["id"];
-        if (id && typeof id == "string") {
+        if (opts.renderer && id && typeof id == "string") {
             runCodeButton.addEventListener("click", () => {
                 const [js] = this.snippetMetadata.langNodes.filter(
                     (l) => l.metaData.language == "js"

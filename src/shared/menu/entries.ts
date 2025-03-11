@@ -58,6 +58,7 @@ import {
     makeMenuLinkEntry,
     MenuBlock,
 } from "./helpers";
+import {openSnippetModal} from "../plugins/stack-snippets/commands";
 
 /**
  * Creates a dropdown menu for table edit functionality
@@ -373,6 +374,25 @@ export const createMenuEntries = (
                     "code-block-btn"
                 ),
             },
+            addIf({
+                key: "openSnippetModal",
+                richText: {
+                    command: openSnippetModal(options.stackSnippet),
+                },
+                commonmark: {
+                    command: openSnippetModal(options.stackSnippet),
+                },
+                display: makeMenuButton(
+                    "Play",
+                    {
+                        title: _t("commands.stack_snippet.title", {
+                            shortcut: getShortcut("Mod-9")
+                        }),
+                        description: _t("commands.stack_snippet.description")
+                    },
+                    "stack-snippet-open-btn"
+                )
+            }, "stackSnippet" in options)
         ],
     },
     {

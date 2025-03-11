@@ -9,6 +9,9 @@ export interface StackSnippetOptions {
         css?: string,
         html?: string
     ) => Promise<Node | null>;
+
+    /** Function to trigger opening of the snippets Modal */
+    openSnippetsModal: (meta?: SnippetMetadata, js?: string, css?: string, html?: string) => void;
 }
 
 export interface SnippetMetadata {
@@ -46,7 +49,7 @@ export const assertAttrValue = (
 export const getSnippetMetadata = (
     node: ProsemirrorNode
 ): SnippetMetadata | null => {
-    if (node.type.name !== "stack_snippet") return null;
+    if (!node || node.type.name !== "stack_snippet") return null;
 
     const id = node.attrs["id"] && typeof node.attrs["id"] == "string"
         ? node.attrs["id"]

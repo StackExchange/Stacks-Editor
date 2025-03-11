@@ -203,9 +203,6 @@ export class RichTextEditor extends BaseView {
                 handler: defaultImageUploadHandler,
             },
             editorPlugins: [],
-            stackSnippet: {
-                renderer: () => Promise.resolve(null)
-            }
         };
     }
 
