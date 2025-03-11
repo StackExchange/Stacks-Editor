@@ -426,9 +426,7 @@ function blockWrapIn(
     const from = state.selection.from;
     let to = state.selection.to;
 
-
     // wrap the selected block in code fences, prepending/appending newlines if necessary
-
 
     let tr = state.tr;
 
@@ -447,6 +445,7 @@ function blockWrapIn(
 
     const preceedingNewlineNeeded = from > 0 && state.doc.textBetween(from - 1, from) !== surroundingChar ? surroundingChar : '';
     const followingNewlineNeeded = to + 1 < state.doc.content.size && state.doc.textBetween(to, to + 1) !== surroundingChar ? surroundingChar : '';
+
     tr.insertText(formattingText + followingNewlineNeeded, to);
     tr.insertText(preceedingNewlineNeeded + formattingText, from);
     to += (formattingText.length * 2) + preceedingNewlineNeeded.length;
