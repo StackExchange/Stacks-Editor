@@ -439,8 +439,8 @@ function blockWrapIn(
     to += 1;
 
    //always insert a newline after the selection
-        tr = tr.insertText(surroundingChar, to, to);
-        to += 1;
+    tr = tr.insertText(surroundingChar, to, to);
+    to += 1;
    
     // insert the code fences from the end first so we don't mess up our from index
     //consider if we need to add the surrounding char too, if the text is not already surrounded by newline
@@ -453,7 +453,6 @@ function blockWrapIn(
 
     // set the selection to the text inside the code fences, skipping the leading newline
     if (dispatch) {
-
         tr.setSelection(
             TextSelection.create(
                 state.apply(tr).doc,
