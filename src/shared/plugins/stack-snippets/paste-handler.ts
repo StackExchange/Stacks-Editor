@@ -1,20 +1,29 @@
-import {Plugin, NodeSelection} from "prosemirror-state";
+import { Plugin, NodeSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import {Node as ProsemirrorNode, Schema, Slice} from "prosemirror-model";
-import {log} from "../../logger";
+import { Node as ProsemirrorNode, Schema, Slice } from "prosemirror-model";
+import { log } from "../../logger";
 import {
     BeginMetaLine,
     EndMetaLine,
-    LangMetaLine, mapMetaLine,
-    validSnippetRegex
+    LangMetaLine,
+    mapMetaLine,
+    validSnippetRegex,
 } from "./common";
-import {generateRandomId} from "../../utils";
-import {insertParagraphIfAtDocEnd} from "../../../rich-text/commands/helpers";
+import { generateRandomId } from "../../utils";
+import { insertParagraphIfAtDocEnd } from "../../../rich-text/commands/helpers";
 
-
-const parseSnippetBlockForProsemirror = (schema: Schema, content: string): ProsemirrorNode | null => {
-    if(!("stack_snippet" in schema.nodes) || !("stack_snippet_lang" in schema.nodes)){
-        log("parseSnippetBlockForProsemirror", "Types aren't registered, can't parse.");
+const parseSnippetBlockForProsemirror = (
+    schema: Schema,
+    content: string
+): ProsemirrorNode | null => {
+    if (
+        !("stack_snippet" in schema.nodes) ||
+        !("stack_snippet_lang" in schema.nodes)
+    ) {
+        log(
+            "parseSnippetBlockForProsemirror",
+            "Types aren't registered, can't parse."
+        );
         return null;
     }
 
@@ -26,7 +35,10 @@ const parseSnippetBlockForProsemirror = (schema: Schema, content: string): Prose
 
     //Grab the first line and check it for our opening snippet marker
     if (rawLines.length > 0 && !validSnippetRegex.test(rawLines[0])) {
-        log("parseSnippetBlockForProsemirror", "The content isn't a snippet, can't parse.");
+        log(
+            "parseSnippetBlockForProsemirror",
+            "The content isn't a snippet, can't parse."
+        );
         return null;
     }
 
@@ -38,31 +50,40 @@ const parseSnippetBlockForProsemirror = (schema: Schema, content: string): Prose
     let langNodes: ProsemirrorNode[] = [];
     for (let i = 0; i < rawLines.length; i++) {
         //Preserve our whitespace
-        if(rawLines[i].length === 0 && currentLangBlock) {
+        if (rawLines[i].length === 0 && currentLangBlock) {
             contentLines = [...contentLines, rawLines[i]];
             continue;
         }
         //Dip test, then regex test: Is this a meta line?
-        if(rawLines[i].charCodeAt(0) != 60 || !validSnippetRegex.test(rawLines[i])) {
+        if (
+            rawLines[i].charCodeAt(0) != 60 ||
+            !validSnippetRegex.test(rawLines[i])
+        ) {
             //This is content.
             contentLines = [...contentLines, rawLines[i]];
             continue;
         }
-        const metaLine = mapMetaLine({line: rawLines[i], index: i})
-        if(!metaLine){
-            log("parseSnippetBlockForProsemirror", "We've found something weird in the middle of a snippet. Can't parse.");
+        const metaLine = mapMetaLine({ line: rawLines[i], index: i });
+        if (!metaLine) {
+            log(
+                "parseSnippetBlockForProsemirror",
+                "We've found something weird in the middle of a snippet. Can't parse."
+            );
             return null;
         }
 
-        if(metaLine.type == "begin"){
+        if (metaLine.type == "begin") {
             beginBlock = metaLine;
             continue;
         }
 
         //A new lang meta or end meta represents the end of the existing lang block. If one is open, finish up.
-        if(currentLangBlock) {
-            if(contentLines.length === 0){
-                log("parseSnippetBlockForProsemirror", "We've got an open lang block with nothing in it. Can't parse.");
+        if (currentLangBlock) {
+            if (contentLines.length === 0) {
+                log(
+                    "parseSnippetBlockForProsemirror",
+                    "We've got an open lang block with nothing in it. Can't parse."
+                );
                 return null;
             }
             try {
@@ -71,14 +92,14 @@ const parseSnippetBlockForProsemirror = (schema: Schema, content: string): Prose
                 // - Remove the 4-space padding at the start of a string (if present)
                 // - Leave any additional spacing alone (indentation on code, for example)
                 const code = contentLines
-                    .map(l => l.startsWith("    ") ? l.slice(4) : l)
-                    .join('\n')
-                    .trim()
-                const langNode = snippetLang.createChecked({ language: currentLangBlock.language }, schema.text(code));
-                langNodes = [
-                    ...langNodes,
-                    langNode
-                ]
+                    .map((l) => (l.startsWith("    ") ? l.slice(4) : l))
+                    .join("\n")
+                    .trim();
+                const langNode = snippetLang.createChecked(
+                    { language: currentLangBlock.language },
+                    schema.text(code)
+                );
+                langNodes = [...langNodes, langNode];
             } catch (e) {
                 //Could not create a langnode from the content. Highly messed up!
                 log("parseSnippetBlockForProsemirror", e);
@@ -86,7 +107,7 @@ const parseSnippetBlockForProsemirror = (schema: Schema, content: string): Prose
             }
         }
 
-        if(metaLine.type == "lang") {
+        if (metaLine.type == "lang") {
             currentLangBlock = metaLine;
             contentLines = [];
             continue;
@@ -96,27 +117,33 @@ const parseSnippetBlockForProsemirror = (schema: Schema, content: string): Prose
     }
 
     //Once we're done processing, a final check: do we have everything we need for a valid snippet?
-    if(!beginBlock || !endBlock || langNodes.length == 0){
-        log("parseSnippetBlockForProsemirror", "We're missing either a beginning, end or at least one lang node. Can't parse.");
+    if (!beginBlock || !endBlock || langNodes.length == 0) {
+        log(
+            "parseSnippetBlockForProsemirror",
+            "We're missing either a beginning, end or at least one lang node. Can't parse."
+        );
         return null;
     }
 
     try {
         //This is another entry point for snippets into RT mode, so we need to generate a random ID here.
-        return snippetType.createChecked({
-            id: generateRandomId(),
-            babel: beginBlock.babel,
-            babelPresetReact: beginBlock.babelPresetReact,
-            babelPresetTS: beginBlock.babelPresetTS,
-            console: beginBlock.console,
-            hide: beginBlock.hide
-        }, langNodes);
+        return snippetType.createChecked(
+            {
+                id: generateRandomId(),
+                babel: beginBlock.babel,
+                babelPresetReact: beginBlock.babelPresetReact,
+                babelPresetTS: beginBlock.babelPresetTS,
+                console: beginBlock.console,
+                hide: beginBlock.hide,
+            },
+            langNodes
+        );
     } catch (e) {
         //Could not create a snippet node from the langnodes.
         log("parseSnippetBlockForProsemirror", e);
         return null;
     }
-}
+};
 
 /** Plugin for the rich-text editor that auto-detects if code was pasted and handles it specifically */
 export const stackSnippetPasteHandler = new Plugin({
@@ -142,23 +169,32 @@ export const stackSnippetPasteHandler = new Plugin({
                 stackSnippet = slice.content.child(0).textContent;
             } else {
                 stackSnippet = event.clipboardData.getData("text/plain");
-
             }
-            const snippetNode = parseSnippetBlockForProsemirror(view.state.schema, stackSnippet);
+            const snippetNode = parseSnippetBlockForProsemirror(
+                view.state.schema,
+                stackSnippet
+            );
 
             //For some reason, the node was not parsed as a snippet, so we're not handling it.
-            if(!snippetNode) {
+            if (!snippetNode) {
                 return false;
             }
 
-            let tr = view.state.tr
-                .replaceSelectionWith(snippetNode)
+            let tr = view.state.tr.replaceSelectionWith(snippetNode);
             tr = insertParagraphIfAtDocEnd(tr);
             view.dispatch(tr);
-            view.dispatch(view.state.tr
-                .setSelection(NodeSelection.near(tr.doc.resolve(snippetNode.nodeSize + initialPosition)))
-                .scrollIntoView());
+            view.dispatch(
+                view.state.tr
+                    .setSelection(
+                        NodeSelection.near(
+                            tr.doc.resolve(
+                                snippetNode.nodeSize + initialPosition
+                            )
+                        )
+                    )
+                    .scrollIntoView()
+            );
             return true;
-        }
-    }
+        },
+    },
 });

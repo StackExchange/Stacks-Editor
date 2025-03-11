@@ -1,5 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import {generateRandomId} from "../../utils";
+import { generateRandomId } from "../../utils";
 
 export interface StackSnippetOptions {
     /** The async function to render the preview */
@@ -11,7 +11,12 @@ export interface StackSnippetOptions {
     ) => Promise<Node | null>;
 
     /** Function to trigger opening of the snippets Modal */
-    openSnippetsModal: (meta?: SnippetMetadata, js?: string, css?: string, html?: string) => void;
+    openSnippetsModal: (
+        meta?: SnippetMetadata,
+        js?: string,
+        css?: string,
+        html?: string
+    ) => void;
 }
 
 export interface SnippetMetadata {
@@ -51,9 +56,10 @@ export const getSnippetMetadata = (
 ): SnippetMetadata | null => {
     if (!node || node.type.name !== "stack_snippet") return null;
 
-    const id = node.attrs["id"] && typeof node.attrs["id"] == "string"
-        ? node.attrs["id"]
-        : generateRandomId();
+    const id =
+        node.attrs["id"] && typeof node.attrs["id"] == "string"
+            ? node.attrs["id"]
+            : generateRandomId();
     const hide = assertAttrValue(node, "hide");
     const consoleAttr = assertAttrValue(node, "console");
     const babel = assertAttrValue(node, "babel");
@@ -95,7 +101,6 @@ const getLanguageNode = (node: ProsemirrorNode): LanguageNode | null => {
     }
     return null;
 };
-
 
 export const validSnippetRegex =
     /^<!-- (?:begin snippet:|end snippet |language:)(.*)-->$/;

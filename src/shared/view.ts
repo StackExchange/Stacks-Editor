@@ -3,11 +3,11 @@
 // and keeps the actual code out of the bundle if consumers decide to code split/tree-shake
 import type { Node } from "prosemirror-model";
 import type { EditorView } from "prosemirror-view";
-import {EditorPlugin, IExternalPluginProvider} from "./editor-plugin";
+import { EditorPlugin, IExternalPluginProvider } from "./editor-plugin";
 import type { ImageUploadOptions } from "./prosemirror-plugins/image-upload";
 import { setAttributesOnElement, stackOverflowValidateLink } from "./utils";
 import { StackSnippetOptions } from "./plugins/stack-snippets/common";
-import {RichTextOptions} from "../rich-text/editor";
+import { RichTextOptions } from "../rich-text/editor";
 
 /** Describes each distinct editor type the StacksEditor handles */
 export enum EditorType {

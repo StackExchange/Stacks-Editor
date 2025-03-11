@@ -9,11 +9,8 @@ import {
     validateMetaLines,
     validSnippetRegex,
 } from "./common";
-import {
-    Node as ProsemirrorNode,
-    NodeSpec,
-} from "prosemirror-model";
-import {generateRandomId} from "../../utils";
+import { Node as ProsemirrorNode, NodeSpec } from "prosemirror-model";
+import { generateRandomId } from "../../utils";
 
 export const stackSnippetMarkdownParser: MarkdownParser["tokens"] = {
     stack_snippet: {
@@ -213,5 +210,9 @@ export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
 };
 
 export const stackSnippetPlugin = (md: MarkdownIt) => {
-    md.block.ruler.before("fence", "stack_snippet", parseSnippetBlockForMarkdownIt);
+    md.block.ruler.before(
+        "fence",
+        "stack_snippet",
+        parseSnippetBlockForMarkdownIt
+    );
 };

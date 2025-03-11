@@ -1,16 +1,18 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import {
-    EditorView,
-    NodeView,
-} from "prosemirror-view";
+import { EditorView, NodeView } from "prosemirror-view";
 import {
     getSnippetMetadata,
     SnippetMetadata,
-    StackSnippetOptions
+    StackSnippetOptions,
 } from "./common";
 
 export class StackSnippetView implements NodeView {
-    constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number, opts: StackSnippetOptions) {
+    constructor(
+        node: ProsemirrorNode,
+        view: EditorView,
+        getPos: () => number,
+        opts: StackSnippetOptions
+    ) {
         this.opts = opts;
         this.view = view;
         this.getPos = getPos;
@@ -66,12 +68,17 @@ export class StackSnippetView implements NodeView {
                         html?.content
                     )
                     .then((r) => {
-                        if(r) {
-                            this.view.dispatch(this.view.state.tr
-                                .setNodeMarkup(this.getPos(), null, {
-                                    ...node.attrs,
-                                    content: r
-                                }));
+                        if (r) {
+                            this.view.dispatch(
+                                this.view.state.tr.setNodeMarkup(
+                                    this.getPos(),
+                                    null,
+                                    {
+                                        ...node.attrs,
+                                        content: r,
+                                    }
+                                )
+                            );
                         } else {
                             console.log(r);
                         }
@@ -95,13 +102,13 @@ export class StackSnippetView implements NodeView {
     }
 
     update(node: ProsemirrorNode): boolean {
-        if(node.type.name !== "stack_snippet") return false;
+        if (node.type.name !== "stack_snippet") return false;
 
         this.snippetMetadata = getSnippetMetadata(node);
         const content = node.attrs["content"] as Node;
-        if(content) {
+        if (content) {
             //Clear the node
-            this.resultContainer.textContent = '';
+            this.resultContainer.textContent = "";
             this.resultContainer.appendChild(content);
         }
         return true;
