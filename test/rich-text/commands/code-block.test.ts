@@ -681,7 +681,7 @@ describe("toggleInlineCode command", () => {
         expect(selectedText).toBe("Line1\nLine2");
 
         // Capture the document before applying the command.
-        const prevJSON = state.doc.toJSON();
+        const prevJSON = state.doc.toJSON() as unknown;
 
         // Apply the toggleInlineCode command.
         state = applyCommand(toggleInlineCode, state);
@@ -718,7 +718,7 @@ describe("toggleInlineCode command", () => {
         const selectedText = state.doc.textBetween(from, to, "\n", "\n");
         expect(selectedText).toContain("\n");
 
-        const prevJSON = state.doc.toJSON();
+        const prevJSON = state.doc.toJSON() as unknown;
 
         // Apply the command.
         state = applyCommand(toggleInlineCode, state);
