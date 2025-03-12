@@ -1,4 +1,5 @@
 import { DOMParser, Node, Schema, Slice } from "prosemirror-model";
+import { schema as basicSchema } from "prosemirror-schema-basic";
 import {
     EditorState,
     NodeSelection,
@@ -9,6 +10,7 @@ import {
 import { EditorView } from "prosemirror-view";
 import { richTextSchemaSpec } from "../../src/rich-text/schema";
 import { MenuCommand } from "../../src/shared/menu";
+import OrderedMap from "orderedmap";
 
 /** Consistent schema to test against */
 export const testRichTextSchema = new Schema(richTextSchemaSpec);
@@ -244,3 +246,40 @@ export function executeTransaction(
 
     return { newState, isValid };
 }
+
+/** Returns whether the selection range has a mark of the given type */
+export function rangeHasMark(
+    state: EditorState,
+    from: number,
+    to: number,
+    markType: any
+): boolean {
+    let hasMark = false;
+    state.doc.nodesBetween(from, to, (node) => {
+        if (node.marks && node.marks.some((mark) => mark.type === markType)) {
+            hasMark = true;
+            return false;
+        }
+        return true;
+    });
+    return hasMark;
+}
+
+/** Extend prosemirror-schema-basic to add softbreak (to represent linebreaks coming from pasted Markdown) */
+const extendedNodes = (basicSchema.spec.nodes as OrderedMap<any>)
+    .addToEnd("softbreak", {
+        inline: true,
+        group: "inline",
+        selectable: false,
+        toDOM() {
+            return ["br"];
+        },
+        parseDOM: [{ tag: "br" }],
+    });
+
+const extendedMarks = basicSchema.spec.marks;
+
+export const schemaWithSoftbreak = new Schema({
+    nodes: extendedNodes,
+    marks: extendedMarks,
+});

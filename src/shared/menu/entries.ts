@@ -41,6 +41,7 @@ import {
     insertRichTextTableCommand,
     toggleList,
     toggleCodeBlock,
+    toggleInlineCode,
 } from "../../rich-text/commands";
 import { _t } from "../localization";
 import { makeMenuButton, makeMenuDropdown } from "./helpers";
@@ -330,7 +331,7 @@ export const createMenuEntries = (
             {
                 key: "toggleCode",
                 richText: {
-                    command: toggleMark(schema.marks.code),
+                    command: toggleInlineCode,
                     active: markActive(schema.marks.code),
                 },
                 commonmark: inlineCodeCommand,

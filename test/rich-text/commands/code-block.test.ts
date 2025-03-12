@@ -1,9 +1,10 @@
 import { EditorState, Transaction } from "prosemirror-state";
 import { schema as basicSchema } from "prosemirror-schema-basic";
-import { doc, p, code_block, br } from "prosemirror-test-builder";
+import { doc, p, code_block, br, code } from "prosemirror-test-builder";
 import {
     indentCodeBlockLinesCommand,
     toggleCodeBlock,
+    toggleInlineCode,
     unindentCodeBlockLinesCommand,
 } from "../../../src/rich-text/commands/code-block";
 import { EditorView } from "prosemirror-view";
@@ -12,6 +13,8 @@ import {
     applySelection,
     createState,
     executeTransaction,
+    schemaWithSoftbreak,
+    rangeHasMark,
 } from "../test-helpers";
 
 const indentStr = "    ";
@@ -645,5 +648,86 @@ describe("splitCodeBlockAtStartOfDoc", () => {
         // Not a code block, so do nothing:
         expect(isValid).toBe(false);
         expect(newState.doc.toString()).toEqual(state.doc.toString());
+    });
+});
+
+describe("toggleInlineCode command", () => {
+    it("applies inline code to a single-line selection", () => {
+        const startDoc = doc(p("Some inline code"));
+        let state = EditorState.create({ doc: startDoc, schema: basicSchema });
+
+        // Select the word "inline"
+        state = applySelection(state, 5, 11);
+
+        // Apply the inline code toggle command.
+        state = applyCommand(toggleInlineCode, state);
+
+        // Expected document: the word "inline" is wrapped with the inline code mark.
+        const expectedDoc = doc(p("Some ", code("inline"), " code"));
+        expect(state.doc.toJSON()).toEqual(expectedDoc.toJSON());
+    });
+
+    it("does NOT apply inline code if selection includes a real newline", () => {
+        // Create a document with an actual newline character.
+        const startDoc = doc(p("Line1\nLine2"));
+        let state = EditorState.create({ doc: startDoc, schema: basicSchema });
+
+        // Select all text
+        state = applySelection(state, 0, 11);
+
+        // Assert that the selected text is exactly "Line1\nLine2"
+        const { from, to } = state.selection;
+        const selectedText = state.doc.textBetween(from, to, "\n", "\n");
+        expect(selectedText).toBe("Line1\nLine2");
+
+        // Capture the document before applying the command.
+        const prevJSON = state.doc.toJSON();
+
+        // Apply the toggleInlineCode command.
+        state = applyCommand(toggleInlineCode, state);
+
+        // Verify that the inline code mark is NOT applied.
+        expect(rangeHasMark(state, from, to, basicSchema.marks.code)).toBe(
+            false
+        );
+        // And that the document remains unchanged.
+        expect(state.doc.toJSON()).toEqual(prevJSON);
+    });
+
+    it("does NOT apply inline code if selection includes a softbreak node", () => {
+        // Create a document using the extended schema, which includes a softbreak node.
+        // The paragraph content will be: "Line1", a softbreak, then "Line2".
+        // This simulates when text has been pasted into the Markdown editor with a linebreak.
+        const startDoc = doc(
+            p(
+                "Line1<start>",
+                schemaWithSoftbreak.nodes.softbreak.create(),
+                "Line2<end>"
+            )
+        );
+        let state = EditorState.create({
+            doc: startDoc,
+            schema: schemaWithSoftbreak,
+        });
+
+        // Select all text
+        state = applySelection(state, 0, 11);
+
+        // Assert that the selected text (using "\n" as the leaf text for non-text nodes) contains a newline.
+        const { from, to } = state.selection;
+        const selectedText = state.doc.textBetween(from, to, "\n", "\n");
+        expect(selectedText).toContain("\n");
+
+        const prevJSON = state.doc.toJSON();
+
+        // Apply the command.
+        state = applyCommand(toggleInlineCode, state);
+
+        // Check that no inline code mark was applied.
+        expect(
+            rangeHasMark(state, from, to, schemaWithSoftbreak.marks.code)
+        ).toBe(false);
+        // And the document remains unchanged.
+        expect(state.doc.toJSON()).toEqual(prevJSON);
     });
 });
