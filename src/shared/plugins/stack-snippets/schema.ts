@@ -103,7 +103,7 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
 
     const metaLines = rawMetaLines.map(mapMetaLine).filter((m) => m != null);
     const validationResult = validateMetaLines(metaLines);
-
+    
     //We now know this is a valid snippet. Last call before we start processing
     if (silent || !validationResult.valid) {
         return validationResult.valid;
@@ -157,7 +157,7 @@ export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
     stack_snippet: {
         //It can have exactly 3 lang blocks: html, css, js.
         // These look the same, and I don't think we need to be picky about order.
-        content: "stack_snippet_lang stack_snippet_lang stack_snippet_lang",
+        content: "stack_snippet_lang{1,3}",
         group: "block",
         selectable: false,
         inline: false,

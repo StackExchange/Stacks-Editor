@@ -1,4 +1,4 @@
-import { RichTextEditor } from "../../src/rich-text/editor";
+import {RichTextEditor, RichTextOptions} from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
 import { externalPluginProvider, normalize } from "../test-helpers";
 
@@ -20,12 +20,12 @@ function editorDom(editorView: RichTextEditor): string {
     return editorView.dom.innerHTML;
 }
 
-function richView(markdownInput: string) {
+function richView(markdownInput: string, options?: RichTextOptions) {
     return new RichTextEditor(
         document.createElement("div"),
         markdownInput,
         externalPluginProvider(),
-        {}
+        options || {}
     );
 }
 
@@ -319,6 +319,179 @@ _world_.
                 "right"
             );
         });
+    });
+
+    describe("stack snippets", () => {
+        //Valid snippets
+        // - Just JS
+        // - Just CSS
+        // - Just HTML
+        // any two of the three
+        // all three
+        // Special cases:
+        // if the HTML contains comments that look like snippets code
+
+        const shouldHaveSnippetBlock = (rendered: Element) => {
+            expect(rendered.querySelectorAll("div.snippet")).toHaveLength(1);
+            expect(rendered.querySelectorAll("div.snippet-code")).toHaveLength(1);
+            expect(rendered.querySelectorAll("div.snippet-result")).toHaveLength(1);
+            expect(rendered.querySelectorAll("div.snippet-result")).toHaveLength(1);
+            const resultCode = rendered.querySelectorAll("div.snippet-result-code");
+            expect(resultCode).toHaveLength(1);
+            expect(resultCode[0].childNodes).toHaveLength(0);
+        }
+
+        const shouldHaveRunCodeButton = (rendered: Element) => {
+            const runCode = rendered.querySelectorAll("div.snippet-ctas > button");
+            expect(runCode).toHaveLength(1);
+            expect(runCode[0].attributes.getNamedItem("title").value).toBe("Run code snippet");
+            expect(runCode[0].attributes.getNamedItem("aria-label").value).toBe("Run code snippet");
+        }
+
+        const shouldHaveLanguageBlocks = (rendered: Element, langs: string[]) => {
+            for(const lang of langs){
+                const langBlock = rendered.querySelectorAll(`div.snippet-code > pre.lang-${lang} > code`);
+                expect(langBlock).toHaveLength(1);
+                expect(langBlock[0].innerHTML).toBeTruthy();
+            }
+
+            const codeBlocks = rendered.querySelectorAll(`div.snippet-code > pre`);
+            expect(codeBlocks).toHaveLength(langs.length);
+        }
+
+        const validBegin: string =
+`<!-- begin snippet: js hide: false console: true babel: null babelPresetReact: false babelPresetTS: false -->
+
+`;
+
+        const validEnd: string = "<!-- end snippet -->";
+        const validJs: string =
+`<!-- language: lang-js -->
+
+    console.log("test");
+
+`;
+        const validCss: string =
+`<!-- language: lang-css -->
+
+    .test {
+      position: fixed;
+    }
+
+`;
+        const validHtml: string =
+`<!-- language: lang-html -->
+
+    <div>test</div>
+
+`;
+        const validHtmlWithSuspiciousComment = (lang: string): string =>
+`<!-- language: lang-html -->
+
+    <!-- language: lang-${lang} -->
+    <div>test</div>
+
+`;
+
+        const validRenderCases = [
+            //All validly rendered Snippet blocks.
+            // Positioning of language blocks doesn't matter, but spacing does.
+            [validBegin + validJs + validEnd, ["js"]],
+            [validBegin + validCss + validEnd, ["css"]],
+            [validBegin + validHtml + validEnd, ["html"]],
+            [validBegin + validJs + validCss + validEnd, ["js", "css"]],
+            [validBegin + validCss + validJs + validEnd, ["js", "css"]],
+            [validBegin + validJs + validHtml + validEnd, ["js", "html"]],
+            [validBegin + validHtml + validJs + validEnd, ["js", "html"]],
+            [validBegin + validCss + validHtml + validEnd, ["css", "html"]],
+            [validBegin + validHtml + validCss + validEnd, ["css", "html"]],
+            [validBegin + validJs + validCss + validHtml + validEnd, ["js", "css", "html"]],
+            [validBegin + validJs + validHtml + validCss + validEnd, ["js", "css", "html"]],
+            [validBegin + validCss + validJs + validHtml + validEnd, ["js", "css", "html"]],
+            [validBegin + validCss + validHtml + validJs + validEnd, ["js", "css", "html"]],
+            [validBegin + validHtml + validCss + validJs + validEnd, ["js", "css", "html"]],
+            [validBegin + validHtml + validJs + validCss + validEnd, ["js", "css", "html"]],
+            // HTML comments can be used within the HTML body - even if they happen to look like snippet headers
+            [validBegin + validHtmlWithSuspiciousComment("html") + validEnd, ["html"]],
+            [validBegin + validHtmlWithSuspiciousComment("css") + validCss + validEnd, ["html", "css"]],
+            [validBegin + validHtmlWithSuspiciousComment("js") + validJs + validEnd, ["html", "js"]],
+            [validBegin + validHtmlWithSuspiciousComment("html") + validJs + validCss + validEnd, ["js", "css", "html"]],
+        ];
+
+        it.each(validRenderCases)("should render snippets", (markdown: string, langs: string[]) => {
+            const richEditorView = richView(markdown, {
+                stackSnippet: {
+                    renderer: () => null,
+                    openSnippetsModal: () => {}
+                }
+            });
+
+            const rendered = richEditorView.dom;
+            shouldHaveSnippetBlock(rendered);
+            shouldHaveRunCodeButton(rendered);
+            shouldHaveLanguageBlocks(rendered, langs);
+        });
+
+        it.each(validRenderCases)("should render without button if no render supplied", (markdown: string, langs: string[]) => {
+            const richEditorView = richView(markdown, {});
+
+            const rendered = richEditorView.dom;
+            shouldHaveSnippetBlock(rendered);
+            shouldHaveLanguageBlocks(rendered, langs);
+        });
+
+        //Snippets with four spaces should render as if in a code block
+        it("should render four-spaced snippets within a code block", () => {
+            const markdown =
+`    <!-- begin snippet: js hide: false console: true babel: null babelPresetReact: false babelPresetTS: false -->
+
+    <!-- language: lang-js -->
+
+        console.log("test");
+
+    <!-- end snippet -->`;
+
+            const richEditorView = richView(markdown, {
+                stackSnippet: {
+                    renderer: () => null,
+                    openSnippetsModal: () => {}
+                }
+            });
+
+            const rendered = richEditorView.dom;
+            const codeBlocks = rendered.querySelectorAll("div > pre.s-code-block > code");
+            expect(codeBlocks).toHaveLength(1);
+            expect(codeBlocks[0].innerHTML).toBeTruthy();
+        });
+
+        it.each([
+            //No content
+            validBegin + validEnd,
+            validEnd + validJs + validBegin,
+            //No end
+            validBegin + validJs,
+            //No start
+            validJs + validEnd,
+            //Missing begin options
+            `<!-- begin snippet: js hide: false -->
+
+` + validJs + validEnd,
+            //Unregistered begin options
+            `<!-- begin snippet: js hide: false console: true babel: null babelPresetReact: false babelPresetTS: false test: false -->
+
+` + validJs + validEnd,
+        ])("should not render invalid snippets", (markdown) => {
+            const richEditorView = richView(markdown, {
+                stackSnippet: {
+                    renderer: () => null,
+                    openSnippetsModal: () => {}
+                }
+            });
+
+            const rendered = richEditorView.dom;
+
+            expect(rendered.querySelectorAll("div.snippet")).toHaveLength(0);
+        })
     });
 
     describe("general", () => {

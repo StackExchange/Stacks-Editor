@@ -48,8 +48,7 @@ export class StackSnippetView implements NodeView {
         const runText = document.createElement("span");
         runText.textContent = "Run code snippet";
         runCodeButton.appendChild(runText);
-        const id: unknown = node.attrs["id"];
-        if (opts.renderer && id && typeof id == "string") {
+        if (opts && opts.renderer) {
             runCodeButton.addEventListener("click", () => {
                 const [js] = this.snippetMetadata.langNodes.filter(
                     (l) => l.metaData.language == "js"

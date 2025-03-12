@@ -250,5 +250,19 @@ export const validateMetaLines = (metaLines: MetaLine[]): ValidationResult => {
         }
     }
 
+    if(!validationResult.jsIndex && !validationResult.cssIndex && !validationResult.htmlIndex){
+        validationResult.valid = false;
+        validationResult.reason = "No code block found"
+    }
+
+    if(validationResult.beginIndex > validationResult.endIndex){
+        validationResult.valid = false;
+        validationResult.reason = "Start/end not in correct order"
+    }
+
+    if(!validationResult.valid){
+        console.log(validationResult.reason);
+    }
+
     return validationResult;
 };
