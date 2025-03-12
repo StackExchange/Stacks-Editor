@@ -416,64 +416,62 @@ function blockWrapIn(
         const newlineOffset = 2; // account for  two inserted newlines
         return insertRawText(
             insertedBlock,
-            formattingText.length + newlineOffset,
+            formattingText.length + newlineOffset, //only selects the placeholder text, not the formattingText
             formattingText.length + placeholderText.length + newlineOffset,
             state,
             dispatch
         );
     }
 
-    let { from, to } = state.selection;
+    if (!dispatch) return true;
 
-    // check if we need to unwrap
-    if (blockUnwrapIn(formattingText, state, dispatch)) {
-        return true;
-    }
+    const from = state.selection.from;
+    let to = state.selection.to;
 
     // wrap the selected block in code fences, prepending/appending newlines if necessary
+
     let tr = state.tr;
 
-    // if the character immediately preceding the selection isn't a newline, add one
-    if (from > 0 && state.doc.textBetween(from - 1, from) !== "\n") {
-        tr = tr.insertText("\n", from, from);
-        from += 1;
-        to += 1;
-    }
-
-    // if the character immediately postceding the selection isn't a newline, add one
-    if (
-        to + 1 < state.doc.content.size &&
-        state.doc.textBetween(to, to + 1) !== "\n"
-    ) {
-        tr = tr.insertText("\n", to + 1, to + 1);
-        to += 1;
-    }
-
-    // add this char before and after the selection along with the formatting text
     const surroundingChar = "\n";
 
+    //always insert a newline before the selection
+    tr = tr.insertText(surroundingChar, from, from);
+    to += 1;
+
+    //always insert a newline after the selection
+    tr = tr.insertText(surroundingChar, to, to);
+    to += 1;
+
     // insert the code fences from the end first so we don't mess up our from index
-    tr.insertText(surroundingChar + formattingText, to);
-    tr.insertText(formattingText + surroundingChar, from);
+    //consider if we need to add the surrounding char too, if the text is not already surrounded by newline
 
-    if (dispatch) {
-        // adjust our new text selection based on how many characters we added
-        const addedTextModifier =
-            surroundingChar.length + formattingText.length;
+    const preceedingNewlineNeeded =
+        from > 0 && state.doc.textBetween(from - 1, from) !== surroundingChar
+            ? surroundingChar
+            : "";
+    const followingNewlineNeeded =
+        to + 1 < state.doc.content.size &&
+        state.doc.textBetween(to, to + 1) !== surroundingChar
+            ? surroundingChar
+            : "";
 
-        tr.setSelection(
-            TextSelection.create(
-                state.apply(tr).doc,
-                from,
-                // add modifier twice, once for added leading text, once for added trailing text
-                to + addedTextModifier * 2
-            )
-        );
+    tr.insertText(formattingText + followingNewlineNeeded, to);
+    tr.insertText(preceedingNewlineNeeded + formattingText, from);
+    to += formattingText.length * 2 + preceedingNewlineNeeded.length;
 
-        tr.scrollIntoView();
+    // set the selection to the text inside the code fences, skipping the leading newline
 
-        dispatch(tr);
-    }
+    tr.setSelection(
+        TextSelection.create(
+            state.apply(tr).doc,
+            from + preceedingNewlineNeeded.length,
+            to
+        )
+    );
+
+    tr.scrollIntoView();
+
+    dispatch(tr);
 
     return true;
 }
