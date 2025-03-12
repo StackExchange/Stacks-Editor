@@ -445,12 +445,19 @@ function blockWrapIn(
     // insert the code fences from the end first so we don't mess up our from index
     //consider if we need to add the surrounding char too, if the text is not already surrounded by newline
 
-    const preceedingNewlineNeeded = from > 0 && state.doc.textBetween(from - 1, from) !== surroundingChar ? surroundingChar : '';
-    const followingNewlineNeeded = to + 1 < state.doc.content.size && state.doc.textBetween(to, to + 1) !== surroundingChar ? surroundingChar : '';
+    const preceedingNewlineNeeded =
+        from > 0 && state.doc.textBetween(from - 1, from) !== surroundingChar
+            ? surroundingChar
+            : "";
+    const followingNewlineNeeded =
+        to + 1 < state.doc.content.size &&
+        state.doc.textBetween(to, to + 1) !== surroundingChar
+            ? surroundingChar
+            : "";
 
     tr.insertText(formattingText + followingNewlineNeeded, to);
     tr.insertText(preceedingNewlineNeeded + formattingText, from);
-    to += (formattingText.length * 2) + preceedingNewlineNeeded.length;
+    to += formattingText.length * 2 + preceedingNewlineNeeded.length;
 
     // set the selection to the text inside the code fences, skipping the leading newline
 
