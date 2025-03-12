@@ -266,8 +266,9 @@ export function rangeHasMark(
 }
 
 /** Extend prosemirror-schema-basic to add softbreak (to represent linebreaks coming from pasted Markdown) */
-const extendedNodes = (basicSchema.spec.nodes as OrderedMap<any>)
-    .addToEnd("softbreak", {
+const extendedNodes = (basicSchema.spec.nodes as OrderedMap<any>).addToEnd(
+    "softbreak",
+    {
         inline: true,
         group: "inline",
         selectable: false,
@@ -275,7 +276,8 @@ const extendedNodes = (basicSchema.spec.nodes as OrderedMap<any>)
             return ["br"];
         },
         parseDOM: [{ tag: "br" }],
-    });
+    }
+);
 
 const extendedMarks = basicSchema.spec.marks;
 
