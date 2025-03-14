@@ -87,7 +87,7 @@ function markInputRule(
 }
 
 // Extend the InputRule type so that we can access its handler property.
-interface ExtendedInputRule extends InputRule {
+export interface ExtendedInputRule extends InputRule {
     handler: (
         state: EditorState,
         match: RegExpExecArray,
