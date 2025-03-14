@@ -4,9 +4,10 @@ import {
     textblockTypeInputRule,
     wrappingInputRule,
 } from "prosemirror-inputrules";
-import { MarkType, Schema } from "prosemirror-model";
-import { EditorState } from "prosemirror-state";
+import { MarkType, NodeType, Schema } from "prosemirror-model";
+import { EditorState, Transaction } from "prosemirror-state";
 import { CommonmarkParserFeatures } from "../shared/view";
+import { insertParagraphIfAtDocEnd } from "./commands/helpers";
 
 // matches: `some text`, but not ` text `
 const inlineCodeRegex = /`(\S(?:|.*?\S))`$/;
@@ -85,6 +86,54 @@ function markInputRule(
     );
 }
 
+// Extend the InputRule type so that we can access its handler property.
+interface ExtendedInputRule extends InputRule {
+    handler: (
+        state: EditorState,
+        match: RegExpExecArray,
+        start: number,
+        end: number
+    ) => Transaction | null;
+}
+
+/**
+ * Creates an input rule that uses ProseMirror’s textblockTypeInputRule to replace matching text
+ * with a node of the given type. After the conversion, insertParagraphIfAtDocEnd is called to ensure
+ * that an empty paragraph is added if the new node is at the document’s end.
+ *
+ * @param regexp - The regular expression to match (e.g. `/^```$/`).
+ * @param nodeType - The node type to be created (for example, a code block).
+ * @returns An InputRule that performs the transformation.
+ */
+export function textblockTypeTrailingParagraphInputRule(
+    regexp: RegExp,
+    nodeType: NodeType
+): InputRule {
+    // Get the base input rule from ProseMirror.
+    const baseRule = textblockTypeInputRule(
+        regexp,
+        nodeType
+    ) as ExtendedInputRule;
+    const originalHandler = baseRule.handler;
+
+    // Create a new InputRule that wraps the base handler.
+    return new InputRule(
+        regexp,
+        (
+            state: EditorState,
+            match: RegExpExecArray,
+            start: number,
+            end: number
+        ): Transaction | null => {
+            const tr = originalHandler(state, match, start, end);
+            if (tr) {
+                insertParagraphIfAtDocEnd(tr);
+            }
+            return tr;
+        }
+    );
+}
+
 /**
  * Defines all input rules we're using in our rich-text editor.
  * Input rules are formatting operations that trigger as you type based on regular expressions
@@ -113,7 +162,7 @@ export const richTextInputRules = (
         (match) => ({ level: match[1].length })
     );
 
-    const codeBlockRule = textblockTypeInputRule(
+    const codeBlockRule = textblockTypeTrailingParagraphInputRule(
         /^```$/,
         schema.nodes.code_block
     );
