@@ -1,6 +1,11 @@
-import { MarkType } from "prosemirror-model";
+import { MarkType, Node as PMNode } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
-import { richTextInputRules } from "../../src/rich-text/inputrules";
+import { schema as basicSchema } from "prosemirror-schema-basic";
+import {
+    ExtendedInputRule,
+    richTextInputRules,
+    textblockTypeTrailingParagraphInputRule,
+} from "../../src/rich-text/inputrules";
 import { stackOverflowValidateLink } from "../../src/shared/utils";
 import {
     applySelection,
@@ -11,6 +16,7 @@ import {
     sleepAsync,
     testRichTextSchema,
 } from "./test-helpers";
+import { EditorState } from "prosemirror-state";
 
 function dispatchInputAsync(view: EditorView, inputStr: string) {
     // insert all but the last character
@@ -205,4 +211,80 @@ describe("mark input rules", () => {
             });
         }
     );
+});
+
+describe("textblockTypeTrailingParagraphInputRule", () => {
+    it("inserts trailing paragraph when node is at the document end", () => {
+        // Create a doc with a single paragraph that contains only the trigger text "```".
+        const paragraph = basicSchema.nodes.paragraph.create(
+            null,
+            basicSchema.text("```")
+        );
+        const doc = basicSchema.nodes.doc.create(null, paragraph);
+        const state = EditorState.create({ doc, schema: basicSchema });
+
+        // Create the input rule that transforms the trigger text into a code_block and,
+        // if needed, appends an empty paragraph.
+        const rule = textblockTypeTrailingParagraphInputRule(
+            /^```$/,
+            basicSchema.nodes.code_block
+        ) as ExtendedInputRule;
+
+        // Simulate a match for the trigger text "```".
+        // In a paragraph, text typically starts at position 1. For a 3-character string, we use positions 1 to 4.
+        const match = /^```$/.exec("```");
+        const tr = rule.handler(state, match, 1, 4);
+        if (!tr) {
+            throw new Error("Expected a valid transaction");
+        }
+        const newDoc: PMNode = tr.doc;
+
+        // We expect the resulting doc to have two children:
+        //  - The first is the code_block that replaced the original trigger text.
+        //  - The second is the extra empty paragraph inserted at the end.
+        expect(newDoc.childCount).toBe(2);
+        expect(newDoc.child(0).type.name).toBe("code_block");
+        expect(newDoc.child(1).type.name).toBe("paragraph");
+        expect(newDoc.child(1).textContent).toBe("");
+    });
+
+    it("does not insert trailing paragraph when node is not at document end", () => {
+        // Create a doc with two paragraphs:
+        //  - The first contains the trigger text "```".
+        //  - The second contains additional text.
+        const paragraph1 = basicSchema.nodes.paragraph.create(
+            null,
+            basicSchema.text("```")
+        );
+        const paragraph2 = basicSchema.nodes.paragraph.create(
+            null,
+            basicSchema.text("Hello")
+        );
+        const doc = basicSchema.nodes.doc.create(null, [
+            paragraph1,
+            paragraph2,
+        ]);
+        const state = EditorState.create({ doc, schema: basicSchema });
+
+        const rule = textblockTypeTrailingParagraphInputRule(
+            /^```$/,
+            basicSchema.nodes.code_block
+        ) as ExtendedInputRule;
+        const match = /^```$/.exec("```");
+        const tr = rule.handler(state, match, 1, 4);
+        if (!tr) {
+            throw new Error("Expected a valid transaction");
+        }
+        const newDoc: PMNode = tr.doc;
+
+        // Since there's additional content after the transformed node,
+        // no extra paragraph should be appended.
+        // The document should have:
+        //  - The first child: the code_block replacing the trigger text.
+        //  - The second child: the unchanged paragraph with text "Hello".
+        expect(newDoc.childCount).toBe(2);
+        expect(newDoc.child(0).type.name).toBe("code_block");
+        expect(newDoc.child(1).type.name).toBe("paragraph");
+        expect(newDoc.child(1).textContent).toBe("Hello");
+    });
 });
