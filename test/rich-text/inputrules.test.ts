@@ -232,7 +232,7 @@ describe("textblockTypeTrailingParagraphInputRule", () => {
 
         // Simulate a match for the trigger text "```".
         // In a paragraph, text typically starts at position 1. For a 3-character string, we use positions 1 to 4.
-        const match = /^```$/.exec("```")!;
+        const match = /^```$/.exec("```");
         const tr = rule.handler(state, match, 1, 4);
         if (!tr) {
             throw new Error("Expected a valid transaction");
@@ -270,7 +270,7 @@ describe("textblockTypeTrailingParagraphInputRule", () => {
             /^```$/,
             basicSchema.nodes.code_block
         ) as ExtendedInputRule;
-        const match = /^```$/.exec("```")!;
+        const match = /^```$/.exec("```");
         const tr = rule.handler(state, match, 1, 4);
         if (!tr) {
             throw new Error("Expected a valid transaction");
