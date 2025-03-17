@@ -440,17 +440,25 @@ export function escapeUnselectableCommand(
     //A resolved position of the cursor. Functionally: The place we're calculating the next line for.
     const selectionEndPos = state.selection.$to;
 
+
     //If you're already at the end of the document, do the default action (nothing)
-    if (selectionEndPos.pos == state.doc.content.size - 1) {
+    // Note: We're checking for either the last Inline character or the last node being selected here.
+    const isLastNode = state.doc.lastChild.eq(state.selection.$to.parent);
+    const isSelectingWholeDoc = state.doc.eq(state.selection.$to.parent);
+    if (isLastNode || isSelectingWholeDoc) {
         return false;
     }
 
-    //Starting from the next node position, check all the nodes for being a text block.
+    //Calculate the position starting at the next line in the doc (the start point to check at)
+    const findStartPos = selectionEndPos.posAtIndex(selectionEndPos.indexAfter(0), 0);
+
+    //Starting from the next node position down, check all the nodes for being a text block.
     let foundSelectable: boolean = false;
     state.doc.nodesBetween(
-        selectionEndPos.pos + 1,
+        findStartPos,
         state.doc.content.size,
         (node) => {
+
             //Already found one, no need to delve deeper.
             if (foundSelectable) return !foundSelectable;
 
