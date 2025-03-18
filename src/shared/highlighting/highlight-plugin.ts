@@ -122,15 +122,15 @@ export function CodeBlockHighlightPlugin(
         tr: Transaction,
         node: ProsemirrorNode,
         pos: number,
-        lanugage: string
+        language: string
     ): Transaction => {
         const attrs = { ...node.attrs };
 
         if (node.type.name == "stack_snippet_lang") {
-            attrs["lanugage"] = lanugage;
+            attrs["language"] = language;
         } else {
             //By default, we assume that it's a code block, and we have our specialized attr definition applied.
-            attrs["detectedHighlightLanguage"] = lanugage;
+            attrs["detectedHighlightLanguage"] = language;
         }
 
         return tr.setNodeMarkup(pos, undefined, attrs);

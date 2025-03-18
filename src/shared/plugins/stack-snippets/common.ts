@@ -1,5 +1,8 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { generateRandomId } from "../../utils";
+import {
+    validJs
+} from "../../../../test/rich-text/plugins/stack-snippet-helpers";
 
 export interface StackSnippetOptions {
     /** The async function to render the preview */
@@ -236,6 +239,11 @@ export const validateMetaLines = (metaLines: MetaLine[]): ValidationResult => {
                             };
                         validationResult.cssIndex = m.index;
                         break;
+                    default:
+                        return {
+                            valid: false,
+                            reason: "Unknown language block"
+                        }
                 }
                 break;
         }
@@ -253,15 +261,23 @@ export const validateMetaLines = (metaLines: MetaLine[]): ValidationResult => {
     if(!validationResult.jsIndex && !validationResult.cssIndex && !validationResult.htmlIndex){
         validationResult.valid = false;
         validationResult.reason = "No code block found"
+        return validationResult;
     }
 
     if(validationResult.beginIndex > validationResult.endIndex){
         validationResult.valid = false;
         validationResult.reason = "Start/end not in correct order"
+        return validationResult;
     }
 
-    if(!validationResult.valid){
-        console.log(validationResult.reason);
+    const sortedIndices = [validationResult.beginIndex, validationResult.jsIndex, validationResult.cssIndex, validationResult.htmlIndex, validationResult.endIndex]
+        .filter(i => i) //filter out any undefineds; we don't care about the,
+        .sort() //sort them in numerical order
+
+    if(sortedIndices[0] !== validationResult.beginIndex || sortedIndices[sortedIndices.length - 1] !== validationResult.endIndex){
+        validationResult.valid = false;
+        validationResult.reason = "Language blocks not within begin/end blocks";
+        return validationResult;
     }
 
     return validationResult;

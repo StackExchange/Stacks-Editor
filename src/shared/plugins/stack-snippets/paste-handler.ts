@@ -12,7 +12,7 @@ import {
 import { generateRandomId } from "../../utils";
 import { insertParagraphIfAtDocEnd } from "../../../rich-text/commands/helpers";
 
-const parseSnippetBlockForProsemirror = (
+export const parseSnippetBlockForProsemirror = (
     schema: Schema,
     content: string
 ): ProsemirrorNode | null => {
