@@ -440,7 +440,6 @@ export function escapeUnselectableCommand(
     //A resolved position of the cursor. Functionally: The place we're calculating the next line for.
     const selectionEndPos = state.selection.$to;
 
-
     //If you're already at the end of the document, do the default action (nothing)
     // Note: We're checking for either the last Inline character or the last node being selected here.
     const isLastNode = state.doc.lastChild.eq(state.selection.$to.parent);
@@ -450,28 +449,26 @@ export function escapeUnselectableCommand(
     }
 
     //Calculate the position starting at the next line in the doc (the start point to check at)
-    const findStartPos = selectionEndPos.posAtIndex(selectionEndPos.indexAfter(0), 0);
+    const findStartPos = selectionEndPos.posAtIndex(
+        selectionEndPos.indexAfter(0),
+        0
+    );
 
     //Starting from the next node position down, check all the nodes for being a text block.
     let foundSelectable: boolean = false;
-    state.doc.nodesBetween(
-        findStartPos,
-        state.doc.content.size,
-        (node) => {
+    state.doc.nodesBetween(findStartPos, state.doc.content.size, (node) => {
+        //Already found one, no need to delve deeper.
+        if (foundSelectable) return !foundSelectable;
 
-            //Already found one, no need to delve deeper.
-            if (foundSelectable) return !foundSelectable;
-
-            //We found one!
-            if (node.isTextblock) {
-                foundSelectable = true;
-                return false;
-            }
-
-            //We didn't find something selectable, so keep iterating, and dig into the children while we're at it.
-            return true;
+        //We found one!
+        if (node.isTextblock) {
+            foundSelectable = true;
+            return false;
         }
-    );
+
+        //We didn't find something selectable, so keep iterating, and dig into the children while we're at it.
+        return true;
+    });
 
     //If there's not something to move into, add it now
     if (!foundSelectable) {
