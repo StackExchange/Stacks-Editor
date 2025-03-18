@@ -9,7 +9,7 @@ import {
     validateMetaLines,
     validSnippetRegex,
 } from "./common";
-import { Node as ProsemirrorNode, NodeSpec } from "prosemirror-model";
+import { Node as ProseMirrorNode, NodeSpec } from "prosemirror-model";
 import { generateRandomId } from "../../utils";
 
 export const stackSnippetMarkdownParser: MarkdownParser["tokens"] = {
@@ -103,7 +103,7 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
 
     const metaLines = rawMetaLines.map(mapMetaLine).filter((m) => m != null);
     const validationResult = validateMetaLines(metaLines);
-    
+
     //We now know this is a valid snippet. Last call before we start processing
     if (silent || !validationResult.valid) {
         return validationResult.valid;
@@ -190,7 +190,7 @@ export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
                 },
             },
         },
-        toDOM(node: ProsemirrorNode) {
+        toDOM(node: ProseMirrorNode) {
             const rawLang: unknown = node.attrs.language;
             let language = "";
             if (rawLang && typeof rawLang == "string") {
