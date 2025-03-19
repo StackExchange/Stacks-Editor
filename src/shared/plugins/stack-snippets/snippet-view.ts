@@ -1,4 +1,4 @@
-import {Node as ProseMirrorNode} from "prosemirror-model";
+import { Node as ProseMirrorNode } from "prosemirror-model";
 import { EditorView, NodeView } from "prosemirror-view";
 import {
     getSnippetMetadata,
@@ -111,15 +111,15 @@ export class StackSnippetView implements NodeView {
             //Clear the node
             this.resultContainer.innerHTML = "";
             const iframe = document.createElement("iframe");
-            iframe.className = "snippet-box-edit snippet-box-result"
+            iframe.className = "snippet-box-edit snippet-box-result";
             iframe.sandbox.add("allow-forms");
             iframe.sandbox.add("allow-modals");
             iframe.sandbox.add("allow-scripts");
             iframe.style.width = "100%";
             iframe.style.border = "0px";
             iframe.style.minHeight = "300px";
-            if(content.nodeType === Node.DOCUMENT_NODE){
-                const document = (<Document>content);
+            if (content.nodeType === Node.DOCUMENT_NODE) {
+                const document = <Document>content;
                 iframe.srcdoc = document.documentElement.innerHTML;
             }
             this.resultContainer.appendChild(iframe);
