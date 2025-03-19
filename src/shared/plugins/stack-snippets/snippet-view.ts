@@ -11,11 +11,13 @@ export class StackSnippetView implements NodeView {
         node: ProseMirrorNode,
         view: EditorView,
         getPos: () => number,
-        opts: StackSnippetOptions
+        opts?: StackSnippetOptions
     ) {
         this.opts = opts;
         this.view = view;
         this.getPos = getPos;
+
+        this.snippetMetadata = getSnippetMetadata(node);
 
         //We want to render the language blocks in the middle of some content,
         // so we need to custom-render stuff here ("holes" must be last)
@@ -36,19 +38,19 @@ export class StackSnippetView implements NodeView {
 
         const ctas = document.createElement("div");
         ctas.className = "snippet-ctas";
-        const runCodeButton = document.createElement("button");
-        runCodeButton.type = "button";
-        runCodeButton.className = "s-btn s-btn__filled";
-        runCodeButton.title = "Run code snippet";
-        runCodeButton.setAttribute("aria-label", "Run code snippet");
-        // create the svg svg-icon-bg element
-        const runIcon = document.createElement("span");
-        runIcon.className = "svg-icon-bg iconPlay";
-        runCodeButton.append(runIcon);
-        const runText = document.createElement("span");
-        runText.textContent = "Run code snippet";
-        runCodeButton.appendChild(runText);
         if (opts && opts.renderer) {
+            const runCodeButton = document.createElement("button");
+            runCodeButton.type = "button";
+            runCodeButton.className = "s-btn s-btn__filled";
+            runCodeButton.title = "Run code snippet";
+            runCodeButton.setAttribute("aria-label", "Run code snippet");
+            // create the svg svg-icon-bg element
+            const runIcon = document.createElement("span");
+            runIcon.className = "svg-icon-bg iconPlay";
+            runCodeButton.append(runIcon);
+            const runText = document.createElement("span");
+            runText.textContent = "Run code snippet";
+            runCodeButton.appendChild(runText);
             runCodeButton.addEventListener("click", () => {
                 const [js] = this.snippetMetadata.langNodes.filter(
                     (l) => l.metaData.language == "js"
@@ -76,7 +78,7 @@ export class StackSnippetView implements NodeView {
                                     null,
                                     {
                                         ...node.attrs,
-                                        content: "displayed",
+                                        content: this.snippetMetadata,
                                     }
                                 )
                             );
@@ -88,9 +90,9 @@ export class StackSnippetView implements NodeView {
                         console.warn("Error rendering snippet - %O", r);
                     });
             });
-        }
 
-        ctas.appendChild(runCodeButton);
+            ctas.appendChild(runCodeButton);
+        }
 
         snippetResult.appendChild(ctas);
 
@@ -105,16 +107,18 @@ export class StackSnippetView implements NodeView {
     update(node: ProseMirrorNode): boolean {
         if (node.type.name !== "stack_snippet") return false;
 
-        this.snippetMetadata = getSnippetMetadata(node);
+        //Check to see if the metadata has changed
+        const updatedMeta = getSnippetMetadata(node);
+        const metaChanged = JSON.stringify(updatedMeta) === JSON.stringify(this.snippetMetadata);
+        this.snippetMetadata = updatedMeta;
+
         const content = this.contentNode;
-        if (!this.renderedContentShown && content) {
+        if (metaChanged && content) {
             //Clear the node
             this.resultContainer.innerHTML = "";
             const iframe = document.createElement("iframe");
             iframe.className = "snippet-box-edit snippet-box-result";
-            iframe.sandbox.add("allow-forms");
-            iframe.sandbox.add("allow-modals");
-            iframe.sandbox.add("allow-scripts");
+            iframe.setAttribute("sandbox", "allow-forms allow-modals allow-scripts");
             iframe.style.width = "100%";
             iframe.style.border = "0px";
             iframe.style.minHeight = "300px";
@@ -123,7 +127,6 @@ export class StackSnippetView implements NodeView {
                 iframe.srcdoc = document.documentElement.innerHTML;
             }
             this.resultContainer.appendChild(iframe);
-            this.renderedContentShown = true;
         }
         return true;
     }
@@ -131,7 +134,6 @@ export class StackSnippetView implements NodeView {
     private opts: StackSnippetOptions;
     private view: EditorView;
     private snippetMetadata: SnippetMetadata;
-    private renderedContentShown: boolean = false;
     private contentNode: Node;
     private getPos: () => number;
     resultContainer: HTMLDivElement;
