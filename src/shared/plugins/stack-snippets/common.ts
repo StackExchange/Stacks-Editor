@@ -279,8 +279,8 @@ export const validateMetaLines = (metaLines: MetaLine[]): ValidationResult => {
         validationResult.htmlIndex,
         validationResult.endIndex,
     ]
-        .filter((i) => i) //filter out any undefineds; we don't care about the,
-        .sort(); //sort them in numerical order
+        .filter((i) => i !== undefined) //filter out any undefineds; we don't care about the,
+        .sort((a,b) => a == b ? 0 : a > b ? 1 : - 1); //sort them in numerical order
 
     if (
         sortedIndices[0] !== validationResult.beginIndex ||
