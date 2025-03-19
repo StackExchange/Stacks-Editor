@@ -1,4 +1,4 @@
-import { Node as ProsemirrorNode } from "prosemirror-model";
+import {Node as ProseMirrorNode} from "prosemirror-model";
 import { EditorView, NodeView } from "prosemirror-view";
 import {
     getSnippetMetadata,
@@ -8,7 +8,7 @@ import {
 
 export class StackSnippetView implements NodeView {
     constructor(
-        node: ProsemirrorNode,
+        node: ProseMirrorNode,
         view: EditorView,
         getPos: () => number,
         opts: StackSnippetOptions
@@ -68,22 +68,24 @@ export class StackSnippetView implements NodeView {
                     )
                     .then((r) => {
                         if (r) {
+                            this.contentNode = r;
+                            //Trigger an update on the ProseMirror node
                             this.view.dispatch(
                                 this.view.state.tr.setNodeMarkup(
                                     this.getPos(),
                                     null,
                                     {
                                         ...node.attrs,
-                                        content: r,
+                                        content: "displayed",
                                     }
                                 )
                             );
                         } else {
-                            console.log(r);
+                            console.warn("No content to be displayed");
                         }
                     })
                     .catch((r) => {
-                        console.log(r);
+                        console.warn("Error rendering snippet - %O", r);
                     });
             });
         }
@@ -100,15 +102,28 @@ export class StackSnippetView implements NodeView {
         this.snippetMetadata = getSnippetMetadata(node);
     }
 
-    update(node: ProsemirrorNode): boolean {
+    update(node: ProseMirrorNode): boolean {
         if (node.type.name !== "stack_snippet") return false;
 
         this.snippetMetadata = getSnippetMetadata(node);
-        const content = node.attrs["content"] as Node;
-        if (content) {
+        const content = this.contentNode;
+        if (!this.renderedContentShown && content) {
             //Clear the node
-            this.resultContainer.textContent = "";
-            this.resultContainer.appendChild(content);
+            this.resultContainer.innerHTML = "";
+            const iframe = document.createElement("iframe");
+            iframe.className = "snippet-box-edit snippet-box-result"
+            iframe.sandbox.add("allow-forms");
+            iframe.sandbox.add("allow-modals");
+            iframe.sandbox.add("allow-scripts");
+            iframe.style.width = "100%";
+            iframe.style.border = "0px";
+            iframe.style.minHeight = "300px";
+            if(content.nodeType === Node.DOCUMENT_NODE){
+                const document = (<Document>content);
+                iframe.srcdoc = document.documentElement.innerHTML;
+            }
+            this.resultContainer.appendChild(iframe);
+            this.renderedContentShown = true;
         }
         return true;
     }
@@ -116,6 +131,8 @@ export class StackSnippetView implements NodeView {
     private opts: StackSnippetOptions;
     private view: EditorView;
     private snippetMetadata: SnippetMetadata;
+    private renderedContentShown: boolean = false;
+    private contentNode: Node;
     private getPos: () => number;
     resultContainer: HTMLDivElement;
     dom: Node;
