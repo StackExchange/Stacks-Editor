@@ -280,13 +280,34 @@ domReady(() => {
         },
         stackSnippet: {
             renderer: (meta, js, css, html) => {
-                console.log(meta);
-                const lol = document.createElement("div");
-                const rofl = document.createElement("img");
-                rofl.src =
-                    "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg";
-                lol.appendChild(rofl);
-                return Promise.resolve(lol);
+                const data = {
+                    js: js,
+                    css: css,
+                    html: html,
+                    console: meta.console,
+                    babel: meta.babel,
+                    babelPresetReact: meta.babelPresetReact,
+                    babelPresetTS: meta.babelPresetTS
+                };
+                return fetch("/snippets/js", {
+                    method: "POST",
+                    body: new URLSearchParams(data)
+                })
+                .then(res => res.text())
+                .then(html => {
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, "text/html");
+                    return doc
+                })
+                .catch(err =>{
+                    console.log(err);
+                    const div = document.createElement("div");
+                    const freeRealEstate = document.createElement("img");
+                    freeRealEstate.src =
+                        "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg";
+                    div.appendChild(freeRealEstate);
+                    return div;
+                });
             },
             openSnippetsModal: (meta, js, css, html) => {
                 console.log("Fired the open modal event!");

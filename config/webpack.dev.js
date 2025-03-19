@@ -48,6 +48,13 @@ module.exports = (env, argv) => {
                     },
                 },
                 compress: emulateProdServer,
+                proxy: [{
+                    context: ["/snippets"],
+                    target: "https://stacksnippets.net",
+                    pathRewrite: { '^/snippets': '' },
+                    secure: false,
+                    changeOrigin: true
+                }]
             },
             plugins: [
                 // create an html page for every item in ./site/views
