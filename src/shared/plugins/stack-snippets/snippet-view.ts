@@ -109,7 +109,9 @@ export class StackSnippetView implements NodeView {
 
         //Check to see if the metadata has changed
         const updatedMeta = getSnippetMetadata(node);
-        const metaChanged = JSON.stringify(updatedMeta) === JSON.stringify(this.snippetMetadata);
+        const metaChanged =
+            JSON.stringify(updatedMeta) ===
+            JSON.stringify(this.snippetMetadata);
         this.snippetMetadata = updatedMeta;
 
         const content = this.contentNode;
@@ -118,7 +120,10 @@ export class StackSnippetView implements NodeView {
             this.resultContainer.innerHTML = "";
             const iframe = document.createElement("iframe");
             iframe.className = "snippet-box-edit snippet-box-result";
-            iframe.setAttribute("sandbox", "allow-forms allow-modals allow-scripts");
+            iframe.setAttribute(
+                "sandbox",
+                "allow-forms allow-modals allow-scripts"
+            );
             iframe.style.width = "100%";
             iframe.style.border = "0px";
             iframe.style.minHeight = "300px";
