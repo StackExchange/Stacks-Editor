@@ -310,7 +310,7 @@ class LinkTooltip {
             <div class="s-popover--arrow"></div>
             <div class="d-flex ai-center">
                 <a href="${this.href}"
-                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4"
+                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4 us-none"
                     target="_blank"
                     rel="nofollow noreferrer">${this.href}</a>
                 <button type="button"
