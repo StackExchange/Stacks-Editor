@@ -1,6 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { generateRandomId } from "../../utils";
-import { validJs } from "../../../../test/rich-text/plugins/stack-snippet-helpers";
 
 export interface StackSnippetOptions {
     /** The async function to render the preview */

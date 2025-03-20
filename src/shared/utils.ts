@@ -1,7 +1,6 @@
 import MarkdownIt from "markdown-it";
 import { EditorState } from "prosemirror-state";
 import { error } from "./logger";
-import { EditorView } from "prosemirror-view";
 
 /**
  * Recursively deep merges two objects into a new object, leaving the original two untouched

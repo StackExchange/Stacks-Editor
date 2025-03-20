@@ -21,7 +21,7 @@ import {
     testRichTextSchema,
 } from "../test-helpers";
 import { toggleMark } from "prosemirror-commands";
-import { MarkType, Node } from "prosemirror-model";
+import { MarkType } from "prosemirror-model";
 import { ReplaceStep } from "prosemirror-transform";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
@@ -790,7 +790,6 @@ describe("commands", () => {
     describe("escapeUnselectableCommand", () => {
         const whenEscapeUnselectableCommandCalled = (
             state: EditorState,
-            shouldDispatch: boolean = false,
             shouldMatchTrans?: (tr: Transaction) => boolean
         ) => {
             let dispatchCalled = false;
@@ -801,11 +800,14 @@ describe("commands", () => {
             };
 
             const result = escapeUnselectableCommand(state, captureDispatch);
-            expect(result).toBe(false);
-            expect(dispatchCalled).toBe(shouldDispatch);
-            if (shouldMatchTrans) {
-                expect(shouldMatchTrans(dispatchTr)).toBe(true);
-            }
+
+            return {
+                result,
+                dispatchCalled,
+                matchedTransaction: shouldMatchTrans
+                    ? shouldMatchTrans(dispatchTr)
+                    : null,
+            };
         };
 
         it("should do nothing if last node in the document is selected", () => {
@@ -818,7 +820,11 @@ describe("commands", () => {
                 state.tr.setSelection(NodeSelection.create(state.doc, 0))
             );
 
-            whenEscapeUnselectableCommandCalled(state);
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
         });
 
         it("should do nothing if last inline text in the document is selected", () => {
@@ -838,7 +844,11 @@ describe("commands", () => {
                 )
             );
 
-            whenEscapeUnselectableCommandCalled(state);
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
         });
 
         it("should not alter the document if there is a proceeding textblock node", () => {
@@ -863,7 +873,11 @@ describe("commands", () => {
                 )
             );
 
-            whenEscapeUnselectableCommandCalled(state);
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
         });
 
         it("should add a paragraph block if there are no following textblock nodes", () => {
@@ -884,19 +898,24 @@ describe("commands", () => {
             expect(selection.$from.parent.textContent).toBe("two");
             state = state.apply(state.tr.setSelection(selection));
 
-            whenEscapeUnselectableCommandCalled(state, true, (tr) => {
-                if (tr.steps.length !== 1) return false;
+            const { result, dispatchCalled, matchedTransaction } =
+                whenEscapeUnselectableCommandCalled(state, (tr) => {
+                    if (tr.steps.length !== 1) return false;
 
-                const step = tr.steps[0] as ReplaceStep;
-                if (step.slice === undefined) return false;
+                    const step = tr.steps[0] as ReplaceStep;
+                    if (step.slice === undefined) return false;
 
-                if (step.slice.content.childCount !== 1) return false;
-                if (step.slice.content.firstChild.type.name !== "paragraph")
-                    return false;
-                if (step.slice.content.firstChild.textContent != "")
-                    return false;
-                return true;
-            });
+                    if (step.slice.content.childCount !== 1) return false;
+                    if (step.slice.content.firstChild.type.name !== "paragraph")
+                        return false;
+                    if (step.slice.content.firstChild.textContent != "")
+                        return false;
+                    return true;
+                });
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(true);
+            expect(matchedTransaction).toBe(true);
         });
     });
 });

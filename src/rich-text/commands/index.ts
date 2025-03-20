@@ -4,7 +4,7 @@ import {
     toggleMark,
     wrapIn,
 } from "prosemirror-commands";
-import { Mark, MarkType, NodeType, Schema, Node } from "prosemirror-model";
+import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
 import {
     Command,
     EditorState,
