@@ -1,5 +1,12 @@
 import type { EditorPlugin } from "../../src";
 import { log } from "../../src/shared/logger";
+import { Ruler } from "markdown-it";
+
+const ruleNames = (ruler: Ruler<unknown>): string => {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore This is a hack to get at the underbelly of the rule engine
+    return (ruler.__rules__ as { name: string }[]).map((r) => r.name);
+};
 
 /**
  * Adds the ability to configure logging for the parser stages.
@@ -18,13 +25,7 @@ export const markdownLogging: EditorPlugin = () => ({
             marks: {},
         },
         alterMarkdownIt: (mdit) => {
-            const coreRules = (
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore This is a hack to get at the underbelly of the rule engine
-                mdit.core.ruler.__rules__ as {
-                    name: string;
-                }[]
-            ).map((r) => r.name);
+            const coreRules = ruleNames(mdit.core.ruler);
             for (let i = 0; i < coreRules.length; i++) {
                 mdit.core.ruler.after(coreRules[i], "logState", (state) => {
                     log(
@@ -34,13 +35,7 @@ export const markdownLogging: EditorPlugin = () => ({
                 });
             }
 
-            const blockRules = (
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore This is a hack to get at the underbelly of the rule engine
-                mdit.block.ruler.__rules__ as {
-                    name: string;
-                }[]
-            ).map((r) => r.name);
+            const blockRules = ruleNames(mdit.block.ruler);
             for (let i = 0; i < blockRules.length; i++) {
                 mdit.block.ruler.before(
                     blockRules[i],
@@ -63,13 +58,7 @@ export const markdownLogging: EditorPlugin = () => ({
                 );
             }
 
-            const inlineRules = (
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore This is a hack to get at the underbelly of the rule engine
-                mdit.inline.ruler.__rules__ as {
-                    name: string;
-                }[]
-            ).map((r) => r.name);
+            const inlineRules = ruleNames(mdit.inline.ruler);
             for (let i = 0; i < inlineRules.length; i++) {
                 mdit.inline.ruler.before(
                     inlineRules[i],

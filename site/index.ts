@@ -226,17 +226,11 @@ domReady(() => {
 
     const defaultEditor = getDefaultEditor();
     let plugins: EditorPlugin[] = [];
-    if(enableSamplePlugin){
-        plugins = [
-            ...plugins,
-            ...samplePlugins
-        ];
+    if (enableSamplePlugin) {
+        plugins = [...plugins, ...samplePlugins];
     }
-    if(enableDevxPlugin){
-        plugins = [
-            ...plugins,
-            ...devxPlugins
-        ]
+    if (enableDevxPlugin) {
+        plugins = [...plugins, ...devxPlugins];
     }
 
     const options: StacksEditorOptions = {
