@@ -14,11 +14,6 @@ const features: Required<CommonmarkParserFeatures> = {
     tables: true,
     tagLinks: {},
     validateLink: stackOverflowValidateLink,
-    logging: {
-        block: false,
-        inline: false,
-        core: false,
-    },
 };
 
 const markdownParser = buildMarkdownParser(
