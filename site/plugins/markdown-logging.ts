@@ -1,6 +1,15 @@
 import type { EditorPlugin } from "../../src";
 import { log } from "../../src/shared/logger";
 
+/**
+ * Adds the ability to configure logging for the parser stages.
+ * This allows for easier development of markdown-it parsers, including
+ *  debugging of rules (e.g. "Why is my new rule not being executed?")
+ *  and unexpected states (e.g. "Why is my rule doing nothing with the current token state?")
+ *
+ *  Core rules do not run silently, and are each always run; so we log the token stream after each rule.
+ *  Block and Inline rules log before each rule is executed, as the rule chain stops being executed when a rule successfully transforms the block (e.g. returns true when not in silent mode)
+ * */
 export const markdownLogging: EditorPlugin = () => ({
     markdown: {
         parser: {},

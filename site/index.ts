@@ -10,7 +10,7 @@ import { PreviewRenderer } from "../src/commonmark/editor";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
-import { devxPlugins, samplePlugins } from "./sample-plugins";
+import { devxPlugins, samplePlugins } from "./plugins";
 import "./site.css";
 
 function domReady(callback: (e: Event) => void) {
@@ -243,11 +243,6 @@ domReady(() => {
                         additionalClasses: isMetaTag ? ["s-tag__muted"] : [],
                     };
                 },
-            },
-            logging: {
-                core: false,
-                inline: false,
-                block: false,
             },
         },
         placeholderText: "This is placeholder text, so start typing…",
