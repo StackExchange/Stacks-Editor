@@ -5,6 +5,7 @@ import {
     SnippetMetadata,
     StackSnippetOptions,
 } from "./common";
+import { error, log } from "../../logger";
 
 export class StackSnippetView implements NodeView {
     constructor(
@@ -83,11 +84,18 @@ export class StackSnippetView implements NodeView {
                                 )
                             );
                         } else {
-                            console.warn("No content to be displayed");
+                            error(
+                                "StackSnippetView - Run Code",
+                                "No content to be displayed"
+                            );
                         }
                     })
                     .catch((r) => {
-                        console.warn("Error rendering snippet - %O", r);
+                        error(
+                            "StackSnippetView - Run Code",
+                            "Error rendering snippet - %O",
+                            r
+                        );
                     });
             });
 

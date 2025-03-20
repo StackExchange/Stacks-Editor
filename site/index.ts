@@ -18,6 +18,7 @@ import {
     japaneseSEPlugin,
 } from "../plugins/sample";
 import "./site.css";
+import { error, log } from "../src/shared/logger";
 
 function domReady(callback: (e: Event) => void) {
     if (document.readyState === "loading") {
@@ -300,7 +301,7 @@ domReady(() => {
                         return doc;
                     })
                     .catch((err) => {
-                        console.log(err);
+                        error("test harness - snippet render", err);
                         const div = document.createElement("div");
                         const freeRealEstate = document.createElement("img");
                         freeRealEstate.src =
@@ -310,11 +311,22 @@ domReady(() => {
                     });
             },
             openSnippetsModal: (meta, js, css, html) => {
-                console.log("Fired the open modal event!");
-                console.log(`meta\n${JSON.stringify(meta)}`);
-                console.log(`js\n${JSON.stringify(js)}`);
-                console.log(`css\n${JSON.stringify(css)}`);
-                console.log(`html\n${JSON.stringify(html)}`);
+                log(
+                    "test harness - open modal event",
+                    `meta\n${JSON.stringify(meta)}`
+                );
+                log(
+                    "test harness - open modal event",
+                    `js\n${JSON.stringify(js)}`
+                );
+                log(
+                    "test harness - open modal event",
+                    `css\n${JSON.stringify(css)}`
+                );
+                log(
+                    "test harness - open modal event",
+                    `html\n${JSON.stringify(html)}`
+                );
             },
         },
     };
