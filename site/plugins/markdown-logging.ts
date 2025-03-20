@@ -18,9 +18,9 @@ export const markdownLogging: EditorPlugin = () => ({
             marks: {},
         },
         alterMarkdownIt: (mdit) => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore This is a hack to get at the underbelly of the rule engine
             const coreRules = (
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore This is a hack to get at the underbelly of the rule engine
                 mdit.core.ruler.__rules__ as {
                     name: string;
                 }[]
@@ -34,9 +34,9 @@ export const markdownLogging: EditorPlugin = () => ({
                 });
             }
 
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore This is a hack to get at the underbelly of the rule engine
             const blockRules = (
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore This is a hack to get at the underbelly of the rule engine
                 mdit.block.ruler.__rules__ as {
                     name: string;
                 }[]
@@ -63,9 +63,9 @@ export const markdownLogging: EditorPlugin = () => ({
                 );
             }
 
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore This is a hack to get at the underbelly of the rule engine
             const inlineRules = (
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore This is a hack to get at the underbelly of the rule engine
                 mdit.inline.ruler.__rules__ as {
                     name: string;
                 }[]

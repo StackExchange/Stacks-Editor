@@ -2,6 +2,7 @@ import "@stackoverflow/stacks";
 import MarkdownIt from "markdown-it";
 import packageJson from "../package.json";
 import {
+    EditorPlugin,
     registerLocalizationStrings,
     StacksEditor,
     StacksEditorOptions,
@@ -196,6 +197,7 @@ domReady(() => {
     const enableImages = !place.classList.contains("js-images-disabled");
     const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
     const enableMDPreview = place.classList.contains("js-md-preview-enabled");
+    const enableDevxPlugin = place.classList.contains("js-toggle-dev-mode");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -223,6 +225,20 @@ domReady(() => {
     });
 
     const defaultEditor = getDefaultEditor();
+    let plugins: EditorPlugin[] = [];
+    if(enableSamplePlugin){
+        plugins = [
+            ...plugins,
+            ...samplePlugins
+        ];
+    }
+    if(enableDevxPlugin){
+        plugins = [
+            ...plugins,
+            ...devxPlugins
+        ]
+    }
+
     const options: StacksEditorOptions = {
         defaultView: defaultEditor.type,
         editorHelpLink: "#HELP_LINK",
