@@ -162,8 +162,13 @@ export const richTextInputRules = (
         (match) => ({ level: match[1].length })
     );
 
-    const codeBlockRule = textblockTypeTrailingParagraphInputRule(
+    const codeBlockBackticksRule = textblockTypeTrailingParagraphInputRule(
         /^```$/,
+        schema.nodes.code_block
+    );
+
+    const codeBlockSpacesRule = textblockTypeTrailingParagraphInputRule(
+        /^\s{4}$/,
         schema.nodes.code_block
     );
 
@@ -217,7 +222,8 @@ export const richTextInputRules = (
             blockquoteInputRule,
             spoilerInputRule,
             headingInputRule,
-            codeBlockRule,
+            codeBlockBackticksRule,
+            codeBlockSpacesRule,
             unorderedListRule,
             orderedListRule,
             inlineCodeRule,

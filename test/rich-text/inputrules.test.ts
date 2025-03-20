@@ -287,4 +287,37 @@ describe("textblockTypeTrailingParagraphInputRule", () => {
         expect(newDoc.child(1).type.name).toBe("paragraph");
         expect(newDoc.child(1).textContent).toBe("Hello");
     });
+
+    it("interprets 4 spaces as a code block", () => {
+        // Create a doc with a single paragraph that contains only the trigger text "    ".
+        const paragraph = basicSchema.nodes.paragraph.create(
+            null,
+            basicSchema.text("    ")
+        );
+        const doc = basicSchema.nodes.doc.create(null, paragraph);
+        const state = EditorState.create({ doc, schema: basicSchema });
+
+        // Create the input rule that transforms the trigger text into a code_block and,
+        // if needed, appends an empty paragraph.
+        const rule = textblockTypeTrailingParagraphInputRule(
+            /^\s{4}$/,
+            basicSchema.nodes.code_block
+        ) as ExtendedInputRule;
+
+        // Simulate a match for the trigger text "```".
+        const match = /^\s{4}$/.exec("    ");
+        const tr = rule.handler(state, match, 1, 5);
+        if (!tr) {
+            throw new Error("Expected a valid transaction");
+        }
+        const newDoc: PMNode = tr.doc;
+
+        // We expect the resulting doc to have two children:
+        //  - The first is the code_block that replaced the original trigger text.
+        //  - The second is the extra empty paragraph inserted at the end.
+        expect(newDoc.childCount).toBe(2);
+        expect(newDoc.child(0).type.name).toBe("code_block");
+        expect(newDoc.child(1).type.name).toBe("paragraph");
+        expect(newDoc.child(1).textContent).toBe("");
+    });
 });
