@@ -244,6 +244,11 @@ domReady(() => {
                     };
                 },
             },
+            logging : {
+                core: false,
+                inline: false,
+                block: false
+            }
         },
         placeholderText: "This is placeholder text, so start typing…",
         richTextOptions: {

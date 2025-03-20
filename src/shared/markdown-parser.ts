@@ -323,6 +323,58 @@ export function createDefaultMarkdownItInstance(
     // TODO should always exist, so remove the check once the param is made non-optional
     externalPluginProvider?.alterMarkdownIt(defaultMarkdownItInstance);
 
+    if(features.logging.core) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore This is a hack to get at the underbelly of the rule engine
+        const coreRules = (defaultMarkdownItInstance.core.ruler.__rules__ as {
+            name: string
+        }[])
+            .map(r => r.name);
+        for (let i = 0; i < coreRules.length; i++) {
+            defaultMarkdownItInstance.core.ruler.after(coreRules[i], "logState", (state) => {
+                log(`mdit core - ${coreRules[i]}`, JSON.parse(JSON.stringify(state.tokens)));
+            });
+        }
+    }
+
+    if(features.logging.block) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore This is a hack to get at the underbelly of the rule engine
+        const blockRules = (defaultMarkdownItInstance.block.ruler.__rules__ as {
+            name: string
+        }[])
+            .map(r => r.name);
+        for (let i = 0; i < blockRules.length; i++) {
+            defaultMarkdownItInstance.block.ruler.before(blockRules[i], "logState", (state, start, end, silent) => {
+                if (!silent) {
+                    log(`mdit block - ${blockRules[i]}`, JSON.parse(JSON.stringify({
+                        start,
+                        end,
+                        tokens: state.tokens
+                    })));
+                }
+                return false;
+            });
+        }
+    }
+
+    if(features.logging.inline) {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore This is a hack to get at the underbelly of the rule engine
+        const inlineRules = (defaultMarkdownItInstance.inline.ruler.__rules__ as {
+            name: string
+        }[])
+            .map(r => r.name);
+        for (let i = 0; i < inlineRules.length; i++) {
+            defaultMarkdownItInstance.inline.ruler.before(inlineRules[i], "logState", (state, silent) => {
+                if (!silent) {
+                    log(`mdit inline - ${inlineRules[i]}`, JSON.parse(JSON.stringify(state.tokens)));
+                }
+                return false;
+            });
+        }
+    }
+
     return defaultMarkdownItInstance;
 }
 

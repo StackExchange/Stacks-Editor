@@ -79,6 +79,13 @@ export interface TagLinkOptions {
     ) => { link: string; additionalClasses: string[]; linkTitle: string };
 }
 
+/** Configuration options for logging the token stream during parsing */
+export interface CommonmarkParserLoggingOptions {
+    inline: boolean;
+    block: boolean;
+    core: boolean;
+}
+
 /** The features to enable/disable on the commonmark parser */
 export interface CommonmarkParserFeatures {
     /** Enable Stack Snippets */
@@ -97,6 +104,7 @@ export interface CommonmarkParserFeatures {
     tagLinks?: TagLinkOptions;
     /** The method used to validate links; defaults to Stack Overflow's link validation */
     validateLink?: (url: string) => boolean;
+    logging?: CommonmarkParserLoggingOptions;
 }
 
 export const defaultParserFeatures: Required<CommonmarkParserFeatures> = {
@@ -108,6 +116,11 @@ export const defaultParserFeatures: Required<CommonmarkParserFeatures> = {
         validate: () => true,
     },
     validateLink: stackOverflowValidateLink,
+    logging: {
+        inline: false,
+        block: false,
+        core: false
+    }
 };
 
 export interface View {
