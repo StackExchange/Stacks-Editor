@@ -5,7 +5,7 @@ import {
     SnippetMetadata,
     StackSnippetOptions,
 } from "./common";
-import { error, log } from "../../logger";
+import { error } from "../../logger";
 
 export class StackSnippetView implements NodeView {
     constructor(
