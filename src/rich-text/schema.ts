@@ -29,7 +29,6 @@ const nodes: {
         attrs: { revealed: { default: false } },
         parseDOM: [
             {
-                priority: 1,
                 tag: "blockquote.spoiler",
                 getAttrs(node: HTMLElement) {
                     return {
