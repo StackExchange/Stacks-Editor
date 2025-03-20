@@ -522,12 +522,16 @@ class LinkTooltip {
 
         let endIndex = $pos.indexAfter();
         let endPos = startPos + start.node.nodeSize;
-        while (
-            endIndex < $pos.parent.childCount &&
-            link.isInSet($pos.parent.child(endIndex).marks)
-        ) {
-            endPos += $pos.parent.child(endIndex).nodeSize;
-            endIndex += 1;
+        
+        // Don't double-count the length of the the node if we're at the start of it
+        if (endIndex !== $pos.index()) {
+            while (
+                endIndex < $pos.parent.childCount &&
+                link.isInSet($pos.parent.child(endIndex).marks)
+            ) {
+                endPos += $pos.parent.child(endIndex).nodeSize;
+                endIndex += 1;
+            }
         }
 
         return { from: startPos, to: endPos };
