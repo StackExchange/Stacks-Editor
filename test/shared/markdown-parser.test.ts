@@ -17,8 +17,8 @@ const features: Required<CommonmarkParserFeatures> = {
     logging: {
         block: false,
         inline: false,
-        core: false
-    }
+        core: false,
+    },
 };
 
 const markdownParser = buildMarkdownParser(

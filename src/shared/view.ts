@@ -119,8 +119,8 @@ export const defaultParserFeatures: Required<CommonmarkParserFeatures> = {
     logging: {
         inline: false,
         block: false,
-        core: false
-    }
+        core: false,
+    },
 };
 
 export interface View {

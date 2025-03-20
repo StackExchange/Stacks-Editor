@@ -10,7 +10,7 @@ import { PreviewRenderer } from "../src/commonmark/editor";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
-import { samplePlugins } from "./sample-plugins";
+import { devxPlugins, samplePlugins } from "./sample-plugins";
 import "./site.css";
 
 function domReady(callback: (e: Event) => void) {
@@ -244,11 +244,11 @@ domReady(() => {
                     };
                 },
             },
-            logging : {
+            logging: {
                 core: false,
                 inline: false,
-                block: false
-            }
+                block: false,
+            },
         },
         placeholderText: "This is placeholder text, so start typing…",
         richTextOptions: {
@@ -258,7 +258,9 @@ domReady(() => {
             ],
         },
         imageUpload: imageUploadOptions,
-        editorPlugins: enableSamplePlugin ? samplePlugins : [],
+        editorPlugins: enableSamplePlugin
+            ? [...samplePlugins, ...devxPlugins]
+            : [...devxPlugins],
         elementAttributes: {
             id: "a11y-editor-id",
             ariaLabeledby: "a11y-editor-label",
