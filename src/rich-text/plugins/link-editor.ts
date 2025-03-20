@@ -580,9 +580,7 @@ class LinkTooltip {
 
         this.editListener = () => {
             let tr = view.state.tr;
-            if (view.state.selection.empty) {
-                tr = this.expandSelection(view.state, view.state.tr);
-            }
+            tr = this.expandSelection(view.state, view.state.tr);
 
             const state = view.state.apply(tr);
             const { from, to } = state.selection;
