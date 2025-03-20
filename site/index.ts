@@ -197,7 +197,7 @@ domReady(() => {
     const enableImages = !place.classList.contains("js-images-disabled");
     const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
     const enableMDPreview = place.classList.contains("js-md-preview-enabled");
-    const enableDevxPlugin = place.classList.contains("js-toggle-dev-mode");
+    const enableDevxPlugin = place.classList.contains("js-dev-plugins-enabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -263,9 +263,7 @@ domReady(() => {
             ],
         },
         imageUpload: imageUploadOptions,
-        editorPlugins: enableSamplePlugin
-            ? [...samplePlugins, ...devxPlugins]
-            : [...devxPlugins],
+        editorPlugins: plugins,
         elementAttributes: {
             id: "a11y-editor-id",
             ariaLabeledby: "a11y-editor-label",
