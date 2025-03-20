@@ -413,13 +413,28 @@ class LinkTooltip {
         if (!marks.length) {
             return DecorationSet.empty;
         }
-
+    
+        // Use the linkAround helper to determine the full range of the link mark.
+        const linkRange = this.linkAround(newState);
+        if (!linkRange) {
+            return DecorationSet.empty;
+        }
+    
+        // Only show the tooltip if the selection is entirely within the link.
+        // If the selection starts before the link or ends after the link, do not show the tooltip.
+        if (newState.selection.from < linkRange.from || newState.selection.to > linkRange.to) {
+            return DecorationSet.empty;
+        }
+    
         // always update the state, regardless of document changes (potential metadata changes can change tooltip visuals)
         this.update(newState);
-
+    
+        // Compute the midpoint of the link's range to anchor the tooltip.
+        const pos = Math.floor((linkRange.from + linkRange.to) / 2);
+    
         // create the widget tooltip via EditorView callback
         const decoration = Decoration.widget(
-            newState.selection.from,
+            pos,
             (view) => {
                 /* NOTE: This function runs on every transaction update */
                 this.updateEventListeners(view);
