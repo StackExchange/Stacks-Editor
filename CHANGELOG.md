@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.10](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.9...v0.10.10) (2025-03-17)
+
+
+### Bug Fixes
+
+* **code-blocks:** add empty paragraph at end when using three backticks to create code block ([#396](https://github.com/StackExchange/Stacks-Editor/issues/396)) ([a689fdc](https://github.com/StackExchange/Stacks-Editor/commit/a689fdcb2f87cf8e5572ab8ab4e0417841c227ca))
+* **inline-code:** disallow "inline code" when selection has linebreaks ([#394](https://github.com/StackExchange/Stacks-Editor/issues/394)) ([d8f7ce6](https://github.com/StackExchange/Stacks-Editor/commit/d8f7ce66ed7e80ac5fba182a17347c88fc73dff1))
+* **markdown:** Fix code block selection off by one error ([#393](https://github.com/StackExchange/Stacks-Editor/issues/393)) ([994162e](https://github.com/StackExchange/Stacks-Editor/commit/994162ee32905728748885fa962079406ad2b2cb))
+
 ### [0.10.9](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.8...v0.10.9) (2025-03-07)
 
 

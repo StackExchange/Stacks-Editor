@@ -220,6 +220,22 @@ some text
             );
         });
 
+        it("should wrap partial selection in block characters", () => {
+            const content = "some text";
+            const expectedSelection = `\`\`\`
+some
+\`\`\``;
+            const expectedContent = "\n" + expectedSelection + "\n" + " text";
+
+            const state = createState(content, 0, 4);
+
+            expect(state).transactionSuccess(
+                commands.blockWrapInCommand("```"),
+                expectedContent,
+                expectedSelection
+            );
+        });
+
         it("should unwrap block", () => {
             const content = `\`\`\`
 some text

@@ -1,6 +1,7 @@
 import { Node as ProseMirrorNode, NodeType, Schema } from "prosemirror-model";
 import { EditorState, Transaction, TextSelection } from "prosemirror-state";
 import { insertParagraphIfAtDocEnd, safeSetSelection } from "./helpers";
+import { toggleMark } from "prosemirror-commands";
 
 // indent code with four [SPACE] characters (hope you aren't a "tabs" person)
 const CODE_INDENT_STR = "    ";
@@ -323,4 +324,37 @@ function buildParagraphFromText(
     });
 
     return paragraphType.create(null, paragraphContent);
+}
+
+export function toggleInlineCode(
+    state: EditorState,
+    dispatch?: (tr: Transaction) => void
+): boolean {
+    // If the selection contains linebreaks, disable the "inline code" button - users should use code blocks instead.
+
+    const { from, to } = state.selection;
+
+    // Check for actual newline characters in the text.
+    const selectedText = state.doc.textBetween(from, to, "\n", "\n");
+    if (selectedText.includes("\n")) {
+        return false;
+    }
+
+    // Check for 'softbreak' nodes within the selection. These can appear when pasting text with linebreaks in Markdown mode.
+    let containsSoftBreak = false;
+    state.doc.nodesBetween(from, to, (node) => {
+        if (node.type.name === "softbreak") {
+            containsSoftBreak = true;
+            // Return false to stop traversing deeper into this node's children.
+            return false;
+        }
+        return true;
+    });
+
+    if (containsSoftBreak) {
+        return false;
+    }
+
+    // If we found neither newline nor softbreak, toggle the inline code mark.
+    return toggleMark(state.schema.marks.code)(state, dispatch);
 }
