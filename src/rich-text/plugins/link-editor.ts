@@ -277,7 +277,7 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
 }
 
 /** The plugin key the image uploader plugin is tied to */
-const LINK_EDITOR_KEY = new LinkEditorPluginKey();
+export const LINK_EDITOR_KEY = new LinkEditorPluginKey();
 
 /** Manages the decorations necessary for drawing the link editor tooltip */
 class LinkTooltip {
@@ -413,25 +413,28 @@ class LinkTooltip {
         if (!marks.length) {
             return DecorationSet.empty;
         }
-    
+
         // Use the linkAround helper to determine the full range of the link mark.
         const linkRange = this.linkAround(newState);
         if (!linkRange) {
             return DecorationSet.empty;
         }
-    
+
         // Only show the tooltip if the selection is entirely within the link.
         // If the selection starts before the link or ends after the link, do not show the tooltip.
-        if (newState.selection.from < linkRange.from || newState.selection.to > linkRange.to) {
+        if (
+            newState.selection.from < linkRange.from ||
+            newState.selection.to > linkRange.to
+        ) {
             return DecorationSet.empty;
         }
-    
+
         // always update the state, regardless of document changes (potential metadata changes can change tooltip visuals)
         this.update(newState);
-    
+
         // Compute the midpoint of the link's range to anchor the tooltip.
         const pos = Math.floor((linkRange.from + linkRange.to) / 2);
-    
+
         // create the widget tooltip via EditorView callback
         const decoration = Decoration.widget(
             pos,
@@ -495,7 +498,7 @@ class LinkTooltip {
      * Gets the positions immediately before and after a link mark in the current selection
      * @param state
      */
-    private linkAround(state: EditorState) {
+    public linkAround(state: EditorState) {
         const $pos = state.selection.$from;
         const start = $pos.parent.childAfter($pos.parentOffset);
         if (!start.node) {
@@ -522,7 +525,7 @@ class LinkTooltip {
 
         let endIndex = $pos.indexAfter();
         let endPos = startPos + start.node.nodeSize;
-        
+
         // Don't double-count the length of the the node if we're at the start of it
         if (endIndex !== $pos.index()) {
             while (
