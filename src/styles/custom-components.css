@@ -209,7 +209,7 @@
 }
 
 /* Our editor often wraps things in their own divs. These wrappers should have the proper spacing below them */
-.ProseMirror.s-prose div {
+.ProseMirror.s-prose div:not(.s-popover--arrow) {
     margin-bottom: var(--s-prose-spacing);
 }
 

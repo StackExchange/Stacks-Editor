@@ -1,8 +1,9 @@
 import { EditorState, Transaction } from "prosemirror-state";
-import { DecorationSet, EditorView } from "prosemirror-view";
+import { Decoration, DecorationSet, EditorView } from "prosemirror-view";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import {
     hideLinkEditor,
+    LINK_EDITOR_KEY,
     LinkEditor,
     linkEditorPlugin,
     showLinkEditor,
@@ -571,6 +572,76 @@ describe("link-editor", () => {
                 .dispatchEvent(new Event("mousedown"));
 
             return promise.then(() => cleanupPasteSupport());
+        });
+
+        it("only shows the tooltip when the selection is entirely within the link", () => {
+            const html = `<p>Hello <a href="https://www.example.com">link</a> world</p>`;
+            const state = createState(html, [
+                linkEditorPlugin({ validateLink: () => true }),
+            ]);
+
+            // Case 1: Selection extends outside the link.
+            // For example, selecting from the very start of the paragraph (position 0).
+            const stateWithExtra = applySelection(state, 0, 8);
+            let decos = getDecorations(stateWithExtra);
+            expect(decos).toEqual(DecorationSet.empty);
+
+            // Case 2: Selection fully within the link.
+            const stateWithin = applySelection(state, 7, 8);
+            decos = getDecorations(stateWithin);
+            expect(decos).not.toEqual(DecorationSet.empty);
+        });
+
+        function isWidgetDecoration(
+            deco: Decoration
+        ): deco is Decoration & { spec: { stopEvent: () => boolean } } {
+            // Assign deco.spec to a local variable with an explicit type so that we can safely access stopEvent.
+            const spec = deco.spec as { stopEvent?: unknown };
+            return typeof spec.stopEvent === "function";
+        }
+
+        it("places the tooltip at the midpoint of the link", () => {
+            const html = `<p>Test <a href="https://www.example.com">abcdef</a></p>`;
+            let state = createState(html, [
+                linkEditorPlugin({ validateLink: () => true }),
+            ]);
+
+            // Choose a selection that lies within the link.
+            state = applySelection(state, 8);
+            const tooltip = LINK_EDITOR_KEY.getState(state).linkTooltip;
+            const linkRange = tooltip.linkAround(state);
+            expect(linkRange).toBeDefined();
+            const expectedMid = Math.floor((linkRange.from + linkRange.to) / 2);
+
+            // Look for the widget decoration (which should be the tooltip).
+            const decos = getDecorations(state);
+            const widgetDeco = decos.find().find((deco) => {
+                if (!isWidgetDecoration(deco)) {
+                    return false;
+                }
+                // Explicitly cast deco.spec so that stopEvent is typed.
+                const spec = deco.spec as { stopEvent: () => boolean };
+                return spec.stopEvent() === true;
+            });
+
+            expect(widgetDeco).toBeTruthy();
+            expect(widgetDeco.from).toBe(expectedMid);
+        });
+
+        it("calculates the correct link length (no double counting of tokens)", () => {
+            const html = `<p>Hello <a href="https://www.example.com">link</a></p>`;
+            let state = createState(html, [
+                linkEditorPlugin({ validateLink: () => true }),
+            ]);
+
+            // Position the selection within the link text.
+            state = applySelection(state, 7);
+            const tooltip = LINK_EDITOR_KEY.getState(state).linkTooltip;
+            const range = tooltip.linkAround(state);
+            expect(range).toBeDefined();
+
+            // The computed visible length should equal the length of "link" (i.e. 4).
+            expect(range.to - range.from).toBe(4);
         });
     });
 
