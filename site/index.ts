@@ -2,6 +2,7 @@ import "@stackoverflow/stacks";
 import MarkdownIt from "markdown-it";
 import packageJson from "../package.json";
 import {
+    EditorPlugin,
     registerLocalizationStrings,
     StacksEditor,
     StacksEditorOptions,
@@ -10,7 +11,7 @@ import { PreviewRenderer } from "../src/commonmark/editor";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
-import { samplePlugins } from "./sample-plugins";
+import { devxPlugins, samplePlugins } from "./plugins";
 import "./site.css";
 
 function domReady(callback: (e: Event) => void) {
@@ -196,6 +197,7 @@ domReady(() => {
     const enableImages = !place.classList.contains("js-images-disabled");
     const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
     const enableMDPreview = place.classList.contains("js-md-preview-enabled");
+    const enableDevxPlugin = place.classList.contains("js-dev-plugins-enabled");
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -223,6 +225,14 @@ domReady(() => {
     });
 
     const defaultEditor = getDefaultEditor();
+    let plugins: EditorPlugin[] = [];
+    if (enableSamplePlugin) {
+        plugins = [...plugins, ...samplePlugins];
+    }
+    if (enableDevxPlugin) {
+        plugins = [...plugins, ...devxPlugins];
+    }
+
     const options: StacksEditorOptions = {
         defaultView: defaultEditor.type,
         editorHelpLink: "#HELP_LINK",
@@ -253,7 +263,7 @@ domReady(() => {
             ],
         },
         imageUpload: imageUploadOptions,
-        editorPlugins: enableSamplePlugin ? samplePlugins : [],
+        editorPlugins: plugins,
         elementAttributes: {
             id: "a11y-editor-id",
             ariaLabeledby: "a11y-editor-label",
