@@ -42,8 +42,9 @@ type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
 /**
  * Callback to add new menu entries to the editor's menu.
  * @param {Schema} schema The fully-initialized editor schema, including nodes from plugins
+ * @param {MenuBlock} coreMenus Definition of the Core menus. MenuBlocks that share names are merged together.
  */
-type AddMenuItemsCallback = (schema: Schema) => MenuBlock[];
+type AddMenuItemsCallback = (schema: Schema, coreMenus: MenuBlock[]) => MenuBlock[];
 
 /** Describes the properties that can be used for extending commonmark support in the editor */
 type MarkdownExtensionProps = {
@@ -262,7 +263,7 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
                 continue;
             }
 
-            const blocks = callback(schema);
+            const blocks = callback(schema, menu);
             for (const block of blocks) {
                 let existing = aggBlocks.find((b) => b.name === block.name);
                 if (!existing) {

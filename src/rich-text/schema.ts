@@ -93,7 +93,7 @@ const nodes: {
         marks: "",
         attrs: {
             params: { default: "" },
-            detectedHighlightLanguage: { default: "" },
+            language: { default: "" },
             isEditingProcessor: { default: false },
         },
         parseDOM: [

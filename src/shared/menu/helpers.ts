@@ -82,6 +82,8 @@ export interface DropdownMenuItem extends BaseMenuItem {
  */
 export type MenuItem = BaseMenuItem | DropdownMenuItem;
 
+export type CoreMenuBlockNames = "formatting1" | "code-formatting" | "formatting2" | "formatting3" | "history" | "other";
+
 /**
  * Describes a visual "block"/grouping of menu items
  * @public

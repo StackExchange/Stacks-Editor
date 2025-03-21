@@ -110,9 +110,7 @@ export function CodeBlockHighlightPlugin(
     defaultFallbackLanguage: string
 ): Plugin {
     const extractor = (block: ProsemirrorNode) => {
-        const detectedLanguage =
-            (block.attrs.detectedHighlightLanguage as string) ||
-            (block.attrs.language as string);
+        const detectedLanguage = (block.attrs.language as string);
         return (
             detectedLanguage || getBlockLanguage(block, defaultFallbackLanguage)
         );
@@ -126,12 +124,7 @@ export function CodeBlockHighlightPlugin(
     ): Transaction => {
         const attrs = { ...node.attrs };
 
-        if (node.type.name == "stack_snippet_lang") {
-            attrs["language"] = language;
-        } else {
-            //By default, we assume that it's a code block, and we have our specialized attr definition applied.
-            attrs["detectedHighlightLanguage"] = language;
-        }
+        attrs["language"] = language;
 
         return tr.setNodeMarkup(pos, undefined, attrs);
     };
