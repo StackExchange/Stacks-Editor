@@ -158,6 +158,16 @@ export abstract class BaseView implements View {
         this.editorView.dispatch(tr);
     }
 
+    /** Adds the specified content to a new node at the end of the document */
+    appendContent(value: string) {
+        let tr = this.editorView.state.tr;
+        const doc = this.editorView.state.doc;
+
+        const newContent = this.parseContent(value);
+        tr = tr.insert(doc.content.size, newContent);
+        this.editorView.dispatch(tr);
+    }
+
     /**
      * Sets all attributes on the target contenteditable element
      * @param el The node to set the attributes on

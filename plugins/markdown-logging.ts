@@ -1,5 +1,5 @@
-import type { EditorPlugin } from "../../src";
-import { log } from "../../src/shared/logger";
+import type { EditorPlugin } from "../src";
+import { log } from "../src/shared/logger";
 import { Ruler } from "markdown-it";
 
 const ruleNames = (ruler: Ruler<unknown>): string => {

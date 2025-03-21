@@ -97,6 +97,10 @@ export class StacksEditor implements View {
         this.backingView.content = value;
     }
 
+    appendContent(value: string): void {
+        this.backingView.appendContent(value);
+    }
+
     get document(): ProseMirrorNode {
         return this.editorView.state.doc;
     }
