@@ -582,13 +582,12 @@ describe("link-editor", () => {
 
             // Case 1: Selection extends outside the link.
             // For example, selecting from the very start of the paragraph (position 0).
-            const stateWithExtra = applySelection(state, 0);
+            const stateWithExtra = applySelection(state, 0, 8);
             let decos = getDecorations(stateWithExtra);
             expect(decos).toEqual(DecorationSet.empty);
 
             // Case 2: Selection fully within the link.
-            // Assume the link starts at position 7 (this depends on your document's positions).
-            const stateWithin = applySelection(state, 7);
+            const stateWithin = applySelection(state, 7, 8);
             decos = getDecorations(stateWithin);
             expect(decos).not.toEqual(DecorationSet.empty);
         });
@@ -606,16 +605,16 @@ describe("link-editor", () => {
             let state = createState(html, [
                 linkEditorPlugin({ validateLink: () => true }),
             ]);
+
             // Choose a selection that lies within the link.
-            // (Assume the link text "abcdef" is entirely within the link.)
             state = applySelection(state, 8);
             const tooltip = LINK_EDITOR_KEY.getState(state).linkTooltip;
             const linkRange = tooltip.linkAround(state);
             expect(linkRange).toBeDefined();
             const expectedMid = Math.floor((linkRange.from + linkRange.to) / 2);
 
-            const decos = getDecorations(state);
             // Look for the widget decoration (which should be the tooltip).
+            const decos = getDecorations(state);
             const widgetDeco = decos.find().find((deco) => {
                 if (!isWidgetDecoration(deco)) {
                     return false;
@@ -634,11 +633,13 @@ describe("link-editor", () => {
             let state = createState(html, [
                 linkEditorPlugin({ validateLink: () => true }),
             ]);
-            // Position the selection within the link text (assume "link" is 4 characters long).
+
+            // Position the selection within the link text.
             state = applySelection(state, 7);
             const tooltip = LINK_EDITOR_KEY.getState(state).linkTooltip;
             const range = tooltip.linkAround(state);
             expect(range).toBeDefined();
+
             // The computed visible length should equal the length of "link" (i.e. 4).
             expect(range.to - range.from).toBe(4);
         });
