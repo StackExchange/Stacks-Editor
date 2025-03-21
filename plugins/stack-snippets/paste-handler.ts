@@ -1,7 +1,7 @@
 import { Plugin, NodeSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node as ProsemirrorNode, Schema, Slice } from "prosemirror-model";
-import { log } from "../../logger";
+import { log } from "../../src/shared/logger";
 import {
     BeginMetaLine,
     EndMetaLine,
@@ -9,8 +9,8 @@ import {
     mapMetaLine,
     validSnippetRegex,
 } from "./common";
-import { generateRandomId } from "../../utils";
-import { insertParagraphIfAtDocEnd } from "../../../rich-text/commands/helpers";
+import { generateRandomId } from "../../src/shared/utils";
+import { insertParagraphIfAtDocEnd } from "../../src/rich-text/commands/helpers";
 
 export const parseSnippetBlockForProsemirror = (
     schema: Schema,
@@ -20,10 +20,6 @@ export const parseSnippetBlockForProsemirror = (
         !("stack_snippet" in schema.nodes) ||
         !("stack_snippet_lang" in schema.nodes)
     ) {
-        log(
-            "parseSnippetBlockForProsemirror",
-            "Types aren't registered, can't parse."
-        );
         return null;
     }
 
@@ -35,10 +31,6 @@ export const parseSnippetBlockForProsemirror = (
 
     //Grab the first line and check it for our opening snippet marker
     if (rawLines.length > 0 && !validSnippetRegex.test(rawLines[0])) {
-        log(
-            "parseSnippetBlockForProsemirror",
-            "The content isn't a snippet, can't parse."
-        );
         return null;
     }
 

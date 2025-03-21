@@ -11,7 +11,7 @@ import { PreviewRenderer } from "../src/commonmark/editor";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
-import { devxPlugins, samplePlugins } from "./plugins";
+import {devxPlugins, firstPartyPlugins, samplePlugins} from "../plugins";
 import "./site.css";
 import { error, log } from "../src/shared/logger";
 
@@ -226,7 +226,9 @@ domReady(() => {
     });
 
     const defaultEditor = getDefaultEditor();
-    let plugins: EditorPlugin[] = [];
+    let plugins: EditorPlugin[] = [
+        ...firstPartyPlugins
+    ];
     if (enableSamplePlugin) {
         plugins = [...plugins, ...samplePlugins];
     }
@@ -269,56 +271,57 @@ domReady(() => {
             id: "a11y-editor-id",
             ariaLabeledby: "a11y-editor-label",
         },
-        stackSnippet: {
-            renderer: (meta, js, css, html) => {
-                const data = {
-                    js: js,
-                    css: css,
-                    html: html,
-                    console: meta.console,
-                    babel: meta.babel,
-                    babelPresetReact: meta.babelPresetReact,
-                    babelPresetTS: meta.babelPresetTS,
-                };
-                return fetch("/snippets/js", {
-                    method: "POST",
-                    body: new URLSearchParams(data),
-                })
-                    .then((res) => res.text())
-                    .then((html) => {
-                        const parser = new DOMParser();
-                        const doc = parser.parseFromString(html, "text/html");
-                        return doc;
-                    })
-                    .catch((err) => {
-                        error("test harness - snippet render", err);
-                        const div = document.createElement("div");
-                        const freeRealEstate = document.createElement("img");
-                        freeRealEstate.src =
-                            "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg";
-                        div.appendChild(freeRealEstate);
-                        return div;
-                    });
-            },
-            openSnippetsModal: (meta, js, css, html) => {
-                log(
-                    "test harness - open modal event",
-                    `meta\n${JSON.stringify(meta)}`
-                );
-                log(
-                    "test harness - open modal event",
-                    `js\n${JSON.stringify(js)}`
-                );
-                log(
-                    "test harness - open modal event",
-                    `css\n${JSON.stringify(css)}`
-                );
-                log(
-                    "test harness - open modal event",
-                    `html\n${JSON.stringify(html)}`
-                );
-            },
-        },
+        //TODO: Integegrate snippet
+        // stackSnippet: {
+        //     renderer: (meta, js, css, html) => {
+        //         const data = {
+        //             js: js,
+        //             css: css,
+        //             html: html,
+        //             console: meta.console,
+        //             babel: meta.babel,
+        //             babelPresetReact: meta.babelPresetReact,
+        //             babelPresetTS: meta.babelPresetTS,
+        //         };
+        //         return fetch("/snippets/js", {
+        //             method: "POST",
+        //             body: new URLSearchParams(data),
+        //         })
+        //             .then((res) => res.text())
+        //             .then((html) => {
+        //                 const parser = new DOMParser();
+        //                 const doc = parser.parseFromString(html, "text/html");
+        //                 return doc;
+        //             })
+        //             .catch((err) => {
+        //                 error("test harness - snippet render", err);
+        //                 const div = document.createElement("div");
+        //                 const freeRealEstate = document.createElement("img");
+        //                 freeRealEstate.src =
+        //                     "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg";
+        //                 div.appendChild(freeRealEstate);
+        //                 return div;
+        //             });
+        //     },
+        //     openSnippetsModal: (meta, js, css, html) => {
+        //         log(
+        //             "test harness - open modal event",
+        //             `meta\n${JSON.stringify(meta)}`
+        //         );
+        //         log(
+        //             "test harness - open modal event",
+        //             `js\n${JSON.stringify(js)}`
+        //         );
+        //         log(
+        //             "test harness - open modal event",
+        //             `css\n${JSON.stringify(css)}`
+        //         );
+        //         log(
+        //             "test harness - open modal event",
+        //             `html\n${JSON.stringify(html)}`
+        //         );
+        //     },
+        // },
     };
 
     const editorInstance = new StacksEditor(place, content.value, options);
