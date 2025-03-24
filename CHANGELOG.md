@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.10.11](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.10...v0.10.11) (2025-03-24)
+
+
+### Features
+
+* devx - add parser logging for each rule stage ([#401](https://github.com/StackExchange/Stacks-Editor/issues/401)) ([3bea908](https://github.com/StackExchange/Stacks-Editor/commit/3bea908e85363a2e726ccac208ecd19291bc29fe))
+
+
+### Bug Fixes
+
+* **link-editor:** link editor glitchiness tweaks ([#403](https://github.com/StackExchange/Stacks-Editor/issues/403)) ([218d4bc](https://github.com/StackExchange/Stacks-Editor/commit/218d4bc8736a93d67b556137ff6d8a639b946b12))
+* **tooltips:** tooltips always go below buttons ([#399](https://github.com/StackExchange/Stacks-Editor/issues/399)) ([f44f8ed](https://github.com/StackExchange/Stacks-Editor/commit/f44f8edea1801e9ab720b14e872893fef7796990))
+
 ### [0.10.10](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.9...v0.10.10) (2025-03-17)
 
 
