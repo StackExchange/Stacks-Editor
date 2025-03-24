@@ -1,20 +1,20 @@
 /** This is an effort to turn the existing structure back into an external plugin while keeping the same functionality*/
-import type {EditorPlugin} from "../../src/shared/editor-plugin";
+import type {EditorPlugin} from "../../../src";
 import {
     stackSnippetMarkdownParser,
     stackSnippetMarkdownSerializer,
-    stackSnippetPlugin,
+    stackSnippetPlugin as markdownPlugin,
     stackSnippetRichTextNodeSpec
 } from "./schema";
 import {Node as ProseMirrorNode} from "prosemirror-model";
 import {EditorView} from "prosemirror-view";
 import {StackSnippetView} from "./snippet-view";
 import {StackSnippetOptions} from "./common";
-import {error, log} from "../../src/shared/logger";
+import {error, log} from "../../../src/shared/logger";
 import {stackSnippetPasteHandler} from "./paste-handler";
-import {makeMenuButton} from "../../src/shared/menu";
-import {_t} from "../../src/shared/localization";
-import {getShortcut} from "../../src/shared/utils";
+import {makeMenuButton} from "../../../src/shared/menu";
+import {_t} from "../../../src/shared/localization";
+import {getShortcut} from "../../../src/shared/utils";
 import {openSnippetModal} from "./commands";
 
 
@@ -71,7 +71,7 @@ const snippetOpts: StackSnippetOptions = {
     }
 };
 
-export const stackSnippetExternal: EditorPlugin = () => ({
+export const stackSnippetPlugin: EditorPlugin = () => ({
     richText: {
         nodeViews: {
             stack_snippet: (
@@ -106,7 +106,7 @@ export const stackSnippetExternal: EditorPlugin = () => ({
             marks: {},
         },
         alterMarkdownIt: (mdit) => {
-            mdit.use(stackSnippetPlugin);
+            mdit.use(markdownPlugin);
         }
     },
     menuItems: (schema, coreMenus) => {

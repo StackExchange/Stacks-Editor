@@ -1,4 +1,4 @@
-import { MenuCommand } from "../../src/shared/menu";
+import { MenuCommand } from "../../../src/shared/menu";
 import { getSnippetMetadata, StackSnippetOptions } from "./common";
 import { Node } from "prosemirror-model";
 

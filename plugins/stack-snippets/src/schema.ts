@@ -1,6 +1,6 @@
 import MarkdownIt, { Token } from "markdown-it";
 import { MarkdownParser } from "prosemirror-markdown";
-import { MarkdownSerializerNodes } from "../../src/shared/markdown-serializer";
+import { MarkdownSerializerNodes } from "../../../src/shared/markdown-serializer";
 import {
     assertAttrValue,
     getSnippetMetadata,
@@ -10,7 +10,7 @@ import {
     validSnippetRegex,
 } from "./common";
 import { Node as ProseMirrorNode, NodeSpec } from "prosemirror-model";
-import { generateRandomId } from "../../src/shared/utils";
+import { generateRandomId } from "../../../src/shared/utils";
 
 export const stackSnippetMarkdownParser: MarkdownParser["tokens"] = {
     stack_snippet: {
