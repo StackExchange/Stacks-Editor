@@ -2,8 +2,13 @@ import { MenuCommand } from "../../../src/shared/menu";
 import { getSnippetMetadata, StackSnippetOptions } from "./common";
 import { Node } from "prosemirror-model";
 
-export function openSnippetModal(options: StackSnippetOptions): MenuCommand {
+export function openSnippetModal(options?: StackSnippetOptions): MenuCommand {
     return (state, dispatch): boolean => {
+        //If we have no means of opening a modal, reject immediately
+        if(!options || options.openSnippetsModal == undefined){
+            return false;
+        }
+
         //Despite not dispatching anything internally, this is used to show the event _actually_ firing or not
         if (!dispatch) return true;
 

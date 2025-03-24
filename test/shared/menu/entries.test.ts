@@ -60,25 +60,4 @@ describe("menu entries", () => {
         expect(getEntryByKey(commonmark1, "insertTable")).toBeDefined();
         expect(getEntryByKey(commonmark2, "insertTable")).toBeUndefined();
     });
-
-    it("should show menu if snippets configured", () => {
-        const withEntry = createMenuEntries(
-            testRichTextSchema,
-            {
-                stackSnippet: {
-                    renderer: () => Promise.resolve(null),
-                    openSnippetsModal: () => {},
-                },
-            },
-            EditorType.RichText
-        );
-        const without = createMenuEntries(
-            testRichTextSchema,
-            {},
-            EditorType.RichText
-        );
-
-        expect(getEntryByKey(withEntry, "openSnippetModal")).toBeDefined();
-        expect(getEntryByKey(without, "openSnippetModal")).toBeUndefined();
-    });
 });

@@ -1,3 +1,20 @@
+import {stackSnippetPlugin} from "../src/stackSnippetPlugin";
+import {ExternalPluginProvider} from "../../../src/shared/editor-plugin";
+import {StackSnippetOptions} from "../src/common";
+import {richTextSchemaSpec} from "../../../src/rich-text/schema";
+import { Schema } from "prosemirror-model";
+
+export const snippetExternalProvider = (opts?: StackSnippetOptions) =>
+    new ExternalPluginProvider(
+        [
+            stackSnippetPlugin(opts)
+        ],
+        {}
+    )
+
+export const buildSnippetSchema = () =>
+    new Schema(snippetExternalProvider().getFinalizedSchema(richTextSchemaSpec));
+
 export const validBegin: string = `<!-- begin snippet: js hide: false console: true babel: null babelPresetReact: false babelPresetTS: false -->
 
 `;
@@ -54,6 +71,14 @@ const validHtmlWithSuspiciousComment = (lang: string): string =>
 
 `;
 
+//Valid snippets
+// - Just JS
+// - Just CSS
+// - Just HTML
+// any two of the three
+// all three
+// Special cases:
+// if the HTML contains comments that look like snippets code
 export const validSnippetRenderCases = [
     //All validly rendered Snippet blocks.
     // Positioning of language blocks doesn't matter, but spacing does.
