@@ -11,7 +11,7 @@ import { PreviewRenderer } from "../src/commonmark/editor";
 import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
-import { devxPlugins, samplePlugins } from "./plugins";
+import { devxPlugins, samplePlugins } from "../plugins";
 import "./site.css";
 
 function domReady(callback: (e: Event) => void) {

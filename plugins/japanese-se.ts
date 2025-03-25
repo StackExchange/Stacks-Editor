@@ -1,5 +1,5 @@
 import MarkdownIt, { ParserInline, StateInline, Token } from "markdown-it";
-import type { EditorPlugin } from "../../src";
+import type { EditorPlugin } from "../src";
 
 // simple proof of concept that adds furigana support from https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807
 // due to the fact that we cannot directly alter the contenteditable content, we have to make these a node or mark
