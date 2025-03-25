@@ -277,7 +277,7 @@ domReady(() => {
         elementAttributes: {
             id: "a11y-editor-id",
             ariaLabeledby: "a11y-editor-label",
-        }
+        },
     };
 
     const editorInstance = new StacksEditor(place, content.value, options);
