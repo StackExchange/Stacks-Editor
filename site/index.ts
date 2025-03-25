@@ -18,7 +18,6 @@ import {
     japaneseSEPlugin,
 } from "../plugins/sample";
 import "./site.css";
-import { error, log } from "../src/shared/logger";
 
 function domReady(callback: (e: Event) => void) {
     if (document.readyState === "loading") {

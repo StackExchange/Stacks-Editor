@@ -17,9 +17,7 @@ import { _t } from "../../../src/shared/localization";
 import { getShortcut } from "../../../src/shared/utils";
 import { openSnippetModal } from "./commands";
 
-//TODO: Naturally this will have to live outside the Editor itself.
-// Which was kinda of the point, right? We wanted it to interface with the existing Stack Snippets editor in the first pass.
-const snippetOpts: StackSnippetOptions = {
+export const demoOpts: StackSnippetOptions = {
     renderer: (meta, js, css, html) => {
         const data = {
             js: js,
