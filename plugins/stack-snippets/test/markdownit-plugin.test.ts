@@ -1,8 +1,8 @@
 import MarkdownIt from "markdown-it";
-import {stackSnippetPlugin} from "../src/schema";
+import { stackSnippetPlugin } from "../src/schema";
 import {
     invalidSnippetRenderCases,
-    validSnippetRenderCases
+    validSnippetRenderCases,
 } from "./stack-snippet-helpers";
 
 describe("stackSnippetPlugin (Markdown-it)", () => {
@@ -22,9 +22,7 @@ describe("stackSnippetPlugin (Markdown-it)", () => {
             expect(tokens[0].attrGet("babel")).toBe("null");
             expect(tokens[0].attrGet("babelPresetReact")).toBe("false");
             expect(tokens[0].attrGet("babelPresetTS")).toBe("false");
-            expect(tokens[tokens.length - 1].type).toBe(
-                "stack_snippet_close"
-            );
+            expect(tokens[tokens.length - 1].type).toBe("stack_snippet_close");
             //1-indexed, because we want to start from the second element
             for (let i = 1; i < langs.length + 1; i++) {
                 expect(tokens[i].type).toBe("stack_snippet_lang");

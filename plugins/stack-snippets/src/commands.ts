@@ -5,7 +5,7 @@ import { Node } from "prosemirror-model";
 export function openSnippetModal(options?: StackSnippetOptions): MenuCommand {
     return (state, dispatch): boolean => {
         //If we have no means of opening a modal, reject immediately
-        if(!options || options.openSnippetsModal == undefined){
+        if (!options || options.openSnippetsModal == undefined) {
             return false;
         }
 

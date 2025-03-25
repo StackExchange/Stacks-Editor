@@ -231,9 +231,7 @@ domReady(() => {
     });
 
     const defaultEditor = getDefaultEditor();
-    let plugins: EditorPlugin[] = [
-        ...firstPartyPlugins
-    ];
+    let plugins: EditorPlugin[] = [...firstPartyPlugins];
     if (enableSamplePlugin) {
         plugins = [
             ...plugins,

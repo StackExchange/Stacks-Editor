@@ -1,9 +1,7 @@
-import {createMenuEntries, MenuBlock} from "../../../src/shared/menu";
+import { createMenuEntries, MenuBlock } from "../../../src/shared/menu";
 import { EditorType } from "../../../src";
-import {testRichTextSchema} from "../../../test/rich-text/test-helpers";
-import {
-    buildSnippetMenuEntries,
-} from "./stack-snippet-helpers";
+import { testRichTextSchema } from "../../../test/rich-text/test-helpers";
+import { buildSnippetMenuEntries } from "./stack-snippet-helpers";
 
 function getEntryByKey(blocks: MenuBlock[], key: string) {
     return blocks

@@ -2,14 +2,19 @@ import {
     getSnippetMetadata,
     mapMetaLine,
     MetaLine,
-    validateMetaLines
+    validateMetaLines,
 } from "../src/common";
 import {
     buildSnippetSchema,
-    configureBegin, validBegin, validCss, validEnd, validHtml,
-    validJs, validSnippetRenderCases
+    configureBegin,
+    validBegin,
+    validCss,
+    validEnd,
+    validHtml,
+    validJs,
+    validSnippetRenderCases,
 } from "./stack-snippet-helpers";
-import {parseSnippetBlockForProsemirror} from "../src/paste-handler";
+import { parseSnippetBlockForProsemirror } from "../src/paste-handler";
 
 describe("common functions", () => {
     const schema = buildSnippetSchema();
@@ -58,23 +63,21 @@ describe("common functions", () => {
         it("should use an available ID if provided", () => {
             //Parsing markdown auto-generates an ID.
             // Here we want it specified, so we're creating the block by hand
-            const langNode =
-                schema.nodes.stack_snippet_lang.createChecked(
-                    { language: "js" },
-                    schema.text("console.log('test');")
-                );
-            const validSnippet =
-                schema.nodes.stack_snippet.createChecked(
-                    {
-                        id: "1234",
-                        babel: "true",
-                        babelPresetReact: "true",
-                        babelPresetTS: "null",
-                        console: "true",
-                        hide: "false",
-                    },
-                    langNode
-                );
+            const langNode = schema.nodes.stack_snippet_lang.createChecked(
+                { language: "js" },
+                schema.text("console.log('test');")
+            );
+            const validSnippet = schema.nodes.stack_snippet.createChecked(
+                {
+                    id: "1234",
+                    babel: "true",
+                    babelPresetReact: "true",
+                    babelPresetTS: "null",
+                    console: "true",
+                    hide: "false",
+                },
+                langNode
+            );
 
             const metadata = getSnippetMetadata(validSnippet);
 
@@ -106,26 +109,16 @@ describe("common functions", () => {
 
     describe("mapMetaLine", () => {
         it("should map a valid end line", () => {
-            expect(mapMetaLine({ line: validEnd, index: 4 })).toStrictEqual(
-                {
-                    type: "end",
-                    index: 4,
-                }
-            );
+            expect(mapMetaLine({ line: validEnd, index: 4 })).toStrictEqual({
+                type: "end",
+                index: 4,
+            });
         });
 
         it("should map a valid start line", () => {
-            const startLine = configureBegin(
-                true,
-                false,
-                null,
-                true,
-                false
-            );
+            const startLine = configureBegin(true, false, null, true, false);
 
-            expect(
-                mapMetaLine({ line: startLine, index: 8 })
-            ).toStrictEqual({
+            expect(mapMetaLine({ line: startLine, index: 8 })).toStrictEqual({
                 type: "begin",
                 index: 8,
                 hide: "true",
@@ -137,9 +130,7 @@ describe("common functions", () => {
         });
 
         it("should map a valid js lang line", () => {
-            expect(
-                mapMetaLine({ line: validJs, index: 213 })
-            ).toStrictEqual({
+            expect(mapMetaLine({ line: validJs, index: 213 })).toStrictEqual({
                 type: "lang",
                 index: 213,
                 language: "js",
@@ -147,9 +138,7 @@ describe("common functions", () => {
         });
 
         it("should map a valid html lang line", () => {
-            expect(
-                mapMetaLine({ line: validHtml, index: 321 })
-            ).toStrictEqual({
+            expect(mapMetaLine({ line: validHtml, index: 321 })).toStrictEqual({
                 type: "lang",
                 index: 321,
                 language: "html",
@@ -157,9 +146,7 @@ describe("common functions", () => {
         });
 
         it("should map a valid css lang line", () => {
-            expect(
-                mapMetaLine({ line: validCss, index: 123 })
-            ).toStrictEqual({
+            expect(mapMetaLine({ line: validCss, index: 123 })).toStrictEqual({
                 type: "lang",
                 index: 123,
                 language: "css",

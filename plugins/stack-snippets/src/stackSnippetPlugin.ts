@@ -1,22 +1,21 @@
 /** This is an effort to turn the existing structure back into an external plugin while keeping the same functionality*/
-import type {EditorPlugin} from "../../../src";
+import type { EditorPlugin } from "../../../src";
 import {
     stackSnippetMarkdownParser,
     stackSnippetMarkdownSerializer,
     stackSnippetPlugin as markdownPlugin,
-    stackSnippetRichTextNodeSpec
+    stackSnippetRichTextNodeSpec,
 } from "./schema";
-import {Node as ProseMirrorNode} from "prosemirror-model";
-import {EditorView} from "prosemirror-view";
-import {StackSnippetView} from "./snippet-view";
-import {StackSnippetOptions} from "./common";
-import {error, log} from "../../../src/shared/logger";
-import {stackSnippetPasteHandler} from "./paste-handler";
-import {makeMenuButton} from "../../../src/shared/menu";
-import {_t} from "../../../src/shared/localization";
-import {getShortcut} from "../../../src/shared/utils";
-import {openSnippetModal} from "./commands";
-
+import { Node as ProseMirrorNode } from "prosemirror-model";
+import { EditorView } from "prosemirror-view";
+import { StackSnippetView } from "./snippet-view";
+import { StackSnippetOptions } from "./common";
+import { error, log } from "../../../src/shared/logger";
+import { stackSnippetPasteHandler } from "./paste-handler";
+import { makeMenuButton } from "../../../src/shared/menu";
+import { _t } from "../../../src/shared/localization";
+import { getShortcut } from "../../../src/shared/utils";
+import { openSnippetModal } from "./commands";
 
 //TODO: Naturally this will have to live outside the Editor itself.
 // Which was kinda of the point, right? We wanted it to interface with the existing Stack Snippets editor in the first pass.
@@ -52,23 +51,11 @@ const snippetOpts: StackSnippetOptions = {
             });
     },
     openSnippetsModal: (meta, js, css, html) => {
-        log(
-            "test harness - open modal event",
-            `meta\n${JSON.stringify(meta)}`
-        );
-        log(
-            "test harness - open modal event",
-            `js\n${JSON.stringify(js)}`
-        );
-        log(
-            "test harness - open modal event",
-            `css\n${JSON.stringify(css)}`
-        );
-        log(
-            "test harness - open modal event",
-            `html\n${JSON.stringify(html)}`
-        );
-    }
+        log("test harness - open modal event", `meta\n${JSON.stringify(meta)}`);
+        log("test harness - open modal event", `js\n${JSON.stringify(js)}`);
+        log("test harness - open modal event", `css\n${JSON.stringify(css)}`);
+        log("test harness - open modal event", `html\n${JSON.stringify(html)}`);
+    },
 };
 
 /**
@@ -76,8 +63,8 @@ const snippetOpts: StackSnippetOptions = {
  *
  * This allows callers to specify how to handle rendering and modal opening of buttons externally to the editor.
  * **/
-export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin = (opts) =>
-    () => ({
+export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
+    (opts) => () => ({
         richText: {
             nodeViews: {
                 stack_snippet: (
@@ -85,17 +72,10 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin = 
                     view: EditorView,
                     getPos: () => number
                 ) => {
-                    return new StackSnippetView(
-                        node,
-                        view,
-                        getPos,
-                        opts
-                    );
-                }
+                    return new StackSnippetView(node, view, getPos, opts);
+                },
             },
-            plugins: [
-                stackSnippetPasteHandler
-            ]
+            plugins: [stackSnippetPasteHandler],
         },
         extendSchema: (schema) => {
             schema.nodes = schema.nodes.append(stackSnippetRichTextNodeSpec);
@@ -103,20 +83,20 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin = 
         },
         markdown: {
             parser: {
-                ...stackSnippetMarkdownParser
+                ...stackSnippetMarkdownParser,
             },
             serializers: {
                 nodes: {
-                    ...stackSnippetMarkdownSerializer
+                    ...stackSnippetMarkdownSerializer,
                 },
                 marks: {},
             },
             alterMarkdownIt: (mdit) => {
                 mdit.use(markdownPlugin);
-            }
+            },
         },
         menuItems: (schema, coreMenus) => {
-            const clone = coreMenus.find(mb => mb.name == "code-formatting");
+            const clone = coreMenus.find((mb) => mb.name == "code-formatting");
 
             return [
                 {
@@ -142,9 +122,9 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin = 
                                 },
                                 "stack-snippet-open-btn"
                             ),
-                        }
-                    ]
-                }
-            ]
-        }
+                        },
+                    ],
+                },
+            ];
+        },
     });

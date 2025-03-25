@@ -1,17 +1,21 @@
 import {
-    cleanupPasteSupport, createView, dispatchPasteEvent,
-    setupPasteSupport
+    cleanupPasteSupport,
+    createView,
+    dispatchPasteEvent,
+    setupPasteSupport,
 } from "../../../test/rich-text/test-helpers";
-import {EditorState} from "prosemirror-state";
-import {stackSnippetPasteHandler} from "../src/paste-handler";
+import { EditorState } from "prosemirror-state";
+import { stackSnippetPasteHandler } from "../src/paste-handler";
 import {
     buildSnippetSchema,
-    validBegin, validEnd,
-    validJs, validSnippetRenderCases
+    validBegin,
+    validEnd,
+    validJs,
+    validSnippetRenderCases,
 } from "./stack-snippet-helpers";
-import {EditorView} from "prosemirror-view";
-import {Node as ProseMirrorNode} from "prosemirror-model";
-import {StackSnippetView} from "../src/snippet-view";
+import { EditorView } from "prosemirror-view";
+import { Node as ProseMirrorNode } from "prosemirror-model";
+import { StackSnippetView } from "../src/snippet-view";
 
 describe("paste functionality", () => {
     beforeAll(setupPasteSupport);
@@ -44,9 +48,7 @@ describe("paste functionality", () => {
             true
         );
         expect(insertedNode.isTextblock).toBe(true);
-        expect(insertedNode.textContent).toBe(
-            validBegin + validJs + validEnd
-        );
+        expect(insertedNode.textContent).toBe(validBegin + validJs + validEnd);
     });
 
     it.each(validSnippetRenderCases)(

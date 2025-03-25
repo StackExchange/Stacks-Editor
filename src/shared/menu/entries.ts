@@ -372,7 +372,7 @@ export const createMenuEntries = (
                     },
                     "code-block-btn"
                 ),
-            }
+            },
         ],
     },
     {

@@ -1,9 +1,10 @@
 import {
-    invalidSnippetRenderCases, snippetExternalProvider,
-    validSnippetRenderCases
+    invalidSnippetRenderCases,
+    snippetExternalProvider,
+    validSnippetRenderCases,
 } from "./stack-snippet-helpers";
-import {RichTextEditor} from "../../../src/rich-text/editor";
-import {StackSnippetOptions} from "../src/common";
+import { RichTextEditor } from "../../../src/rich-text/editor";
+import { StackSnippetOptions } from "../src/common";
 
 describe("stack snippets", () => {
     function richView(markdownInput: string, opts?: StackSnippetOptions) {
@@ -17,26 +18,16 @@ describe("stack snippets", () => {
 
     const shouldHaveSnippetBlock = (rendered: Element) => {
         expect(rendered.querySelectorAll("div.snippet")).toHaveLength(1);
-        expect(rendered.querySelectorAll("div.snippet-code")).toHaveLength(
-            1
-        );
-        expect(
-            rendered.querySelectorAll("div.snippet-result")
-        ).toHaveLength(1);
-        expect(
-            rendered.querySelectorAll("div.snippet-result")
-        ).toHaveLength(1);
-        const resultCode = rendered.querySelectorAll(
-            "div.snippet-result-code"
-        );
+        expect(rendered.querySelectorAll("div.snippet-code")).toHaveLength(1);
+        expect(rendered.querySelectorAll("div.snippet-result")).toHaveLength(1);
+        expect(rendered.querySelectorAll("div.snippet-result")).toHaveLength(1);
+        const resultCode = rendered.querySelectorAll("div.snippet-result-code");
         expect(resultCode).toHaveLength(1);
         expect(resultCode[0].childNodes).toHaveLength(0);
     };
 
     const shouldHaveRunCodeButton = (rendered: Element) => {
-        const runCode = rendered.querySelectorAll(
-            "div.snippet-ctas > button"
-        );
+        const runCode = rendered.querySelectorAll("div.snippet-ctas > button");
         expect(runCode).toHaveLength(1);
         expect(runCode[0].attributes.getNamedItem("title").value).toBe(
             "Run code snippet"
@@ -46,10 +37,7 @@ describe("stack snippets", () => {
         );
     };
 
-    const shouldHaveLanguageBlocks = (
-        rendered: Element,
-        langs: string[]
-    ) => {
+    const shouldHaveLanguageBlocks = (rendered: Element, langs: string[]) => {
         for (const lang of langs) {
             const langBlock = rendered.querySelectorAll(
                 `div.snippet-code > pre.lang-${lang} > code`
@@ -58,9 +46,7 @@ describe("stack snippets", () => {
             expect(langBlock[0].innerHTML).toBeTruthy();
         }
 
-        const codeBlocks = rendered.querySelectorAll(
-            `div.snippet-code > pre`
-        );
+        const codeBlocks = rendered.querySelectorAll(`div.snippet-code > pre`);
         expect(codeBlocks).toHaveLength(langs.length);
     };
 
@@ -69,7 +55,7 @@ describe("stack snippets", () => {
         (markdown: string, langs: string[]) => {
             const richEditorView = richView(markdown, {
                 renderer: () => Promise.resolve(null),
-                openSnippetsModal: () => {}
+                openSnippetsModal: () => {},
             });
 
             const rendered = richEditorView.dom;
@@ -101,9 +87,9 @@ describe("stack snippets", () => {
     <!-- end snippet -->`;
 
         const richEditorView = richView(markdown, {
-                renderer: () => null,
-                openSnippetsModal: () => {},
-            });
+            renderer: () => null,
+            openSnippetsModal: () => {},
+        });
 
         const rendered = richEditorView.dom;
         const codeBlocks = rendered.querySelectorAll(
@@ -116,17 +102,14 @@ describe("stack snippets", () => {
     it.each(invalidSnippetRenderCases)(
         "should not render invalid snippets",
         (markdown) => {
-            const richEditorView = richView(markdown,
-                {
-                    renderer: () => null,
-                    openSnippetsModal: () => {},
-                });
+            const richEditorView = richView(markdown, {
+                renderer: () => null,
+                openSnippetsModal: () => {},
+            });
 
             const rendered = richEditorView.dom;
 
-            expect(rendered.querySelectorAll("div.snippet")).toHaveLength(
-                0
-            );
+            expect(rendered.querySelectorAll("div.snippet")).toHaveLength(0);
         }
     );
 });

@@ -1,34 +1,30 @@
-import {
-    sleepAsync,
-} from "../../../test/rich-text/test-helpers";
-import {StackSnippetOptions} from "../src/common";
-import {EditorView} from "prosemirror-view";
-import {EditorState} from "prosemirror-state";
-import {stackSnippetPasteHandler} from "../src/paste-handler";
-import {Node as ProseMirrorNode} from "prosemirror-model";
-import {StackSnippetView} from "../src/snippet-view";
-import {buildSnippetSchema} from "./stack-snippet-helpers";
+import { sleepAsync } from "../../../test/rich-text/test-helpers";
+import { StackSnippetOptions } from "../src/common";
+import { EditorView } from "prosemirror-view";
+import { EditorState } from "prosemirror-state";
+import { stackSnippetPasteHandler } from "../src/paste-handler";
+import { Node as ProseMirrorNode } from "prosemirror-model";
+import { StackSnippetView } from "../src/snippet-view";
+import { buildSnippetSchema } from "./stack-snippet-helpers";
 
 describe("StackSnippetView", () => {
     const schema = buildSnippetSchema();
 
-    const langNode =
-        schema.nodes.stack_snippet_lang.createChecked(
-            { language: "js" },
-            schema.text("console.log('test');")
-        );
-    const validSnippet =
-        schema.nodes.stack_snippet.createChecked(
-            {
-                id: "1234",
-                babel: "true",
-                babelPresetReact: "true",
-                babelPresetTS: "null",
-                console: "true",
-                hide: "false",
-            },
-            langNode
-        );
+    const langNode = schema.nodes.stack_snippet_lang.createChecked(
+        { language: "js" },
+        schema.text("console.log('test');")
+    );
+    const validSnippet = schema.nodes.stack_snippet.createChecked(
+        {
+            id: "1234",
+            babel: "true",
+            babelPresetReact: "true",
+            babelPresetTS: "null",
+            console: "true",
+            hide: "false",
+        },
+        langNode
+    );
 
     const buildView = (options?: StackSnippetOptions): EditorView => {
         const state = EditorState.create({
@@ -43,12 +39,7 @@ describe("StackSnippetView", () => {
                     view: EditorView,
                     getPos: () => number
                 ) => {
-                    return new StackSnippetView(
-                        node,
-                        view,
-                        getPos,
-                        options
-                    );
+                    return new StackSnippetView(node, view, getPos, options);
                 },
             },
         });
@@ -77,9 +68,7 @@ describe("StackSnippetView", () => {
         expect(runCodeButton[0].getAttribute("aria-label")).toBe(
             "Run code snippet"
         );
-        expect(runCodeButton[0].getAttribute("title")).toBe(
-            "Run code snippet"
-        );
+        expect(runCodeButton[0].getAttribute("title")).toBe("Run code snippet");
     });
 
     it("should not render run code button if no renderer provided", () => {

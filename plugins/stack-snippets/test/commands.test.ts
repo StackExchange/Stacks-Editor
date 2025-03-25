@@ -1,14 +1,12 @@
-import {EditorState} from "prosemirror-state";
-import {SnippetMetadata, StackSnippetOptions} from "../src/common";
-import {openSnippetModal} from "../src/commands";
-import {
-    createState
-} from "../../../test/rich-text/test-helpers";
+import { EditorState } from "prosemirror-state";
+import { SnippetMetadata, StackSnippetOptions } from "../src/common";
+import { openSnippetModal } from "../src/commands";
+import { createState } from "../../../test/rich-text/test-helpers";
 import {
     buildSnippetSchema,
-    validSnippetRenderCases
+    validSnippetRenderCases,
 } from "./stack-snippet-helpers";
-import {parseSnippetBlockForProsemirror} from "../src/paste-handler";
+import { parseSnippetBlockForProsemirror } from "../src/paste-handler";
 
 describe("commands", () => {
     const schema = buildSnippetSchema();
@@ -88,10 +86,7 @@ describe("commands", () => {
                 state.tr.replaceRangeWith(
                     0,
                     state.doc.nodeSize - 2,
-                    parseSnippetBlockForProsemirror(
-                        schema,
-                        markdown
-                    )
+                    parseSnippetBlockForProsemirror(schema, markdown)
                 )
             );
 
