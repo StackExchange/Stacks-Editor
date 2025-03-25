@@ -44,7 +44,11 @@ import {
     toggleInlineCode,
 } from "../../rich-text/commands";
 import { _t } from "../localization";
-import {CoreMenuBlockNames, makeMenuButton, makeMenuDropdown} from "./helpers";
+import {
+    CoreMenuBlockNames,
+    makeMenuButton,
+    makeMenuDropdown,
+} from "./helpers";
 import { getShortcut } from "../utils";
 import { CommonViewOptions, EditorType } from "../view";
 import {
@@ -249,7 +253,7 @@ const moreFormattingDropdown = (schema: Schema, options: CommonViewOptions) =>
     );
 
 /** Enforce that Core MenuBlocks have to use a published name */
-interface CoreMenuBlock extends Omit<MenuBlock, 'name'>{
+interface CoreMenuBlock extends Omit<MenuBlock, "name"> {
     name: CoreMenuBlockNames;
 }
 

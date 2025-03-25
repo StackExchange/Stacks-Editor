@@ -1,6 +1,6 @@
 import { highlightPlugin } from "prosemirror-highlightjs";
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import {Plugin, Transaction} from "prosemirror-state";
+import { Plugin, Transaction } from "prosemirror-state";
 import { getHljsInstance } from "./hljs-instance";
 
 /*
@@ -110,7 +110,7 @@ export function CodeBlockHighlightPlugin(
     defaultFallbackLanguage: string
 ): Plugin {
     const extractor = (block: ProsemirrorNode) => {
-        const detectedLanguage = (block.attrs.language as string);
+        const detectedLanguage = block.attrs.language as string;
         return (
             detectedLanguage || getBlockLanguage(block, defaultFallbackLanguage)
         );

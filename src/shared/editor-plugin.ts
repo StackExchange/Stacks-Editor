@@ -44,7 +44,10 @@ type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
  * @param {Schema} schema The fully-initialized editor schema, including nodes from plugins
  * @param {MenuBlock} coreMenus Definition of the Core menus. MenuBlocks that share names are merged together.
  */
-type AddMenuItemsCallback = (schema: Schema, coreMenus: MenuBlock[]) => MenuBlock[];
+type AddMenuItemsCallback = (
+    schema: Schema,
+    coreMenus: MenuBlock[]
+) => MenuBlock[];
 
 /** Describes the properties that can be used for extending commonmark support in the editor */
 type MarkdownExtensionProps = {
@@ -266,19 +269,19 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
             const blocks = callback(schema, menu);
             for (const block of blocks) {
                 const existing = aggBlocks[block.name];
-                if(existing){
-                    existing.entries = [
-                        ...existing.entries,
-                        ...block.entries
-                    ]
+                if (existing) {
+                    existing.entries = [...existing.entries, ...block.entries];
 
                     // set the priority to the lowest of existing and the newly aggregated block
-                    existing.priority = Math.min(existing.priority || 0, block.priority || Infinity);
+                    existing.priority = Math.min(
+                        existing.priority || 0,
+                        block.priority || Infinity
+                    );
                 } else {
                     aggBlocks = {
                         ...aggBlocks,
-                        [block.name]: {...block}
-                    }
+                        [block.name]: { ...block },
+                    };
                 }
             }
         }

@@ -117,7 +117,7 @@ describe("rich text editor view", () => {
                 expect(editorDom(richEditorView)).toEqual(
                     //Our blank, plus...
                     normalize("<p><br class='ProseMirror-trailingBreak'></p>") +
-                    normalize(expectedHtml)
+                        normalize(expectedHtml)
                 );
             }
         );
@@ -125,7 +125,8 @@ describe("rich text editor view", () => {
         it("should append new content to existing content", () => {
             //Pick some markdown that creates a block
             const blockMarkdown = "> blockquote";
-            const expectedBlockHtml = "<blockquote><p>blockquote</p></blockquote>";
+            const expectedBlockHtml =
+                "<blockquote><p>blockquote</p></blockquote>";
             const listMarkdown = "1. some\n2. list";
             const expectedListHtml = `<ol data-tight="true"><li><p>some</p></li><li><p>list</p></li></ol>`;
             const richEditorView = richView(blockMarkdown);
@@ -133,8 +134,7 @@ describe("rich text editor view", () => {
             richEditorView.appendContent(listMarkdown);
 
             expect(editorDom(richEditorView)).toEqual(
-                normalize(expectedBlockHtml) +
-                normalize(expectedListHtml)
+                normalize(expectedBlockHtml) + normalize(expectedListHtml)
             );
         });
 
@@ -157,7 +157,7 @@ describe("rich text editor view", () => {
 
             const preElement = richEditorView.dom.querySelector("pre");
             const expectedCodeHtml = `<code class="content-dom"><span class="hljs-built_in">console</span>.<span class="hljs-built_in">log</span>(<span class="hljs-string">"hello, world!"</span>)</code>`;
-            expect(preElement.innerHTML).toEqual(normalize(expectedCodeHtml))
+            expect(preElement.innerHTML).toEqual(normalize(expectedCodeHtml));
         });
     });
 
