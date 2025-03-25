@@ -1,6 +1,6 @@
 import { highlightPlugin } from "prosemirror-highlightjs";
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import { Plugin } from "prosemirror-state";
+import {Plugin, Transaction} from "prosemirror-state";
 import { getHljsInstance } from "./hljs-instance";
 
 /*
@@ -136,5 +136,5 @@ export function CodeBlockHighlightPlugin(
         return new Plugin({});
     }
 
-    return highlightPlugin(hljs, ["code_block"], extractor);
+    return highlightPlugin(hljs, ["code_block"], extractor, setter);
 }

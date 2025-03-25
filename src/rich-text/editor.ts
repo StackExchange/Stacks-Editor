@@ -138,7 +138,6 @@ export class RichTextEditor extends BaseView {
                         ),
                         readonlyPlugin(),
                         spoilerToggle,
-                        stackSnippetPasteHandler,
                         ...this.externalPluginProvider.plugins.richText,
                         // Paste handlers are consuming, so we let external plugins try first
                         tables,
