@@ -98,7 +98,7 @@
     "dependencies": {
         "@lezer/highlight": "^1.2.0",
         "@lezer/markdown": "^1.2.0",
-        "@stackoverflow/stacks-icons": "^6.0.2",
+        "@stackoverflow/stacks-icons": "^6.2.0",
         "markdown-it": "^14.0.0",
         "orderedmap": "^2.1.1",
         "prosemirror-commands": "^1.5.2",

@@ -109,7 +109,7 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
                                 command: openSnippetModal(opts),
                             },
                             display: makeMenuButton(
-                                "Play",
+                                "StackSnippets",
                                 {
                                     title: _t("commands.stack_snippet.title", {
                                         shortcut: getShortcut("Mod-9"),
