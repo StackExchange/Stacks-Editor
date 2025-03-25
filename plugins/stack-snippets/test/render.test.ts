@@ -3,8 +3,6 @@ import {
     validSnippetRenderCases
 } from "./stack-snippet-helpers";
 import {RichTextEditor} from "../../../src/rich-text/editor";
-import {externalPluginProvider} from "../../../test/test-helpers";
-import {stackSnippetPlugin} from "../src/stackSnippetPlugin";
 import {StackSnippetOptions} from "../src/common";
 
 describe("stack snippets", () => {
@@ -93,14 +91,14 @@ describe("stack snippets", () => {
     );
 
     //Snippets with four spaces should render as if in a code block
-    it("should render four-spaced snippets within a code block", () => {
+    it("should render four-space indented snippets within a code block", () => {
         const markdown = `    <!-- begin snippet: js hide: false console: true babel: null babelPresetReact: false babelPresetTS: false -->
 
-<!-- language: lang-js -->
+    <!-- language: lang-js -->
 
-    console.log("test");
+        console.log("test");
 
-<!-- end snippet -->`;
+    <!-- end snippet -->`;
 
         const richEditorView = richView(markdown, {
                 renderer: () => null,

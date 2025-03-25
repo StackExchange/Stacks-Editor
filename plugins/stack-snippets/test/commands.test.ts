@@ -2,15 +2,17 @@ import {EditorState} from "prosemirror-state";
 import {SnippetMetadata, StackSnippetOptions} from "../src/common";
 import {openSnippetModal} from "../src/commands";
 import {
-    createState,
-    testRichTextSchema
+    createState
 } from "../../../test/rich-text/test-helpers";
 import {
+    buildSnippetSchema,
     validSnippetRenderCases
 } from "./stack-snippet-helpers";
 import {parseSnippetBlockForProsemirror} from "../src/paste-handler";
 
 describe("commands", () => {
+    const schema = buildSnippetSchema();
+
     const whenOpenSnippetCommandCalled = (
         state: EditorState,
         shouldMatchCall: (
@@ -79,7 +81,7 @@ describe("commands", () => {
         (markdown: string, langs: string[]) => {
             //Create a blank doc, then replace the contents (a paragraph node) with the parsed markdown.
             let state = EditorState.create({
-                schema: testRichTextSchema,
+                schema: schema,
                 plugins: [],
             });
             state = state.apply(
@@ -87,7 +89,7 @@ describe("commands", () => {
                     0,
                     state.doc.nodeSize - 2,
                     parseSnippetBlockForProsemirror(
-                        testRichTextSchema,
+                        schema,
                         markdown
                     )
                 )

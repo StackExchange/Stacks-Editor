@@ -1,14 +1,9 @@
-//TODO: Move to plugins folder
 import {createMenuEntries, MenuBlock} from "../../../src/shared/menu";
 import { EditorType } from "../../../src";
 import {testRichTextSchema} from "../../../test/rich-text/test-helpers";
 import {
     buildSnippetMenuEntries,
-    buildSnippetSchema,
-    snippetExternalProvider
 } from "./stack-snippet-helpers";
-import {schema} from "prosemirror-markdown";
-import {richTextSchemaSpec} from "../../../src/rich-text/schema";
 
 function getEntryByKey(blocks: MenuBlock[], key: string) {
     return blocks

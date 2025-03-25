@@ -3,6 +3,7 @@ import {ExternalPluginProvider} from "../../../src/shared/editor-plugin";
 import {StackSnippetOptions} from "../src/common";
 import {richTextSchemaSpec} from "../../../src/rich-text/schema";
 import { Schema } from "prosemirror-model";
+import {MenuBlock} from "../../../src/shared/menu";
 
 export const snippetExternalProvider = (opts?: StackSnippetOptions) =>
     new ExternalPluginProvider(
@@ -12,8 +13,16 @@ export const snippetExternalProvider = (opts?: StackSnippetOptions) =>
         {}
     )
 
-export const buildSnippetSchema = () =>
-    new Schema(snippetExternalProvider().getFinalizedSchema(richTextSchemaSpec));
+export const buildSnippetSchema = (provider?: ExternalPluginProvider) =>
+    new Schema((provider || snippetExternalProvider()).getFinalizedSchema(richTextSchemaSpec));
+
+export const buildSnippetMenuEntries = (core: MenuBlock[]) => {
+    const provider = snippetExternalProvider({
+        renderer: () => Promise.resolve(null),
+        openSnippetsModal: () => {}
+    })
+    return provider.getFinalizedMenu(core, buildSnippetSchema(provider))
+}
 
 export const validBegin: string = `<!-- begin snippet: js hide: false console: true babel: null babelPresetReact: false babelPresetTS: false -->
 
