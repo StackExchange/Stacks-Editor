@@ -1,6 +1,6 @@
 import { Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { EditorType, type EditorPlugin } from "../src";
+import { EditorType, type EditorPlugin } from "../../src";
 
 type InterceptImageUploadEvent = CustomEvent<{
     file: File;

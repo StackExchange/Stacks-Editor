@@ -9,6 +9,16 @@
     "main": "./dist/app.bundle.js",
     "module": "./dist/index.js",
     "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/src/index.js",
+            "types": "./dist/src/index.d.ts"
+        },
+        "./plugins/sample": {
+            "import": "./dist/plugins/sample/index.js",
+            "types": "./dist/plugins/devx/index.d.ts"
+        }
+    },
     "files": [
         "dist/"
     ],

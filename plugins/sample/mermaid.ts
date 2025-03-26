@@ -1,4 +1,4 @@
-import type { EditorPlugin } from "../src";
+import type { EditorPlugin } from "../../src";
 
 // NOTE: loaded from cdn in views/plugin.html
 declare global {
