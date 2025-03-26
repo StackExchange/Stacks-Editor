@@ -158,10 +158,7 @@ export class RichTextEditor extends BaseView {
                             );
                         } else {
                             return new CodeBlockLanguagePickerView(
-                                node,
-                                view,
-                                getPos,
-                                this.externalPluginProvider.codeblockProcessors
+                                node
                             );
                         }
                     },
