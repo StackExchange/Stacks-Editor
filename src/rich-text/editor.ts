@@ -26,7 +26,7 @@ import {
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
 import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
-import { CodeBlockLanguagePickerView } from "./node-views/code-block-language-picker";
+import { CodeBlockView } from "./node-views/code-block";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
@@ -148,7 +148,7 @@ export class RichTextEditor extends BaseView {
                 }),
                 nodeViews: {
                     code_block: (node, view, getPos) => {
-                        return new CodeBlockLanguagePickerView(
+                        return new CodeBlockView(
                             node
                         );
                     },

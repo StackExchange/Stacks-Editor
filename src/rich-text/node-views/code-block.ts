@@ -7,7 +7,7 @@ import { escapeHTML } from "../../shared/utils";
 /**
  * View with <code> wrapping/decorations for code_block nodes
  */
-export class CodeBlockLanguagePickerView implements NodeView {
+export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
