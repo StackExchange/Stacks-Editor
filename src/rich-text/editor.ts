@@ -26,7 +26,8 @@ import {
 import { richTextInputRules } from "./inputrules";
 import { allKeymaps } from "./key-bindings";
 import { stackOverflowMarkdownSerializer } from "../shared/markdown-serializer";
-import { CodeBlockView } from "./node-views/code-block";
+import { CodeBlockToggleableProcessorView } from "./node-views/code-block-togglable-processor";
+import { CodeBlockLanguagePickerView } from "./node-views/code-block-language-picker";
 import { HtmlBlock, HtmlBlockContainer } from "./node-views/html-block";
 import { ImageView } from "./node-views/image";
 import { TagLink } from "./node-views/tag-link";
@@ -148,12 +149,21 @@ export class RichTextEditor extends BaseView {
                 }),
                 nodeViews: {
                     code_block: (node, view, getPos) => {
-                        return new CodeBlockView(
-                            node,
-                            view,
-                            getPos,
-                            this.externalPluginProvider.codeblockProcessors
-                        );
+                        if (this.externalPluginProvider.codeblockProcessors) {
+                            return new CodeBlockToggleableProcessorView(
+                                node,
+                                view,
+                                getPos,
+                                this.externalPluginProvider.codeblockProcessors
+                            );
+                        } else {
+                            return new CodeBlockLanguagePickerView(
+                                node,
+                                view,
+                                getPos,
+                                this.externalPluginProvider.codeblockProcessors
+                            );
+                        }
                     },
                     image(
                         node: ProseMirrorNode,

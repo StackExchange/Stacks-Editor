@@ -10,7 +10,7 @@ type getPosParam = boolean | (() => number);
 /**
  * View with <code> wrapping/decorations for code_block nodes
  */
-export class CodeBlockView implements NodeView {
+export class CodeBlockToggleableProcessorView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
