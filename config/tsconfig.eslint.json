@@ -5,6 +5,7 @@
         "../src/**/*.ts",
         "../test/**/*.ts",
         "../test/**/*.js",
-        "../site/**/*.ts"
+        "../site/**/*.ts",
+        "../plugins/**/*.ts"
     ]
 }

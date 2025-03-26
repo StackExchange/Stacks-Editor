@@ -42,8 +42,12 @@ type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
 /**
  * Callback to add new menu entries to the editor's menu.
  * @param {Schema} schema The fully-initialized editor schema, including nodes from plugins
+ * @param {MenuBlock} coreMenus Definition of the Core menus. MenuBlocks that share names are merged together.
  */
-type AddMenuItemsCallback = (schema: Schema) => MenuBlock[];
+type AddMenuItemsCallback = (
+    schema: Schema,
+    coreMenus: MenuBlock[]
+) => MenuBlock[];
 
 /** Describes the properties that can be used for extending commonmark support in the editor */
 type MarkdownExtensionProps = {
@@ -253,8 +257,8 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
 
     /** {@inheritDoc IExternalPluginProvider.getFinalizedMenu} */
     getFinalizedMenu(menu: MenuBlock[], schema: Schema): MenuBlock[] {
-        const ret: MenuBlock[] = [];
-        const aggBlocks: MenuBlock[] = [];
+        //While we're working on the blocks, we need to be able to pull out entries by name easily
+        let aggBlocks: { [id: string]: MenuBlock } = {};
 
         // call each callback and aggregate the results
         for (const callback of [() => menu, ...this.menuCallbacks]) {
@@ -262,43 +266,27 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
                 continue;
             }
 
-            const blocks = callback(schema);
+            const blocks = callback(schema, menu);
             for (const block of blocks) {
-                let existing = aggBlocks.find((b) => b.name === block.name);
-                if (!existing) {
-                    aggBlocks.push(block);
-                    existing = block;
+                const existing = aggBlocks[block.name];
+                if (existing) {
+                    existing.entries = [...existing.entries, ...block.entries];
+
+                    // set the priority to the lowest of existing and the newly aggregated block
+                    existing.priority = Math.min(
+                        existing.priority || 0,
+                        block.priority || Infinity
+                    );
                 } else {
-                    existing.entries.push(...block.entries);
+                    aggBlocks = {
+                        ...aggBlocks,
+                        [block.name]: { ...block },
+                    };
                 }
-
-                // set the priority to the most recently declared if there are multiple
-                existing.priority = block.priority ?? Infinity;
             }
         }
 
-        // add the blocks to the menu
-        for (const block of aggBlocks) {
-            // try to find an existing block with the same name
-            const match = ret.find((b) => b.name === block.name);
-
-            if (match) {
-                // if there is a match, add the entries to it
-                match.entries.push(...block.entries);
-                // set the priority to the lowest of the two
-                match.priority = Math.min(match.priority || 0, block.priority);
-            } else {
-                ret.push({
-                    name: block.name,
-                    priority: block.priority,
-                    visible: block.visible,
-                    classes: block.classes,
-                    entries: block.entries,
-                });
-            }
-        }
-
-        return ret;
+        return Object.values(aggBlocks);
     }
 
     /** Applies the config of a single plugin to this provider */
