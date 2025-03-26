@@ -5,8 +5,5 @@
         "outDir": "./dist/",
         "strictBindCallApply": true
     },
-    "include": [
-        "src/**/*",
-        "plugins/**/*"
-    ]
+    "include": ["src/**/*", "plugins/**/*"]
 }

@@ -12,7 +12,12 @@ import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview"
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
 import { markdownLogging } from "../plugins/devx";
-import { codeDetectionPlugin, sillyPlugin, mermaidPlugin, japaneseSEPlugin } from "../plugins/sample";
+import {
+    codeDetectionPlugin,
+    sillyPlugin,
+    mermaidPlugin,
+    japaneseSEPlugin,
+} from "../plugins/sample";
 import "./site.css";
 
 function domReady(callback: (e: Event) => void) {
@@ -233,14 +238,11 @@ domReady(() => {
             codeDetectionPlugin,
             japaneseSEPlugin,
             mermaidPlugin,
-            sillyPlugin
+            sillyPlugin,
         ];
     }
     if (enableDevxPlugin) {
-        plugins = [
-            ...plugins,
-            markdownLogging
-        ];
+        plugins = [...plugins, markdownLogging];
     }
 
     const options: StacksEditorOptions = {
