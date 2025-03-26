@@ -129,12 +129,6 @@ export type EditorPlugin<TOptions = unknown> = (
  */
 export interface IExternalPluginProvider {
     // TODO DEEP READONLY
-    /** All aggregated codeblockProcessors */
-    readonly codeblockProcessors: {
-        [key: string]: AddCodeBlockProcessorCallback[];
-    };
-
-    // TODO DEEP READONLY
     /** All aggregated plugins */
     readonly plugins: {
         richText: Plugin[];
@@ -176,9 +170,6 @@ export interface IExternalPluginProvider {
  * @internal
  */
 export class ExternalPluginProvider implements IExternalPluginProvider {
-    private _codeblockProcessors: IExternalPluginProvider["codeblockProcessors"] =
-        {};
-
     private _plugins: IExternalPluginProvider["plugins"] = {
         richText: [],
         commonmark: [],
@@ -193,11 +184,6 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
     };
 
     private _nodeViews: IExternalPluginProvider["nodeViews"] = {};
-
-    /** {@inheritDoc IExternalPluginProvider.codeblockProcessors} */
-    get codeblockProcessors() {
-        return Object.assign({}, this._codeblockProcessors);
-    }
 
     /** {@inheritDoc IExternalPluginProvider.plugins} */
     get plugins() {
@@ -303,10 +289,6 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
 
     /** Applies the config of a single plugin to this provider */
     private applyConfig(config: EditorPluginSpec) {
-        config.codeBlockProcessors?.forEach(({ lang, callback }) => {
-            this.addCodeBlockProcessor(lang, callback);
-        });
-
         config.commonmark?.plugins?.forEach((plugin) => {
             this._plugins.commonmark.push(plugin);
         });
@@ -358,17 +340,5 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         if (callback) {
             this.markdownItCallbacks.push(callback);
         }
-    }
-
-    /** Applies the codeblockProcessors of a config to this provider */
-    private addCodeBlockProcessor(
-        lang: string,
-        callback: AddCodeBlockProcessorCallback
-    ): void {
-        if (!(lang in this._codeblockProcessors)) {
-            this._codeblockProcessors[lang] = [];
-        }
-
-        this._codeblockProcessors[lang].push(callback);
     }
 }
