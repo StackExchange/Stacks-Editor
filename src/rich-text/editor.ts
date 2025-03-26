@@ -149,7 +149,7 @@ export class RichTextEditor extends BaseView {
                 }),
                 nodeViews: {
                     code_block: (node, view, getPos) => {
-                        if (this.externalPluginProvider.codeblockProcessors) {
+                        if (Object.keys(this.externalPluginProvider.codeblockProcessors).length) {
                             return new CodeBlockToggleableProcessorView(
                                 node,
                                 view,
