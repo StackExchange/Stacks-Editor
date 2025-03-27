@@ -1,5 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import { generateRandomId } from "../../../src/shared/utils";
+import { generateRandomId } from "../../../../src/shared/utils";
 
 export interface StackSnippetOptions {
     /** The async function to render the preview */

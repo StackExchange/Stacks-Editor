@@ -1,4 +1,4 @@
-import { sleepAsync } from "../../../test/rich-text/test-helpers";
+import { sleepAsync } from "../../../../test/rich-text/test-helpers";
 import { StackSnippetOptions } from "../src/common";
 import { EditorView } from "prosemirror-view";
 import { EditorState } from "prosemirror-state";

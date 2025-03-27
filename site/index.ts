@@ -17,7 +17,12 @@ import {
     sillyPlugin,
     japaneseSEPlugin,
 } from "../plugins/sample";
+import { stackSnippetPlugin } from "../plugins/official"
 import "./site.css";
+import {
+    StackSnippetOptions
+} from "../plugins/official/stack-snippets/src/common";
+import {error, log} from "../src/shared/logger";
 
 function domReady(callback: (e: Event) => void) {
     if (document.readyState === "loading") {
@@ -121,6 +126,45 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
             }
         });
     });
+
+const stackSnippetOpts: StackSnippetOptions = {
+    renderer: (meta, js, css, html) => {
+        const data = {
+            js: js,
+            css: css,
+            html: html,
+            console: meta.console,
+            babel: meta.babel,
+            babelPresetReact: meta.babelPresetReact,
+            babelPresetTS: meta.babelPresetTS,
+        };
+        return fetch("/snippets/js", {
+            method: "POST",
+            body: new URLSearchParams(data),
+        })
+            .then((res) => res.text())
+            .then((html) => {
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, "text/html");
+                return doc;
+            })
+            .catch((err) => {
+                error("test harness - snippet render", err);
+                const div = document.createElement("div");
+                const freeRealEstate = document.createElement("img");
+                freeRealEstate.src =
+                    "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg";
+                div.appendChild(freeRealEstate);
+                return div;
+            });
+    },
+    openSnippetsModal: (meta, js, css, html) => {
+        log("test harness - open modal event", `meta\n${JSON.stringify(meta)}`);
+        log("test harness - open modal event", `js\n${JSON.stringify(js)}`);
+        log("test harness - open modal event", `css\n${JSON.stringify(css)}`);
+        log("test harness - open modal event", `html\n${JSON.stringify(html)}`);
+    },
+};
 
 /**
  * Sample preview renderer that has a fake delay and uses the default Markdown-It renderer
@@ -230,7 +274,9 @@ domReady(() => {
     });
 
     const defaultEditor = getDefaultEditor();
-    let plugins: EditorPlugin[] = [...firstPartyPlugins];
+    let plugins: EditorPlugin[] = [
+        stackSnippetPlugin(stackSnippetOpts)
+    ];
     if (enableSamplePlugin) {
         plugins = [
             ...plugins,

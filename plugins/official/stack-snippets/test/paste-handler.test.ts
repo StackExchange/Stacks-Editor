@@ -3,7 +3,7 @@ import {
     createView,
     dispatchPasteEvent,
     setupPasteSupport,
-} from "../../../test/rich-text/test-helpers";
+} from "../../../../test/rich-text/test-helpers";
 import { EditorState } from "prosemirror-state";
 import { stackSnippetPasteHandler } from "../src/paste-handler";
 import {

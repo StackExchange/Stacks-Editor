@@ -1,7 +1,7 @@
 import { EditorState } from "prosemirror-state";
 import { SnippetMetadata, StackSnippetOptions } from "../src/common";
 import { openSnippetModal } from "../src/commands";
-import { createState } from "../../../test/rich-text/test-helpers";
+import { createState } from "../../../../test/rich-text/test-helpers";
 import {
     buildSnippetSchema,
     validSnippetRenderCases,
