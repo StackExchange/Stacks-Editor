@@ -43,10 +43,6 @@ export const defaultStrings = {
         sub: shortcut("Subscript"),
         sup: shortcut("Superscript"),
         strikethrough: "Strikethrough",
-        stack_snippet: {
-            title: shortcut("Stack Snippet"),
-            description: "Runnable code block",
-        },
         table_edit: "Edit table",
         table_insert: shortcut("Table"),
         table_column: {
