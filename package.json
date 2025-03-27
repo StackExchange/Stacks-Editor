@@ -17,6 +17,14 @@
         "./plugins/sample": {
             "import": "./dist/plugins/sample/index.js",
             "types": "./dist/plugins/devx/index.d.ts"
+        },
+        "./plugins/devx": {
+            "import": "./dist/plugins/devx/index.js",
+            "types": "./dist/plugins/devx/index.d.ts"
+        },
+        "./plugins/official": {
+            "import": "./dist/plugins/official/index.js",
+            "types": "./dist/plugins/devx/index.d.ts"
         }
     },
     "files": [
