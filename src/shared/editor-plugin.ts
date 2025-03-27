@@ -17,16 +17,6 @@ interface PluginSchemaSpec extends SchemaSpec {
 }
 
 /**
- * Describes the callback for when a codeblock processor is initialized
- * @param content The plain text content of the codeblock
- * @param container The element that the codeblock is being rendered into
- * @returns True if the processor handled the codeblock, false otherwise
- */
-type AddCodeBlockProcessorCallback = (
-    content: string,
-    container: Element
-) => boolean;
-/**
  * Describes the callback to extend a schema
  * @param schema The schema to extend
  * @returns The finalized, extended schema
@@ -107,16 +97,6 @@ export interface EditorPluginSpec {
     // TODO warn devs that they need to (at minimum) add a serializer as well?
     /** Callback for extending the rich-text editor's schema */
     extendSchema?: AlterSchemaCallback;
-
-    /** Processors to add for extending the rich-text display of specific codeblock languages */
-    codeBlockProcessors?: {
-        /**
-         * The language this processor applies to.
-         * A value of `*` applies to all languages when a more specific processor is not found
-         */
-        lang: string;
-        callback: AddCodeBlockProcessorCallback;
-    }[];
 }
 
 /**
