@@ -2,6 +2,7 @@ import { highlightPlugin } from "prosemirror-highlightjs";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { Plugin, Transaction } from "prosemirror-state";
 import { getHljsInstance } from "./hljs-instance";
+import {RichTextOptions} from "../../rich-text/editor";
 
 /*
  * Register the languages we're going to use here so we can strongly type our inputs
@@ -107,13 +108,12 @@ export function getBlockLanguage(
  * Plugin that highlights all code within all code_blocks in the parent
  */
 export function CodeBlockHighlightPlugin(
-    defaultFallbackLanguage: string
+    options: RichTextOptions["highlighting"]
 ): Plugin {
     const extractor = (block: ProsemirrorNode) => {
         const detectedLanguage = block.attrs.language as string;
-        return (
-            detectedLanguage || getBlockLanguage(block, defaultFallbackLanguage)
-        );
+        const extracted = detectedLanguage || getBlockLanguage(block, options.overrideLanguage);
+        return extracted;
     };
 
     const setter = (
@@ -136,5 +136,10 @@ export function CodeBlockHighlightPlugin(
         return new Plugin({});
     }
 
-    return highlightPlugin(hljs, ["code_block"], extractor, setter);
+    const affectedNodes = [
+        "code_block",
+        ...(options?.highlightedNodeTypes || [])
+    ];
+
+    return highlightPlugin(hljs, affectedNodes, extractor, setter);
 }
