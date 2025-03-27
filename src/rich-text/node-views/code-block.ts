@@ -13,9 +13,7 @@ export class CodeBlockView implements NodeView {
 
     private language: string = null;
 
-    constructor(
-        node: ProsemirrorNode
-    ) {
+    constructor(node: ProsemirrorNode) {
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
         this.render();

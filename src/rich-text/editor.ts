@@ -147,10 +147,8 @@ export class RichTextEditor extends BaseView {
                     ],
                 }),
                 nodeViews: {
-                    code_block: (node, view, getPos) => {
-                        return new CodeBlockView(
-                            node
-                        );
+                    code_block: (node) => {
+                        return new CodeBlockView(node);
                     },
                     image(
                         node: ProseMirrorNode,
