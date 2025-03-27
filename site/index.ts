@@ -314,8 +314,8 @@ domReady(() => {
                 ExampleLinkPreviewProvider,
             ],
             highlighting: {
-                highlightedNodeTypes: ["stack_snippet_lang"]
-            }
+                highlightedNodeTypes: ["stack_snippet_lang"],
+            },
         },
         imageUpload: imageUploadOptions,
         editorPlugins: plugins,

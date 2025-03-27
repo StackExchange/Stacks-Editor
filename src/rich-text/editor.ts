@@ -52,7 +52,7 @@ export interface RichTextOptions extends CommonViewOptions {
         overrideLanguage?: string;
         /** Which prosemirror nodes should have highlighting? Defaults to "code_block", which will always be highlighted */
         highlightedNodeTypes?: string[];
-    }
+    };
 }
 
 /*
@@ -128,9 +128,7 @@ export class RichTextEditor extends BaseView {
                             this.options.parserFeatures
                         ),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
-                        CodeBlockHighlightPlugin(
-                            this.options.highlighting
-                        ),
+                        CodeBlockHighlightPlugin(this.options.highlighting),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),

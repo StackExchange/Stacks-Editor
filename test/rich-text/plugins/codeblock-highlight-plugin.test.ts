@@ -1,15 +1,18 @@
-import {RichTextEditor, RichTextOptions} from "../../../src/rich-text/editor";
-import {externalPluginProvider} from "../../test-helpers";
+import { RichTextEditor, RichTextOptions } from "../../../src/rich-text/editor";
+import { externalPluginProvider } from "../../test-helpers";
 
-function richView(markdownInput: string, opts?: RichTextOptions["highlighting"]) {
+function richView(
+    markdownInput: string,
+    opts?: RichTextOptions["highlighting"]
+) {
     return new RichTextEditor(
         document.createElement("div"),
         markdownInput,
         externalPluginProvider(),
         {
             highlighting: {
-                ...opts
-            }
+                ...opts,
+            },
         }
     );
 }
@@ -34,7 +37,7 @@ describe("CodeBlockHighlightPlugin", () => {
 
     it("should use override language for highlighting if non provided", () => {
         const view = richView("```\nconsole.log('test');\n```", {
-            overrideLanguage: "js"
+            overrideLanguage: "js",
         });
 
         //Assert that the code block has been parsed as javascript despite no lanugage given
@@ -59,7 +62,7 @@ describe("CodeBlockHighlightPlugin", () => {
         //  This is to simulate an external block type without needing to define one from scratch
         const view = richView("console.log('test');", {
             overrideLanguage: "js",
-            highlightedNodeTypes: ["paragraph"]
+            highlightedNodeTypes: ["paragraph"],
         });
 
         const variable = view.dom.querySelectorAll("p > span.hljs-variable");
@@ -71,7 +74,7 @@ describe("CodeBlockHighlightPlugin", () => {
         const string = view.dom.querySelectorAll("p > span.hljs-string");
         expect(string).toHaveLength(1);
         expect(string[0].textContent).toBe("'test'");
-    })
+    });
 
     it("should not highlight other block types by default", () => {
         //This is the functional opposite to the above test that registers
@@ -79,11 +82,11 @@ describe("CodeBlockHighlightPlugin", () => {
         // It should not highlight.
         const view = richView("console.log('test');", {
             overrideLanguage: "js",
-            highlightedNodeTypes: []
+            highlightedNodeTypes: [],
         });
 
         const paragraph = view.dom.querySelectorAll("p");
         expect(paragraph).toHaveLength(1);
-        expect(paragraph[0].textContent).toBe("console.log('test');")
-    })
+        expect(paragraph[0].textContent).toBe("console.log('test');");
+    });
 });
