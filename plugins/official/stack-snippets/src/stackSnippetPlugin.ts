@@ -12,7 +12,6 @@ import { StackSnippetView } from "./snippet-view";
 import { StackSnippetOptions } from "./common";
 import { stackSnippetPasteHandler } from "./paste-handler";
 import { makeMenuButton } from "../../../../src/shared/menu";
-import { _t } from "../../../../src/shared/localization";
 import { getShortcut } from "../../../../src/shared/utils";
 import { openSnippetModal } from "./commands";
 

@@ -114,7 +114,7 @@ export function CodeBlockHighlightPlugin(
         const detectedLanguage = block.attrs.language as string;
         const extracted =
             detectedLanguage ||
-            getBlockLanguage(block, options?.overrideLanguage);
+            getBlockLanguage(block, options?.overrideLanguage || null);
         return extracted;
     };
 
