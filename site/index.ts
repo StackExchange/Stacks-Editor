@@ -17,12 +17,10 @@ import {
     sillyPlugin,
     japaneseSEPlugin,
 } from "../plugins/sample";
-import { stackSnippetPlugin } from "../plugins/official"
+import { stackSnippetPlugin } from "../plugins/official";
 import "./site.css";
-import {
-    StackSnippetOptions
-} from "../plugins/official/stack-snippets/src/common";
-import {error, log} from "../src/shared/logger";
+import { StackSnippetOptions } from "../plugins/official/stack-snippets/src/common";
+import { error, log } from "../src/shared/logger";
 
 function domReady(callback: (e: Event) => void) {
     if (document.readyState === "loading") {
@@ -274,9 +272,7 @@ domReady(() => {
     });
 
     const defaultEditor = getDefaultEditor();
-    let plugins: EditorPlugin[] = [
-        stackSnippetPlugin(stackSnippetOpts)
-    ];
+    let plugins: EditorPlugin[] = [stackSnippetPlugin(stackSnippetOpts)];
     if (enableSamplePlugin) {
         plugins = [
             ...plugins,
