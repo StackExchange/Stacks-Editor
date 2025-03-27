@@ -236,6 +236,59 @@ describe("image upload plugin", () => {
             expect(validationMessage.classList).not.toContain("d-none");
         });
 
+        it("should allow file upload within the size limit", async () => {
+            const sizeLimitMib = 2;
+            setupTestVariables({
+                sizeLimitMib: sizeLimitMib,
+            });
+
+            showImageUploader(view.editorView);
+
+            const fileWithinLimit = mockFile("valid image", "image/png");
+            Object.defineProperty(fileWithinLimit, "size", {
+                value: sizeLimitMib * 1024 * 1024 - 1,
+            }); // Just below the limit
+
+            await expect(
+                uploader.showImagePreview(fileWithinLimit)
+            ).resolves.toBeUndefined();
+
+            const previewElement = findPreviewElement(uploader);
+            expect(previewElement.classList).not.toContain("d-none");
+            expect(findAddButton(uploader).disabled).toBe(false);
+            expect(findValidationMessage(uploader).classList).toContain(
+                "d-none"
+            );
+        });
+
+        it("should reject file upload exceeding the size limit", async () => {
+            const sizeLimitMib = 4;
+            setupTestVariables({
+                sizeLimitMib: sizeLimitMib,
+            });
+
+            showImageUploader(view.editorView);
+
+            const fileExceedingLimit = mockFile("large image", "image/png");
+            Object.defineProperty(fileExceedingLimit, "size", {
+                value: sizeLimitMib * 1024 * 1024 + 1,
+            }); // Just above the limit
+
+            await expect(
+                uploader.showImagePreview(fileExceedingLimit)
+            ).rejects.toBe("file too large");
+
+            const previewElement = findPreviewElement(uploader);
+            expect(previewElement.classList).toContain("d-none");
+            expect(findAddButton(uploader).disabled).toBe(true);
+
+            const validationMessage = findValidationMessage(uploader);
+            expect(validationMessage.textContent).toBe(
+                `Your image is too large to upload (over ${sizeLimitMib} MiB)`
+            );
+            expect(validationMessage.classList).not.toContain("d-none");
+        });
+
         it("should hide error when hiding uploader", async () => {
             showImageUploader(view.editorView);
 
