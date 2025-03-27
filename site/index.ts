@@ -15,7 +15,6 @@ import { markdownLogging } from "../plugins/devx";
 import {
     codeDetectionPlugin,
     sillyPlugin,
-    mermaidPlugin,
     japaneseSEPlugin,
 } from "../plugins/sample";
 import "./site.css";
@@ -237,7 +236,6 @@ domReady(() => {
             ...plugins,
             codeDetectionPlugin,
             japaneseSEPlugin,
-            mermaidPlugin,
             sillyPlugin,
         ];
     }

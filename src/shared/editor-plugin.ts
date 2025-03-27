@@ -17,16 +17,6 @@ interface PluginSchemaSpec extends SchemaSpec {
 }
 
 /**
- * Describes the callback for when a codeblock processor is initialized
- * @param content The plain text content of the codeblock
- * @param container The element that the codeblock is being rendered into
- * @returns True if the processor handled the codeblock, false otherwise
- */
-type AddCodeBlockProcessorCallback = (
-    content: string,
-    container: Element
-) => boolean;
-/**
  * Describes the callback to extend a schema
  * @param schema The schema to extend
  * @returns The finalized, extended schema
@@ -107,16 +97,6 @@ export interface EditorPluginSpec {
     // TODO warn devs that they need to (at minimum) add a serializer as well?
     /** Callback for extending the rich-text editor's schema */
     extendSchema?: AlterSchemaCallback;
-
-    /** Processors to add for extending the rich-text display of specific codeblock languages */
-    codeBlockProcessors?: {
-        /**
-         * The language this processor applies to.
-         * A value of `*` applies to all languages when a more specific processor is not found
-         */
-        lang: string;
-        callback: AddCodeBlockProcessorCallback;
-    }[];
 }
 
 /**
@@ -132,12 +112,6 @@ export type EditorPlugin<TOptions = unknown> = (
  * @internal
  */
 export interface IExternalPluginProvider {
-    // TODO DEEP READONLY
-    /** All aggregated codeblockProcessors */
-    readonly codeblockProcessors: {
-        [key: string]: AddCodeBlockProcessorCallback[];
-    };
-
     // TODO DEEP READONLY
     /** All aggregated plugins */
     readonly plugins: {
@@ -180,9 +154,6 @@ export interface IExternalPluginProvider {
  * @internal
  */
 export class ExternalPluginProvider implements IExternalPluginProvider {
-    private _codeblockProcessors: IExternalPluginProvider["codeblockProcessors"] =
-        {};
-
     private _plugins: IExternalPluginProvider["plugins"] = {
         richText: [],
         commonmark: [],
@@ -197,11 +168,6 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
     };
 
     private _nodeViews: IExternalPluginProvider["nodeViews"] = {};
-
-    /** {@inheritDoc IExternalPluginProvider.codeblockProcessors} */
-    get codeblockProcessors() {
-        return Object.assign({}, this._codeblockProcessors);
-    }
 
     /** {@inheritDoc IExternalPluginProvider.plugins} */
     get plugins() {
@@ -291,10 +257,6 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
 
     /** Applies the config of a single plugin to this provider */
     private applyConfig(config: EditorPluginSpec) {
-        config.codeBlockProcessors?.forEach(({ lang, callback }) => {
-            this.addCodeBlockProcessor(lang, callback);
-        });
-
         config.commonmark?.plugins?.forEach((plugin) => {
             this._plugins.commonmark.push(plugin);
         });
@@ -346,17 +308,5 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         if (callback) {
             this.markdownItCallbacks.push(callback);
         }
-    }
-
-    /** Applies the codeblockProcessors of a config to this provider */
-    private addCodeBlockProcessor(
-        lang: string,
-        callback: AddCodeBlockProcessorCallback
-    ): void {
-        if (!(lang in this._codeblockProcessors)) {
-            this._codeblockProcessors[lang] = [];
-        }
-
-        this._codeblockProcessors[lang].push(callback);
     }
 }
