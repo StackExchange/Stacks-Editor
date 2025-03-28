@@ -93,7 +93,7 @@ function getSpecifiedBlockLanguage(block: ProsemirrorNode): string {
     // commonmark spec suggests that the "first word" in a fence's info string is the language
     // https://spec.commonmark.org/0.29/#info-string
     // https://spec.commonmark.org/0.29/#example-112
-    const rawInfoString = (block.attrs.params as string) || "";
+    const rawInfoString = (block.attrs.params as string) || (block.attrs.language as string) || "";
     const rawLanguage = rawInfoString.split(/\s/)[0].toLowerCase() || null;
 
     // attempt to dealias the language before sending out to the highlighter
@@ -123,7 +123,7 @@ export function getBlockLanguage(block: ProsemirrorNode): {
 /**
  * Plugin that highlights all code within all code_blocks in the parent
  */
-export function CodeBlockHighlightPlugin(): Plugin {
+export function CodeBlockHighlightPlugin(options: RichTextOptions["highlighting"]): Plugin {
     const extractor = (block: ProsemirrorNode) =>
         getBlockLanguage(block).Language;
 
