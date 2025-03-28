@@ -107,10 +107,12 @@ export function getBlockLanguage(
  */
 export function CodeBlockHighlightPlugin(): Plugin {
     const extractor = (block: ProsemirrorNode) => {
-        const detectedLanguage = block.attrs.language as string;
-        return (
-            detectedLanguage || getBlockLanguage(block)
-        );
+        // if a language has been specified with three backticks, use that
+        const specifiedLanguage = getBlockLanguage(block);
+        if (specifiedLanguage) return specifiedLanguage;
+
+        // otherwise use the cached autodetected language
+        return block.attrs.autodetectedLanguage as string;
     };
 
     const setter = (
@@ -121,7 +123,7 @@ export function CodeBlockHighlightPlugin(): Plugin {
     ): Transaction => {
         const attrs = { ...node.attrs };
 
-        attrs["language"] = language;
+        attrs["autodetectedLanguage"] = language;
 
         return tr.setNodeMarkup(pos, undefined, attrs);
     };
