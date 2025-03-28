@@ -1,7 +1,6 @@
 import { RichTextEditor, RichTextOptions } from "../../../src/rich-text/editor";
 import { externalPluginProvider } from "../../test-helpers";
 import { EditorPlugin } from "../../../src";
-import { Node as ProseMirrorNode } from "prosemirror-model";
 
 function richView(
     opts?: RichTextOptions["highlighting"],
