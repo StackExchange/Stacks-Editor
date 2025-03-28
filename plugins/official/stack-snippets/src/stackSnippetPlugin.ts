@@ -1,5 +1,5 @@
-import type { EditorPlugin } from "../../../../src";
-import { makeMenuButton, Utils } from "../../../../src";
+import { EditorPlugin, getShortcut } from "../../../../src";
+import { makeMenuButton } from "../../../../src";
 import {
     stackSnippetMarkdownParser,
     stackSnippetMarkdownSerializer,
@@ -68,7 +68,7 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
                             display: makeMenuButton(
                                 "StackSnippets",
                                 {
-                                    title: `Stack Snippet (${Utils.getShortcut("Mod-9")})`,
+                                    title: `Stack Snippet (${getShortcut("Mod-9")})`,
                                     description: "Runnable code block",
                                 },
                                 "stack-snippet-open-btn"
