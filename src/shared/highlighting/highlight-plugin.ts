@@ -85,36 +85,46 @@ function dealiasLanguage(rawLanguage: string): Language {
 }
 
 /**
- * Gets the language string from a code_block node
+ * Gets the language string from a code_block node, if one was specified
  * @param block The block to get the language string from
  */
-export function getBlockLanguage(
-    block: ProsemirrorNode,
-    fallback = "none"
-): string {
+function getSpecifiedBlockLanguage(block: ProsemirrorNode): string {
     // commonmark spec suggests that the "first word" in a fence's info string is the language
     // https://spec.commonmark.org/0.29/#info-string
     // https://spec.commonmark.org/0.29/#example-112
     const rawInfoString = (block.attrs.params as string) || "";
-    const rawLanguage =
-        rawInfoString.split(/\s/)[0].toLowerCase() || fallback || null;
+    const rawLanguage = rawInfoString.split(/\s/)[0].toLowerCase() || null;
 
     // attempt to dealias the language before sending out to the highlighter
     return dealiasLanguage(rawLanguage);
 }
 
 /**
+ * Gets the language string from a code_block node, returning the auto-detected language if one wasn't specified
+ * @param block The block to get the language string from
+ */
+export function getBlockLanguage(block: ProsemirrorNode): {
+    Language: string;
+    IsAutoDetected: boolean;
+} {
+    // if a language has been specified with three backticks, use that
+    const specifiedLanguage = getSpecifiedBlockLanguage(block);
+    if (specifiedLanguage)
+        return { Language: specifiedLanguage, IsAutoDetected: false };
+
+    // otherwise use the cached autodetected language
+    return {
+        Language: block.attrs.autodetectedLanguage as string,
+        IsAutoDetected: true,
+    };
+}
+
+/**
  * Plugin that highlights all code within all code_blocks in the parent
  */
-export function CodeBlockHighlightPlugin(
-    defaultFallbackLanguage: string
-): Plugin {
-    const extractor = (block: ProsemirrorNode) => {
-        const detectedLanguage = block.attrs.language as string;
-        return (
-            detectedLanguage || getBlockLanguage(block, defaultFallbackLanguage)
-        );
-    };
+export function CodeBlockHighlightPlugin(): Plugin {
+    const extractor = (block: ProsemirrorNode) =>
+        getBlockLanguage(block).Language;
 
     const setter = (
         tr: Transaction,
@@ -124,7 +134,7 @@ export function CodeBlockHighlightPlugin(
     ): Transaction => {
         const attrs = { ...node.attrs };
 
-        attrs["language"] = language;
+        attrs["autodetectedLanguage"] = language;
 
         return tr.setNodeMarkup(pos, undefined, attrs);
     };

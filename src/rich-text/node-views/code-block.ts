@@ -11,7 +11,7 @@ export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
-    private language: string = null;
+    private currentLanguageDisplayName: string = null;
 
     constructor(node: ProsemirrorNode) {
         this.dom = document.createElement("div");
@@ -27,8 +27,14 @@ export class CodeBlockView implements NodeView {
             return false;
         }
 
-        const rawLanguage = this.getLanguageFromBlock(node);
-        this.updateCodeBlock(rawLanguage);
+        const newLanguageDisplayName = this.getLanguageDisplayName(node);
+
+        // If the language has changed, update the language indicator
+        if (newLanguageDisplayName !== this.currentLanguageDisplayName) {
+            this.currentLanguageDisplayName = newLanguageDisplayName;
+            this.dom.querySelector(".js-language-indicator").textContent =
+                newLanguageDisplayName;
+        }
 
         return true;
     }
@@ -42,24 +48,17 @@ export class CodeBlockView implements NodeView {
     }
 
     /** Gets the codeblock language from the node */
-    private getLanguageFromBlock(node: ProsemirrorNode) {
-        let autodetectedLanguage = node.attrs.language as string;
+    private getLanguageDisplayName(node: ProsemirrorNode) {
+        const language = getBlockLanguage(node);
 
-        if (autodetectedLanguage) {
-            autodetectedLanguage = _t("nodes.codeblock_lang_auto", {
-                lang: autodetectedLanguage,
-            });
+        // for a user-specified language, just return the language name
+        if (!language.IsAutoDetected) {
+            return language.Language;
         }
 
-        return autodetectedLanguage || getBlockLanguage(node);
-    }
-
-    /** Updates the edit/code view */
-    private updateCodeBlock(rawLanguage: string) {
-        if (this.language !== rawLanguage) {
-            this.dom.querySelector(".js-language-indicator").textContent =
-                rawLanguage;
-            this.language = rawLanguage;
-        }
+        // if the language was auto-detected, return it with "(auto)" appended
+        return _t("nodes.codeblock_lang_auto", {
+            lang: language.Language,
+        });
     }
 }
