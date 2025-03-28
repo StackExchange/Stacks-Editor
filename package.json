@@ -17,6 +17,14 @@
         "./plugins/sample": {
             "import": "./dist/plugins/sample/index.js",
             "types": "./dist/plugins/devx/index.d.ts"
+        },
+        "./plugins/devx": {
+            "import": "./dist/plugins/devx/index.js",
+            "types": "./dist/plugins/devx/index.d.ts"
+        },
+        "./plugins/official": {
+            "import": "./dist/plugins/official/index.js",
+            "types": "./dist/plugins/devx/index.d.ts"
         }
     },
     "files": [
@@ -98,7 +106,7 @@
     "dependencies": {
         "@lezer/highlight": "^1.2.0",
         "@lezer/markdown": "^1.2.0",
-        "@stackoverflow/stacks-icons": "^6.0.2",
+        "@stackoverflow/stacks-icons": "^6.2.0",
         "markdown-it": "^14.0.0",
         "orderedmap": "^2.1.1",
         "prosemirror-commands": "^1.5.2",

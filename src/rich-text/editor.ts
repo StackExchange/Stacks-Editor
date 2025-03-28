@@ -47,6 +47,10 @@ import { createMenuPlugin } from "../shared/menu/plugin";
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
     linkPreviewProviders?: LinkPreviewProvider[];
+    highlighting?: {
+        /** Which prosemirror nodes should have highlighting? Defaults to "code_block", which will always be highlighted */
+        highlightedNodeTypes?: string[];
+    };
 }
 
 /*
@@ -122,7 +126,7 @@ export class RichTextEditor extends BaseView {
                             this.options.parserFeatures
                         ),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
-                        CodeBlockHighlightPlugin(),
+                        CodeBlockHighlightPlugin(this.options.highlighting),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
@@ -182,6 +186,7 @@ export class RichTextEditor extends BaseView {
             parserFeatures: defaultParserFeatures,
             editorHelpLink: null,
             linkPreviewProviders: [],
+            highlighting: null,
             menuParentContainer: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,

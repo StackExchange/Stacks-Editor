@@ -2,6 +2,7 @@ import { highlightPlugin } from "prosemirror-highlightjs";
 import { Node as ProsemirrorNode } from "prosemirror-model";
 import { Plugin, Transaction } from "prosemirror-state";
 import { getHljsInstance } from "./hljs-instance";
+import { RichTextOptions } from "../../rich-text/editor";
 
 /*
  * Register the languages we're going to use here so we can strongly type our inputs
@@ -92,7 +93,10 @@ function getSpecifiedBlockLanguage(block: ProsemirrorNode): string {
     // commonmark spec suggests that the "first word" in a fence's info string is the language
     // https://spec.commonmark.org/0.29/#info-string
     // https://spec.commonmark.org/0.29/#example-112
-    const rawInfoString = (block.attrs.params as string) || "";
+    const rawInfoString =
+        (block.attrs.params as string) ||
+        (block.attrs.language as string) ||
+        "";
     const rawLanguage = rawInfoString.split(/\s/)[0].toLowerCase() || null;
 
     // attempt to dealias the language before sending out to the highlighter
@@ -122,7 +126,9 @@ export function getBlockLanguage(block: ProsemirrorNode): {
 /**
  * Plugin that highlights all code within all code_blocks in the parent
  */
-export function CodeBlockHighlightPlugin(): Plugin {
+export function CodeBlockHighlightPlugin(
+    options: RichTextOptions["highlighting"]
+): Plugin {
     const extractor = (block: ProsemirrorNode) =>
         getBlockLanguage(block).Language;
 
@@ -146,5 +152,10 @@ export function CodeBlockHighlightPlugin(): Plugin {
         return new Plugin({});
     }
 
-    return highlightPlugin(hljs, ["code_block"], extractor, setter);
+    const affectedNodes = [
+        "code_block",
+        ...(options?.highlightedNodeTypes || []),
+    ];
+
+    return highlightPlugin(hljs, affectedNodes, extractor, setter);
 }
