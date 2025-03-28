@@ -1,5 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import { NodeView } from "prosemirror-view";
+import { EditorView, NodeView } from "prosemirror-view";
 import { getBlockLanguage } from "../../shared/highlighting/highlight-plugin";
 import { _t } from "../../shared/localization";
 import { escapeHTML } from "../../shared/utils";
@@ -10,14 +10,22 @@ import { escapeHTML } from "../../shared/utils";
 export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
+    private node: ProsemirrorNode;
+    private view: EditorView;
+    private getPos: () => number;
 
     private currentLanguageDisplayName: string = null;
 
-    constructor(node: ProsemirrorNode) {
+    constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number) {
+        this.node = node;
+        this.view = view;
+        this.getPos = getPos;
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
         this.render();
         this.contentDOM = this.dom.querySelector(".content-dom");
+        const button = this.dom.querySelector("button");
+        button.addEventListener("click", this.onButtonClick.bind(this));
         this.update(node);
     }
 
@@ -26,6 +34,8 @@ export class CodeBlockView implements NodeView {
         if (node.type.name !== "code_block") {
             return false;
         }
+
+        this.node = node;
 
         const newLanguageDisplayName = this.getLanguageDisplayName(node);
 
@@ -41,7 +51,8 @@ export class CodeBlockView implements NodeView {
 
     private render() {
         this.dom.innerHTML = escapeHTML`
-        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-350 js-language-indicator" contenteditable=false></div>
+        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-350 js-language-indicator" contenteditable="false"></div>
+        <button tabindex="-1" contenteditable="false" class="ps-absolute t16 r4">js</button>
         <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
@@ -60,5 +71,15 @@ export class CodeBlockView implements NodeView {
         return _t("nodes.codeblock_lang_auto", {
             lang: language.Language,
         });
+    }
+
+    private onButtonClick(event: MouseEvent) {
+        const pos = this.getPos();
+        const newAttrs = {
+            ...this.node.attrs,
+            params: "javascript",
+        };
+        const { state, dispatch } = this.view;
+        dispatch(state.tr.setNodeMarkup(pos, undefined, newAttrs));
     }
 }
