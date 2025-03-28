@@ -10,11 +10,10 @@ import { escapeHTML } from "../../shared/utils";
 export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
+    private currentLanguageDisplayName: string = null;
     private node: ProsemirrorNode;
     private view: EditorView;
     private getPos: () => number;
-
-    private currentLanguageDisplayName: string = null;
 
     constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number) {
         this.node = node;
@@ -73,13 +72,14 @@ export class CodeBlockView implements NodeView {
         });
     }
 
-    private onButtonClick(event: MouseEvent) {
+    private onButtonClick() {
         const pos = this.getPos();
         const newAttrs = {
             ...this.node.attrs,
             params: "javascript",
         };
-        const { state, dispatch } = this.view;
-        dispatch(state.tr.setNodeMarkup(pos, undefined, newAttrs));
+        this.view.dispatch(
+            this.view.state.tr.setNodeMarkup(pos, undefined, newAttrs)
+        );
     }
 }
