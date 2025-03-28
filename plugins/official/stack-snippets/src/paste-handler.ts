@@ -4,7 +4,7 @@ import { Node as ProsemirrorNode, Schema, Slice } from "prosemirror-model";
 import {
     log,
     insertParagraphIfAtDocEnd,
-    generateRandomId,
+    Utils,
 } from "../../../../src";
 import {
     BeginMetaLine,
@@ -123,7 +123,7 @@ export const parseSnippetBlockForProsemirror = (
         //This is another entry point for snippets into RT mode, so we need to generate a random ID here.
         return snippetType.createChecked(
             {
-                id: generateRandomId(),
+                id: Utils.generateRandomId(),
                 babel: beginBlock.babel,
                 babelPresetReact: beginBlock.babelPresetReact,
                 babelPresetTS: beginBlock.babelPresetTS,
