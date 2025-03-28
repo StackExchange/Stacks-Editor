@@ -11,7 +11,7 @@ export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
-    private language: string = null;
+    private currentLanguage: string = null;
 
     constructor(node: ProsemirrorNode) {
         this.dom = document.createElement("div");
@@ -27,8 +27,12 @@ export class CodeBlockView implements NodeView {
             return false;
         }
 
-        const rawLanguage = this.getLanguageFromBlock(node);
-        this.updateCodeBlock(rawLanguage);
+        const newLanguage = this.getLanguageFromBlock(node);
+        if (newLanguage !== this.currentLanguage) {
+            this.currentLanguage = newLanguage;
+            this.dom.querySelector(".js-language-indicator").textContent =
+                newLanguage;
+        }
 
         return true;
     }
@@ -55,14 +59,5 @@ export class CodeBlockView implements NodeView {
         }
 
         return null;
-    }
-
-    /** Updates the edit/code view */
-    private updateCodeBlock(rawLanguage: string) {
-        if (this.language !== rawLanguage) {
-            this.dom.querySelector(".js-language-indicator").textContent =
-                rawLanguage;
-            this.language = rawLanguage;
-        }
     }
 }
