@@ -1,4 +1,4 @@
-import { RichTextEditor } from "../../src/rich-text/editor";
+import { RichTextEditor, RichTextOptions } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
 import { externalPluginProvider, normalize } from "../test-helpers";
 
@@ -20,12 +20,12 @@ function editorDom(editorView: RichTextEditor): string {
     return editorView.dom.innerHTML;
 }
 
-function richView(markdownInput: string) {
+function richView(markdownInput: string, options?: RichTextOptions) {
     return new RichTextEditor(
         document.createElement("div"),
         markdownInput,
         externalPluginProvider(),
-        {}
+        options || {}
     );
 }
 
