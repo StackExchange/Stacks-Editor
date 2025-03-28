@@ -11,7 +11,7 @@ export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
 
-    private currentLanguage: string = null;
+    private currentLanguageDisplayName: string = null;
 
     constructor(node: ProsemirrorNode) {
         this.dom = document.createElement("div");
@@ -27,13 +27,13 @@ export class CodeBlockView implements NodeView {
             return false;
         }
 
-        const newLanguage = this.getLanguageFromBlock(node);
+        const newLanguageDisplayName = this.getLanguageDisplayName(node);
 
         // If the language has changed, update the language indicator
-        if (newLanguage !== this.currentLanguage) {
-            this.currentLanguage = newLanguage;
+        if (newLanguageDisplayName !== this.currentLanguageDisplayName) {
+            this.currentLanguageDisplayName = newLanguageDisplayName;
             this.dom.querySelector(".js-language-indicator").textContent =
-                newLanguage;
+                newLanguageDisplayName;
         }
 
         return true;
@@ -48,18 +48,17 @@ export class CodeBlockView implements NodeView {
     }
 
     /** Gets the codeblock language from the node */
-    private getLanguageFromBlock(node: ProsemirrorNode) {
-        const specifiedLanguage = getBlockLanguage(node);
-        if (specifiedLanguage) return specifiedLanguage;
+    private getLanguageDisplayName(node: ProsemirrorNode) {
+        const language = getBlockLanguage(node);
 
-        let autodetectedLanguage = node.attrs.autodetectedLanguage as string;
-
-        if (autodetectedLanguage) {
-            return _t("nodes.codeblock_lang_auto", {
-                lang: autodetectedLanguage,
-            });
+        // for a user-specified language, just return the language name
+        if (!language.IsAutoDetected) {
+            return language.Language;
         }
 
-        return null;
+        // if the language was auto-detected, return it with "(auto)" appended
+        return _t("nodes.codeblock_lang_auto", {
+            lang: language.Language,
+        });
     }
 }
