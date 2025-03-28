@@ -43,15 +43,18 @@ export class CodeBlockView implements NodeView {
 
     /** Gets the codeblock language from the node */
     private getLanguageFromBlock(node: ProsemirrorNode) {
+        const specifiedLanguage = getBlockLanguage(node);
+        if (specifiedLanguage) return specifiedLanguage;
+
         let autodetectedLanguage = node.attrs.autodetectedLanguage as string;
 
         if (autodetectedLanguage) {
-            autodetectedLanguage = _t("nodes.codeblock_lang_auto", {
+            return _t("nodes.codeblock_lang_auto", {
                 lang: autodetectedLanguage,
             });
         }
 
-        return autodetectedLanguage || getBlockLanguage(node);
+        return null;
     }
 
     /** Updates the edit/code view */
