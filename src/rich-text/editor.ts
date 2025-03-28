@@ -47,7 +47,6 @@ import { createMenuPlugin } from "../shared/menu/plugin";
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
     linkPreviewProviders?: LinkPreviewProvider[];
-    codeblockOverrideLanguage?: string;
 }
 
 /*
@@ -123,9 +122,7 @@ export class RichTextEditor extends BaseView {
                             this.options.parserFeatures
                         ),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
-                        CodeBlockHighlightPlugin(
-                            this.options.codeblockOverrideLanguage
-                        ),
+                        CodeBlockHighlightPlugin(),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
@@ -185,7 +182,6 @@ export class RichTextEditor extends BaseView {
             parserFeatures: defaultParserFeatures,
             editorHelpLink: null,
             linkPreviewProviders: [],
-            codeblockOverrideLanguage: null,
             menuParentContainer: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,

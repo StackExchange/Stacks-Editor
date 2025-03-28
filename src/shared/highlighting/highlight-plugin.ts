@@ -106,13 +106,11 @@ export function getBlockLanguage(
 /**
  * Plugin that highlights all code within all code_blocks in the parent
  */
-export function CodeBlockHighlightPlugin(
-    defaultFallbackLanguage: string
-): Plugin {
+export function CodeBlockHighlightPlugin(): Plugin {
     const extractor = (block: ProsemirrorNode) => {
         const detectedLanguage = block.attrs.language as string;
         return (
-            detectedLanguage || getBlockLanguage(block, defaultFallbackLanguage)
+            detectedLanguage || getBlockLanguage(block, null)
         );
     };
 
