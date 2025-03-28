@@ -1,4 +1,4 @@
-import { sleepAsync } from "../../../../test/rich-text/test-helpers";
+import { RichTextHelpers } from "../../../../test";
 import { StackSnippetOptions } from "../src/common";
 import { EditorView } from "prosemirror-view";
 import { EditorState } from "prosemirror-state";
@@ -116,7 +116,7 @@ describe("StackSnippetView", () => {
 
         (<HTMLButtonElement>runCodeButton).click();
         // wait for the promise to resolve (immediately) and check that the async content was pulled in
-        await sleepAsync(0);
+        await RichTextHelpers.sleepAsync(0);
 
         const [iframe] = view.dom.querySelectorAll(".snippet-box-result");
         //Testing the HTMLIFrameElement is a nightmare, instead we're going to grab it's srcdoc and ensure that it parses back to our document

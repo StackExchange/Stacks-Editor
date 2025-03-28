@@ -1,7 +1,7 @@
 import { EditorState } from "prosemirror-state";
 import { SnippetMetadata, StackSnippetOptions } from "../src/common";
 import { openSnippetModal } from "../src/commands";
-import { createState } from "../../../../test/rich-text/test-helpers";
+import { RichTextHelpers } from "../../../../test";
 import {
     buildSnippetSchema,
     validSnippetRenderCases,
@@ -47,7 +47,7 @@ describe("commands", () => {
             renderer: () => Promise.resolve(null),
             openSnippetsModal: () => {},
         };
-        const state = createState(
+        const state = RichTextHelpers.createState(
             "Here's a paragraph -  a text block mind you",
             []
         );
@@ -60,7 +60,7 @@ describe("commands", () => {
     });
 
     it("should send openModal with blank arguments if no snippet detected", () => {
-        const state = createState(
+        const state = RichTextHelpers.createState(
             "Here's a paragraph -  a text block mind you",
             []
         );

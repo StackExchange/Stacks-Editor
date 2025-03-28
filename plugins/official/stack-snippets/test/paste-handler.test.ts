@@ -1,9 +1,4 @@
-import {
-    cleanupPasteSupport,
-    createView,
-    dispatchPasteEvent,
-    setupPasteSupport,
-} from "../../../../test/rich-text/test-helpers";
+import { RichTextHelpers } from "../../../../test/";
 import { EditorState } from "prosemirror-state";
 import { stackSnippetPasteHandler } from "../src/paste-handler";
 import {
@@ -18,8 +13,8 @@ import { Node as ProseMirrorNode } from "prosemirror-model";
 import { StackSnippetView } from "../src/snippet-view";
 
 describe("paste functionality", () => {
-    beforeAll(setupPasteSupport);
-    afterAll(cleanupPasteSupport);
+    beforeAll(RichTextHelpers.setupPasteSupport);
+    afterAll(RichTextHelpers.cleanupPasteSupport);
 
     const baseState = EditorState.create({
         schema: buildSnippetSchema(),
@@ -35,9 +30,9 @@ describe("paste functionality", () => {
                 state.schema.nodes.code_block.createChecked()
             )
         );
-        const view = createView(state);
+        const view = RichTextHelpers.createView(state);
 
-        dispatchPasteEvent(view.dom, {
+        RichTextHelpers.dispatchPasteEvent(view.dom, {
             "text/plain": validBegin + validJs + validEnd,
         });
 
@@ -70,7 +65,7 @@ describe("paste functionality", () => {
                 },
             });
 
-            dispatchPasteEvent(view.dom, {
+            RichTextHelpers.dispatchPasteEvent(view.dom, {
                 "text/plain": markdown,
             });
 

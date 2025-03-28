@@ -1,5 +1,5 @@
 import { EditorType, MenuBlock, createMenuEntries } from "../../../../src";
-import { testRichTextSchema } from "../../../../test/rich-text/test-helpers";
+import { RichTextHelpers } from "../../../../test/";
 import { buildSnippetMenuEntries } from "./stack-snippet-helpers";
 
 function getEntryByKey(blocks: MenuBlock[], key: string) {
@@ -10,7 +10,7 @@ function getEntryByKey(blocks: MenuBlock[], key: string) {
 }
 
 const coreEntries = createMenuEntries(
-    testRichTextSchema,
+    RichTextHelpers.testRichTextSchema,
     {},
     EditorType.RichText
 );
