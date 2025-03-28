@@ -1,7 +1,7 @@
 import { RichTextEditor, RichTextOptions } from "../../../src/rich-text/editor";
 import { externalPluginProvider } from "../../test-helpers";
-import {EditorPlugin} from "../../../src";
-import {Node as ProseMirrorNode} from "prosemirror-model";
+import { EditorPlugin } from "../../../src";
+import { Node as ProseMirrorNode } from "prosemirror-model";
 
 function richView(
     opts?: RichTextOptions["highlighting"],
@@ -10,9 +10,7 @@ function richView(
     return new RichTextEditor(
         document.createElement("div"),
         markdownInput || "",
-        externalPluginProvider([
-            fakeLanguageBlockPlugin
-        ]),
+        externalPluginProvider([fakeLanguageBlockPlugin]),
         {
             highlighting: {
                 ...opts,
@@ -22,7 +20,7 @@ function richView(
 }
 
 const fakeLanguageBlockPlugin: EditorPlugin = () => ({
-    extendSchema: schema => {
+    extendSchema: (schema) => {
         schema.nodes = schema.nodes.append({
             pseudocode: {
                 content: "text*",
@@ -33,7 +31,7 @@ const fakeLanguageBlockPlugin: EditorPlugin = () => ({
                 inline: false,
                 attrs: {
                     language: {
-                        default: ""
+                        default: "",
                     },
                 },
                 toDOM() {
@@ -47,10 +45,10 @@ const fakeLanguageBlockPlugin: EditorPlugin = () => ({
                         ["code", 0],
                     ];
                 },
-            }
+            },
         });
         return schema;
-    }
+    },
 });
 
 describe("CodeBlockHighlightPlugin", () => {
@@ -76,10 +74,15 @@ describe("CodeBlockHighlightPlugin", () => {
             highlightedNodeTypes: ["pseudocode"],
         });
         const state = view.editorView.state;
-        const content =  state.schema.text("console.log('test');");
-        const psudocodeNode = state.schema.nodes.pseudocode.createChecked({ language: "js" }, content);
+        const content = state.schema.text("console.log('test');");
+        const psudocodeNode = state.schema.nodes.pseudocode.createChecked(
+            { language: "js" },
+            content
+        );
 
-        view.editorView.dispatch(state.tr.replaceWith(0, view.document.nodeSize - 2, psudocodeNode));
+        view.editorView.dispatch(
+            state.tr.replaceWith(0, view.document.nodeSize - 2, psudocodeNode)
+        );
 
         const variable = view.dom.querySelectorAll("code > span.hljs-variable");
         expect(variable).toHaveLength(1);
@@ -97,10 +100,15 @@ describe("CodeBlockHighlightPlugin", () => {
             highlightedNodeTypes: [],
         });
         const state = view.editorView.state;
-        const content =  state.schema.text("console.log('test');");
-        const psudocodeNode = state.schema.nodes.pseudocode.createChecked({ language: "js" }, content);
+        const content = state.schema.text("console.log('test');");
+        const psudocodeNode = state.schema.nodes.pseudocode.createChecked(
+            { language: "js" },
+            content
+        );
 
-        view.editorView.dispatch(state.tr.replaceWith(0, view.document.nodeSize - 2, psudocodeNode));
+        view.editorView.dispatch(
+            state.tr.replaceWith(0, view.document.nodeSize - 2, psudocodeNode)
+        );
 
         const code = view.dom.querySelectorAll("code");
         expect(code).toHaveLength(1);
