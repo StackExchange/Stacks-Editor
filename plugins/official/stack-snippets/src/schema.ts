@@ -1,6 +1,6 @@
 import MarkdownIt, { Token } from "markdown-it";
 import { MarkdownParser } from "prosemirror-markdown";
-import { MarkdownSerializerNodes } from "../../../../src/shared/markdown-serializer";
+import { MarkdownSerializerNodes, Utils } from "../../../../src";
 import {
     assertAttrValue,
     getSnippetMetadata,
@@ -10,7 +10,6 @@ import {
     validSnippetRegex,
 } from "./common";
 import { Node as ProseMirrorNode, NodeSpec } from "prosemirror-model";
-import { generateRandomId } from "../../../../src/shared/utils";
 
 export const stackSnippetMarkdownParser: MarkdownParser["tokens"] = {
     stack_snippet: {
@@ -123,7 +122,7 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
 
     const openToken = state.push("stack_snippet_open", "code", 1);
     // This value is not serialized, and so is different on every new session of Rich Text (i.e. every mode switch)
-    openToken.attrSet("id", generateRandomId());
+    openToken.attrSet("id", Utils.generateRandomId());
     openToken.attrSet("hide", begin.hide);
     openToken.attrSet("console", begin.console);
     openToken.attrSet("babel", begin.babel);

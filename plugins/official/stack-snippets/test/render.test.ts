@@ -3,7 +3,7 @@ import {
     snippetExternalProvider,
     validSnippetRenderCases,
 } from "./stack-snippet-helpers";
-import { RichTextEditor } from "../../../../src/rich-text/editor";
+import { RichTextEditor } from "../../../../src";
 import { StackSnippetOptions } from "../src/common";
 
 describe("stack snippets", () => {

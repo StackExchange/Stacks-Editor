@@ -1,7 +1,7 @@
 import { Plugin, NodeSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node as ProsemirrorNode, Schema, Slice } from "prosemirror-model";
-import { log } from "../../../../src/shared/logger";
+import { log, insertParagraphIfAtDocEnd, Utils } from "../../../../src";
 import {
     BeginMetaLine,
     EndMetaLine,
@@ -9,8 +9,6 @@ import {
     mapMetaLine,
     validSnippetRegex,
 } from "./common";
-import { generateRandomId } from "../../../../src/shared/utils";
-import { insertParagraphIfAtDocEnd } from "../../../../src/rich-text/commands/helpers";
 
 export const parseSnippetBlockForProsemirror = (
     schema: Schema,
@@ -121,7 +119,7 @@ export const parseSnippetBlockForProsemirror = (
         //This is another entry point for snippets into RT mode, so we need to generate a random ID here.
         return snippetType.createChecked(
             {
-                id: generateRandomId(),
+                id: Utils.generateRandomId(),
                 babel: beginBlock.babel,
                 babelPresetReact: beginBlock.babelPresetReact,
                 babelPresetTS: beginBlock.babelPresetTS,

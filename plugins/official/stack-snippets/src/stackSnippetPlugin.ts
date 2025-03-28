@@ -1,5 +1,5 @@
-/** This is an effort to turn the existing structure back into an external plugin while keeping the same functionality*/
 import type { EditorPlugin } from "../../../../src";
+import { makeMenuButton, Utils } from "../../../../src";
 import {
     stackSnippetMarkdownParser,
     stackSnippetMarkdownSerializer,
@@ -11,8 +11,6 @@ import { EditorView } from "prosemirror-view";
 import { StackSnippetView } from "./snippet-view";
 import { StackSnippetOptions } from "./common";
 import { stackSnippetPasteHandler } from "./paste-handler";
-import { makeMenuButton } from "../../../../src/shared/menu";
-import { getShortcut } from "../../../../src/shared/utils";
 import { openSnippetModal } from "./commands";
 
 /**
@@ -70,7 +68,7 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
                             display: makeMenuButton(
                                 "StackSnippets",
                                 {
-                                    title: `Stack Snippet (${getShortcut("Mod-9")})`,
+                                    title: `Stack Snippet (${Utils.getShortcut("Mod-9")})`,
                                     description: "Runnable code block",
                                 },
                                 "stack-snippet-open-btn"

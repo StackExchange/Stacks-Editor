@@ -1,9 +1,11 @@
 import { stackSnippetPlugin } from "../src/stackSnippetPlugin";
-import { ExternalPluginProvider } from "../../../../src/shared/editor-plugin";
+import {
+    MenuBlock,
+    ExternalPluginProvider,
+    richTextSchemaSpec,
+} from "../../../../src";
 import { StackSnippetOptions } from "../src/common";
-import { richTextSchemaSpec } from "../../../../src/rich-text/schema";
 import { Schema } from "prosemirror-model";
-import { MenuBlock } from "../../../../src/shared/menu";
 
 export const snippetExternalProvider = (opts?: StackSnippetOptions) =>
     new ExternalPluginProvider([stackSnippetPlugin(opts)], {});

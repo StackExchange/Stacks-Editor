@@ -1,5 +1,5 @@
 import { Node as ProsemirrorNode } from "prosemirror-model";
-import { generateRandomId } from "../../../../src/shared/utils";
+import { Utils } from "../../../../src";
 
 export interface StackSnippetOptions {
     /** The async function to render the preview */
@@ -59,7 +59,7 @@ export const getSnippetMetadata = (
     const id =
         node.attrs["id"] && typeof node.attrs["id"] == "string"
             ? node.attrs["id"]
-            : generateRandomId();
+            : Utils.generateRandomId();
     const hide = assertAttrValue(node, "hide");
     const consoleAttr = assertAttrValue(node, "console");
     const babel = assertAttrValue(node, "babel");
