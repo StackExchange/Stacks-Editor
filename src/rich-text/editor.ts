@@ -48,8 +48,6 @@ export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
     linkPreviewProviders?: LinkPreviewProvider[];
     highlighting?: {
-        /** If no language is specified or detected, which language is used for highlighting? Defaults to "none" */
-        overrideLanguage?: string;
         /** Which prosemirror nodes should have highlighting? Defaults to "code_block", which will always be highlighted */
         highlightedNodeTypes?: string[];
     };

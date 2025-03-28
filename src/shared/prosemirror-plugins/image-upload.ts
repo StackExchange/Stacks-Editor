@@ -63,6 +63,10 @@ export interface ImageUploadOptions {
      * file types.
      */
     acceptedFileTypes?: string[];
+    /**
+     * The maximum file size in MiB that the image uploader will accept
+     */
+    sizeLimitMib?: number;
 }
 
 /**
@@ -91,6 +95,7 @@ export async function defaultImageUploadHandler(file: File): Promise<string> {
 }
 
 const defaultAcceptedFileTypes = ["image/jpeg", "image/png", "image/gif"];
+const defaultSizeLimitMib = 2;
 
 enum ValidationResult {
     Ok,
@@ -191,13 +196,15 @@ export class ImageUploader extends PluginInterfaceView<
         const acceptedFileTypesString = acceptedFileTypes.length
             ? acceptedFileTypes.join(", ").replace(/image\//g, "")
             : "";
+        const maxFileSize =
+            this.uploadOptions.sizeLimitMib ?? defaultSizeLimitMib;
 
         if (acceptedFileTypesString) {
             const breakEl = document.createElement("br");
             ctaContainer.appendChild(breakEl);
         }
         ctaContainer.appendChild(
-            this.getCaptionElement(acceptedFileTypesString)
+            this.getCaptionElement(acceptedFileTypesString, maxFileSize)
         );
 
         // add in the uploadField right after the first child element
@@ -311,11 +318,11 @@ export class ImageUploader extends PluginInterfaceView<
         event.stopPropagation();
     }
 
-    getCaptionElement(text: string): HTMLElement {
+    getCaptionElement(text: string, maxFileSizeMib: number): HTMLElement {
         const uploadCaptionEl = document.createElement("span");
         uploadCaptionEl.className = "fc-light fs-caption";
 
-        let captionText = "(Max size 2 MiB)";
+        let captionText = `(Max size ${maxFileSizeMib} MiB)`;
         if (text) {
             captionText = `Supported file types: ${text} ${captionText}`;
         }
@@ -351,7 +358,10 @@ export class ImageUploader extends PluginInterfaceView<
     validateImage(image: File): ValidationResult {
         const validTypes =
             this.uploadOptions.acceptedFileTypes ?? defaultAcceptedFileTypes;
-        const sizeLimit = 0x200000; // 2 MiB
+        const sizeLimit =
+            (this.uploadOptions.sizeLimitMib ?? defaultSizeLimitMib) *
+            1024 *
+            1024;
 
         if (validTypes.indexOf(image.type) === -1) {
             return ValidationResult.InvalidFileType;
@@ -418,7 +428,12 @@ export class ImageUploader extends PluginInterfaceView<
         switch (validationResult) {
             case ValidationResult.FileTooLarge:
                 this.showValidationError(
-                    _t("image_upload.upload_error_file_too_big")
+                    _t("image_upload.upload_error_file_too_big", {
+                        sizeLimitMib: (
+                            this.uploadOptions.sizeLimitMib ??
+                            defaultSizeLimitMib
+                        ).toString(),
+                    })
                 );
                 reject("file too large");
                 return;
