@@ -88,15 +88,12 @@ function dealiasLanguage(rawLanguage: string): Language {
  * Gets the language string from a code_block node
  * @param block The block to get the language string from
  */
-export function getBlockLanguage(
-    block: ProsemirrorNode
-): string {
+export function getBlockLanguage(block: ProsemirrorNode): string {
     // commonmark spec suggests that the "first word" in a fence's info string is the language
     // https://spec.commonmark.org/0.29/#info-string
     // https://spec.commonmark.org/0.29/#example-112
     const rawInfoString = (block.attrs.params as string) || "";
-    const rawLanguage =
-        rawInfoString.split(/\s/)[0].toLowerCase() || null;
+    const rawLanguage = rawInfoString.split(/\s/)[0].toLowerCase() || null;
 
     // attempt to dealias the language before sending out to the highlighter
     return dealiasLanguage(rawLanguage);

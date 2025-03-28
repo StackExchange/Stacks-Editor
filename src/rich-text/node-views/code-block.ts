@@ -28,6 +28,8 @@ export class CodeBlockView implements NodeView {
         }
 
         const newLanguage = this.getLanguageFromBlock(node);
+
+        // If the language has changed, update the language indicator
         if (newLanguage !== this.currentLanguage) {
             this.currentLanguage = newLanguage;
             this.dom.querySelector(".js-language-indicator").textContent =
