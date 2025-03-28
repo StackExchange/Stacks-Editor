@@ -50,8 +50,10 @@ export class CodeBlockView implements NodeView {
 
     private render() {
         this.dom.innerHTML = escapeHTML`
-        <div class="ps-absolute t2 r4 fs-fine pe-none us-none fc-black-350 js-language-indicator" contenteditable="false"></div>
-        <button contenteditable="false" class="ps-absolute t16 r4">js</button>
+        <button class="ps-absolute t2 r4 fs-fine fc-black-350 c-pointer" style="border: none; background: none" contenteditable="false">
+            <span class="js-language-indicator"></span>
+            <span class="svg-icon-bg iconArrowDownSm"></span>
+        </button>
         <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
