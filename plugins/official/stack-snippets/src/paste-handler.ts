@@ -1,11 +1,7 @@
 import { Plugin, NodeSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { Node as ProsemirrorNode, Schema, Slice } from "prosemirror-model";
-import {
-    log,
-    insertParagraphIfAtDocEnd,
-    Utils,
-} from "../../../../src";
+import { log, insertParagraphIfAtDocEnd, Utils } from "../../../../src";
 import {
     BeginMetaLine,
     EndMetaLine,

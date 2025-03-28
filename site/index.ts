@@ -245,6 +245,9 @@ domReady(() => {
     const enableSamplePlugin = place.classList.contains("js-plugins-enabled");
     const enableMDPreview = place.classList.contains("js-md-preview-enabled");
     const enableDevxPlugin = place.classList.contains("js-dev-plugins-enabled");
+    const enableOfficialPlugin = place.classList.contains(
+        "js-official-plugins-enabled"
+    );
 
     const imageUploadOptions: ImageUploadOptions = {
         handler: ImageUploadHandler,
@@ -272,7 +275,10 @@ domReady(() => {
     });
 
     const defaultEditor = getDefaultEditor();
-    let plugins: EditorPlugin[] = [stackSnippetPlugin(stackSnippetOpts)];
+    let plugins: EditorPlugin[] = [];
+    if (enableOfficialPlugin) {
+        plugins = [...plugins, stackSnippetPlugin(stackSnippetOpts)];
+    }
     if (enableSamplePlugin) {
         plugins = [
             ...plugins,
