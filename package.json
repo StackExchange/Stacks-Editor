@@ -41,7 +41,7 @@
         "test": "npm run test:unit && npm run test:e2e",
         "test:unit": "jest --config config/jest-unit.config.js",
         "test:e2e": "npx playwright test --config config/playwright.config.ts",
-        "release": "standard-version",
+        "release": "npx @changesets/cli",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
         "prepare": "husky install"
     },
@@ -93,7 +93,6 @@
         "postcss-loader": "^8.1.1",
         "prettier": "^3.2.5",
         "prosemirror-test-builder": "^1.1.1",
-        "standard-version": "^9.5.0",
         "ts-jest": "^29.1.2",
         "ts-loader": "^9.5.1",
         "typescript": "^5.4.3",
