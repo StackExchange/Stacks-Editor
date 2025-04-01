@@ -85,9 +85,9 @@ jobs:
               run: npm run release
             - name: Push new version
               run: |
-                git config --global user.email "stackbot@stackoverflow.com"
-                git config --global user.name "stackbot"
-                git push --follow-tags
+                  git config --global user.email "stackbot@stackoverflow.com"
+                  git config --global user.name "stackbot"
+                  git push --follow-tags
             - name: Build and push package to npm
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_API_KEY }}
