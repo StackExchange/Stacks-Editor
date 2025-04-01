@@ -17,16 +17,17 @@ jobs:
         runs-on: ubuntu-latest
         steps:
             - name: ⬇️ Checkout
-              uses: actions/checkout@v3
-                # make sure to checkout the commit that triggered the CI workflow
-                # (which is not necessarily the latest commit)
+              uses:
+                  actions/checkout@v3
+                  # make sure to checkout the commit that triggered the CI workflow
+                  # (which is not necessarily the latest commit)
               with:
                   ref: ${{ github.event.workflow_run.head_commit.id }}
 
             - name: ⎔ Setup node
               uses: actions/setup-node@v3
               with:
-                  node-version: 'lts/*'
+                  node-version: "lts/*"
 
             - name: 🏗 Install and Build
               run: |
@@ -38,8 +39,8 @@ jobs:
               uses: changesets/action@v1
               with:
                   publish: npm run release
-                  title: 'chore(new-release)'
-                  commit: 'chore(new-release)'
+                  title: "chore(new-release)"
+                  commit: "chore(new-release)"
               env:
                   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
