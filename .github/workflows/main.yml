@@ -88,8 +88,13 @@ jobs:
             - name: Build and push package to npm
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.NPM_API_KEY }}
+              #Pull requests can only ever publish RC versions
               run: |
-                  npm publish --tag latest
+                  if [[ ${{ github.event_name }} == "pull_request" ]]; then
+                    npm publish --tag rc
+                  else
+                    npm publish --tag latest
+                  fi
 
 # cancel the jobs if another workflow is kicked off for the same branch
 concurrency:
