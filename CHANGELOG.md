@@ -2,6 +2,8 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.10.12 (2025-04-01)
+
 ### [0.10.11](https://github.com/StackExchange/Stacks-Editor/compare/v0.10.10...v0.10.11) (2025-03-24)
 
 
