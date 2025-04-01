@@ -83,8 +83,8 @@ jobs:
               run: npm ci
             - name: Identify bot to github
               run: |
-                git config --global user.email "stackbot@stackoverflow.com"
-                git config --global user.name "stackbot"
+                  git config --global user.email "stackbot@stackoverflow.com"
+                  git config --global user.name "stackbot"
             - name: Run release
               run: npm run release
             - name: Push new version
