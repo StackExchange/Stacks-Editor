@@ -195,12 +195,15 @@ export class LinkEditor extends PluginInterfaceView<
 
     update(view: EditorView): void {
         super.update(view);
+        const state = LINK_EDITOR_KEY.getState(view.state);
 
         if (this.isShown) {
-            const state = LINK_EDITOR_KEY.getState(view.state);
             if (state?.url) {
                 this.hrefInput.value = state.url;
-                this.validate(state.url);
+
+                if (state.url != "https://") {
+                    this.validate(state.url);
+                }
             }
 
             if (state?.text) {
@@ -608,7 +611,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     shouldShow: false,
                 };
             },
-            apply(tr, value, _, newState): LinkEditorPluginState {
+            apply(tr, value, state, newState): LinkEditorPluginState {
                 // check if force hide was set and add to value for getDecorations to use
                 const meta = this.getMeta(tr) || value;
                 if ("forceHideTooltip" in meta) {
@@ -616,10 +619,22 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                 }
 
                 // update the linkTooltip and get the decorations
-                const decorations = value.linkTooltip.getDecorations(
+                let decorations = value.linkTooltip.getDecorations(
                     value,
                     newState
                 );
+
+                //get decoration for current selection
+                const sel = state.selection;
+                let selectionDecoration = null;
+
+                if (sel && sel.from !== sel.to) {
+                    selectionDecoration = Decoration.inline(sel.from, sel.to,
+                        { class: 'bg-black-225' }
+                    );
+                    decorations = decorations.add(newState.doc, [selectionDecoration]);
+                }
+                
 
                 return {
                     ...meta,
@@ -628,7 +643,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     linkTooltip: value.linkTooltip,
                     decorations: decorations,
                 };
-            },
+        },
         },
         props: {
             decorations(state: EditorState) {
