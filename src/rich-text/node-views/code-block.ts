@@ -137,11 +137,10 @@ export class CodeBlockView implements NodeView {
     }
 
     private onLanguageInputKeyDown(event: KeyboardEvent) {
-        const target = event.target as HTMLInputElement;
         if (event.key === "Enter") {
             this.view.focus();
             event.preventDefault();
-            event.stopPropagation();
         }
+        event.stopPropagation();
     }
 }
