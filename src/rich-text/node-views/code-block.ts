@@ -73,14 +73,14 @@ export class CodeBlockView implements NodeView {
                 newLanguageDisplayName;
         }
 
-        const input = this.dom.querySelector(
-            ".js-language-input"
-        ) as HTMLInputElement;
+        const input = this.dom.querySelector(".js-language-input");
 
-        if (node.attrs.isEditingLanguage) {
-            input.style.display = "block";
-        } else {
-            input.style.display = "none";
+        if (input instanceof HTMLInputElement) {
+            if (node.attrs.isEditingLanguage) {
+                input.style.display = "block";
+            } else {
+                input.style.display = "none";
+            }
         }
 
         return true;
@@ -119,11 +119,12 @@ export class CodeBlockView implements NodeView {
             isEditingLanguage: true,
         });
 
-        const input = this.dom.querySelector(
-            ".js-language-input"
-        ) as HTMLInputElement;
-        input.style.display = "block";
-        input.focus();
+        const input = this.dom.querySelector(".js-language-input");
+
+        if (input instanceof HTMLInputElement) {
+            input.style.display = "block";
+            input.focus();
+        }
     }
 
     private onLanguageInputBlur(event: FocusEvent) {
