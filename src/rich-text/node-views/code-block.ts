@@ -52,6 +52,10 @@ export class CodeBlockView implements NodeView {
             "keydown",
             this.onLanguageInputKeyDown.bind(this)
         );
+        languageInput.addEventListener(
+            "mousedown",
+            this.onLanguageInputMouseDown.bind(this)
+        );
 
         this.update(this.node);
     }
@@ -103,7 +107,7 @@ export class CodeBlockView implements NodeView {
 
     private updateNodeAttrs(newAttrs: object) {
         const pos = this.getPos();
-        const nodeAttrs = this.view.state.doc.nodeAt(pos).attrs;
+        const nodeAttrs = this.node.attrs;
         this.view.dispatch(
             this.view.state.tr.setNodeMarkup(pos, null, {
                 ...nodeAttrs,
@@ -141,6 +145,10 @@ export class CodeBlockView implements NodeView {
         if (event.key === "Enter") {
             this.view.focus();
         }
+        event.stopPropagation();
+    }
+
+    private onLanguageInputMouseDown(event: MouseEvent) {
         event.stopPropagation();
     }
 }
