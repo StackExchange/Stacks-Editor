@@ -284,7 +284,7 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
     updateVisibility(visibility: boolean, trans: Transaction): Transaction {
         const meta = trans.getMeta(LINK_EDITOR_KEY) as LinkEditorPluginState;
         meta.visible = visibility;
-        return this.setMeta(trans, meta)
+        return this.setMeta(trans, meta);
     }
 }
 
@@ -638,12 +638,13 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                 let selectionDecoration = null;
 
                 if (meta.visible && sel && sel.from !== sel.to) {
-                    selectionDecoration = Decoration.inline(sel.from, sel.to,
-                        { class: 'bg-black-225' }
-                    );
-                    decorations = decorations.add(newState.doc, [selectionDecoration]);
+                    selectionDecoration = Decoration.inline(sel.from, sel.to, {
+                        class: "bg-black-225",
+                    });
+                    decorations = decorations.add(newState.doc, [
+                        selectionDecoration,
+                    ]);
                 }
-                
 
                 return {
                     ...meta,
@@ -652,7 +653,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     linkTooltip: value.linkTooltip,
                     decorations: decorations,
                 };
-        },
+            },
         },
         props: {
             decorations(state: EditorState) {
