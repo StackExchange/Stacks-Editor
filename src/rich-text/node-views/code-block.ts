@@ -42,6 +42,10 @@ export class CodeBlockView implements NodeView {
             "click",
             this.onLanguageSelectorClick.bind(this)
         );
+        languageSelectorButton.addEventListener(
+            "mousedown",
+            this.onLanguageSelectorMouseDown.bind(this)
+        );
 
         const languageInput = this.dom.querySelector(".js-language-input");
         languageInput.addEventListener(
@@ -130,6 +134,10 @@ export class CodeBlockView implements NodeView {
             input.style.display = "block";
             input.focus();
         }
+    }
+
+    private onLanguageSelectorMouseDown(event: MouseEvent) {
+        event.stopPropagation();
     }
 
     private onLanguageInputBlur(event: FocusEvent) {
