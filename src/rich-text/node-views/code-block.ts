@@ -34,14 +34,25 @@ export class CodeBlockView implements NodeView {
         <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
-        
-        const languageSelectorButton = this.dom.querySelector("button.js-language-selector");
-        languageSelectorButton.addEventListener("click", this.onLanguageSelectorClick.bind(this));
 
-        const languageInput = this.dom.querySelector(".js-language-input") as HTMLInputElement;
-        languageInput.addEventListener("blur", this.onLanguageInputBlur.bind(this));
-        languageInput.addEventListener("keydown", this.onLanguageInputKeyDown.bind(this));
-        
+        const languageSelectorButton = this.dom.querySelector(
+            "button.js-language-selector"
+        );
+        languageSelectorButton.addEventListener(
+            "click",
+            this.onLanguageSelectorClick.bind(this)
+        );
+
+        const languageInput = this.dom.querySelector(".js-language-input");
+        languageInput.addEventListener(
+            "blur",
+            this.onLanguageInputBlur.bind(this)
+        );
+        languageInput.addEventListener(
+            "keydown",
+            this.onLanguageInputKeyDown.bind(this)
+        );
+
         this.update(this.node);
     }
 
@@ -62,15 +73,15 @@ export class CodeBlockView implements NodeView {
                 newLanguageDisplayName;
         }
 
-        const input = this.dom.querySelector(".js-language-input") as HTMLInputElement;
+        const input = this.dom.querySelector(
+            ".js-language-input"
+        ) as HTMLInputElement;
 
         if (node.attrs.isEditingLanguage) {
             input.style.display = "block";
-        }
-        else {
+        } else {
             input.style.display = "none";
         }
-        
 
         return true;
     }
@@ -90,33 +101,38 @@ export class CodeBlockView implements NodeView {
         });
     }
 
-    private onLanguageSelectorClick(event: MouseEvent) {
-        event.stopPropagation();
-
+    private updateNodeAttrs(newAttrs: object) {
         const pos = this.getPos();
         const nodeAttrs = this.view.state.doc.nodeAt(pos).attrs;
         this.view.dispatch(
             this.view.state.tr.setNodeMarkup(pos, null, {
                 ...nodeAttrs,
-                isEditingLanguage: true,
+                ...newAttrs,
             })
         );
+    }
 
-        const input = this.dom.querySelector(".js-language-input") as HTMLInputElement;
+    private onLanguageSelectorClick(event: MouseEvent) {
+        event.stopPropagation();
+
+        this.updateNodeAttrs({
+            isEditingLanguage: true,
+        });
+
+        const input = this.dom.querySelector(
+            ".js-language-input"
+        ) as HTMLInputElement;
         input.style.display = "block";
         input.focus();
     }
 
     private onLanguageInputBlur(event: FocusEvent) {
         const target = event.target as HTMLInputElement;
-        const pos = this.getPos();
-        const newAttrs = {
-            ...this.node.attrs,
+
+        this.updateNodeAttrs({
             params: target.value,
-        };
-        this.view.dispatch(
-            this.view.state.tr.setNodeMarkup(pos, undefined, newAttrs)
-        );
+            isEditingLanguage: false,
+        });
     }
 
     private onLanguageInputKeyDown(event: KeyboardEvent) {
