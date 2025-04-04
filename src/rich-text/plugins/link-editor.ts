@@ -100,7 +100,8 @@ export class LinkEditor extends PluginInterfaceView<
         this.viewContainer.addEventListener("reset", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const tr = this.tryHideInterfaceTr(view.state);
+            let tr = this.tryHideInterfaceTr(view.state);
+            tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
             if (tr) {
                 view.dispatch(tr);
             }
@@ -164,6 +165,8 @@ export class LinkEditor extends PluginInterfaceView<
                 text: null,
             }) || view.state.tr;
 
+        tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
+
         // set the text first, inheriting all marks
         tr = tr.replaceSelectionWith(node, true);
 
@@ -218,8 +221,9 @@ export class LinkEditor extends PluginInterfaceView<
             this.hrefInput.focus();
         } else {
             this.resetEditor();
-            const tr = this.tryHideInterfaceTr(view.state);
+            let tr = this.tryHideInterfaceTr(view.state);
             if (tr) {
+                tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
                 view.dispatch(tr);
             }
         }
@@ -276,6 +280,11 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
 
         meta.forceHideTooltip = true;
         return this.setMeta(state.tr, meta);
+    }
+    updateVisibility(visibility: boolean, trans: Transaction): Transaction {
+        const meta = trans.getMeta(LINK_EDITOR_KEY) as LinkEditorPluginState;
+        meta.visible = visibility;
+        return this.setMeta(trans, meta)
     }
 }
 
@@ -628,7 +637,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                 const sel = state.selection;
                 let selectionDecoration = null;
 
-                if (sel && sel.from !== sel.to) {
+                if (meta.visible && sel && sel.from !== sel.to) {
                     selectionDecoration = Decoration.inline(sel.from, sel.to,
                         { class: 'bg-black-225' }
                     );
@@ -708,10 +717,12 @@ export function showLinkEditor(
     url?: string,
     text?: string
 ): void {
-    const tr = LINK_EDITOR_KEY.showInterfaceTr(view.state, {
+    let tr = LINK_EDITOR_KEY.showInterfaceTr(view.state, {
         url,
         text,
     });
+
+    tr = LINK_EDITOR_KEY.updateVisibility(true, tr);
 
     if (tr) {
         view.dispatch(tr);
@@ -723,10 +734,12 @@ export function showLinkEditor(
  * @param view The current editor view
  */
 export function hideLinkEditor(view: EditorView): void {
-    const tr = LINK_EDITOR_KEY.hideInterfaceTr(view.state, {
+    let tr = LINK_EDITOR_KEY.hideInterfaceTr(view.state, {
         url: null,
         text: null,
     });
+
+    tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
 
     if (tr) {
         view.dispatch(tr);
