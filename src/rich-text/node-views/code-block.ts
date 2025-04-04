@@ -19,13 +19,30 @@ export class CodeBlockView implements NodeView {
         this.node = node;
         this.view = view;
         this.getPos = getPos;
+        this.render();
+    }
+
+    private render() {
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
-        this.render();
+        this.dom.innerHTML = escapeHTML`
+        <button class="js-language-selector ps-absolute t2 r4 fs-fine fc-black-350 c-pointer" style="border: none; background: none" contenteditable="false">
+            <span class="js-language-indicator"></span>
+            <span class="svg-icon-bg iconArrowDownSm"></span>
+        </button>
+        <input type="text" class="ps-absolute t16 r4 js-language-input" style="display: none" contenteditable="false" />
+        <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
+
         this.contentDOM = this.dom.querySelector(".content-dom");
-        const button = this.dom.querySelector("button");
-        button.addEventListener("click", this.onButtonClick.bind(this));
-        this.update(node);
+        
+        const languageSelectorButton = this.dom.querySelector("button.js-language-selector");
+        languageSelectorButton.addEventListener("click", this.onLanguageSelectorClick.bind(this));
+
+        const languageInput = this.dom.querySelector(".js-language-input") as HTMLInputElement;
+        languageInput.addEventListener("blur", this.onLanguageInputBlur.bind(this));
+        languageInput.addEventListener("keydown", this.onLanguageInputKeyDown.bind(this));
+        
+        this.update(this.node);
     }
 
     update(node: ProsemirrorNode): boolean {
@@ -45,18 +62,17 @@ export class CodeBlockView implements NodeView {
                 newLanguageDisplayName;
         }
 
+        const input = this.dom.querySelector(".js-language-input") as HTMLInputElement;
+
+        if (node.attrs.isEditingLanguage) {
+            input.style.display = "block";
+        }
+        else {
+            input.style.display = "none";
+        }
+        
+
         return true;
-    }
-
-    private render() {
-        this.dom.innerHTML = escapeHTML`
-        <button class="ps-absolute t2 r4 fs-fine fc-black-350 c-pointer" style="border: none; background: none" contenteditable="false">
-            <span class="js-language-indicator"></span>
-            <span class="svg-icon-bg iconArrowDownSm"></span>
-        </button>
-        <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
-
-        this.contentDOM = this.dom.querySelector(".content-dom");
     }
 
     /** Gets the codeblock language from the node */
@@ -74,14 +90,41 @@ export class CodeBlockView implements NodeView {
         });
     }
 
-    private onButtonClick() {
+    private onLanguageSelectorClick(event: MouseEvent) {
+        event.stopPropagation();
+
+        const pos = this.getPos();
+        const nodeAttrs = this.view.state.doc.nodeAt(pos).attrs;
+        this.view.dispatch(
+            this.view.state.tr.setNodeMarkup(pos, null, {
+                ...nodeAttrs,
+                isEditingLanguage: true,
+            })
+        );
+
+        const input = this.dom.querySelector(".js-language-input") as HTMLInputElement;
+        input.style.display = "block";
+        input.focus();
+    }
+
+    private onLanguageInputBlur(event: FocusEvent) {
+        const target = event.target as HTMLInputElement;
         const pos = this.getPos();
         const newAttrs = {
             ...this.node.attrs,
-            params: "javascript",
+            params: target.value,
         };
         this.view.dispatch(
             this.view.state.tr.setNodeMarkup(pos, undefined, newAttrs)
         );
+    }
+
+    private onLanguageInputKeyDown(event: KeyboardEvent) {
+        const target = event.target as HTMLInputElement;
+        if (event.key === "Enter") {
+            target.blur();
+            event.preventDefault();
+            event.stopPropagation();
+        }
     }
 }
