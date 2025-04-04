@@ -122,6 +122,7 @@ export class CodeBlockView implements NodeView {
         const input = this.dom.querySelector(".js-language-input");
 
         if (input instanceof HTMLInputElement) {
+            input.value = this.currentLanguageDisplayName;
             input.style.display = "block";
             input.focus();
         }
@@ -139,7 +140,6 @@ export class CodeBlockView implements NodeView {
     private onLanguageInputKeyDown(event: KeyboardEvent) {
         if (event.key === "Enter") {
             this.view.focus();
-            event.preventDefault();
         }
         event.stopPropagation();
     }
