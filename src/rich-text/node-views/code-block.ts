@@ -171,11 +171,8 @@ export class CodeBlockView implements NodeView {
         this.updateNodeAttrs({
             params: target.value,
             isEditingLanguage: false,
+            suggestions: null,
         });
-
-        // Hide the dropdown
-        const dropdown = this.dom.querySelector(".js-language-dropdown") as HTMLUListElement;
-        dropdown.style.display = "none";
     }
 
     private onLanguageInputKeyDown(event: KeyboardEvent) {
@@ -192,9 +189,9 @@ export class CodeBlockView implements NodeView {
     private onLanguageInputTextInput(event: Event) {
         const input = event.target as HTMLInputElement;
         const query = input.value.toLowerCase();
-        const suggestions = this.availableLanguages.filter(lang =>
-            lang.toLowerCase().includes(query)
-        );
+        const suggestions = query.length > 0 ? this.availableLanguages.filter(lang =>
+            lang.toLowerCase().startsWith(query)
+        ) : [];
 
         this.updateNodeAttrs({
             suggestions: suggestions,
