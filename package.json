@@ -26,7 +26,8 @@
         "./plugins/official": {
             "import": "./dist/plugins/official/index.js",
             "types": "./dist/plugins/official/index.d.ts"
-        }
+        },
+        "./dist/styles.css": "./dist/styles.css"
     },
     "files": [
         "dist/"
