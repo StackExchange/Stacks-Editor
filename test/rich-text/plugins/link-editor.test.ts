@@ -224,7 +224,7 @@ describe("link-editor", () => {
                             "form.js-link-editor"
                         );
 
-                    expect(formValue(updatedUploadContainer, "href")).toBe("");
+                    expect(formValue(updatedUploadContainer, "href")).toBe("https://");
                     expect(formValue(updatedUploadContainer, "text")).toBe(
                         "test"
                     );
@@ -249,7 +249,7 @@ describe("link-editor", () => {
                             "form.js-link-editor"
                         );
 
-                    expect(formValue(updatedUploadContainer, "href")).toBe("");
+                    expect(formValue(updatedUploadContainer, "href")).toBe("https://");
                     expect(formValue(updatedUploadContainer, "text")).toBe("");
 
                     // set the values, then submit the form
