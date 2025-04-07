@@ -158,12 +158,11 @@ describe("link-editor", () => {
 
             // Verify the selection is styled with a decoration containing the correct class
             const editorContent = view.editorView.dom;
-            const highlightedText = editorContent.querySelector(".bg-black-225");
+            const highlightedText =
+                editorContent.querySelector(".bg-black-225");
 
             expect(highlightedText).toBeTruthy();
             expect(highlightedText.textContent).toBe("highlight this text");
-
-
         });
 
         it("should prefill fields when a link is edited via the tooltip", async () => {
@@ -254,7 +253,9 @@ describe("link-editor", () => {
                             "form.js-link-editor"
                         );
 
-                    expect(formValue(updatedUploadContainer, "href")).toBe("https://");
+                    expect(formValue(updatedUploadContainer, "href")).toBe(
+                        "https://"
+                    );
                     expect(formValue(updatedUploadContainer, "text")).toBe(
                         "test"
                     );
@@ -279,7 +280,9 @@ describe("link-editor", () => {
                             "form.js-link-editor"
                         );
 
-                    expect(formValue(updatedUploadContainer, "href")).toBe("https://");
+                    expect(formValue(updatedUploadContainer, "href")).toBe(
+                        "https://"
+                    );
                     expect(formValue(updatedUploadContainer, "text")).toBe("");
 
                     // set the values, then submit the form
@@ -415,7 +418,9 @@ describe("link-editor", () => {
                             "form.js-link-editor"
                         );
 
-                    expect(formValue(updatedUploadContainer, "href")).toBe("https://");
+                    expect(formValue(updatedUploadContainer, "href")).toBe(
+                        "https://"
+                    );
                     expect(formValue(updatedUploadContainer, "text")).toBe("");
 
                     // set the values, then submit the form
