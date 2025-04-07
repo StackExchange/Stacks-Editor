@@ -12,6 +12,7 @@
     "exports": {
         ".": {
             "import": "./dist/src/index.js",
+            "require": "./dist/app.bundle.js",
             "types": "./dist/src/index.d.ts"
         },
         "./plugins/sample": {
