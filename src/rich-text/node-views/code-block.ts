@@ -15,6 +15,16 @@ export class CodeBlockView implements NodeView {
     private view: EditorView;
     private getPos: () => number;
 
+    // Temporarily hardcoding this for now
+    private availableLanguages = [
+        "javascript",
+        "java",
+        "python",
+        "ruby",
+        "csharp",
+        "go",
+      ];
+
     constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number) {
         this.node = node;
         this.view = view;
@@ -31,6 +41,7 @@ export class CodeBlockView implements NodeView {
             <span class="svg-icon-bg iconArrowDownSm"></span>
         </button>
         <input type="text" class="ps-absolute t16 r4 js-language-input" style="display: none" contenteditable="false" />
+        <ul class="js-language-dropdown" style="display: none; position: absolute; top: 100%; right: 4px; z-index: 10; list-style: none; padding: 0; margin: 0; background: white; border: 1px solid #ccc;"></ul>
         <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
@@ -60,6 +71,10 @@ export class CodeBlockView implements NodeView {
             "mousedown",
             this.onLanguageInputMouseDown.bind(this)
         );
+        languageInput.addEventListener(
+            "input",
+            this.onLanguageInputTextInput.bind(this)
+        );
 
         this.update(this.node);
     }
@@ -88,6 +103,16 @@ export class CodeBlockView implements NodeView {
                 input.style.display = "block";
             } else {
                 input.style.display = "none";
+            }
+        }
+
+        const dropdown = this.dom.querySelector(".js-language-dropdown");
+
+        if (dropdown instanceof HTMLUListElement) {
+            if (node.attrs.suggestions && node.attrs.suggestions.length > 0) {
+                dropdown.style.display = "block";
+            } else {
+                dropdown.style.display = "none";
             }
         }
 
@@ -147,6 +172,10 @@ export class CodeBlockView implements NodeView {
             params: target.value,
             isEditingLanguage: false,
         });
+
+        // Hide the dropdown
+        const dropdown = this.dom.querySelector(".js-language-dropdown") as HTMLUListElement;
+        dropdown.style.display = "none";
     }
 
     private onLanguageInputKeyDown(event: KeyboardEvent) {
@@ -159,4 +188,58 @@ export class CodeBlockView implements NodeView {
     private onLanguageInputMouseDown(event: MouseEvent) {
         event.stopPropagation();
     }
+
+    private onLanguageInputTextInput(event: Event) {
+        const input = event.target as HTMLInputElement;
+        const query = input.value.toLowerCase();
+        const suggestions = this.availableLanguages.filter(lang =>
+            lang.toLowerCase().includes(query)
+        );
+
+        this.updateNodeAttrs({
+            suggestions: suggestions,
+        });
+    
+        this.renderDropdown(suggestions);
+    }
+    
+    private renderDropdown(suggestions: string[]) {
+        const dropdown = this.dom.querySelector(".js-language-dropdown") as HTMLUListElement;
+        dropdown.innerHTML = ""; // Clear previous suggestions
+    
+        if (suggestions.length === 0) {
+            dropdown.style.display = "none";
+            return;
+        }
+    
+        // suggestions.forEach(lang => {
+        //     const li = document.createElement("li");
+        //     li.textContent = lang;
+        //     li.style.padding = "4px 8px";
+        //     li.style.cursor = "pointer";
+    
+        //     li.addEventListener("mousedown", (event: MouseEvent) => {
+        //         // Prevent blur event from closing the dropdown too early.
+        //         event.preventDefault();
+        //     });
+    
+        //     li.addEventListener("click", () => {
+        //         const input = this.dom.querySelector(".js-language-input") as HTMLInputElement;
+        //         input.value = lang;
+        //         // Update the language immediately
+        //         this.updateNodeAttrs({
+        //             params: lang,
+        //             isEditingLanguage: false,
+        //         });
+        //         dropdown.style.display = "none";
+        //         // Optionally, return focus to the editor
+        //         this.view.focus();
+        //     });
+    
+        //     dropdown.appendChild(li);
+        // });
+    
+        dropdown.style.display = "block";
+    }
+    
 }

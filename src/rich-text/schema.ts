@@ -94,6 +94,7 @@ const nodes: {
             params: { default: "" },
             autodetectedLanguage: { default: "" },
             isEditingLanguage: { default: false },
+            suggestions: { default: null },
         },
         parseDOM: [
             {
