@@ -44,6 +44,7 @@
         "test:unit": "jest --config config/jest-unit.config.js",
         "test:e2e": "npx playwright test --config config/playwright.config.ts",
         "release": "npm run build && changeset publish",
+        "version": "changeset version && npm install --package-lock-only",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
         "prepare": "husky install"
     },
