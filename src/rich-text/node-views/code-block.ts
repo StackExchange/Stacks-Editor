@@ -106,7 +106,7 @@ export class CodeBlockView implements NodeView {
 
         if (dropdown instanceof HTMLUListElement) {
             if (node.attrs.suggestions) {
-                this.renderDropdown(node.attrs.suggestions);
+                this.renderDropdown(node.attrs.suggestions as string[]);
             } else {
                 dropdown.style.display = "none";
             }
@@ -215,9 +215,12 @@ export class CodeBlockView implements NodeView {
     }
 
     private renderDropdown(suggestions: string[]) {
-        const dropdown = this.dom.querySelector(
-            ".js-language-dropdown"
-        ) as HTMLUListElement;
+        const dropdown = this.dom.querySelector(".js-language-dropdown");
+
+        if (!(dropdown instanceof HTMLUListElement)) {
+            return;
+        }
+
         dropdown.innerHTML = ""; // Clear previous suggestions
 
         if (suggestions.length === 0) {
@@ -237,17 +240,18 @@ export class CodeBlockView implements NodeView {
             });
 
             li.addEventListener("click", () => {
-                const input = this.dom.querySelector(
-                    ".js-language-input"
-                ) as HTMLInputElement;
+                const input = this.dom.querySelector(".js-language-input");
+
+                if (!(input instanceof HTMLInputElement)) {
+                    return;
+                }
+
                 input.value = lang;
-                // Update the language immediately
                 this.updateNodeAttrs({
                     params: lang,
                     isEditingLanguage: false,
                 });
                 dropdown.style.display = "none";
-                // Optionally, return focus to the editor
                 this.view.focus();
             });
 
