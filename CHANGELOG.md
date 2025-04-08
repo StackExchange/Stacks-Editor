@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.11.1
+
+### Patch Changes
+
+- [`575c48d`](https://github.com/StackExchange/Stacks-Editor/commit/575c48d1f2e6ceea8c5345967695c0e458a4d6e6) Thanks [@giamir](https://github.com/giamir)! - add entry point for commonjs imports
+
+- [`5521429`](https://github.com/StackExchange/Stacks-Editor/commit/5521429a2382c55eb333e85d52ce21f2711ba0f5) Thanks [@giamir](https://github.com/giamir)! - fix incorrect type reference for plugins exports
+
+- [`82c202d`](https://github.com/StackExchange/Stacks-Editor/commit/82c202d75d6e01aaf06e725cfc6c6147510d96b0) Thanks [@giamir](https://github.com/giamir)! - map location of editor styles bundle to exports
+
 ## 0.11.0
 
 ### Minor Changes
