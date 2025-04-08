@@ -23,7 +23,9 @@ export class CodeBlockView implements NodeView {
         "ruby",
         "csharp",
         "go",
-      ];
+    ];
+
+    private maxSuggestions = 5;
 
     constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number) {
         this.node = node;
@@ -87,7 +89,8 @@ export class CodeBlockView implements NodeView {
 
         this.node = node;
 
-        this.dom.querySelector(".js-language-indicator").textContent = this.getLanguageDisplayName();
+        this.dom.querySelector(".js-language-indicator").textContent =
+            this.getLanguageDisplayName();
 
         const input = this.dom.querySelector(".js-language-input");
 
@@ -166,7 +169,7 @@ export class CodeBlockView implements NodeView {
             this.ignoreBlur = false;
             return;
         }
-        
+
         const target = event.target as HTMLInputElement;
 
         this.updateNodeAttrs({
@@ -199,37 +202,44 @@ export class CodeBlockView implements NodeView {
     private onLanguageInputTextInput(event: Event) {
         const input = event.target as HTMLInputElement;
         const query = input.value.toLowerCase();
-        const suggestions = query.length > 0 ? this.availableLanguages.filter(lang =>
-            lang.toLowerCase().startsWith(query)
-        ) : [];
+        const suggestions =
+            query.length > 0
+                ? this.availableLanguages
+                      .filter((lang) => lang.toLowerCase().startsWith(query))
+                      .slice(0, this.maxSuggestions)
+                : [];
 
         this.updateNodeAttrs({
             suggestions: suggestions,
         });
     }
-    
+
     private renderDropdown(suggestions: string[]) {
-        const dropdown = this.dom.querySelector(".js-language-dropdown") as HTMLUListElement;
+        const dropdown = this.dom.querySelector(
+            ".js-language-dropdown"
+        ) as HTMLUListElement;
         dropdown.innerHTML = ""; // Clear previous suggestions
-    
+
         if (suggestions.length === 0) {
             dropdown.style.display = "none";
             return;
         }
-    
+
         for (const lang of suggestions) {
             const li = document.createElement("li");
             li.textContent = lang;
             li.style.padding = "4px 8px";
             li.style.cursor = "pointer";
-    
+
             li.addEventListener("mousedown", (event: MouseEvent) => {
                 // Prevent blur event from closing the dropdown too early.
                 event.preventDefault();
             });
-    
+
             li.addEventListener("click", () => {
-                const input = this.dom.querySelector(".js-language-input") as HTMLInputElement;
+                const input = this.dom.querySelector(
+                    ".js-language-input"
+                ) as HTMLInputElement;
                 input.value = lang;
                 // Update the language immediately
                 this.updateNodeAttrs({
@@ -240,11 +250,10 @@ export class CodeBlockView implements NodeView {
                 // Optionally, return focus to the editor
                 this.view.focus();
             });
-    
+
             dropdown.appendChild(li);
         }
-    
+
         dropdown.style.display = "block";
     }
-    
 }
