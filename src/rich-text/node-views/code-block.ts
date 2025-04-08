@@ -10,7 +10,6 @@ import { escapeHTML } from "../../shared/utils";
 export class CodeBlockView implements NodeView {
     dom: HTMLElement | null;
     contentDOM?: HTMLElement | null;
-    private currentLanguageDisplayName: string = null;
     private node: ProsemirrorNode;
     private view: EditorView;
     private getPos: () => number;
@@ -87,14 +86,7 @@ export class CodeBlockView implements NodeView {
 
         this.node = node;
 
-        const newLanguageDisplayName = this.getLanguageDisplayName(node);
-
-        // If the language has changed, update the language indicator
-        if (newLanguageDisplayName !== this.currentLanguageDisplayName) {
-            this.currentLanguageDisplayName = newLanguageDisplayName;
-            this.dom.querySelector(".js-language-indicator").textContent =
-                newLanguageDisplayName;
-        }
+        this.dom.querySelector(".js-language-indicator").textContent = this.getLanguageDisplayName();
 
         const input = this.dom.querySelector(".js-language-input");
 
@@ -120,8 +112,8 @@ export class CodeBlockView implements NodeView {
     }
 
     /** Gets the codeblock language from the node */
-    private getLanguageDisplayName(node: ProsemirrorNode) {
-        const language = getBlockLanguage(node);
+    private getLanguageDisplayName() {
+        const language = getBlockLanguage(this.node);
 
         // for a user-specified language, just return the language name
         if (!language.IsAutoDetected) {
@@ -155,7 +147,7 @@ export class CodeBlockView implements NodeView {
         const input = this.dom.querySelector(".js-language-input");
 
         if (input instanceof HTMLInputElement) {
-            input.value = this.currentLanguageDisplayName;
+            input.value = getBlockLanguage(this.node).Language;
             input.style.display = "block";
             input.focus();
         }
