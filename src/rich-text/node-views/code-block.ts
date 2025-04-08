@@ -13,6 +13,7 @@ export class CodeBlockView implements NodeView {
     private node: ProsemirrorNode;
     private view: EditorView;
     private getPos: () => number;
+    private ignoreBlur: boolean = false;
 
     // Temporarily hardcoding this for now
     private availableLanguages = [
@@ -159,6 +160,13 @@ export class CodeBlockView implements NodeView {
     }
 
     private onLanguageInputBlur(event: FocusEvent) {
+        // If editing was cancelled via Escape, then skip updating.
+        if (this.ignoreBlur) {
+            // Reset the flag for future blur events.
+            this.ignoreBlur = false;
+            return;
+        }
+        
         const target = event.target as HTMLInputElement;
 
         this.updateNodeAttrs({
@@ -171,6 +179,15 @@ export class CodeBlockView implements NodeView {
     private onLanguageInputKeyDown(event: KeyboardEvent) {
         if (event.key === "Enter") {
             this.view.focus();
+        } else if (event.key === "Escape") {
+            this.ignoreBlur = true;
+            this.updateNodeAttrs({
+                isEditingLanguage: false,
+                suggestions: null,
+            });
+            this.view.focus();
+        } else if (event.key === " ") {
+            event.preventDefault();
         }
         event.stopPropagation();
     }
