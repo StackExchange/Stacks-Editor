@@ -147,7 +147,8 @@ export class CodeBlockView implements NodeView {
         const input = this.dom.querySelector(".js-language-input");
 
         if (input instanceof HTMLInputElement) {
-            input.value = getBlockLanguage(this.node).Language;
+            const language = getBlockLanguage(this.node);
+            input.value = !language.IsAutoDetected ? language.Language : "";
             input.style.display = "block";
             input.focus();
         }
