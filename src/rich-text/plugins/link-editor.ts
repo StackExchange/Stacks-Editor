@@ -203,10 +203,7 @@ export class LinkEditor extends PluginInterfaceView<
         if (this.isShown) {
             if (state?.url) {
                 this.hrefInput.value = state.url;
-
-                if (state.url != "https://") {
-                    this.validate(state.url);
-                }
+                this.validate(state.url);
             }
 
             if (state?.text) {
