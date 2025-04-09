@@ -70,7 +70,7 @@ export class LinkEditor extends PluginInterfaceView<
                 <label for="link-editor-href-input-${randomId}" class="s-label mb4">${_t(
                     "link_editor.href_label"
                 )}</label>
-                <input id="link-editor-href-input-${randomId}" class="s-input js-link-editor-href" type="text" name="href" aria-describedby="link-editor-href-error-${randomId}" />
+                <input id="link-editor-href-input-${randomId}" class="s-input js-link-editor-href" type="text" name="href" aria-describedby="link-editor-href-error-${randomId}" placeholder="https://"/>
                 <p id="link-editor-href-error-${randomId}" class="s-input-message mt4 d-none js-link-editor-href-error"></p>
             </div>
 
@@ -100,7 +100,8 @@ export class LinkEditor extends PluginInterfaceView<
         this.viewContainer.addEventListener("reset", (e) => {
             e.preventDefault();
             e.stopPropagation();
-            const tr = this.tryHideInterfaceTr(view.state);
+            let tr = this.tryHideInterfaceTr(view.state);
+            tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
             if (tr) {
                 view.dispatch(tr);
             }
@@ -164,6 +165,8 @@ export class LinkEditor extends PluginInterfaceView<
                 text: null,
             }) || view.state.tr;
 
+        tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
+
         // set the text first, inheriting all marks
         tr = tr.replaceSelectionWith(node, true);
 
@@ -195,9 +198,9 @@ export class LinkEditor extends PluginInterfaceView<
 
     update(view: EditorView): void {
         super.update(view);
+        const state = LINK_EDITOR_KEY.getState(view.state);
 
         if (this.isShown) {
-            const state = LINK_EDITOR_KEY.getState(view.state);
             if (state?.url) {
                 this.hrefInput.value = state.url;
                 this.validate(state.url);
@@ -215,8 +218,9 @@ export class LinkEditor extends PluginInterfaceView<
             this.hrefInput.focus();
         } else {
             this.resetEditor();
-            const tr = this.tryHideInterfaceTr(view.state);
+            let tr = this.tryHideInterfaceTr(view.state);
             if (tr) {
+                tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
                 view.dispatch(tr);
             }
         }
@@ -273,6 +277,11 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
 
         meta.forceHideTooltip = true;
         return this.setMeta(state.tr, meta);
+    }
+    updateVisibility(visibility: boolean, trans: Transaction): Transaction {
+        const meta = trans.getMeta(LINK_EDITOR_KEY) as LinkEditorPluginState;
+        meta.visible = visibility;
+        return this.setMeta(trans, meta);
     }
 }
 
@@ -628,7 +637,7 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                     shouldShow: false,
                 };
             },
-            apply(tr, value, _, newState): LinkEditorPluginState {
+            apply(tr, value, state, newState): LinkEditorPluginState {
                 // check if force hide was set and add to value for getDecorations to use
                 const meta = this.getMeta(tr) || value;
                 if ("forceHideTooltip" in meta) {
@@ -636,10 +645,23 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
                 }
 
                 // update the linkTooltip and get the decorations
-                const decorations = value.linkTooltip.getDecorations(
+                let decorations = value.linkTooltip.getDecorations(
                     value,
                     newState
                 );
+
+                //get decoration for current selection
+                const sel = state.selection;
+                let selectionDecoration = null;
+
+                if (meta.visible && sel && sel.from !== sel.to) {
+                    selectionDecoration = Decoration.inline(sel.from, sel.to, {
+                        class: "bg-black-225",
+                    });
+                    decorations = decorations.add(newState.doc, [
+                        selectionDecoration,
+                    ]);
+                }
 
                 return {
                     ...meta,
@@ -713,10 +735,12 @@ export function showLinkEditor(
     url?: string,
     text?: string
 ): void {
-    const tr = LINK_EDITOR_KEY.showInterfaceTr(view.state, {
+    let tr = LINK_EDITOR_KEY.showInterfaceTr(view.state, {
         url,
         text,
     });
+
+    tr = LINK_EDITOR_KEY.updateVisibility(true, tr);
 
     if (tr) {
         view.dispatch(tr);
@@ -728,10 +752,12 @@ export function showLinkEditor(
  * @param view The current editor view
  */
 export function hideLinkEditor(view: EditorView): void {
-    const tr = LINK_EDITOR_KEY.hideInterfaceTr(view.state, {
+    let tr = LINK_EDITOR_KEY.hideInterfaceTr(view.state, {
         url: null,
         text: null,
     });
+
+    tr = LINK_EDITOR_KEY.updateVisibility(false, tr);
 
     if (tr) {
         view.dispatch(tr);

@@ -137,6 +137,35 @@ describe("link-editor", () => {
             expect(inputContainer.classList).not.toContain("has-error");
         });
 
+        it("should highlight selected text in grey when link editor is open", () => {
+            view = richTextView(
+                "highlight this text",
+                () => pluginContainer,
+                () => menuContainer
+            );
+
+            // Select the text we want to highlight
+            view.editorView.updateState(
+                applySelection(view.editorView.state, 0, 19) // Select "highlight this text"
+            );
+
+            showLinkEditor(view.editorView);
+            editor.update(view.editorView);
+
+            const decorations = getDecorations(view.editorView.state);
+            const decoration = decorations.find(0, 19)[0];
+
+            expect(decoration).toBeDefined(); // The highlight should exist
+
+            // Verify the selection is styled with a decoration containing the correct class
+            const editorContent = view.editorView.dom;
+            const highlightedText =
+                editorContent.querySelector(".bg-black-225");
+
+            expect(highlightedText).toBeTruthy();
+            expect(highlightedText.textContent).toBe("highlight this text");
+        });
+
         it("should prefill fields when a link is edited via the tooltip", async () => {
             view = richTextView(
                 "[link text](https://www.example.com)",
