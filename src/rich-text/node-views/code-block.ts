@@ -18,7 +18,12 @@ export class CodeBlockView implements NodeView {
 
     private maxSuggestions = 5;
 
-    constructor(node: ProsemirrorNode, view: EditorView, getPos: () => number, availableLanguages: string[]) {
+    constructor(
+        node: ProsemirrorNode,
+        view: EditorView,
+        getPos: () => number,
+        availableLanguages: string[]
+    ) {
         this.node = node;
         this.view = view;
         this.getPos = getPos;
