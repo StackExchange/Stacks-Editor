@@ -52,6 +52,8 @@ export interface RichTextOptions extends CommonViewOptions {
         highlightedNodeTypes?: string[];
         /** Which languages appear as suggestions in the dropdown? */
         languages?: string[];
+        /** The maximum number of languages to show in the dropdown */
+        maxSuggestions?: number;
     };
 }
 
@@ -160,7 +162,8 @@ export class RichTextEditor extends BaseView {
                             node,
                             view,
                             getPos,
-                            this.options.highlighting.languages
+                            this.options.highlighting.languages,
+                            this.options.highlighting.maxSuggestions
                         );
                     },
                     image(
