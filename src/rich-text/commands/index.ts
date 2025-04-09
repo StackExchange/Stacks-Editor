@@ -313,7 +313,7 @@ export function insertRichTextLinkCommand(
                 state.selection.content().content.firstChild?.textContent ??
                 null;
             const linkMatch = /^http(s)?:\/\/\S+$/.exec(selectedText);
-            linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "https://";
+            linkUrl = linkMatch?.length > 0 ? linkMatch[0] : "";
         }
 
         showLinkEditor(view, linkUrl, selectedText);

@@ -70,7 +70,7 @@ export class LinkEditor extends PluginInterfaceView<
                 <label for="link-editor-href-input-${randomId}" class="s-label mb4">${_t(
                     "link_editor.href_label"
                 )}</label>
-                <input id="link-editor-href-input-${randomId}" class="s-input js-link-editor-href" type="text" name="href" aria-describedby="link-editor-href-error-${randomId}" />
+                <input id="link-editor-href-input-${randomId}" class="s-input js-link-editor-href" type="text" name="href" aria-describedby="link-editor-href-error-${randomId}" placeholder="https://"/>
                 <p id="link-editor-href-error-${randomId}" class="s-input-message mt4 d-none js-link-editor-href-error"></p>
             </div>
 
