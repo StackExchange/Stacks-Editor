@@ -17,16 +17,6 @@ interface PluginSchemaSpec extends SchemaSpec {
 }
 
 /**
- * Describes the callback for when a codeblock processor is initialized
- * @param content The plain text content of the codeblock
- * @param container The element that the codeblock is being rendered into
- * @returns True if the processor handled the codeblock, false otherwise
- */
-type AddCodeBlockProcessorCallback = (
-    content: string,
-    container: Element
-) => boolean;
-/**
  * Describes the callback to extend a schema
  * @param schema The schema to extend
  * @returns The finalized, extended schema
@@ -42,8 +32,12 @@ type AlterMarkdownItCallback = (instance: MarkdownIt) => void;
 /**
  * Callback to add new menu entries to the editor's menu.
  * @param {Schema} schema The fully-initialized editor schema, including nodes from plugins
+ * @param {MenuBlock} coreMenus Definition of the Core menus. MenuBlocks that share names are merged together.
  */
-type AddMenuItemsCallback = (schema: Schema) => MenuBlock[];
+type AddMenuItemsCallback = (
+    schema: Schema,
+    coreMenus: MenuBlock[]
+) => MenuBlock[];
 
 /** Describes the properties that can be used for extending commonmark support in the editor */
 type MarkdownExtensionProps = {
@@ -103,16 +97,6 @@ export interface EditorPluginSpec {
     // TODO warn devs that they need to (at minimum) add a serializer as well?
     /** Callback for extending the rich-text editor's schema */
     extendSchema?: AlterSchemaCallback;
-
-    /** Processors to add for extending the rich-text display of specific codeblock languages */
-    codeBlockProcessors?: {
-        /**
-         * The language this processor applies to.
-         * A value of `*` applies to all languages when a more specific processor is not found
-         */
-        lang: string;
-        callback: AddCodeBlockProcessorCallback;
-    }[];
 }
 
 /**
@@ -128,12 +112,6 @@ export type EditorPlugin<TOptions = unknown> = (
  * @internal
  */
 export interface IExternalPluginProvider {
-    // TODO DEEP READONLY
-    /** All aggregated codeblockProcessors */
-    readonly codeblockProcessors: {
-        [key: string]: AddCodeBlockProcessorCallback[];
-    };
-
     // TODO DEEP READONLY
     /** All aggregated plugins */
     readonly plugins: {
@@ -176,9 +154,6 @@ export interface IExternalPluginProvider {
  * @internal
  */
 export class ExternalPluginProvider implements IExternalPluginProvider {
-    private _codeblockProcessors: IExternalPluginProvider["codeblockProcessors"] =
-        {};
-
     private _plugins: IExternalPluginProvider["plugins"] = {
         richText: [],
         commonmark: [],
@@ -193,11 +168,6 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
     };
 
     private _nodeViews: IExternalPluginProvider["nodeViews"] = {};
-
-    /** {@inheritDoc IExternalPluginProvider.codeblockProcessors} */
-    get codeblockProcessors() {
-        return Object.assign({}, this._codeblockProcessors);
-    }
 
     /** {@inheritDoc IExternalPluginProvider.plugins} */
     get plugins() {
@@ -253,8 +223,8 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
 
     /** {@inheritDoc IExternalPluginProvider.getFinalizedMenu} */
     getFinalizedMenu(menu: MenuBlock[], schema: Schema): MenuBlock[] {
-        const ret: MenuBlock[] = [];
-        const aggBlocks: MenuBlock[] = [];
+        //While we're working on the blocks, we need to be able to pull out entries by name easily
+        let aggBlocks: { [id: string]: MenuBlock } = {};
 
         // call each callback and aggregate the results
         for (const callback of [() => menu, ...this.menuCallbacks]) {
@@ -262,51 +232,31 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
                 continue;
             }
 
-            const blocks = callback(schema);
+            const blocks = callback(schema, menu);
             for (const block of blocks) {
-                let existing = aggBlocks.find((b) => b.name === block.name);
-                if (!existing) {
-                    aggBlocks.push(block);
-                    existing = block;
+                const existing = aggBlocks[block.name];
+                if (existing) {
+                    existing.entries = [...existing.entries, ...block.entries];
+
+                    // set the priority to the lowest of existing and the newly aggregated block
+                    existing.priority = Math.min(
+                        existing.priority || 0,
+                        block.priority || Infinity
+                    );
                 } else {
-                    existing.entries.push(...block.entries);
+                    aggBlocks = {
+                        ...aggBlocks,
+                        [block.name]: { ...block },
+                    };
                 }
-
-                // set the priority to the most recently declared if there are multiple
-                existing.priority = block.priority ?? Infinity;
             }
         }
 
-        // add the blocks to the menu
-        for (const block of aggBlocks) {
-            // try to find an existing block with the same name
-            const match = ret.find((b) => b.name === block.name);
-
-            if (match) {
-                // if there is a match, add the entries to it
-                match.entries.push(...block.entries);
-                // set the priority to the lowest of the two
-                match.priority = Math.min(match.priority || 0, block.priority);
-            } else {
-                ret.push({
-                    name: block.name,
-                    priority: block.priority,
-                    visible: block.visible,
-                    classes: block.classes,
-                    entries: block.entries,
-                });
-            }
-        }
-
-        return ret;
+        return Object.values(aggBlocks);
     }
 
     /** Applies the config of a single plugin to this provider */
     private applyConfig(config: EditorPluginSpec) {
-        config.codeBlockProcessors?.forEach(({ lang, callback }) => {
-            this.addCodeBlockProcessor(lang, callback);
-        });
-
         config.commonmark?.plugins?.forEach((plugin) => {
             this._plugins.commonmark.push(plugin);
         });
@@ -358,17 +308,5 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
         if (callback) {
             this.markdownItCallbacks.push(callback);
         }
-    }
-
-    /** Applies the codeblockProcessors of a config to this provider */
-    private addCodeBlockProcessor(
-        lang: string,
-        callback: AddCodeBlockProcessorCallback
-    ): void {
-        if (!(lang in this._codeblockProcessors)) {
-            this._codeblockProcessors[lang] = [];
-        }
-
-        this._codeblockProcessors[lang].push(callback);
     }
 }

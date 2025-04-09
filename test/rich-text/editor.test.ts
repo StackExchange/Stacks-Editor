@@ -1,4 +1,4 @@
-import { RichTextEditor } from "../../src/rich-text/editor";
+import { RichTextEditor, RichTextOptions } from "../../src/rich-text/editor";
 import * as mdp from "../../src/shared/markdown-parser";
 import { externalPluginProvider, normalize } from "../test-helpers";
 
@@ -20,12 +20,12 @@ function editorDom(editorView: RichTextEditor): string {
     return editorView.dom.innerHTML;
 }
 
-function richView(markdownInput: string) {
+function richView(markdownInput: string, options?: RichTextOptions) {
     return new RichTextEditor(
         document.createElement("div"),
         markdownInput,
         externalPluginProvider(),
-        {}
+        options || {}
     );
 }
 
@@ -105,6 +105,38 @@ describe("rich text editor view", () => {
                 );
             }
         );
+
+        it.each(markdownRenderingTestData)(
+            "should append rendered content %s",
+            (name, markdown, expectedHtml) => {
+                //Create a blank editor
+                const richEditorView = richView("");
+
+                richEditorView.appendContent(markdown);
+
+                expect(editorDom(richEditorView)).toEqual(
+                    //Our blank, plus...
+                    normalize("<p><br class='ProseMirror-trailingBreak'></p>") +
+                        normalize(expectedHtml)
+                );
+            }
+        );
+
+        it("should append new content to existing content", () => {
+            //Pick some markdown that creates a block
+            const blockMarkdown = "> blockquote";
+            const expectedBlockHtml =
+                "<blockquote><p>blockquote</p></blockquote>";
+            const listMarkdown = "1. some\n2. list";
+            const expectedListHtml = `<ol data-tight="true"><li><p>some</p></li><li><p>list</p></li></ol>`;
+            const richEditorView = richView(blockMarkdown);
+
+            richEditorView.appendContent(listMarkdown);
+
+            expect(editorDom(richEditorView)).toEqual(
+                normalize(expectedBlockHtml) + normalize(expectedListHtml)
+            );
+        });
 
         it("should render images as node view", () => {
             const markdown =

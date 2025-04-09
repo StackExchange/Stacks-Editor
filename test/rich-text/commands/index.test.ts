@@ -1,5 +1,11 @@
-import { EditorState, TextSelection } from "prosemirror-state";
 import {
+    EditorState,
+    NodeSelection,
+    TextSelection,
+    Transaction,
+} from "prosemirror-state";
+import {
+    escapeUnselectableCommand,
     exitInclusiveMarkCommand,
     insertRichTextHorizontalRuleCommand,
     toggleHeadingLevel,
@@ -11,10 +17,12 @@ import {
     applySelection,
     createState,
     executeTransaction,
+    parseHtmlToDoc,
     testRichTextSchema,
 } from "../test-helpers";
 import { toggleMark } from "prosemirror-commands";
 import { MarkType } from "prosemirror-model";
+import { ReplaceStep } from "prosemirror-transform";
 
 function getEndOfNode(state: EditorState, nodePos: number) {
     let from = nodePos;
@@ -776,6 +784,138 @@ describe("commands", () => {
 
             // restore console.warn
             consoleWarnSpy.mockRestore();
+        });
+    });
+
+    describe("escapeUnselectableCommand", () => {
+        const whenEscapeUnselectableCommandCalled = (
+            state: EditorState,
+            shouldMatchTrans?: (tr: Transaction) => boolean
+        ) => {
+            let dispatchCalled = false;
+            let dispatchTr: Transaction = null;
+            const captureDispatch = (tr: Transaction) => {
+                dispatchCalled = true;
+                dispatchTr = tr;
+            };
+
+            const result = escapeUnselectableCommand(state, captureDispatch);
+
+            return {
+                result,
+                dispatchCalled,
+                matchedTransaction: shouldMatchTrans
+                    ? shouldMatchTrans(dispatchTr)
+                    : null,
+            };
+        };
+
+        it("should do nothing if last node in the document is selected", () => {
+            //Selection is the only line in the document, therefore the end.
+            let state = createState(
+                "Here's a paragraph -  a text block mind you",
+                []
+            );
+            state = state.apply(
+                state.tr.setSelection(NodeSelection.create(state.doc, 0))
+            );
+
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
+        });
+
+        it("should do nothing if last inline text in the document is selected", () => {
+            //Selection is the only line in the document, therefore the end.
+            let state = createState(
+                "Here's a paragraph -  a text block mind you",
+                []
+            );
+            const inlinePosEnd = state.doc.lastChild.firstChild.nodeSize;
+            state = state.apply(
+                state.tr.setSelection(
+                    TextSelection.create(
+                        state.doc,
+                        inlinePosEnd - 3,
+                        inlinePosEnd
+                    )
+                )
+            );
+
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
+        });
+
+        it("should not alter the document if there is a proceeding textblock node", () => {
+            let state = createState(
+                "Here's a paragraph - a text block mind you",
+                []
+            );
+            const firstNodePosEnd = state.doc.lastChild.firstChild.nodeSize + 1;
+            state = state.apply(
+                state.tr.insert(
+                    firstNodePosEnd,
+                    parseHtmlToDoc("This is another node, wild!", false)
+                )
+            );
+            state = state.apply(
+                state.tr.setSelection(
+                    TextSelection.create(
+                        state.doc,
+                        firstNodePosEnd - 3,
+                        firstNodePosEnd
+                    )
+                )
+            );
+
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
+        });
+
+        it("should add a paragraph block if there are no following textblock nodes", () => {
+            let state = EditorState.create({
+                doc: parseHtmlToDoc(
+                    "<table><thead><tr><td>Header 1</td><td>Header 2</td></tr></thead><tbody><tr><td>one</td><td>two</td></tr></tbody></table>",
+                    false
+                ),
+                schema: testRichTextSchema,
+                plugins: [],
+            });
+
+            const selection = TextSelection.create(
+                state.doc,
+                state.doc.nodeSize - 8
+            );
+            expect(selection.$to.parent.textContent).toBe("two");
+            expect(selection.$from.parent.textContent).toBe("two");
+            state = state.apply(state.tr.setSelection(selection));
+
+            const { result, dispatchCalled, matchedTransaction } =
+                whenEscapeUnselectableCommandCalled(state, (tr) => {
+                    if (tr.steps.length !== 1) return false;
+
+                    const step = tr.steps[0] as ReplaceStep;
+                    if (step.slice === undefined) return false;
+
+                    if (step.slice.content.childCount !== 1) return false;
+                    if (step.slice.content.firstChild.type.name !== "paragraph")
+                        return false;
+                    if (step.slice.content.firstChild.textContent != "")
+                        return false;
+                    return true;
+                });
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(true);
+            expect(matchedTransaction).toBe(true);
         });
     });
 });

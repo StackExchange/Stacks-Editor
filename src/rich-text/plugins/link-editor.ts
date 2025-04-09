@@ -286,7 +286,7 @@ class LinkEditorPluginKey extends ManagedInterfaceKey<LinkEditorPluginState> {
 }
 
 /** The plugin key the image uploader plugin is tied to */
-const LINK_EDITOR_KEY = new LinkEditorPluginKey();
+export const LINK_EDITOR_KEY = new LinkEditorPluginKey();
 
 /** Manages the decorations necessary for drawing the link editor tooltip */
 class LinkTooltip {
@@ -319,7 +319,7 @@ class LinkTooltip {
             <div class="s-popover--arrow"></div>
             <div class="d-flex ai-center">
                 <a href="${this.href}"
-                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4"
+                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4 us-none"
                     target="_blank"
                     rel="nofollow noreferrer">${this.href}</a>
                 <button type="button"
@@ -423,12 +423,30 @@ class LinkTooltip {
             return DecorationSet.empty;
         }
 
+        // Use the linkAround helper to determine the full range of the link mark.
+        const linkRange = this.linkAround(newState);
+        if (!linkRange) {
+            return DecorationSet.empty;
+        }
+
+        // Only show the tooltip if the selection is entirely within the link.
+        // If the selection starts before the link or ends after the link, do not show the tooltip.
+        if (
+            newState.selection.from < linkRange.from ||
+            newState.selection.to > linkRange.to
+        ) {
+            return DecorationSet.empty;
+        }
+
         // always update the state, regardless of document changes (potential metadata changes can change tooltip visuals)
         this.update(newState);
 
+        // Compute the midpoint of the link's range to anchor the tooltip.
+        const pos = Math.floor((linkRange.from + linkRange.to) / 2);
+
         // create the widget tooltip via EditorView callback
         const decoration = Decoration.widget(
-            newState.selection.from,
+            pos,
             (view) => {
                 /* NOTE: This function runs on every transaction update */
                 this.updateEventListeners(view);
@@ -489,7 +507,7 @@ class LinkTooltip {
      * Gets the positions immediately before and after a link mark in the current selection
      * @param state
      */
-    private linkAround(state: EditorState) {
+    public linkAround(state: EditorState) {
         const $pos = state.selection.$from;
         const start = $pos.parent.childAfter($pos.parentOffset);
         if (!start.node) {
@@ -516,12 +534,16 @@ class LinkTooltip {
 
         let endIndex = $pos.indexAfter();
         let endPos = startPos + start.node.nodeSize;
-        while (
-            endIndex < $pos.parent.childCount &&
-            link.isInSet($pos.parent.child(endIndex).marks)
-        ) {
-            endPos += $pos.parent.child(endIndex).nodeSize;
-            endIndex += 1;
+
+        // Don't double-count the length of the the node if we're at the start of it
+        if (endIndex !== $pos.index()) {
+            while (
+                endIndex < $pos.parent.childCount &&
+                link.isInSet($pos.parent.child(endIndex).marks)
+            ) {
+                endPos += $pos.parent.child(endIndex).nodeSize;
+                endIndex += 1;
+            }
         }
 
         return { from: startPos, to: endPos };
@@ -570,9 +592,7 @@ class LinkTooltip {
 
         this.editListener = () => {
             let tr = view.state.tr;
-            if (view.state.selection.empty) {
-                tr = this.expandSelection(view.state, view.state.tr);
-            }
+            tr = this.expandSelection(view.state, view.state.tr);
 
             const state = view.state.apply(tr);
             const { from, to } = state.selection;

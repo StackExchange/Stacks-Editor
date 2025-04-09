@@ -17,37 +17,6 @@ describe("editor-plugin", () => {
             }).not.toThrow();
         });
 
-        it("should aggregate codeblock processors", () => {
-            const provider = new ExternalPluginProvider(
-                [
-                    () => ({}),
-                    () => ({
-                        codeBlockProcessors: [],
-                    }),
-                    () => ({
-                        codeBlockProcessors: [
-                            { lang: "lang1", callback: fake1 },
-                            { lang: "lang1", callback: fake5 },
-                            { lang: "*", callback: fake2 },
-                        ],
-                    }),
-                    () => ({
-                        codeBlockProcessors: [
-                            { lang: "lang2", callback: fake3 },
-                            { lang: "*", callback: fake4 },
-                        ],
-                    }),
-                ],
-                null
-            );
-
-            expect(provider.codeblockProcessors).toEqual({
-                "lang1": [fake1, fake5],
-                "lang2": [fake3],
-                "*": [fake2, fake4],
-            });
-        });
-
         it("should aggregate EditorView plugins", () => {
             const plugin1 = new Plugin({});
             const plugin2 = new Plugin({});

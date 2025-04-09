@@ -429,6 +429,62 @@ export function exitInclusiveMarkCommand(
     return true;
 }
 
+/**
+ * Ensure there's a next block to move into - Adds an additional blank paragraph block
+ *  if the next node available is unselectable and there is no node afterwards that is selectable.
+ * */
+export function escapeUnselectableCommand(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+): boolean {
+    //A resolved position of the cursor. Functionally: The place we're calculating the next line for.
+    const selectionEndPos = state.selection.$to;
+
+    //If you're already at the end of the document, do the default action (nothing)
+    // Note: We're checking for either the last Inline character or the last node being selected here.
+    const isLastNode = state.doc.lastChild.eq(state.selection.$to.parent);
+    const isSelectingWholeDoc = state.doc.eq(state.selection.$to.parent);
+    if (isLastNode || isSelectingWholeDoc) {
+        return false;
+    }
+
+    //Calculate the position starting at the next line in the doc (the start point to check at)
+    const findStartPos = selectionEndPos.posAtIndex(
+        selectionEndPos.indexAfter(0),
+        0
+    );
+
+    //Starting from the next node position down, check all the nodes for being a text block.
+    let foundSelectable: boolean = false;
+    state.doc.nodesBetween(findStartPos, state.doc.content.size, (node) => {
+        //Already found one, no need to delve deeper.
+        if (foundSelectable) return !foundSelectable;
+
+        //We found one!
+        if (node.isTextblock) {
+            foundSelectable = true;
+            return false;
+        }
+
+        //We didn't find something selectable, so keep iterating, and dig into the children while we're at it.
+        return true;
+    });
+
+    //If there's not something to move into, add it now
+    if (!foundSelectable) {
+        dispatch(
+            state.tr.insert(
+                state.doc.content.size,
+                state.schema.nodes.paragraph.create()
+            )
+        );
+    }
+
+    //No matter what, we want the default behaviour to take over from here.
+    // Either we've created a new line to edit into just in time, or there was already something for it to move to
+    return false;
+}
+
 export function splitCodeBlockAtStartOfDoc(
     state: EditorState,
     dispatch: (tr: Transaction) => void

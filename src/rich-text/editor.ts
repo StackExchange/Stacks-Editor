@@ -47,7 +47,10 @@ import { createMenuPlugin } from "../shared/menu/plugin";
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
     linkPreviewProviders?: LinkPreviewProvider[];
-    codeblockOverrideLanguage?: string;
+    highlighting?: {
+        /** Which prosemirror nodes should have highlighting? Defaults to "code_block", which will always be highlighted */
+        highlightedNodeTypes?: string[];
+    };
 }
 
 /*
@@ -123,9 +126,7 @@ export class RichTextEditor extends BaseView {
                             this.options.parserFeatures
                         ),
                         linkPreviewPlugin(this.options.linkPreviewProviders),
-                        CodeBlockHighlightPlugin(
-                            this.options.codeblockOverrideLanguage
-                        ),
+                        CodeBlockHighlightPlugin(this.options.highlighting),
                         interfaceManagerPlugin(
                             this.options.pluginParentContainer
                         ),
@@ -138,22 +139,18 @@ export class RichTextEditor extends BaseView {
                         ),
                         readonlyPlugin(),
                         spoilerToggle,
+                        ...this.externalPluginProvider.plugins.richText,
+                        // Paste handlers are consuming, so we let external plugins try first
                         tables,
                         richTextCodePasteHandler,
                         linkPasteHandler(this.options.parserFeatures),
-                        ...this.externalPluginProvider.plugins.richText,
                         // IMPORTANT: the plainTextPasteHandler must be added after *all* other paste handlers
                         plainTextPasteHandler,
                     ],
                 }),
                 nodeViews: {
-                    code_block: (node, view, getPos) => {
-                        return new CodeBlockView(
-                            node,
-                            view,
-                            getPos,
-                            this.externalPluginProvider.codeblockProcessors
-                        );
+                    code_block: (node) => {
+                        return new CodeBlockView(node);
                     },
                     image(
                         node: ProseMirrorNode,
@@ -189,7 +186,7 @@ export class RichTextEditor extends BaseView {
             parserFeatures: defaultParserFeatures,
             editorHelpLink: null,
             linkPreviewProviders: [],
-            codeblockOverrideLanguage: null,
+            highlighting: null,
             menuParentContainer: null,
             imageUpload: {
                 handler: defaultImageUploadHandler,
