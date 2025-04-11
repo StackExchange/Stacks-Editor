@@ -47,7 +47,9 @@ export class CodeBlockView implements NodeView {
                 <span class="s-input-icon s-input-icon__search svg-icon-bg iconSearchSm"></span>
             </div>
         </div>
-        <ul class="js-language-dropdown" style="display: none; position: absolute; top: 100%; right: 4px; z-index: 10; list-style: none; padding: 0; margin: 0; background: white; border: 1px solid #ccc;"></ul>
+        <div class="s-card js-language-dropdown-container" style="display: none; position: absolute; top: 100%; right: 4px; z-index: 10;">
+            <ul class="js-language-dropdown"></ul>
+        </div>
         <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
         this.contentDOM = this.dom.querySelector(".content-dom");
@@ -106,13 +108,13 @@ export class CodeBlockView implements NodeView {
             }
         }
 
-        const dropdown = this.dom.querySelector(".js-language-dropdown");
+        const dropdownContainer = this.dom.querySelector(".js-language-dropdown-container");
 
-        if (dropdown instanceof HTMLUListElement) {
+        if (dropdownContainer instanceof HTMLDivElement) {
             if (node.attrs.suggestions) {
                 this.renderDropdown(node.attrs.suggestions as string[]);
             } else {
-                dropdown.style.display = "none";
+                dropdownContainer.style.display = "none";
             }
         }
 
@@ -221,16 +223,17 @@ export class CodeBlockView implements NodeView {
     }
 
     private renderDropdown(suggestions: string[]) {
+        const dropdownContainer = this.dom.querySelector(".js-language-dropdown-container");
         const dropdown = this.dom.querySelector(".js-language-dropdown");
 
-        if (!(dropdown instanceof HTMLUListElement)) {
+        if (!(dropdown instanceof HTMLUListElement) || !(dropdownContainer instanceof HTMLDivElement)) {
             return;
         }
 
         dropdown.innerHTML = ""; // Clear previous suggestions
 
         if (suggestions.length === 0) {
-            dropdown.style.display = "none";
+            dropdownContainer.style.display = "none";
             return;
         }
 
@@ -257,13 +260,13 @@ export class CodeBlockView implements NodeView {
                     params: lang,
                     isEditingLanguage: false,
                 });
-                dropdown.style.display = "none";
+                dropdownContainer.style.display = "none";
                 this.view.focus();
             });
 
             dropdown.appendChild(li);
         }
 
-        dropdown.style.display = "block";
+        dropdownContainer.style.display = "block";
     }
 }
