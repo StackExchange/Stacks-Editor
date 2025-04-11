@@ -36,11 +36,17 @@ export class CodeBlockView implements NodeView {
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
         this.dom.innerHTML = escapeHTML`
-        <button class="js-language-selector ps-absolute t2 r4 fs-fine fc-black-350 c-pointer" style="border: none; background: none" contenteditable="false">
+        <button class="js-language-selector ps-absolute t2 r4 fs-caption fc-black-400 c-pointer" style="border: none; background: none" contenteditable="false">
             <span class="js-language-indicator"></span>
             <span class="svg-icon-bg iconArrowDownSm"></span>
         </button>
-        <input type="text" class="ps-absolute t16 r4 js-language-input" style="display: none" contenteditable="false" />
+        <div class="ps-absolute t24 r4 js-language-input" style="display: none" >
+            <div class="ps-relative">
+                <label class="v-visible-sr" for="example-search">Search</label>
+                <input type="text" class="s-input s-input__search fs-caption js-language-input-textbox" placeholder="Search for a language" contenteditable="false" />
+                <span class="s-input-icon s-input-icon__search svg-icon-bg iconSearchSm"></span>
+            </div>
+        </div>
         <ul class="js-language-dropdown" style="display: none; position: absolute; top: 100%; right: 4px; z-index: 10; list-style: none; padding: 0; margin: 0; background: white; border: 1px solid #ccc;"></ul>
         <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
@@ -58,20 +64,20 @@ export class CodeBlockView implements NodeView {
             this.onLanguageSelectorMouseDown.bind(this)
         );
 
-        const languageInput = this.dom.querySelector(".js-language-input");
-        languageInput.addEventListener(
+        const textbox = this.dom.querySelector(".js-language-input-textbox");
+        textbox.addEventListener(
             "blur",
             this.onLanguageInputBlur.bind(this)
         );
-        languageInput.addEventListener(
+        textbox.addEventListener(
             "keydown",
             this.onLanguageInputKeyDown.bind(this)
         );
-        languageInput.addEventListener(
+        textbox.addEventListener(
             "mousedown",
             this.onLanguageInputMouseDown.bind(this)
         );
-        languageInput.addEventListener(
+        textbox.addEventListener(
             "input",
             this.onLanguageInputTextInput.bind(this)
         );
@@ -92,7 +98,7 @@ export class CodeBlockView implements NodeView {
 
         const input = this.dom.querySelector(".js-language-input");
 
-        if (input instanceof HTMLInputElement) {
+        if (input instanceof HTMLDivElement) {
             if (node.attrs.isEditingLanguage) {
                 input.style.display = "block";
             } else {
@@ -147,12 +153,14 @@ export class CodeBlockView implements NodeView {
         });
 
         const input = this.dom.querySelector(".js-language-input");
+        const textbox = this.dom.querySelector(".js-language-input-textbox");
 
-        if (input instanceof HTMLInputElement) {
-            const language = getBlockLanguage(this.node);
-            input.value = !language.IsAutoDetected ? language.Language : "";
+        if (input instanceof HTMLDivElement && textbox instanceof HTMLInputElement) {
             input.style.display = "block";
-            input.focus();
+            
+            const language = getBlockLanguage(this.node);
+            textbox.value = !language.IsAutoDetected ? language.Language : "";
+            textbox.focus();
         }
     }
 
@@ -238,13 +246,13 @@ export class CodeBlockView implements NodeView {
             });
 
             li.addEventListener("click", () => {
-                const input = this.dom.querySelector(".js-language-input");
+                const textbox = this.dom.querySelector(".js-language-input-textbox");
 
-                if (!(input instanceof HTMLInputElement)) {
+                if (!(textbox instanceof HTMLInputElement)) {
                     return;
                 }
 
-                input.value = lang;
+                textbox.value = lang;
                 this.updateNodeAttrs({
                     params: lang,
                     isEditingLanguage: false,
