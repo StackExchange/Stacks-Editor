@@ -41,14 +41,14 @@ export class CodeBlockView implements NodeView {
             <span class="svg-icon-bg iconArrowDownSm"></span>
         </button>
         <div class="ps-absolute t24 r4 js-language-input" style="display: none" >
-            <div class="ps-relative">
+            <div class="ps-relative mb8">
                 <label class="v-visible-sr" for="example-search">Search</label>
                 <input type="text" class="s-input s-input__search fs-caption js-language-input-textbox" placeholder="Search for a language" contenteditable="false" />
                 <span class="s-input-icon s-input-icon__search svg-icon-bg iconSearchSm"></span>
             </div>
-        </div>
-        <div class="s-card js-language-dropdown-container" style="display: none; position: absolute; top: 100%; right: 4px; z-index: 10;">
-            <ul class="js-language-dropdown"></ul>
+            <div class="s-card fs-caption c-pointer js-language-dropdown-container" style="display: none;">
+                <ul class="s-menu js-language-dropdown"></ul>
+            </div>
         </div>
         <pre class="s-code-block js-code-view js-code-mode"><code class="content-dom"></code></pre>`;
 
@@ -240,8 +240,6 @@ export class CodeBlockView implements NodeView {
         for (const lang of suggestions) {
             const li = document.createElement("li");
             li.textContent = lang;
-            li.style.padding = "4px 8px";
-            li.style.cursor = "pointer";
 
             li.addEventListener("mousedown", (event: MouseEvent) => {
                 // Prevent blur event from closing the dropdown too early.
