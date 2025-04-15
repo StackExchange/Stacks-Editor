@@ -127,7 +127,8 @@ export class StackSnippetView implements NodeView {
             //Clear the node
             this.resultContainer.innerHTML = "";
             const iframe = document.createElement("iframe");
-            iframe.className = "snippet-box-edit snippet-box-result ps-relative w100 hmn0 baw0";
+            iframe.className =
+                "snippet-box-edit snippet-box-result ps-relative w100 hmn0 baw0";
             iframe.setAttribute(
                 "sandbox",
                 "allow-forms allow-modals allow-scripts"
