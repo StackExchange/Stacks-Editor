@@ -98,10 +98,18 @@ export class CodeBlockView implements NodeView {
             this.getLanguageDisplayName();
 
         const input = this.dom.querySelector(".js-language-input");
-        if (input instanceof HTMLDivElement) {
+        const textbox = this.dom.querySelector(".js-language-input-textbox");
+        if (
+            input instanceof HTMLDivElement &&
+            textbox instanceof HTMLInputElement
+        ) {
             input.style.display = node.attrs.isEditingLanguage
                 ? "block"
                 : "none";
+
+            if (node.attrs.isEditingLanguage) {
+                textbox.focus();
+            }
         }
 
         const dropdownContainer = this.dom.querySelector(
@@ -149,19 +157,6 @@ export class CodeBlockView implements NodeView {
         this.updateNodeAttrs({
             isEditingLanguage: true,
         });
-        const input = this.dom.querySelector(".js-language-input");
-        const textbox = this.dom.querySelector(".js-language-input-textbox");
-
-        if (
-            input instanceof HTMLDivElement &&
-            textbox instanceof HTMLInputElement
-        ) {
-            input.style.display = "block";
-
-            const language = getBlockLanguage(this.node);
-            textbox.value = !language.IsAutoDetected ? language.Language : "";
-            textbox.focus();
-        }
     }
 
     private onLanguageSelectorMouseDown(event: MouseEvent) {

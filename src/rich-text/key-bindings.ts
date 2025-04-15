@@ -33,6 +33,7 @@ import {
     splitCodeBlockAtStartOfDoc,
     exitInclusiveMarkCommand,
     escapeUnselectableCommand,
+    openCodeBlockLanguagePicker,
 } from "./commands";
 
 export function allKeymaps(
@@ -45,6 +46,7 @@ export function allKeymaps(
         "Mod-]": indentCodeBlockLinesCommand,
         "Mod-[": unindentCodeBlockLinesCommand,
         "Enter": splitCodeBlockAtStartOfDoc,
+        "Mod-;": openCodeBlockLanguagePicker,
     });
 
     const tableKeymap = caseNormalizeKeymap({

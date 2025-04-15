@@ -507,3 +507,31 @@ export function splitCodeBlockAtStartOfDoc(
 
     return splitBlock(state, dispatch);
 }
+
+function isSelectionInCodeBlock(
+    state: EditorState
+): { pos: number; node: any } | null {
+    const { $from } = state.selection;
+    if ($from.parent.type.name === "code_block") {
+        return { pos: $from.before(), node: $from.parent };
+    }
+    return null;
+}
+
+// Command to open the language dropdown.
+export function openCodeBlockLanguagePicker(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    const codeBlock = isSelectionInCodeBlock(state);
+    if (!codeBlock) {
+        return false;
+    }
+    const { pos, node } = codeBlock;
+    // Update the node attributes to trigger the language input.
+    const newAttrs = { ...node.attrs, isEditingLanguage: true };
+    if (dispatch) {
+        dispatch(state.tr.setNodeMarkup(pos, undefined, newAttrs));
+    }
+    return true;
+}
