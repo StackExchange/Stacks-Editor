@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.11.2
+
+### Patch Changes
+
+- [#424](https://github.com/StackExchange/Stacks-Editor/pull/424) [`15df704`](https://github.com/StackExchange/Stacks-Editor/commit/15df70432d618900a03ab62538bb644ba3397a0c) Thanks [@threefjefff](https://github.com/threefjefff)! - Refactor inline styling to stacks css classes, adding positioning class
+
 ## 0.11.1
 
 ### Patch Changes
