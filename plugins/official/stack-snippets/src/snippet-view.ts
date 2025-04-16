@@ -127,14 +127,12 @@ export class StackSnippetView implements NodeView {
             //Clear the node
             this.resultContainer.innerHTML = "";
             const iframe = document.createElement("iframe");
-            iframe.className = "snippet-box-edit snippet-box-result";
+            iframe.className =
+                "snippet-box-edit snippet-box-result ps-relative w100 hmn0 baw0";
             iframe.setAttribute(
                 "sandbox",
                 "allow-forms allow-modals allow-scripts"
             );
-            iframe.style.width = "100%";
-            iframe.style.border = "0px";
-            iframe.style.minHeight = "300px";
             if (content.nodeType === Node.DOCUMENT_NODE) {
                 const document = <Document>content;
                 iframe.srcdoc = document.documentElement.innerHTML;

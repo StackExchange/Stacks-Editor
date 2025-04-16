@@ -43,7 +43,7 @@ jobs:
                   title: "chore(new-release)"
                   commit: "chore(new-release)"
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+                  GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
 
 # cancel the jobs if another workflow is kicked off for the same branch
