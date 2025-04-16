@@ -38,7 +38,7 @@ export class CodeBlockView implements NodeView {
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
         this.dom.innerHTML = escapeHTML`
-        <button class="js-language-selector ps-absolute t2 r4 fs-caption fc-black-400 c-pointer" style="border: none; background: none" contenteditable="false">
+        <button class="js-language-selector ps-absolute t2 r4 fs-caption fc-black-500 c-pointer" style="border: none; background: none" contenteditable="false">
             <span class="js-language-indicator"></span>
             <span class="svg-icon-bg iconArrowDownSm"></span>
         </button>
