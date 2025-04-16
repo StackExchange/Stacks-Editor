@@ -369,7 +369,6 @@ function isSelectionInCodeBlock(
     return null;
 }
 
-// Command to open the language dropdown.
 export function openCodeBlockLanguagePicker(
     state: EditorState,
     dispatch: (tr: Transaction) => void
@@ -379,7 +378,8 @@ export function openCodeBlockLanguagePicker(
         return false;
     }
     const { pos, node } = codeBlock;
-    // Update the node attributes to trigger the language input.
+
+    // Setting isEditingLanguage to true will open the language picker
     const newAttrs = { ...node.attrs, isEditingLanguage: true };
     if (dispatch) {
         dispatch(state.tr.setNodeMarkup(pos, undefined, newAttrs));
