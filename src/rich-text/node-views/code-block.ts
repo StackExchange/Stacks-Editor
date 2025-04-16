@@ -163,25 +163,23 @@ export class CodeBlockView implements NodeView {
     }
 
     private onLanguageInputBlur(event: FocusEvent) {
-        // If editing was cancelled via Escape, then skip updating.
+        // If the user pressed Escape, don't update the language.
         if (this.ignoreBlur) {
             this.ignoreBlur = false;
             return;
         }
 
-        // Check if the new focused element (if any) is inside the language input container.
+        // If the newly focused element is inside the language input container, then the user just tabbed on to
+        // the suggestions list. In this case, we don't want to close the dropdown.
         const container = this.dom.querySelector(".js-language-input");
         if (
             event.relatedTarget &&
             container &&
             container.contains(event.relatedTarget as Node)
         ) {
-            // If the new focus is within the container (for example, one of the list items),
-            // do not update and close the dropdown.
             return;
         }
 
-        // Otherwise, proceed as usual.
         const target = event.target as HTMLInputElement;
         this.updateNodeAttrs({
             params: target.value,
@@ -192,17 +190,18 @@ export class CodeBlockView implements NodeView {
 
     private onLanguageInputKeyDown(event: KeyboardEvent) {
         const dropdown = this.dom.querySelector(".js-language-dropdown");
+        if (!(dropdown instanceof HTMLUListElement)) {
+            return;
+        }
         if (event.key === "Enter") {
             // If an item is focused in the dropdown, select it.
-            if (dropdown) {
-                const activeItem = dropdown.querySelector("li:focus");
-                if (activeItem) {
-                    event.preventDefault();
-                    (activeItem as HTMLElement).click();
-                    return;
-                }
+            const activeItem = dropdown.querySelector("li:focus");
+            if (activeItem) {
+                event.preventDefault();
+                (activeItem as HTMLElement).click();
+                return;
             }
-            // Otherwise, simply blur and refocus the editor.
+            // Otherwise, blur and refocus the editor. This will trigger onLanguageInputBlur to update the language.
             this.view.focus();
         } else if (event.key === "Escape") {
             this.ignoreBlur = true;
@@ -212,49 +211,51 @@ export class CodeBlockView implements NodeView {
             });
             this.view.focus();
         } else if (event.key === "ArrowDown") {
-            // Navigate down into the suggestion list.
-            if (dropdown) {
-                const liElements = dropdown.querySelectorAll("li");
-                if (liElements.length > 0) {
-                    // If none is selected yet, focus the first.
-                    if (
-                        this.selectedSuggestionIndex < 0 ||
-                        this.selectedSuggestionIndex >= liElements.length - 1
-                    ) {
-                        this.selectedSuggestionIndex = 0;
-                    } else {
-                        this.selectedSuggestionIndex++;
-                    }
-                    (
-                        liElements[this.selectedSuggestionIndex] as HTMLElement
-                    ).focus();
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return;
-                }
-            }
+            this.updateSelectedSuggestionIndex(1);
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         } else if (event.key === "ArrowUp") {
-            // Navigate up in the suggestion list.
-            if (dropdown) {
-                const liElements = dropdown.querySelectorAll("li");
-                if (liElements.length > 0) {
-                    if (this.selectedSuggestionIndex <= 0) {
-                        this.selectedSuggestionIndex = liElements.length - 1;
-                    } else {
-                        this.selectedSuggestionIndex--;
-                    }
-                    (
-                        liElements[this.selectedSuggestionIndex] as HTMLElement
-                    ).focus();
-                    event.preventDefault();
-                    event.stopPropagation();
-                    return;
-                }
-            }
+            this.updateSelectedSuggestionIndex(-1);
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         } else if (event.key === " ") {
             event.preventDefault();
         }
         event.stopPropagation();
+    }
+
+    private updateSelectedSuggestionIndex(delta: number) {
+        const dropdown = this.dom.querySelector(".js-language-dropdown");
+        if (!(dropdown instanceof HTMLUListElement)) {
+            return;
+        }
+
+        const liElements = dropdown.querySelectorAll("li");
+        if (liElements.length == 0) {
+            return;
+        }
+
+        this.selectedSuggestionIndex += delta;
+
+        if (this.selectedSuggestionIndex < -1) {
+            this.selectedSuggestionIndex = liElements.length - 1;
+        } else if (this.selectedSuggestionIndex >= liElements.length) {
+            this.selectedSuggestionIndex = -1;
+        }
+
+        if (this.selectedSuggestionIndex == -1) {
+            const textbox = this.dom.querySelector(
+                ".js-language-input-textbox"
+            );
+            if (textbox instanceof HTMLInputElement) {
+                textbox.focus();
+                this.selectedSuggestionIndex = -1;
+            }
+        } else {
+            (liElements[this.selectedSuggestionIndex] as HTMLElement).focus();
+        }
     }
 
     private onLanguageInputMouseDown(event: MouseEvent) {
@@ -334,29 +335,11 @@ export class CodeBlockView implements NodeView {
                     event.preventDefault();
                     li.click();
                 } else if (event.key === "ArrowDown") {
+                    this.updateSelectedSuggestionIndex(1);
                     event.preventDefault();
-                    // Focus the next suggestion, if available.
-                    const next = li.nextElementSibling;
-                    if (next instanceof HTMLElement) {
-                        next.focus();
-                        this.selectedSuggestionIndex = index + 1;
-                    }
                 } else if (event.key === "ArrowUp") {
+                    this.updateSelectedSuggestionIndex(-1);
                     event.preventDefault();
-                    // Focus the previous suggestion, or return focus to the textbox if at the top.
-                    const prev = li.previousElementSibling;
-                    if (prev instanceof HTMLElement) {
-                        prev.focus();
-                        this.selectedSuggestionIndex = index - 1;
-                    } else {
-                        const textbox = this.dom.querySelector(
-                            ".js-language-input-textbox"
-                        );
-                        if (textbox instanceof HTMLInputElement) {
-                            textbox.focus();
-                            this.selectedSuggestionIndex = -1;
-                        }
-                    }
                 }
                 event.stopPropagation();
             });
