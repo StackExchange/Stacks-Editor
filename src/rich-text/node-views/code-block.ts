@@ -204,25 +204,38 @@ export class CodeBlockView implements NodeView {
             // Otherwise, blur and refocus the editor. This will trigger onLanguageInputBlur to update the language.
             this.view.focus();
         } else if (event.key === "Escape") {
-            this.ignoreBlur = true;
-            this.updateNodeAttrs({
-                isEditingLanguage: false,
-                suggestions: null,
-            });
-            this.view.focus();
+            this.onEscape(event);
         } else if (event.key === "ArrowDown") {
-            this.updateSelectedSuggestionIndex(1);
-            event.preventDefault();
-            event.stopPropagation();
-            return;
+            this.onArrowDown(event);
         } else if (event.key === "ArrowUp") {
-            this.updateSelectedSuggestionIndex(-1);
-            event.preventDefault();
-            event.stopPropagation();
-            return;
+            this.onArrowUp(event);
         } else if (event.key === " ") {
             event.preventDefault();
         }
+
+        // Prevent event propagating to the underlying ProseMirror editor (we don't want keypresses turning up there).
+        event.stopPropagation();
+    }
+
+    private onEscape(event: KeyboardEvent) {
+        this.ignoreBlur = true;
+        this.updateNodeAttrs({
+            isEditingLanguage: false,
+            suggestions: null,
+        });
+        this.view.focus();
+    }
+
+    private onArrowUp(event: KeyboardEvent) {
+        this.updateSelectedSuggestionIndex(-1);
+        event.preventDefault();
+        event.stopPropagation();
+        
+    }
+    
+    private onArrowDown(event: KeyboardEvent) {
+        this.updateSelectedSuggestionIndex(1);
+        event.preventDefault();
         event.stopPropagation();
     }
 
@@ -307,11 +320,13 @@ export class CodeBlockView implements NodeView {
             const li = document.createElement("li");
             li.textContent = lang;
             li.classList.add("h:bg-black-150", "px4");
-            li.tabIndex = 0; // Make it focusable via Tab
+            li.tabIndex = 0; // Make it focusable
+
             // Prevent the blur event from closing the dropdown too early.
             li.addEventListener("mousedown", (event: MouseEvent) => {
                 event.preventDefault();
             });
+
             // When a list item is clicked, update the language.
             li.addEventListener("click", () => {
                 const textbox = this.dom.querySelector(
@@ -329,19 +344,22 @@ export class CodeBlockView implements NodeView {
                 dropdownContainer.style.display = "none";
                 this.view.focus();
             });
-            // Listen for keyboard events on each list item.
+
             li.addEventListener("keydown", (event: KeyboardEvent) => {
                 if (event.key === "Enter") {
                     event.preventDefault();
+                    event.stopPropagation();
                     li.click();
+                } else if (event.key === "Escape") {
+                    this.onEscape(event);
                 } else if (event.key === "ArrowDown") {
-                    this.updateSelectedSuggestionIndex(1);
-                    event.preventDefault();
+                    this.onArrowDown(event);
                 } else if (event.key === "ArrowUp") {
-                    this.updateSelectedSuggestionIndex(-1);
-                    event.preventDefault();
+                    this.onArrowUp(event);
+                } else if (event.key === "Tab") {
+                    // We don't want the Tab keypress making new tabs appear in the editor.
+                    event.stopPropagation();
                 }
-                event.stopPropagation();
             });
             dropdown.appendChild(li);
         });
