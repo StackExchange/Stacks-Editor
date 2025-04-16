@@ -352,8 +352,8 @@ export class CodeBlockView implements NodeView {
                     } else {
                         const textbox = this.dom.querySelector(
                             ".js-language-input-textbox"
-                        ) as HTMLElement;
-                        if (textbox) {
+                        );
+                        if (textbox instanceof HTMLInputElement) {
                             textbox.focus();
                             this.selectedSuggestionIndex = -1;
                         }

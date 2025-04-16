@@ -4,7 +4,13 @@ import {
     toggleMark,
     wrapIn,
 } from "prosemirror-commands";
-import { Mark, MarkType, NodeType, Schema } from "prosemirror-model";
+import {
+    Mark,
+    MarkType,
+    NodeType,
+    Schema,
+    Node as ProsemirrorNode,
+} from "prosemirror-model";
 import {
     Command,
     EditorState,
@@ -510,7 +516,7 @@ export function splitCodeBlockAtStartOfDoc(
 
 function isSelectionInCodeBlock(
     state: EditorState
-): { pos: number; node: any } | null {
+): { pos: number; node: ProsemirrorNode } | null {
     const { $from } = state.selection;
     if ($from.parent.type.name === "code_block") {
         return { pos: $from.before(), node: $from.parent };
