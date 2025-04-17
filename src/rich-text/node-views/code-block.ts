@@ -230,7 +230,6 @@ export class CodeBlockView implements NodeView {
         this.updateSelectedSuggestionIndex(-1);
         event.preventDefault();
         event.stopPropagation();
-        
     }
     
     private onArrowDown(event: KeyboardEvent) {
@@ -239,6 +238,7 @@ export class CodeBlockView implements NodeView {
         event.stopPropagation();
     }
 
+    // Move up or down the list of suggestions when the user presses the arrow keys.
     private updateSelectedSuggestionIndex(delta: number) {
         const dropdown = this.dom.querySelector(".js-language-dropdown");
         if (!(dropdown instanceof HTMLUListElement)) {
@@ -252,6 +252,7 @@ export class CodeBlockView implements NodeView {
 
         this.selectedSuggestionIndex += delta;
 
+        // Wrap around the suggestions list. Note that -1 means the textbox is selected.
         if (this.selectedSuggestionIndex < -1) {
             this.selectedSuggestionIndex = liElements.length - 1;
         } else if (this.selectedSuggestionIndex >= liElements.length) {
@@ -291,7 +292,6 @@ export class CodeBlockView implements NodeView {
         });
     }
 
-    // Updated renderDropdown method with focusable <li> items and keyboard events.
     private renderDropdown(suggestions: string[]) {
         const dropdownContainer = this.dom.querySelector(
             ".js-language-dropdown-container"
@@ -305,7 +305,7 @@ export class CodeBlockView implements NodeView {
             return;
         }
 
-        dropdown.innerHTML = ""; // Clear previous suggestions
+        dropdown.innerHTML = "";
 
         if (suggestions.length === 0) {
             dropdownContainer.style.display = "none";
@@ -322,7 +322,7 @@ export class CodeBlockView implements NodeView {
             li.classList.add("h:bg-black-150", "px4");
             li.tabIndex = 0; // Make it focusable
 
-            // Prevent the blur event from closing the dropdown too early.
+            // Prevent the textbox's blur event from closing the dropdown too early when the user clicks on a suggestion.
             li.addEventListener("mousedown", (event: MouseEvent) => {
                 event.preventDefault();
             });
