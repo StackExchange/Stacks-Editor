@@ -204,7 +204,7 @@ export class CodeBlockView implements NodeView {
             // Otherwise, blur and refocus the editor. This will trigger onLanguageInputBlur to update the language.
             this.view.focus();
         } else if (event.key === "Escape") {
-            this.onEscape(event);
+            this.onEscape();
         } else if (event.key === "ArrowDown") {
             this.onArrowDown(event);
         } else if (event.key === "ArrowUp") {
@@ -217,7 +217,7 @@ export class CodeBlockView implements NodeView {
         event.stopPropagation();
     }
 
-    private onEscape(event: KeyboardEvent) {
+    private onEscape() {
         this.ignoreBlur = true;
         this.updateNodeAttrs({
             isEditingLanguage: false,
@@ -231,7 +231,7 @@ export class CodeBlockView implements NodeView {
         event.preventDefault();
         event.stopPropagation();
     }
-    
+
     private onArrowDown(event: KeyboardEvent) {
         this.updateSelectedSuggestionIndex(1);
         event.preventDefault();
@@ -316,7 +316,7 @@ export class CodeBlockView implements NodeView {
         // Reset the current selection.
         this.selectedSuggestionIndex = -1;
 
-        suggestions.forEach((lang, index) => {
+        suggestions.forEach((lang) => {
             const li = document.createElement("li");
             li.textContent = lang;
             li.classList.add("h:bg-black-150", "px4");
@@ -351,7 +351,7 @@ export class CodeBlockView implements NodeView {
                     event.stopPropagation();
                     li.click();
                 } else if (event.key === "Escape") {
-                    this.onEscape(event);
+                    this.onEscape();
                 } else if (event.key === "ArrowDown") {
                     this.onArrowDown(event);
                 } else if (event.key === "ArrowUp") {
