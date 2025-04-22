@@ -96,30 +96,26 @@ export class CodeBlockView implements NodeView {
         this.dom.querySelector(".js-language-indicator").textContent =
             this.getLanguageDisplayName();
 
-        const input = this.dom.querySelector(".js-language-input");
-        const textbox = this.dom.querySelector(".js-language-input-textbox");
-        if (
-            input instanceof HTMLDivElement &&
-            textbox instanceof HTMLInputElement
-        ) {
-            input.style.display = node.attrs.isEditingLanguage
-                ? "block"
-                : "none";
+        const input =
+            this.dom.querySelector<HTMLDivElement>(".js-language-input");
+        const textbox = this.dom.querySelector<HTMLInputElement>(
+            ".js-language-input-textbox"
+        );
 
-            if (node.attrs.isEditingLanguage) {
-                textbox.focus();
-            }
+        input.style.display = node.attrs.isEditingLanguage ? "block" : "none";
+
+        if (node.attrs.isEditingLanguage) {
+            textbox.focus();
         }
 
-        const dropdownContainer = this.dom.querySelector(
+        const dropdownContainer = this.dom.querySelector<HTMLDivElement>(
             ".js-language-dropdown-container"
         );
-        if (dropdownContainer instanceof HTMLDivElement) {
-            if (node.attrs.suggestions) {
-                this.renderDropdown(node.attrs.suggestions as string[]);
-            } else {
-                dropdownContainer.style.display = "none";
-            }
+
+        if (node.attrs.suggestions) {
+            this.renderDropdown(node.attrs.suggestions as string[]);
+        } else {
+            dropdownContainer.style.display = "none";
         }
 
         return true;
@@ -189,10 +185,9 @@ export class CodeBlockView implements NodeView {
     }
 
     private onLanguageInputKeyDown(event: KeyboardEvent) {
-        const dropdown = this.dom.querySelector(".js-language-dropdown");
-        if (!(dropdown instanceof HTMLUListElement)) {
-            return;
-        }
+        const dropdown = this.dom.querySelector<HTMLUListElement>(
+            ".js-language-dropdown"
+        );
         if (event.key === "Enter") {
             // If an item is focused in the dropdown, select it.
             const activeItem = dropdown.querySelector("li:focus");
@@ -240,10 +235,9 @@ export class CodeBlockView implements NodeView {
 
     // Move up or down the list of suggestions when the user presses the arrow keys.
     private updateSelectedSuggestionIndex(delta: number) {
-        const dropdown = this.dom.querySelector(".js-language-dropdown");
-        if (!(dropdown instanceof HTMLUListElement)) {
-            return;
-        }
+        const dropdown = this.dom.querySelector<HTMLUListElement>(
+            ".js-language-dropdown"
+        );
 
         const liElements = dropdown.querySelectorAll("li");
         if (liElements.length == 0) {
@@ -260,13 +254,11 @@ export class CodeBlockView implements NodeView {
         }
 
         if (this.selectedSuggestionIndex == -1) {
-            const textbox = this.dom.querySelector(
+            const textbox = this.dom.querySelector<HTMLInputElement>(
                 ".js-language-input-textbox"
             );
-            if (textbox instanceof HTMLInputElement) {
-                textbox.focus();
-                this.selectedSuggestionIndex = -1;
-            }
+            textbox.focus();
+            this.selectedSuggestionIndex = -1;
         } else {
             (liElements[this.selectedSuggestionIndex] as HTMLElement).focus();
         }
@@ -293,17 +285,12 @@ export class CodeBlockView implements NodeView {
     }
 
     private renderDropdown(suggestions: string[]) {
-        const dropdownContainer = this.dom.querySelector(
+        const dropdownContainer = this.dom.querySelector<HTMLDivElement>(
             ".js-language-dropdown-container"
         );
-        const dropdown = this.dom.querySelector(".js-language-dropdown");
-
-        if (
-            !(dropdown instanceof HTMLUListElement) ||
-            !(dropdownContainer instanceof HTMLDivElement)
-        ) {
-            return;
-        }
+        const dropdown = this.dom.querySelector<HTMLUListElement>(
+            ".js-language-dropdown"
+        );
 
         dropdown.innerHTML = "";
 
@@ -329,12 +316,9 @@ export class CodeBlockView implements NodeView {
 
             // When a list item is clicked, update the language.
             li.addEventListener("click", () => {
-                const textbox = this.dom.querySelector(
+                const textbox = this.dom.querySelector<HTMLInputElement>(
                     ".js-language-input-textbox"
                 );
-                if (!(textbox instanceof HTMLInputElement)) {
-                    return;
-                }
                 textbox.value = lang;
                 this.updateNodeAttrs({
                     params: lang,
