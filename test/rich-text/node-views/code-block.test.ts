@@ -30,7 +30,7 @@ describe("code-block", () => {
         );
     });
 
-    it("should render codeblocks", () => {
+    it("should render a codeblock in a fence", () => {
         richText.content = `~~~js
 console.log("Hello World");
 ~~~`;
@@ -52,6 +52,26 @@ console.log("Hello World");
             ],
         });
     });
+
+    it("should render an indented codeblock", () => {
+        richText.content = `    console.log("Hello World");`;
+
+        // check the node type
+        expect(richText.editorView.state.doc).toMatchNodeTree({
+            "type.name": "doc",
+            "content": [
+                {
+                    "type.name": "code_block",
+                    "content": [
+                        {
+                            "type.name": "text",
+                            "text": 'console.log("Hello World");',
+                        },
+                    ],
+                },
+            ],
+        });
+    });
 });
 
 describe("code-block language picker", () => {
@@ -63,13 +83,13 @@ describe("code-block language picker", () => {
             "",
             externalPluginProvider([testCodeBlockPlugin])
         );
-        // seed with a JS codeblock
+    });
+
+    it("toggles the language input panel when the selector button is clicked", () => {
         richText.content = `~~~js
 console.log("Hello");
 ~~~`;
-    });
 
-    it("toggles the language‐input panel when the selector button is clicked", () => {
         const button = richText.editorView.dom.querySelector<HTMLButtonElement>(
             "button.js-language-selector"
         );
@@ -92,6 +112,10 @@ console.log("Hello");
     });
 
     it("updates suggestions as you type into the language textbox", () => {
+        richText.content = `~~~js
+console.log("Hello");
+~~~`;
+
         // open the panel first
         richText.editorView.dom
             .querySelector<HTMLElement>("button.js-language-selector")
@@ -117,6 +141,10 @@ console.log("Hello");
     });
 
     it("sets the language on clicking a suggestion", () => {
+        richText.content = `~~~js
+console.log("Hello");
+~~~`;
+
         // open and type "ru"
         richText.editorView.dom
             .querySelector<HTMLElement>("button.js-language-selector")
@@ -143,9 +171,16 @@ console.log("Hello");
                 ".js-language-input"
             );
         expect(inputPanel.style.display).toBe("none");
+
+        const md = richText.content.trim();
+        expect(md).toBe(["~~~ruby", 'console.log("Hello");', "~~~"].join("\n"));
     });
 
     it("commits whatever you typed if you blur without selecting a suggestion", () => {
+        richText.content = `~~~js
+console.log("Hello");
+~~~`;
+
         // open and type "typescript"
         richText.editorView.dom
             .querySelector<HTMLElement>("button.js-language-selector")
@@ -167,6 +202,10 @@ console.log("Hello");
     });
 
     it("cancels editing and closes on Escape key", () => {
+        richText.content = `~~~js
+console.log("Hello");
+~~~`;
+
         // open panel
         richText.editorView.dom
             .querySelector<HTMLElement>("button.js-language-selector")
