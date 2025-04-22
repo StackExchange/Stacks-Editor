@@ -4,6 +4,7 @@ import { RichTextEditor } from "../../../src/rich-text/editor";
 import { externalPluginProvider } from "../../test-helpers";
 import { EditorView, EditorProps } from "prosemirror-view";
 import { CodeBlockView } from "../../../src/rich-text/node-views/code-block";
+import { fencedCodeSerializer } from "../../../src/rich-text/plugins/fenced-code-serializer";
 
 const languages = ["javascript", "python", "ruby"];
 
@@ -81,7 +82,7 @@ describe("code-block language picker", () => {
         richText = new RichTextEditor(
             document.createElement("div"),
             "",
-            externalPluginProvider([testCodeBlockPlugin])
+            externalPluginProvider([testCodeBlockPlugin, fencedCodeSerializer])
         );
     });
 
@@ -231,5 +232,41 @@ console.log("Hello");
                 ".js-language-input"
             );
         expect(inputPanel.style.display).toBe("none");
+    });
+
+    it("sets the language on an indented code block", () => {
+        richText.content = `    console.log("Hello");`;
+
+        // open and type "ja"
+        richText.editorView.dom
+            .querySelector<HTMLElement>("button.js-language-selector")
+            .click();
+        const textbox = richText.editorView.dom.querySelector<HTMLInputElement>(
+            ".js-language-input-textbox"
+        );
+        textbox.value = "ja";
+        textbox.dispatchEvent(new Event("input", { bubbles: true }));
+
+        // click the only suggestion
+        const suggestion = richText.editorView.dom.querySelector<HTMLElement>(
+            ".js-language-dropdown li"
+        );
+        suggestion.click();
+
+        // model should have updated params → "javascript" and closed the panel
+        const codeNode = richText.editorView.state.doc.firstChild;
+        expect(codeNode.attrs.params).toBe("javascript");
+        expect(codeNode.attrs.isEditingLanguage).toBe(false);
+
+        const inputPanel =
+            richText.editorView.dom.querySelector<HTMLDivElement>(
+                ".js-language-input"
+            );
+        expect(inputPanel.style.display).toBe("none");
+
+        const md = richText.content.trim();
+        expect(md).toBe(
+            ["```javascript", 'console.log("Hello");', "```"].join("\n")
+        );
     });
 });
