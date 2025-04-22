@@ -162,8 +162,8 @@ export class RichTextEditor extends BaseView {
                             node,
                             view,
                             getPos,
-                            this.options.highlighting.languages,
-                            this.options.highlighting.maxSuggestions
+                            this.options.highlighting?.languages || [],
+                            this.options.highlighting?.maxSuggestions
                         );
                     },
                     image(
