@@ -5,7 +5,7 @@ import { externalPluginProvider } from "../../test-helpers";
 import { EditorView, EditorProps } from "prosemirror-view";
 import { CodeBlockView } from "../../../src/rich-text/node-views/code-block";
 
-const languages = ["JavaScript", "Python", "Ruby"];
+const languages = ["javascript", "python", "ruby"];
 
 const testCodeBlockPlugin: EditorPlugin = () => ({
     richText: {
@@ -106,14 +106,14 @@ console.log("Hello");
 
         // model should get the suggestions array
         const codeNode = richText.editorView.state.doc.firstChild;
-        expect(codeNode.attrs.suggestions).toEqual(["Python"]);
+        expect(codeNode.attrs.suggestions).toEqual(["python"]);
 
         // and the dropdown should contain one <li>
         const items = richText.editorView.dom.querySelectorAll(
             ".js-language-dropdown li"
         );
         expect(items).toHaveLength(1);
-        expect(items[0].textContent).toBe("Python");
+        expect(items[0].textContent).toBe("python");
     });
 
     it("sets the language on clicking a suggestion", () => {
@@ -133,9 +133,9 @@ console.log("Hello");
         );
         suggestion.click();
 
-        // model should have updated params → "Ruby" and closed the panel
+        // model should have updated params → "ruby" and closed the panel
         const codeNode = richText.editorView.state.doc.firstChild;
-        expect(codeNode.attrs.params).toBe("Ruby");
+        expect(codeNode.attrs.params).toBe("ruby");
         expect(codeNode.attrs.isEditingLanguage).toBe(false);
 
         const inputPanel =
@@ -146,21 +146,21 @@ console.log("Hello");
     });
 
     it("commits whatever you typed if you blur without selecting a suggestion", () => {
-        // open and type "TypeScript"
+        // open and type "typescript"
         richText.editorView.dom
             .querySelector<HTMLElement>("button.js-language-selector")
             .click();
         const textbox = richText.editorView.dom.querySelector<HTMLInputElement>(
             ".js-language-input-textbox"
         );
-        textbox.value = "TypeScript";
+        textbox.value = "typescript";
 
         // blur the textbox (simulate losing focus)
         textbox.dispatchEvent(new FocusEvent("blur", { bubbles: true }));
 
-        // the code_block should now have params = "TypeScript"
+        // the code_block should now have params = "typescript"
         const codeNode = richText.editorView.state.doc.firstChild;
-        expect(codeNode.attrs.params).toBe("TypeScript");
+        expect(codeNode.attrs.params).toBe("typescript");
         expect(codeNode.attrs.isEditingLanguage).toBe(false);
         // suggestions should be cleared
         expect(codeNode.attrs.suggestions).toBeNull();
