@@ -47,7 +47,7 @@ export class CodeBlockView implements NodeView {
                 <input type="text" class="s-input s-input__search fs-caption js-language-input-textbox" placeholder="Search for a language" contenteditable="false" />
                 <span class="s-input-icon s-input-icon__search svg-icon-bg iconSearchSm"></span>
             </div>
-            <div class="s-card fs-caption c-pointer py4 px4 js-language-dropdown-container">
+            <div class="s-card fs-caption c-pointer py4 px4 js-language-dropdown-container ps-relative z-popover">
                 <ul class="s-menu js-language-dropdown"></ul>
             </div>
         </div>
