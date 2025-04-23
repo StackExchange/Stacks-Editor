@@ -37,7 +37,7 @@ export class CodeBlockView implements NodeView {
         this.dom = document.createElement("div");
         this.dom.classList.add("ps-relative", "p0", "ws-normal", "ow-normal");
         this.dom.innerHTML = escapeHTML`
-        <button class="s-btn s-btn__muted s-btn__dropdown s-btn__xs ps-absolute t2 r4 js-language-selector" contenteditable="false"> 
+        <button type="button" class="s-btn s-btn__muted s-btn__dropdown s-btn__xs ps-absolute t2 r4 js-language-selector" contenteditable="false"> 
             <span class="v-visible-sr">Change selected language. Currently:</span>
             <span class="js-language-indicator"></span>
         </button>
