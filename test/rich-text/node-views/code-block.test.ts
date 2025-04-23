@@ -4,7 +4,6 @@ import { RichTextEditor } from "../../../src/rich-text/editor";
 import { externalPluginProvider } from "../../test-helpers";
 import { EditorView, EditorProps } from "prosemirror-view";
 import { CodeBlockView } from "../../../src/rich-text/node-views/code-block";
-import { fencedCodeSerializer } from "../../../src/rich-text/plugins/fenced-code-serializer";
 
 const languages = ["javascript", "python", "ruby"];
 
@@ -82,7 +81,7 @@ describe("code-block language picker", () => {
         richText = new RichTextEditor(
             document.createElement("div"),
             "",
-            externalPluginProvider([testCodeBlockPlugin, fencedCodeSerializer])
+            externalPluginProvider([testCodeBlockPlugin])
         );
     });
 

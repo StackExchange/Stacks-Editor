@@ -40,7 +40,7 @@ type AddMenuItemsCallback = (
 ) => MenuBlock[];
 
 /** Describes the properties that can be used for extending commonmark support in the editor */
-export type MarkdownExtensionProps = {
+type MarkdownExtensionProps = {
     /**
      * Parsers for prosemirror-markdown
      * @see {@type import("prosemirror-markdown").MarkdownParser["tokens"]}
