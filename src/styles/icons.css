@@ -13,10 +13,6 @@
 .svg-icon-bg.iconEllipsisHorizontal {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/EllipsisHorizontal.svg");
 }
-.svg-icon-bg.iconArrowDownSm {
-    width: 21px;
-    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/ArrowDownSm.svg");
-}
 .svg-icon-bg.iconSearchSm {
     width: 21px;
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/SearchSm.svg");
