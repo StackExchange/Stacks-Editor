@@ -14,7 +14,7 @@ function buildUpdateDocumentCallback(view: EditorView) {
         //Search for the id
         let identifiedNode: Node;
         let identifiedPos: number;
-        if(id !== undefined) {
+        if (id !== undefined) {
             view.state.doc.descendants((node, pos) => {
                 if (node.type.name == "stack_snippet" && node.attrs?.id == id) {
                     identifiedNode = node;
