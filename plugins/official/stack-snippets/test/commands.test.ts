@@ -147,7 +147,7 @@ describe("commands", () => {
         const starterCallbackSnippet = `${validBegin}${callbackTestCaseJs}${validEnd}`;
 
         it.each(validSnippetRenderCases)(
-            "should replace existing snippet when editDocumentCallback is called",
+            "should replace existing snippet when updateDocumentCallback is called with an ID",
             (markdown: string) => {
                 //Create a blank doc, then replace the contents (a paragraph node) with the parsed markdown.
                 const view = richView(starterCallbackSnippet);
@@ -155,14 +155,14 @@ describe("commands", () => {
                 //Capture the metadata (for the Id) and the callback
                 let captureMeta: SnippetMetadata = null;
                 let captureCallback: (
-                    id: SnippetMetadata["id"],
-                    markdown?: string
+                    markdown: string,
+                    id: SnippetMetadata["id"]
                 ) => void;
                 const snippetOptions: StackSnippetOptions = {
                     renderer: () => Promise.resolve(null),
-                    openSnippetsModal: (editDocumentCallback, meta) => {
+                    openSnippetsModal: (updateDocumentCallback, meta) => {
                         captureMeta = meta;
-                        captureCallback = editDocumentCallback;
+                        captureCallback = updateDocumentCallback;
                     },
                 };
                 openSnippetModal(snippetOptions)(
@@ -172,7 +172,7 @@ describe("commands", () => {
                 );
 
                 //Call the callback
-                captureCallback(captureMeta.id, markdown);
+                captureCallback(markdown, captureMeta.id);
 
                 //Assert that the current view state has been changed
                 let matchingNodes: Node[] = [];
@@ -181,6 +181,44 @@ describe("commands", () => {
                         if (node.attrs.id == captureMeta.id) {
                             matchingNodes = [...matchingNodes, node];
                         }
+                    }
+                });
+                expect(matchingNodes).toHaveLength(1);
+                //And that we have replaced the content
+                expect(matchingNodes[0].textContent).not.toContain(
+                    "callbackTestCase"
+                );
+            }
+        );
+
+        it.each(validSnippetRenderCases)(
+            "should add snippet when updateDocumentCallback is called without an ID",
+            (markdown: string) => {
+                //Create a blank doc, then replace the contents (a paragraph node) with the parsed markdown.
+                const view = richView("");
+
+                //Capture the metadata (for the Id) and the callback
+                let captureCallback: (markdown?: string) => void;
+                const snippetOptions: StackSnippetOptions = {
+                    renderer: () => Promise.resolve(null),
+                    openSnippetsModal: (updateDocumentCallback) => {
+                        captureCallback = updateDocumentCallback;
+                    },
+                };
+                openSnippetModal(snippetOptions)(
+                    view.editorView.state,
+                    () => {},
+                    view.editorView
+                );
+
+                //Call the callback
+                captureCallback(markdown);
+
+                //Assert that the current view state now includes a snippet
+                let matchingNodes: Node[] = [];
+                view.editorView.state.doc.descendants((node) => {
+                    if (node.type.name == "stack_snippet") {
+                        matchingNodes = [...matchingNodes, node];
                     }
                 });
                 expect(matchingNodes).toHaveLength(1);
