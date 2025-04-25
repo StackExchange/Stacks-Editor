@@ -12,6 +12,10 @@ export interface StackSnippetOptions {
 
     /** Function to trigger opening of the snippets Modal */
     openSnippetsModal: (
+        updateDocumentCallback: (
+            id: SnippetMetadata["id"],
+            markdown?: string
+        ) => void,
         meta?: SnippetMetadata,
         js?: string,
         css?: string,

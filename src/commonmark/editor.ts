@@ -30,6 +30,7 @@ import { commonmarkSchema } from "./schema";
 import { textCopyHandlerPlugin } from "./plugins/text-copy-handler";
 import { markdownHighlightPlugin } from "./plugins/markdown-highlight";
 import { createMenuEntries } from "../shared/menu";
+import { baseViewStatePlugin } from "../shared/prosemirror-plugins/base-view-state";
 
 /**
  * Describes the callback for when an html preview should be rendered
@@ -100,6 +101,7 @@ export class CommonmarkEditor extends BaseView {
                 state: EditorState.create({
                     doc: this.parseContent(content),
                     plugins: [
+                        baseViewStatePlugin(this),
                         history(),
                         ...allKeymaps(this.options.parserFeatures),
                         menu,

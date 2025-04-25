@@ -43,6 +43,7 @@ import { interfaceManagerPlugin } from "../shared/prosemirror-plugins/interface-
 import { IExternalPluginProvider } from "../shared/editor-plugin";
 import { createMenuEntries } from "../shared/menu/index";
 import { createMenuPlugin } from "../shared/menu/plugin";
+import { baseViewStatePlugin } from "../shared/prosemirror-plugins/base-view-state";
 
 export interface RichTextOptions extends CommonViewOptions {
     /** Array of LinkPreviewProviders to handle specific link preview urls */
@@ -115,6 +116,7 @@ export class RichTextEditor extends BaseView {
                 state: EditorState.create({
                     doc: doc,
                     plugins: [
+                        baseViewStatePlugin(this),
                         history(),
                         ...allKeymaps(
                             this.finalizedSchema,
