@@ -10,19 +10,21 @@ import { BASE_VIEW_KEY } from "../../../../src/shared/prosemirror-plugins/base-v
 
 /** Builds a function that will update a snippet node on the up-to-date state (at time of execution) **/
 function buildUpdateDocumentCallback(view: EditorView) {
-    return (markdown: string, id: SnippetMetadata["id"]): void => {
+    return (markdown: string, id?: SnippetMetadata["id"]): void => {
         //Search for the id
         let identifiedNode: Node;
         let identifiedPos: number;
-        view.state.doc.descendants((node, pos) => {
-            if (node.type.name == "stack_snippet" && node.attrs?.id == id) {
-                identifiedNode = node;
-                identifiedPos = pos;
-            }
+        if(id !== undefined) {
+            view.state.doc.descendants((node, pos) => {
+                if (node.type.name == "stack_snippet" && node.attrs?.id == id) {
+                    identifiedNode = node;
+                    identifiedPos = pos;
+                }
 
-            //We never want to delve into children
-            return false;
-        });
+                //We never want to delve into children
+                return false;
+            });
+        }
 
         //Get an entrypoint into the BaseView we're in currently
         const { baseView } = BASE_VIEW_KEY.getState(view.state);
