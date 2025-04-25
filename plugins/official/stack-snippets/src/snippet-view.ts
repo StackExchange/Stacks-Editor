@@ -47,7 +47,7 @@ export class StackSnippetView implements NodeView {
             const toggleLink = document.createElement("a");
             toggleLink.href = "#";
             toggleLink.className = "snippet-toggle fs-body1";
-            toggleLink.textContent = codeIsShown ? "Hide Code" : "Show Code";
+            toggleLink.textContent = codeIsShown ? "Hide code snippet" : "Show code snippet";
             toggleContainer.appendChild(toggleLink);
 
             snippetContainer.appendChild(toggleContainer);
@@ -171,7 +171,7 @@ e
 
         const isVisible = node.attrs.showCode as boolean;
         snippetCode.style.display = isVisible ? "" : "none";
-        toggleLink.textContent = isVisible ? "Hide Code" : "Show Code";
+        toggleLink.textContent = isVisible ? "Hide code snippet" : "Show code snippet";
         arrowSpan.className = isVisible
             ? "svg-icon-bg iconArrowDownSm va-middle"
             : "svg-icon-bg iconArrowRightSm va-middle";
