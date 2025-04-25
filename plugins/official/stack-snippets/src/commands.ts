@@ -10,7 +10,7 @@ import { BASE_VIEW_KEY } from "../../../../src/shared/prosemirror-plugins/base-v
 
 /** Builds a function that will update a snippet node on the up-to-date state (at time of execution) **/
 function buildUpdateDocumentCallback(view: EditorView) {
-    return (id: SnippetMetadata["id"], markdown: string): void => {
+    return (markdown: string, id: SnippetMetadata["id"]): void => {
         //Search for the id
         let identifiedNode: Node;
         let identifiedPos: number;

@@ -198,7 +198,7 @@ describe("commands", () => {
                 const view = richView("");
 
                 //Capture the metadata (for the Id) and the callback
-                let captureCallback: (markdown?: string) => void;
+                let captureCallback: (markdown: string) => void;
                 const snippetOptions: StackSnippetOptions = {
                     renderer: () => Promise.resolve(null),
                     openSnippetsModal: (updateDocumentCallback) => {
