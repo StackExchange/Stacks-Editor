@@ -170,6 +170,7 @@ export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
             babel: { default: "null" },
             babelPresetReact: { default: "null" },
             babelPresetTS: { default: "null" },
+            showCode: { default: true }
         },
     },
     stack_snippet_lang: {

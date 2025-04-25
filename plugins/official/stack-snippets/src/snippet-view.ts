@@ -19,6 +19,9 @@ export class StackSnippetView implements NodeView {
         this.getPos = getPos;
 
         this.snippetMetadata = getSnippetMetadata(node);
+        const codeIsShown: boolean = typeof node.attrs.showCode === "boolean"
+            ? node.attrs.showCode
+            : true;
 
         //We want to render the language blocks in the middle of some content,
         // so we need to custom-render stuff here ("holes" must be last)
@@ -26,11 +29,50 @@ export class StackSnippetView implements NodeView {
         this.dom = snippetContainer;
         snippetContainer.className = "snippet";
 
+        let toggleContainer: HTMLDivElement;
+
+        if (this.snippetMetadata.hide === "true") {
+            // Create the show/hide link container
+            toggleContainer = document.createElement("div");
+            toggleContainer.className = "snippet-toggle-container";
+
+            // Create the arrow span
+            const arrowSpan = document.createElement("span");
+            arrowSpan.className = codeIsShown
+                ? "svg-icon-bg iconArrowDownSm va-middle"
+                : "svg-icon-bg iconArrowRightSm va-middle";
+            toggleContainer.appendChild(arrowSpan);
+
+            // Create the show/hide link
+            const toggleLink = document.createElement("a");
+            toggleLink.href = "#";
+            toggleLink.className = "snippet-toggle fs-body1";
+            toggleLink.textContent = codeIsShown ? "Hide Code" : "Show Code";
+            toggleContainer.appendChild(toggleLink);
+
+            snippetContainer.appendChild(toggleContainer);
+        }
+
         //This is the div where we're going to render any language blocks
         const snippetCode = document.createElement("div");
         snippetCode.className = "snippet-code";
+        snippetCode.style.display = codeIsShown ? "" : "none"; 
         snippetContainer.appendChild(snippetCode);
         this.contentDOM = snippetCode;
+
+        if (this.snippetMetadata.hide === "true") {
+            toggleContainer.addEventListener("click", (e) => {
+                e.preventDefault();
+                const isVisible = snippetCode.style.display !== "none";
+e
+                this.view.dispatch(
+                    this.view.state.tr.setNodeMarkup(this.getPos(), null, {
+                        ...node.attrs,
+                        showCode: !isVisible,
+                    })
+                );
+            });
+        }
 
         //And this is where we stash our CTAs and results, which are statically rendered.
         const snippetResult = document.createElement("div");
@@ -122,6 +164,19 @@ export class StackSnippetView implements NodeView {
             JSON.stringify(this.snippetMetadata);
         this.snippetMetadata = updatedMeta;
 
+        // Update the visibility of the snippet-code div and toggle link
+        const snippetCode = this.contentDOM;
+        const toggleLink = this.dom.querySelector(".snippet-toggle");
+        const arrowSpan = this.dom.querySelector(".svg-icon-bg");
+
+        const isVisible = node.attrs.showCode as boolean;
+        snippetCode.style.display = isVisible ? "" : "none";
+        toggleLink.textContent = isVisible ? "Hide Code" : "Show Code";
+        arrowSpan.className = isVisible
+            ? "svg-icon-bg iconArrowDownSm va-middle"
+            : "svg-icon-bg iconArrowRightSm va-middle";
+
+        // Update the result container if metadata has changed
         const content = this.contentNode;
         if (metaChanged && content) {
             //Clear the node
@@ -134,7 +189,7 @@ export class StackSnippetView implements NodeView {
                 "allow-forms allow-modals allow-scripts"
             );
             if (content.nodeType === Node.DOCUMENT_NODE) {
-                const document = <Document>content;
+                const document = content as Document;
                 iframe.srcdoc = document.documentElement.innerHTML;
             }
             this.resultContainer.appendChild(iframe);
@@ -148,6 +203,6 @@ export class StackSnippetView implements NodeView {
     private contentNode: Node;
     private getPos: () => number;
     resultContainer: HTMLDivElement;
-    dom: Node;
+    dom: HTMLElement;
     contentDOM: HTMLElement;
 }
