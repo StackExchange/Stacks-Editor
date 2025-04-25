@@ -19,9 +19,10 @@ export class StackSnippetView implements NodeView {
         this.getPos = getPos;
 
         this.snippetMetadata = getSnippetMetadata(node);
-        const codeIsShown: boolean = typeof node.attrs.showCode === "boolean"
-            ? node.attrs.showCode
-            : true;
+        const codeIsShown: boolean =
+            typeof node.attrs.showCode === "boolean"
+                ? node.attrs.showCode
+                : true;
 
         //We want to render the language blocks in the middle of some content,
         // so we need to custom-render stuff here ("holes" must be last)
@@ -47,7 +48,9 @@ export class StackSnippetView implements NodeView {
             const toggleLink = document.createElement("a");
             toggleLink.href = "#";
             toggleLink.className = "snippet-toggle fs-body1";
-            toggleLink.textContent = codeIsShown ? "Hide code snippet" : "Show code snippet";
+            toggleLink.textContent = codeIsShown
+                ? "Hide code snippet"
+                : "Show code snippet";
             toggleContainer.appendChild(toggleLink);
 
             snippetContainer.appendChild(toggleContainer);
@@ -56,7 +59,7 @@ export class StackSnippetView implements NodeView {
         //This is the div where we're going to render any language blocks
         const snippetCode = document.createElement("div");
         snippetCode.className = "snippet-code";
-        snippetCode.style.display = codeIsShown ? "" : "none"; 
+        snippetCode.style.display = codeIsShown ? "" : "none";
         snippetContainer.appendChild(snippetCode);
         this.contentDOM = snippetCode;
 
@@ -64,7 +67,6 @@ export class StackSnippetView implements NodeView {
             toggleContainer.addEventListener("click", (e) => {
                 e.preventDefault();
                 const isVisible = snippetCode.style.display !== "none";
-e
                 this.view.dispatch(
                     this.view.state.tr.setNodeMarkup(this.getPos(), null, {
                         ...node.attrs,
@@ -171,7 +173,9 @@ e
 
         const isVisible = node.attrs.showCode as boolean;
         snippetCode.style.display = isVisible ? "" : "none";
-        toggleLink.textContent = isVisible ? "Hide code snippet" : "Show code snippet";
+        toggleLink.textContent = isVisible
+            ? "Hide code snippet"
+            : "Show code snippet";
         arrowSpan.className = isVisible
             ? "svg-icon-bg iconArrowDownSm va-middle"
             : "svg-icon-bg iconArrowRightSm va-middle";

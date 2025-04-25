@@ -27,7 +27,10 @@ describe("StackSnippetView", () => {
             langNode
         );
 
-    const buildView = (options?: StackSnippetOptions, hide: string = "false"): EditorView => {
+    const buildView = (
+        options?: StackSnippetOptions,
+        hide: string = "false"
+    ): EditorView => {
         const state = EditorState.create({
             schema: schema,
             plugins: [stackSnippetPasteHandler],
