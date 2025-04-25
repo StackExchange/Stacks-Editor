@@ -14,19 +14,20 @@ describe("StackSnippetView", () => {
         { language: "js" },
         schema.text("console.log('test');")
     );
-    const validSnippet = schema.nodes.stack_snippet.createChecked(
-        {
-            id: "1234",
-            babel: "true",
-            babelPresetReact: "true",
-            babelPresetTS: "null",
-            console: "true",
-            hide: "false",
-        },
-        langNode
-    );
+    const validSnippet = (hide: string) =>
+        schema.nodes.stack_snippet.createChecked(
+            {
+                id: "1234",
+                babel: "true",
+                babelPresetReact: "true",
+                babelPresetTS: "null",
+                console: "true",
+                hide: hide,
+            },
+            langNode
+        );
 
-    const buildView = (options?: StackSnippetOptions): EditorView => {
+    const buildView = (options?: StackSnippetOptions, hide: string = "false"): EditorView => {
         const state = EditorState.create({
             schema: schema,
             plugins: [stackSnippetPasteHandler],
@@ -48,7 +49,7 @@ describe("StackSnippetView", () => {
             view.state.tr.replaceRangeWith(
                 0,
                 view.state.doc.nodeSize - 2,
-                validSnippet
+                validSnippet(hide)
             )
         );
 
@@ -127,5 +128,40 @@ describe("StackSnippetView", () => {
         resultDoc.close();
         const [resultDiv] = resultDoc.getElementsByTagName("div");
         expect(resultDiv.textContent).toBe("test!");
+    });
+
+    it("should render show/hide link if hide attr is true", () => {
+        const view = buildView(undefined, "true");
+        const toggleLink = view.dom.querySelectorAll(".snippet-toggle");
+
+        expect(toggleLink).toHaveLength(1);
+        expect(toggleLink[0].textContent).toBe("Hide code snippet");
+    });
+
+    it("should not render show/hide link if hide attr is false", () => {
+        const view = buildView(undefined, "false");
+        const toggleLink = view.dom.querySelectorAll(".snippet-toggle");
+
+        expect(toggleLink).toHaveLength(0);
+    });
+
+    it("should toggle visibility of code snippet when show/hide link is clicked", () => {
+        const view = buildView(undefined, "true");
+        const toggleLink = view.dom.querySelector(".snippet-toggle");
+        const snippetCode = view.dom.querySelector(".snippet-code");
+
+        // Initial state: Code is visible
+        expect((<HTMLDivElement>snippetCode).style.display).toBe("");
+        expect(toggleLink.textContent).toBe("Hide code snippet");
+
+        // Click to hide
+        (<HTMLAnchorElement>toggleLink).click();
+        expect((<HTMLDivElement>snippetCode).style.display).toBe("none");
+        expect(toggleLink.textContent).toBe("Show code snippet");
+
+        // Click to show
+        (<HTMLAnchorElement>toggleLink).click();
+        expect((<HTMLDivElement>snippetCode).style.display).toBe("");
+        expect(toggleLink.textContent).toBe("Hide code snippet");
     });
 });
