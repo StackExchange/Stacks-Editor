@@ -265,6 +265,7 @@ export class CodeBlockView implements NodeView {
     }
 
     private onLanguageInputMouseDown(event: MouseEvent) {
+        // this prevents ProseMirror freaking out when triple-clicking the textbox
         event.stopPropagation();
     }
 
