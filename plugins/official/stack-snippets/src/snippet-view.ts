@@ -167,7 +167,6 @@ export class StackSnippetView implements NodeView {
         this.snippetMetadata = updatedMeta;
 
         if (this.snippetMetadata.hide === "true") {
-
             // Update the visibility of the snippet-code div and toggle link
             const snippetCode = this.contentDOM;
             const toggleLink = this.dom.querySelector(".snippet-toggle");
