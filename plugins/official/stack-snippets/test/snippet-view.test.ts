@@ -65,10 +65,7 @@ describe("StackSnippetView", () => {
         );
 
         expect(runCodeButton).toHaveLength(1);
-        expect(runCodeButton[0].getAttribute("aria-label")).toBe(
-            "Run code snippet"
-        );
-        expect(runCodeButton[0].getAttribute("title")).toBe("Run code snippet");
+        expect(runCodeButton[0].textContent).toBe("Run code snippet");
     });
 
     it("should not render run code button if no renderer provided", () => {
