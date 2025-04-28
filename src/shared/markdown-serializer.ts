@@ -185,7 +185,12 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
     },
     code_block(state, node) {
         // TODO could be html...
-        const markup = (node.attrs.markup as string) || "```";
+        let markup = (node.attrs.markup as string) || "```";
+
+        // if a language has been specified, we can't use an indented code block, so turn it into a fence
+        if (markup === "indented" && node.attrs.params) {
+            markup = "```";
+        }
 
         // indented code blocks have their markup set to "indented" instead of empty
         if (markup === "indented") {

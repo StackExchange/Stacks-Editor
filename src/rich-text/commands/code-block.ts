@@ -358,3 +358,31 @@ export function toggleInlineCode(
     // If we found neither newline nor softbreak, toggle the inline code mark.
     return toggleMark(state.schema.marks.code)(state, dispatch);
 }
+
+function isSelectionInCodeBlock(
+    state: EditorState
+): { pos: number; node: ProseMirrorNode } | null {
+    const { $from } = state.selection;
+    if ($from.parent.type.name === "code_block") {
+        return { pos: $from.before(), node: $from.parent };
+    }
+    return null;
+}
+
+export function openCodeBlockLanguagePicker(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    const codeBlock = isSelectionInCodeBlock(state);
+    if (!codeBlock) {
+        return false;
+    }
+    const { pos, node } = codeBlock;
+
+    // Setting isEditingLanguage to true will open the language picker
+    const newAttrs = { ...node.attrs, isEditingLanguage: true };
+    if (dispatch) {
+        dispatch(state.tr.setNodeMarkup(pos, undefined, newAttrs));
+    }
+    return true;
+}

@@ -13,9 +13,14 @@
 .svg-icon-bg.iconEllipsisHorizontal {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/EllipsisHorizontal.svg");
 }
+
 .svg-icon-bg.iconArrowDownSm {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/ArrowDownSm.svg");
 }
 .svg-icon-bg.iconArrowRightSm {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/ArrowRightSm.svg");
+}
+.svg-icon-bg.iconSearchSm {
+    width: 21px;
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/SearchSm.svg");
 }

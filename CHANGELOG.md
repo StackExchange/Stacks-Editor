@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.0
+
+### Minor Changes
+
+- [#429](https://github.com/StackExchange/Stacks-Editor/pull/429) [`24319c8`](https://github.com/StackExchange/Stacks-Editor/commit/24319c8db4e2415874644ae74128e538503b61fd) Thanks [@alexwarren](https://github.com/alexwarren)! - add codeblock language picker
+
+- [#431](https://github.com/StackExchange/Stacks-Editor/pull/431) [`353995e`](https://github.com/StackExchange/Stacks-Editor/commit/353995e5075144c29cb71b4e1cc35ae0d6dd486a) Thanks [@threefjefff](https://github.com/threefjefff)! - Add the ability to edit a Snippet in place (via callback)
+
 ## 0.11.2
 
 ### Patch Changes
