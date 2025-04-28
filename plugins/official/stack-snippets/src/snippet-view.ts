@@ -166,19 +166,22 @@ export class StackSnippetView implements NodeView {
             JSON.stringify(this.snippetMetadata);
         this.snippetMetadata = updatedMeta;
 
-        // Update the visibility of the snippet-code div and toggle link
-        const snippetCode = this.contentDOM;
-        const toggleLink = this.dom.querySelector(".snippet-toggle");
-        const arrowSpan = this.dom.querySelector(".svg-icon-bg");
+        if (this.snippetMetadata.hide === "true") {
 
-        const isVisible = node.attrs.showCode as boolean;
-        snippetCode.style.display = isVisible ? "" : "none";
-        toggleLink.textContent = isVisible
-            ? "Hide code snippet"
-            : "Show code snippet";
-        arrowSpan.className = isVisible
-            ? "svg-icon-bg iconArrowDownSm va-middle"
-            : "svg-icon-bg iconArrowRightSm va-middle";
+            // Update the visibility of the snippet-code div and toggle link
+            const snippetCode = this.contentDOM;
+            const toggleLink = this.dom.querySelector(".snippet-toggle");
+            const arrowSpan = this.dom.querySelector(".svg-icon-bg");
+
+            const isVisible = node.attrs.showCode as boolean;
+            snippetCode.style.display = isVisible ? "" : "none";
+            toggleLink.textContent = isVisible
+                ? "Hide code snippet"
+                : "Show code snippet";
+            arrowSpan.className = isVisible
+                ? "svg-icon-bg iconArrowDownSm va-middle"
+                : "svg-icon-bg iconArrowRightSm va-middle";
+        }
 
         // Update the result container if metadata has changed
         const content = this.contentNode;
