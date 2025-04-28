@@ -42,9 +42,8 @@ export class StackSnippetView implements NodeView {
         if (opts && opts.renderer) {
             const runCodeButton = document.createElement("button");
             runCodeButton.type = "button";
-            runCodeButton.className = "s-btn s-btn__filled";
-            runCodeButton.title = "Run code snippet";
-            runCodeButton.setAttribute("aria-label", "Run code snippet");
+            runCodeButton.className =
+                "s-btn s-btn__filled d-inline-flex ai-center g2";
             // create the svg svg-icon-bg element
             const runIcon = document.createElement("span");
             runIcon.className = "svg-icon-bg iconPlay";
