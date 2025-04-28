@@ -189,10 +189,10 @@ export class CodeBlockView implements NodeView {
             ".js-language-dropdown"
         );
         if (event.key === "Enter") {
+            event.preventDefault();
             // If an item is focused in the dropdown, select it.
             const activeItem = dropdown.querySelector("li:focus");
             if (activeItem) {
-                event.preventDefault();
                 (activeItem as HTMLElement).click();
                 return;
             }
