@@ -320,6 +320,15 @@ domReady(() => {
             ],
             highlighting: {
                 highlightedNodeTypes: ["stack_snippet_lang"],
+                languages: [
+                    "javascript",
+                    "java",
+                    "python",
+                    "ruby",
+                    "rust",
+                    "csharp",
+                    "go",
+                ],
             },
         },
         imageUpload: imageUploadOptions,

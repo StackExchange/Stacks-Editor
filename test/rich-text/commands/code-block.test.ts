@@ -3,6 +3,7 @@ import { schema as basicSchema } from "prosemirror-schema-basic";
 import { doc, p, code_block, br, code } from "prosemirror-test-builder";
 import {
     indentCodeBlockLinesCommand,
+    openCodeBlockLanguagePicker,
     toggleCodeBlock,
     toggleInlineCode,
     unindentCodeBlockLinesCommand,
@@ -729,5 +730,37 @@ describe("toggleInlineCode command", () => {
         ).toBe(false);
         // And the document remains unchanged.
         expect(state.doc.toJSON()).toEqual(prevJSON);
+    });
+});
+
+describe("openCodeBlockLanguagePicker (using createState)", () => {
+    it("should return true and dispatch setNodeMarkup when inside a <pre><code>", () => {
+        const state = createState("<pre><code>Some code</code></pre>", []);
+
+        const dispatch = jest.fn<void, [Transaction]>();
+        const result = openCodeBlockLanguagePicker(state, dispatch);
+
+        expect(result).toBe(true);
+        expect(dispatch).toHaveBeenCalledTimes(1);
+
+        const dispatchedTr = dispatch.mock.calls[0][0];
+        const newState = state.apply(dispatchedTr);
+
+        const codeBlock = newState.doc.child(0);
+
+        expect(codeBlock.type.name).toBe("code_block");
+        expect(codeBlock.attrs).toMatchObject({
+            isEditingLanguage: true,
+        });
+    });
+
+    it("should return false and not dispatch when not in a code block", () => {
+        const state = createState("<p>Hello world</p>", []);
+
+        const dispatch = jest.fn<void, [Transaction]>();
+        const result = openCodeBlockLanguagePicker(state, dispatch);
+
+        expect(result).toBe(false);
+        expect(dispatch).not.toHaveBeenCalled();
     });
 });

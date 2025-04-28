@@ -51,6 +51,10 @@ export interface RichTextOptions extends CommonViewOptions {
     highlighting?: {
         /** Which prosemirror nodes should have highlighting? Defaults to "code_block", which will always be highlighted */
         highlightedNodeTypes?: string[];
+        /** Which languages appear as suggestions in the dropdown? */
+        languages?: string[];
+        /** The maximum number of languages to show in the dropdown */
+        maxSuggestions?: number;
     };
 }
 
@@ -151,8 +155,18 @@ export class RichTextEditor extends BaseView {
                     ],
                 }),
                 nodeViews: {
-                    code_block: (node) => {
-                        return new CodeBlockView(node);
+                    code_block: (
+                        node,
+                        view: EditorView,
+                        getPos: () => number
+                    ) => {
+                        return new CodeBlockView(
+                            node,
+                            view,
+                            getPos,
+                            this.options.highlighting?.languages || [],
+                            this.options.highlighting?.maxSuggestions
+                        );
                     },
                     image(
                         node: ProseMirrorNode,
