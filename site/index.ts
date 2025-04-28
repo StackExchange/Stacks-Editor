@@ -126,7 +126,7 @@ const ImageUploadHandler: ImageUploadOptions["handler"] = (file) =>
     });
 
 const stackSnippetOpts: StackSnippetOptions = {
-    renderer: (meta, js, css, html) => {
+    renderer: async (meta, js, css, html) => {
         const data = {
             js: js,
             css: css,
@@ -136,27 +136,26 @@ const stackSnippetOpts: StackSnippetOptions = {
             babelPresetReact: meta.babelPresetReact,
             babelPresetTS: meta.babelPresetTS,
         };
-        return fetch("/snippets/js", {
-            method: "POST",
-            body: new URLSearchParams(data),
-        })
-            .then((res) => res.text())
-            .then((html) => {
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, "text/html");
-                return doc;
-            })
-            .catch((err) => {
-                error("test harness - snippet render", err);
-                const div = document.createElement("div");
-                const freeRealEstate = document.createElement("img");
-                freeRealEstate.src =
-                    "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg";
-                div.appendChild(freeRealEstate);
-                return div;
+        try {
+            const res = await fetch("/snippets/js", {
+                method: "POST",
+                body: new URLSearchParams(data),
             });
+            const html = await res.text();
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(html, "text/html");
+            return doc;
+        } catch (err) {
+            error("test harness - snippet render", err);
+            const div = document.createElement("div");
+            const freeRealEstate = document.createElement("img");
+            freeRealEstate.src =
+                "https://i.kym-cdn.com/entries/icons/original/000/021/311/free.jpg";
+            div.appendChild(freeRealEstate);
+            return div;
+        }
     },
-    openSnippetsModal: (meta, js, css, html) => {
+    openSnippetsModal: (editorCallback, meta, js, css, html) => {
         log("test harness - open modal event", `meta\n${JSON.stringify(meta)}`);
         log("test harness - open modal event", `js\n${JSON.stringify(js)}`);
         log("test harness - open modal event", `css\n${JSON.stringify(css)}`);

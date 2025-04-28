@@ -1,12 +1,19 @@
+import { Node } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { SnippetMetadata, StackSnippetOptions } from "../src/common";
 import { openSnippetModal } from "../src/commands";
 import { RichTextHelpers } from "../../../../test";
 import {
     buildSnippetSchema,
+    snippetExternalProvider,
+    validBegin,
+    validEnd,
     validSnippetRenderCases,
 } from "./stack-snippet-helpers";
 import { parseSnippetBlockForProsemirror } from "../src/paste-handler";
+import { RichTextEditor } from "../../../../src";
+import { stackSnippetPlugin as markdownPlugin } from "../src/schema";
+import MarkdownIt from "markdown-it";
 
 describe("commands", () => {
     const schema = buildSnippetSchema();
@@ -19,14 +26,14 @@ describe("commands", () => {
             css?: string,
             html?: string
         ) => boolean
-    ) => {
+    ): boolean => {
         let captureMeta: SnippetMetadata = null;
         let captureJs: string = null;
         let captureCss: string = null;
         let captureHtml: string = null;
         const snippetOptions: StackSnippetOptions = {
             renderer: () => Promise.resolve(null),
-            openSnippetsModal: (meta, js, css, html) => {
+            openSnippetsModal: (_, meta, js, css, html) => {
                 captureMeta = meta;
                 captureJs = js;
                 captureCss = css;
@@ -40,73 +47,182 @@ describe("commands", () => {
         expect(
             shouldMatchCall(captureMeta, captureJs, captureCss, captureHtml)
         ).toBe(true);
+
+        //Essentially the expects will mean this is terminated before now.
+        // We can now expect on this guy to get rid of the linting errors
+        return true;
     };
 
-    it("should do nothing if dispatch null", () => {
-        const snippetOptions: StackSnippetOptions = {
-            renderer: () => Promise.resolve(null),
-            openSnippetsModal: () => {},
-        };
-        const state = RichTextHelpers.createState(
-            "Here's a paragraph -  a text block mind you",
-            []
-        );
-
-        const command = openSnippetModal(snippetOptions);
-
-        const ret = command(state, null);
-
-        expect(ret).toBe(true);
-    });
-
-    it("should send openModal with blank arguments if no snippet detected", () => {
-        const state = RichTextHelpers.createState(
-            "Here's a paragraph -  a text block mind you",
-            []
-        );
-
-        whenOpenSnippetCommandCalled(state, (meta, js, css, html) => {
-            //Expect a blank modal
-            if (meta || js || css || html) {
-                return false;
-            }
-            return true;
-        });
-    });
-
-    it.each(validSnippetRenderCases)(
-        "should send openModal with blank arguments if snippet detected",
-        (markdown: string, langs: string[]) => {
-            //Create a blank doc, then replace the contents (a paragraph node) with the parsed markdown.
-            let state = EditorState.create({
-                schema: schema,
-                plugins: [],
-            });
-            state = state.apply(
-                state.tr.replaceRangeWith(
-                    0,
-                    state.doc.nodeSize - 2,
-                    parseSnippetBlockForProsemirror(schema, markdown)
-                )
+    describe("dispatch", () => {
+        it("should do nothing if dispatch null", () => {
+            const snippetOptions: StackSnippetOptions = {
+                renderer: () => Promise.resolve(null),
+                openSnippetsModal: () => {},
+            };
+            const state = RichTextHelpers.createState(
+                "Here's a paragraph -  a text block mind you",
+                []
             );
 
-            //Anywhere selection poision is now meaningfully a part of the stack snippet, so open the modal and expect it to be passed
-            whenOpenSnippetCommandCalled(state, (meta, js, css, html) => {
-                if (!meta) {
-                    return false;
-                }
-                if ("js" in langs) {
-                    if (js === undefined) return false;
-                }
-                if ("css" in langs) {
-                    if (css === undefined) return false;
-                }
-                if ("html" in langs) {
-                    if (html === undefined) return false;
-                }
+            const command = openSnippetModal(snippetOptions);
 
-                return true;
-            });
+            const ret = command(state, null);
+
+            expect(ret).toBe(true);
+        });
+
+        it("should send openModal with blank arguments if no snippet detected", () => {
+            const state = RichTextHelpers.createState(
+                "Here's a paragraph -  a text block mind you",
+                []
+            );
+
+            expect(
+                whenOpenSnippetCommandCalled(state, (meta, js, css, html) => {
+                    //Expect a blank modal
+                    return !(meta || js || css || html);
+                })
+            ).toBe(true);
+        });
+
+        it.each(validSnippetRenderCases)(
+            "should send openModal with arguments if snippet detected",
+            (markdown: string, langs: string[]) => {
+                //Create a blank doc, then replace the contents (a paragraph node) with the parsed markdown.
+                let state = EditorState.create({
+                    schema: schema,
+                    plugins: [],
+                });
+                state = state.apply(
+                    state.tr.replaceRangeWith(
+                        0,
+                        state.doc.nodeSize - 2,
+                        parseSnippetBlockForProsemirror(schema, markdown)
+                    )
+                );
+
+                //Anywhere selection position is now meaningfully a part of the stack snippet, so open the modal and expect it to be passed
+                expect(
+                    whenOpenSnippetCommandCalled(
+                        state,
+                        (meta, js, css, html) => {
+                            if (!meta) {
+                                return false;
+                            }
+                            if ("js" in langs) {
+                                if (js === undefined) return false;
+                            }
+                            if ("css" in langs) {
+                                if (css === undefined) return false;
+                            }
+                            if ("html" in langs) {
+                                if (html === undefined) return false;
+                            }
+
+                            return true;
+                        }
+                    )
+                ).toBe(true);
+            }
+        );
+    });
+
+    describe("callback", () => {
+        const mdit = new MarkdownIt("default", {});
+        mdit.use(markdownPlugin);
+        function richView(markdownInput: string, opts?: StackSnippetOptions) {
+            return new RichTextEditor(
+                document.createElement("div"),
+                markdownInput,
+                snippetExternalProvider(opts),
+                {}
+            );
         }
-    );
+
+        const callbackTestCaseJs: string = `<!-- language: lang-js -->
+
+    console.log("callbackTestCase");
+
+`;
+        const starterCallbackSnippet = `${validBegin}${callbackTestCaseJs}${validEnd}`;
+
+        it.each(validSnippetRenderCases)(
+            "should replace existing snippet when updateDocumentCallback is called with an ID",
+            (markdown: string) => {
+                //Create a blank doc, then replace the contents (a paragraph node) with the parsed markdown.
+                const view = richView(starterCallbackSnippet);
+
+                //Capture the metadata (for the Id) and the callback
+                let captureMeta: SnippetMetadata = null;
+                let captureCallback: (
+                    markdown: string,
+                    id: SnippetMetadata["id"]
+                ) => void;
+                const snippetOptions: StackSnippetOptions = {
+                    renderer: () => Promise.resolve(null),
+                    openSnippetsModal: (updateDocumentCallback, meta) => {
+                        captureMeta = meta;
+                        captureCallback = updateDocumentCallback;
+                    },
+                };
+                openSnippetModal(snippetOptions)(
+                    view.editorView.state,
+                    () => {},
+                    view.editorView
+                );
+
+                //Call the callback
+                captureCallback(markdown, captureMeta.id);
+
+                //Assert that the current view state has been changed
+                let matchingNodes: Node[] = [];
+                view.editorView.state.doc.descendants((node) => {
+                    if (node.type.name == "stack_snippet") {
+                        if (node.attrs.id == captureMeta.id) {
+                            matchingNodes = [...matchingNodes, node];
+                        }
+                    }
+                });
+                expect(matchingNodes).toHaveLength(1);
+                //And that we have replaced the content
+                expect(matchingNodes[0].textContent).not.toContain(
+                    "callbackTestCase"
+                );
+            }
+        );
+
+        it.each(validSnippetRenderCases)(
+            "should add snippet when updateDocumentCallback is called without an ID",
+            (markdown: string) => {
+                //Create a blank doc, then replace the contents (a paragraph node) with the parsed markdown.
+                const view = richView("");
+
+                //Capture the metadata (for the Id) and the callback
+                let captureCallback: (markdown: string) => void;
+                const snippetOptions: StackSnippetOptions = {
+                    renderer: () => Promise.resolve(null),
+                    openSnippetsModal: (updateDocumentCallback) => {
+                        captureCallback = updateDocumentCallback;
+                    },
+                };
+                openSnippetModal(snippetOptions)(
+                    view.editorView.state,
+                    () => {},
+                    view.editorView
+                );
+
+                //Call the callback
+                captureCallback(markdown);
+
+                //Assert that the current view state now includes a snippet
+                let matchingNodes: Node[] = [];
+                view.editorView.state.doc.descendants((node) => {
+                    if (node.type.name == "stack_snippet") {
+                        matchingNodes = [...matchingNodes, node];
+                    }
+                });
+                expect(matchingNodes).toHaveLength(1);
+            }
+        );
+    });
 });
