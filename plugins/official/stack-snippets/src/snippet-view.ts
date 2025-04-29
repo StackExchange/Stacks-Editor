@@ -35,13 +35,14 @@ export class StackSnippetView implements NodeView {
         if (this.snippetMetadata.hide === "true") {
             // Create the show/hide link container
             toggleContainer = document.createElement("div");
-            toggleContainer.className = "snippet-toggle-container";
+            toggleContainer.className =
+                "snippet-toggle-container d-inline-flex ai-center g2";
 
             // Create the arrow span
             const arrowSpan = document.createElement("span");
             arrowSpan.className = codeIsShown
-                ? "svg-icon-bg iconArrowDownSm va-middle"
-                : "svg-icon-bg iconArrowRightSm va-middle";
+                ? "svg-icon-bg iconArrowDownSm"
+                : "svg-icon-bg iconArrowRightSm";
             toggleContainer.appendChild(arrowSpan);
 
             // Create the show/hide link
