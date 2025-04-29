@@ -178,8 +178,8 @@ export class StackSnippetView implements NodeView {
                 ? "Hide code snippet"
                 : "Show code snippet";
             arrowSpan.className = isVisible
-                ? "svg-icon-bg iconArrowDownSm va-middle"
-                : "svg-icon-bg iconArrowRightSm va-middle";
+                ? "svg-icon-bg iconArrowDownSm"
+                : "svg-icon-bg iconArrowRightSm";
         }
 
         // Update the result container if metadata has changed
