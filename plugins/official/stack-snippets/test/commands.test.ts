@@ -1,7 +1,7 @@
 import { Node } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { SnippetMetadata, StackSnippetOptions } from "../src/common";
-import { openSnippetModal, swallowedCommandList } from "../src/commands";
+import { openSnippetModal } from "../src/commands";
 import { RichTextHelpers } from "../../../../test";
 import {
     buildSnippetSchema,
