@@ -7,7 +7,8 @@ import {
     buildSnippetSchema,
     snippetExternalProvider,
     validBegin,
-    validEnd, validJs,
+    validEnd,
+    validJs,
     validSnippetRenderCases,
 } from "./stack-snippet-helpers";
 import { parseSnippetBlockForProsemirror } from "../src/paste-handler";
@@ -233,23 +234,33 @@ describe("commands", () => {
         it("should swallow commands when in a Snippet context", () => {
             const view = richView(`${validBegin}${validJs}${validEnd}`);
             const expectedHTML = view.editorView.dom.innerHTML;
-            const event = new KeyboardEvent('keydown', { ctrlKey: true, key: 'Enter'})
+            const event = new KeyboardEvent("keydown", {
+                ctrlKey: true,
+                key: "Enter",
+            });
 
-            view.editorView.someProp('handleKeyDown', (f) => f(view.editorView, event))
+            view.editorView.someProp("handleKeyDown", (f) =>
+                f(view.editorView, event)
+            );
 
             //The Dom is exactly the same - no change has occured
             expect(view.editorView.dom.innerHTML).toBe(expectedHTML);
-        })
+        });
 
         it("should not swallow commands when in a non-Snippet context", () => {
             const view = richView("```javascript\nconsole.log('test');\n```");
             const expectedHTML = view.editorView.dom.innerHTML;
-            const event = new KeyboardEvent('keydown', { ctrlKey: true, key: 'Enter'})
+            const event = new KeyboardEvent("keydown", {
+                ctrlKey: true,
+                key: "Enter",
+            });
 
-            view.editorView.someProp('handleKeyDown', (f) => f(view.editorView, event))
+            view.editorView.someProp("handleKeyDown", (f) =>
+                f(view.editorView, event)
+            );
 
             //The Dom is exactly the same - no change has occured
             expect(view.editorView.dom.innerHTML).not.toBe(expectedHTML);
-        })
-    })
+        });
+    });
 });

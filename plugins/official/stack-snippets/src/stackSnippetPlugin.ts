@@ -30,10 +30,7 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
                     return new StackSnippetView(node, view, getPos, opts);
                 },
             },
-            plugins: [
-                stackSnippetPasteHandler,
-                stackSnippetCommandRedactor,
-            ],
+            plugins: [stackSnippetPasteHandler, stackSnippetCommandRedactor],
         },
         extendSchema: (schema) => {
             schema.nodes = schema.nodes.append(stackSnippetRichTextNodeSpec);

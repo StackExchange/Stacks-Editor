@@ -5,7 +5,8 @@ import {
     Transaction,
 } from "prosemirror-state";
 import {
-    escapeUnselectableCommandDown, escapeUnselectableCommandUp,
+    escapeUnselectableCommandDown,
+    escapeUnselectableCommandUp,
     exitInclusiveMarkCommand,
     insertRichTextHorizontalRuleCommand,
     toggleHeadingLevel,
@@ -799,7 +800,10 @@ describe("commands", () => {
                 dispatchTr = tr;
             };
 
-            const result = escapeUnselectableCommandDown(state, captureDispatch);
+            const result = escapeUnselectableCommandDown(
+                state,
+                captureDispatch
+            );
 
             return {
                 result,
@@ -966,12 +970,7 @@ describe("commands", () => {
                 []
             );
             state = state.apply(
-                state.tr.setSelection(
-                    TextSelection.create(
-                        state.doc,
-                        0,0
-                    )
-                )
+                state.tr.setSelection(TextSelection.create(state.doc, 0, 0))
             );
 
             const { result, dispatchCalled } =
@@ -1020,10 +1019,7 @@ describe("commands", () => {
                 plugins: [],
             });
 
-            const selection = TextSelection.create(
-                state.doc,
-                4
-            );
+            const selection = TextSelection.create(state.doc, 4);
             expect(selection.$to.parent.textContent).toBe("Header 1");
             expect(selection.$from.parent.textContent).toBe("Header 1");
             state = state.apply(state.tr.setSelection(selection));

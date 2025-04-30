@@ -121,10 +121,13 @@ export function openSnippetModal(options?: StackSnippetOptions): MenuCommand {
 const swallowSnippetCommand = (state: EditorState): boolean => {
     const fromNodeType = state.selection.$from.node().type.name;
 
-    if(fromNodeType === "stack_snippet" || fromNodeType === "stack_snippet_lang"){
+    if (
+        fromNodeType === "stack_snippet" ||
+        fromNodeType === "stack_snippet_lang"
+    ) {
         return true;
     }
-}
+};
 
 export const swallowedCommandList = {
     "Mod-Enter": swallowSnippetCommand,
@@ -139,4 +142,5 @@ export const swallowedCommandList = {
  * In these cases, we override the command to (contextually) do nothing if the current context is a snippet
  *   This is possible because returning truthy consumes the event.
  * **/
-export const stackSnippetCommandRedactor = caseNormalizeKeymap(swallowedCommandList);
+export const stackSnippetCommandRedactor =
+    caseNormalizeKeymap(swallowedCommandList);

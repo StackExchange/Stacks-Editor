@@ -449,14 +449,19 @@ export function escapeUnselectableCommandDown(
     }
 
     //If this is the last node and we're at document-level, no need to go further.
-    if(isLastNode && selectionEndPos.depth == 1)
-    {
+    if (isLastNode && selectionEndPos.depth == 1) {
         return false;
     }
 
     //Ensure that one of the following elements is selectable, or add a paragraph
-    if(!isTextSelectableInRange(selectionEndPos.after(), state.doc.content.size, state)){
-        insertBlankParagraph(state.doc.content.size, state, dispatch)
+    if (
+        !isTextSelectableInRange(
+            selectionEndPos.after(),
+            state.doc.content.size,
+            state
+        )
+    ) {
+        insertBlankParagraph(state.doc.content.size, state, dispatch);
     }
 
     //No matter what, we want the default behaviour to take over from here.
@@ -474,7 +479,8 @@ export function escapeUnselectableCommandUp(
 ): boolean {
     //A resolved position of the cursor. Functionally: The place we're calculating the next line for.
     const selectionBeginPos = state.selection.$to;
-    const topLevelParent = selectionBeginPos.node(1) || selectionBeginPos.parent;
+    const topLevelParent =
+        selectionBeginPos.node(1) || selectionBeginPos.parent;
     const isFirstNode = state.doc.firstChild.eq(topLevelParent);
     const isSelectingWholeDoc = state.doc.eq(selectionBeginPos.parent);
 
@@ -484,14 +490,13 @@ export function escapeUnselectableCommandUp(
     }
 
     //If this is the last node and we're at document-level, no need to go further.
-    if(isFirstNode && selectionBeginPos.depth == 1)
-    {
+    if (isFirstNode && selectionBeginPos.depth == 1) {
         return false;
     }
 
     //If there's not something to move into, add it now
-    if(!isTextSelectableInRange(0, selectionBeginPos.before(), state)){
-        insertBlankParagraph(0, state, dispatch)
+    if (!isTextSelectableInRange(0, selectionBeginPos.before(), state)) {
+        insertBlankParagraph(0, state, dispatch);
     }
 
     //No matter what, we want the default behaviour to take over from here.
@@ -499,7 +504,11 @@ export function escapeUnselectableCommandUp(
     return false;
 }
 
-function isTextSelectableInRange(beginPos: number, endPos: number, state: EditorState): boolean {
+function isTextSelectableInRange(
+    beginPos: number,
+    endPos: number,
+    state: EditorState
+): boolean {
     //Starting from the next node position down, check all the nodes for being a text block.
     // We care whether there's at least one - not necessarily the node that's found
     let foundSelectable: boolean = false;
@@ -521,13 +530,12 @@ function isTextSelectableInRange(beginPos: number, endPos: number, state: Editor
     return foundSelectable;
 }
 
-function insertBlankParagraph(pos: number, state: EditorState, dispatch: (tr: Transaction) => void){
-    dispatch(
-        state.tr.insert(
-            pos,
-            state.schema.nodes.paragraph.create()
-        )
-    );
+function insertBlankParagraph(
+    pos: number,
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    dispatch(state.tr.insert(pos, state.schema.nodes.paragraph.create()));
 }
 
 export function splitCodeBlockAtStartOfDoc(

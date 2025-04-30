@@ -32,7 +32,8 @@ import {
     toggleList,
     splitCodeBlockAtStartOfDoc,
     exitInclusiveMarkCommand,
-    escapeUnselectableCommandDown, escapeUnselectableCommandUp,
+    escapeUnselectableCommandDown,
+    escapeUnselectableCommandUp,
     openCodeBlockLanguagePicker,
 } from "./commands";
 
