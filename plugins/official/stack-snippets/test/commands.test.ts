@@ -1,13 +1,13 @@
 import { Node } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { SnippetMetadata, StackSnippetOptions } from "../src/common";
-import { openSnippetModal } from "../src/commands";
+import { openSnippetModal, swallowedCommandList } from "../src/commands";
 import { RichTextHelpers } from "../../../../test";
 import {
     buildSnippetSchema,
     snippetExternalProvider,
     validBegin,
-    validEnd,
+    validEnd, validJs,
     validSnippetRenderCases,
 } from "./stack-snippet-helpers";
 import { parseSnippetBlockForProsemirror } from "../src/paste-handler";
@@ -17,6 +17,14 @@ import MarkdownIt from "markdown-it";
 
 describe("commands", () => {
     const schema = buildSnippetSchema();
+    function richView(markdownInput: string, opts?: StackSnippetOptions) {
+        return new RichTextEditor(
+            document.createElement("div"),
+            markdownInput,
+            snippetExternalProvider(opts),
+            {}
+        );
+    }
 
     const whenOpenSnippetCommandCalled = (
         state: EditorState,
@@ -130,14 +138,6 @@ describe("commands", () => {
     describe("callback", () => {
         const mdit = new MarkdownIt("default", {});
         mdit.use(markdownPlugin);
-        function richView(markdownInput: string, opts?: StackSnippetOptions) {
-            return new RichTextEditor(
-                document.createElement("div"),
-                markdownInput,
-                snippetExternalProvider(opts),
-                {}
-            );
-        }
 
         const callbackTestCaseJs: string = `<!-- language: lang-js -->
 
@@ -225,4 +225,31 @@ describe("commands", () => {
             }
         );
     });
+
+    describe("redactor", () => {
+        //Note: we're testing this functionality once with a command that is universal across Macs and PC.
+        // In the pipeline this is likely using a Linux environment, in which case "Mod" means "Ctrl" too, but
+        // the main concern is on other development environments.
+        it("should swallow commands when in a Snippet context", () => {
+            const view = richView(`${validBegin}${validJs}${validEnd}`);
+            const expectedHTML = view.editorView.dom.innerHTML;
+            const event = new KeyboardEvent('keydown', { ctrlKey: true, key: 'Enter'})
+
+            view.editorView.someProp('handleKeyDown', (f) => f(view.editorView, event))
+
+            //The Dom is exactly the same - no change has occured
+            expect(view.editorView.dom.innerHTML).toBe(expectedHTML);
+        })
+
+        it("should not swallow commands when in a non-Snippet context", () => {
+            const view = richView("```javascript\nconsole.log('test');\n```");
+            const expectedHTML = view.editorView.dom.innerHTML;
+            const event = new KeyboardEvent('keydown', { ctrlKey: true, key: 'Enter'})
+
+            view.editorView.someProp('handleKeyDown', (f) => f(view.editorView, event))
+
+            //The Dom is exactly the same - no change has occured
+            expect(view.editorView.dom.innerHTML).not.toBe(expectedHTML);
+        })
+    })
 });

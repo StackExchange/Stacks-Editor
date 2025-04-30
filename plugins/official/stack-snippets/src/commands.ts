@@ -7,6 +7,8 @@ import {
 import { Node } from "prosemirror-model";
 import { EditorView } from "prosemirror-view";
 import { BASE_VIEW_KEY } from "../../../../src/shared/prosemirror-plugins/base-view-state";
+import { EditorState } from "prosemirror-state";
+import { caseNormalizeKeymap } from "../../../../src/shared/prosemirror-plugins/case-normalize-keymap";
 
 /** Builds a function that will update a snippet node on the up-to-date state (at time of execution) **/
 function buildUpdateDocumentCallback(view: EditorView) {
@@ -115,3 +117,26 @@ export function openSnippetModal(options?: StackSnippetOptions): MenuCommand {
         return true;
     };
 }
+
+const swallowSnippetCommand = (state: EditorState): boolean => {
+    const fromNodeType = state.selection.$from.node().type.name;
+
+    if(fromNodeType === "stack_snippet" || fromNodeType === "stack_snippet_lang"){
+        return true;
+    }
+}
+
+export const swallowedCommandList = {
+    "Mod-Enter": swallowSnippetCommand,
+    "Shift-Enter": swallowSnippetCommand,
+    "Mod-r": swallowSnippetCommand,
+};
+
+/**
+ * Snippets are comprised of a container around customized codeblocks. Some of the default behaviour for key-binds makes them behave
+ * very strangely.
+ *
+ * In these cases, we override the command to (contextually) do nothing if the current context is a snippet
+ *   This is possible because returning truthy consumes the event.
+ * **/
+export const stackSnippetCommandRedactor = caseNormalizeKeymap(swallowedCommandList);

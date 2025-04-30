@@ -32,7 +32,7 @@ import {
     toggleList,
     splitCodeBlockAtStartOfDoc,
     exitInclusiveMarkCommand,
-    escapeUnselectableCommand,
+    escapeUnselectableCommandDown, escapeUnselectableCommandUp,
 } from "./commands";
 
 export function allKeymaps(
@@ -90,7 +90,8 @@ export function allKeymaps(
         "Mod-'": toggleMark(schema.marks.kbd),
         // exit inline code block using the right arrow key
         "ArrowRight": exitInclusiveMarkCommand,
-        "ArrowDown": escapeUnselectableCommand,
+        "ArrowUp": escapeUnselectableCommandUp,
+        "ArrowDown": escapeUnselectableCommandDown,
     });
 
     const keymaps = [
