@@ -118,7 +118,7 @@ class PreviewPluginKey extends StatefulPluginKey<PreviewPluginState> {
         super("preview");
     }
 
-    togglePreviewVisibility(view: EditorView, isShown: boolean) {
+    setPreviewVisibility(view: EditorView, isShown: boolean) {
         const tr = this.setMeta(view.state.tr, { isShown });
         view.dispatch(tr);
     }
@@ -142,8 +142,8 @@ export function previewIsVisible(view: EditorView) {
  * @param view The current editor view
  * @param isShown Whether the preview should be visible
  */
-export function togglePreviewVisibility(view: EditorView, isShown: boolean) {
-    PREVIEW_KEY.togglePreviewVisibility(view, isShown);
+export function setPreviewVisibility(view: EditorView, isShown: boolean) {
+    PREVIEW_KEY.setPreviewVisibility(view, isShown);
 }
 
 /** Singleton instance of @see PreviewPluginKey */

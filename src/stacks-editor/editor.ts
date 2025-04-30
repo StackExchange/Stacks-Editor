@@ -20,7 +20,7 @@ import {
 } from "../shared/editor-plugin";
 import type { Transaction } from "prosemirror-state";
 import {
-    togglePreviewVisibility,
+    setPreviewVisibility,
     previewIsVisible,
 } from "../commonmark/plugins/preview";
 
@@ -446,9 +446,7 @@ export class StacksEditor implements View {
         // set the view type for this button
         this.setView(type);
 
-        if (showPreview !== inPreviewNow) {
-            togglePreviewVisibility(this.backingView.editorView, showPreview);
-        }
+        setPreviewVisibility(this.backingView.editorView, showPreview);
 
         // TODO better event name?
         // trigger an event on the target for consumers to listen for

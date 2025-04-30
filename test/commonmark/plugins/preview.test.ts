@@ -1,7 +1,7 @@
 import {
     createPreviewPlugin,
     previewIsVisible,
-    togglePreviewVisibility,
+    setPreviewVisibility,
 } from "../../../src/commonmark/plugins/preview";
 import { createView } from "../../rich-text/test-helpers";
 import { createState } from "../test-helpers";
@@ -145,18 +145,46 @@ describe("preview plugin", () => {
         expect(pluginContainer.querySelector(".js-md-preview")).toBeNull();
         expect(renderer).toHaveBeenCalledTimes(0);
 
-        togglePreviewVisibility(view, true);
+        setPreviewVisibility(view, true);
 
         // expect it to be rendered
         expect(previewIsVisible(view)).toBe(true);
         expect(pluginContainer.querySelector(".js-md-preview")).toBeTruthy();
         expect(renderer).toHaveBeenCalledTimes(1);
 
-        togglePreviewVisibility(view, false);
+        setPreviewVisibility(view, false);
 
         // expect it not to be rendered again
         expect(previewIsVisible(view)).toBe(false);
         expect(pluginContainer.querySelector(".js-md-preview")).toBeNull();
         expect(renderer).toHaveBeenCalledTimes(1);
+    });
+
+    it("should not render preview if default is true but visibility was toggled off", () => {
+        const renderer = jest.fn(() => Promise.resolve());
+        pluginContainer = document.createElement("div");
+
+        const state = createState("", [
+            createPreviewPlugin({
+                enabled: true,
+                shownByDefault: true,
+                parentContainer: () => pluginContainer,
+                renderDelayMs: 0,
+                renderer,
+            }),
+        ]);
+
+        const view = createView(state);
+
+        //this is called when the markdown mode (without preview) is selected
+        setPreviewVisibility(view, false);
+
+        // expect it to not be rendered
+        expect(previewIsVisible(view)).toBe(false);
+        expect(pluginContainer.querySelector(".js-md-preview")).toBeNull();
+
+        //renderer will have been called once on init before preview was toggled off
+        expect(renderer).toHaveBeenCalledTimes(1);
+
     });
 });
