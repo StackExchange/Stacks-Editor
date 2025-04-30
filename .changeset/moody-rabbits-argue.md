@@ -1,5 +1,5 @@
 ---
-"@stackoverflow/stacks-editor": minor
+"@stackoverflow/stacks-editor": patch
 ---
 
 fix markdown preview toggle bug
