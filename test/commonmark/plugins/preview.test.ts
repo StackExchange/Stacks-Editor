@@ -185,6 +185,5 @@ describe("preview plugin", () => {
 
         //renderer will have been called once on init before preview was toggled off
         expect(renderer).toHaveBeenCalledTimes(1);
-
     });
 });
