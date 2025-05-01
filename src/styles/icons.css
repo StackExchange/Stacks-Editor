@@ -24,3 +24,6 @@
     width: 21px;
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/SearchSm.svg");
 }
+.svg-icon-bg.iconStackSnippets {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/StackSnippets.svg");
+}

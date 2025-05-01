@@ -71,7 +71,7 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
                             display: makeMenuButton(
                                 "StackSnippets",
                                 {
-                                    title: `Stack Snippet (${Utils.getShortcut("Mod-9")})`,
+                                    title: `Stack Snippets (${Utils.getShortcut("Mod-9")})`,
                                     description: "Runnable code block",
                                 },
                                 "stack-snippet-open-btn"
