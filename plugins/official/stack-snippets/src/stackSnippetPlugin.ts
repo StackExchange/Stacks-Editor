@@ -32,7 +32,7 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
             },
             plugins: [
                 stackSnippetPasteHandler,
-                stackSnippetCommandShortcuts(opts)
+                stackSnippetCommandShortcuts(opts),
             ],
         },
         extendSchema: (schema) => {

@@ -142,7 +142,7 @@ export const commandList = (opts?: StackSnippetOptions) => ({
     "Mod-Enter": swallowSnippetCommand,
     "Shift-Enter": swallowSnippetCommand,
     "Mod-r": swallowSnippetCommand,
-    [OPEN_SNIPPET_SHORTCUT]: openSnippetModal(opts)
+    [OPEN_SNIPPET_SHORTCUT]: openSnippetModal(opts),
 });
 
 export const stackSnippetCommandShortcuts = (opts?: StackSnippetOptions) =>

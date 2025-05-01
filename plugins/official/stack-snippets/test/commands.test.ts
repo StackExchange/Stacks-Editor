@@ -229,17 +229,20 @@ describe("commands", () => {
 
     describe("shortcuts", () => {
         //Stolen eagerly from the Prosemirror-keymap git https://github.com/ProseMirror/prosemirror-keymap/blob/9df35bd441aa60b3ad620da66e0e3f75cd774075/src/keymap.ts#L5
-        const mac = typeof navigator != "undefined" ? /Mac|iP(hone|[oa]d)/.test(navigator.platform) : false
+        const mac =
+            typeof navigator != "undefined"
+                ? /Mac|iP(hone|[oa]d)/.test(navigator.platform)
+                : false;
 
         it("should swallow commands when in a Snippet context", () => {
             const view = richView(`${validBegin}${validJs}${validEnd}`);
             const expectedHTML = view.editorView.dom.innerHTML;
             let event: KeyboardEvent;
-            if(mac){
+            if (mac) {
                 event = new KeyboardEvent("keydown", {
                     metaKey: true,
-                    key: "Enter"
-                })
+                    key: "Enter",
+                });
             } else {
                 event = new KeyboardEvent("keydown", {
                     ctrlKey: true,
@@ -259,11 +262,11 @@ describe("commands", () => {
             const view = richView("```javascript\nconsole.log('test');\n```");
             const expectedHTML = view.editorView.dom.innerHTML;
             let event: KeyboardEvent;
-            if(mac){
+            if (mac) {
                 event = new KeyboardEvent("keydown", {
                     metaKey: true,
-                    key: "Enter"
-                })
+                    key: "Enter",
+                });
             } else {
                 event = new KeyboardEvent("keydown", {
                     ctrlKey: true,
@@ -288,11 +291,11 @@ describe("commands", () => {
                 renderer: () => Promise.resolve(null),
             });
             let event: KeyboardEvent;
-            if(mac){
+            if (mac) {
                 event = new KeyboardEvent("keydown", {
                     metaKey: true,
-                    key: "9"
-                })
+                    key: "9",
+                });
             } else {
                 event = new KeyboardEvent("keydown", {
                     ctrlKey: true,
@@ -305,6 +308,6 @@ describe("commands", () => {
             );
 
             expect(openSnippetTriggered).toBe(true);
-        })
+        });
     });
 });
