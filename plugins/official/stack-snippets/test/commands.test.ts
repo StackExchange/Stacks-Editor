@@ -259,7 +259,7 @@ describe("commands", () => {
                 f(view.editorView, event)
             );
 
-            //The Dom is exactly the same - no change has occured
+            //The Dom is not the same - a change has occured
             expect(view.editorView.dom.innerHTML).not.toBe(expectedHTML);
         });
     });
