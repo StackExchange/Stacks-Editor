@@ -122,10 +122,6 @@ export class RichTextEditor extends BaseView {
                     plugins: [
                         baseViewStatePlugin(this),
                         history(),
-                        ...allKeymaps(
-                            this.finalizedSchema,
-                            this.options.parserFeatures
-                        ),
                         menu,
                         richTextInputRules(
                             this.finalizedSchema,
@@ -146,6 +142,11 @@ export class RichTextEditor extends BaseView {
                         readonlyPlugin(),
                         spoilerToggle,
                         ...this.externalPluginProvider.plugins.richText,
+                        //Keymaps are executed in order and can be consuming, so we let external plugins register first
+                        ...allKeymaps(
+                            this.finalizedSchema,
+                            this.options.parserFeatures
+                        ),
                         // Paste handlers are consuming, so we let external plugins try first
                         tables,
                         richTextCodePasteHandler,

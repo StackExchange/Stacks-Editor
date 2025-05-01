@@ -5,7 +5,8 @@ import {
     Transaction,
 } from "prosemirror-state";
 import {
-    escapeUnselectableCommand,
+    escapeUnselectableCommandDown,
+    escapeUnselectableCommandUp,
     exitInclusiveMarkCommand,
     insertRichTextHorizontalRuleCommand,
     toggleHeadingLevel,
@@ -787,7 +788,7 @@ describe("commands", () => {
         });
     });
 
-    describe("escapeUnselectableCommand", () => {
+    describe("escapeUnselectableCommandDown", () => {
         const whenEscapeUnselectableCommandCalled = (
             state: EditorState,
             shouldMatchTrans?: (tr: Transaction) => boolean
@@ -799,7 +800,10 @@ describe("commands", () => {
                 dispatchTr = tr;
             };
 
-            const result = escapeUnselectableCommand(state, captureDispatch);
+            const result = escapeUnselectableCommandDown(
+                state,
+                captureDispatch
+            );
 
             return {
                 result,
@@ -896,6 +900,128 @@ describe("commands", () => {
             );
             expect(selection.$to.parent.textContent).toBe("two");
             expect(selection.$from.parent.textContent).toBe("two");
+            state = state.apply(state.tr.setSelection(selection));
+
+            const { result, dispatchCalled, matchedTransaction } =
+                whenEscapeUnselectableCommandCalled(state, (tr) => {
+                    if (tr.steps.length !== 1) return false;
+
+                    const step = tr.steps[0] as ReplaceStep;
+                    if (step.slice === undefined) return false;
+
+                    if (step.slice.content.childCount !== 1) return false;
+                    if (step.slice.content.firstChild.type.name !== "paragraph")
+                        return false;
+                    if (step.slice.content.firstChild.textContent != "")
+                        return false;
+                    return true;
+                });
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(true);
+            expect(matchedTransaction).toBe(true);
+        });
+    });
+
+    describe("escapeUnselectableCommandUp", () => {
+        const whenEscapeUnselectableCommandCalled = (
+            state: EditorState,
+            shouldMatchTrans?: (tr: Transaction) => boolean
+        ) => {
+            let dispatchCalled = false;
+            let dispatchTr: Transaction = null;
+            const captureDispatch = (tr: Transaction) => {
+                dispatchCalled = true;
+                dispatchTr = tr;
+            };
+
+            const result = escapeUnselectableCommandUp(state, captureDispatch);
+
+            return {
+                result,
+                dispatchCalled,
+                matchedTransaction: shouldMatchTrans
+                    ? shouldMatchTrans(dispatchTr)
+                    : null,
+            };
+        };
+
+        it("should do nothing if first node in the document is selected", () => {
+            //Selection is the only line in the document, therefore the end.
+            let state = createState(
+                "Here's a paragraph -  a text block mind you",
+                []
+            );
+            state = state.apply(
+                state.tr.setSelection(NodeSelection.create(state.doc, 0))
+            );
+
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
+        });
+
+        it("should do nothing if first inline text in the document is selected", () => {
+            //Selection is the only line in the document, therefore the beginning.
+            let state = createState(
+                "Here's a paragraph -  a text block mind you",
+                []
+            );
+            state = state.apply(
+                state.tr.setSelection(TextSelection.create(state.doc, 0, 0))
+            );
+
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
+        });
+
+        it("should not alter the document if there is a preceding textblock node", () => {
+            let state = createState(
+                "Here's a paragraph - a text block mind you",
+                []
+            );
+            const firstNodePosEnd = state.doc.lastChild.firstChild.nodeSize + 1;
+            state = state.apply(
+                state.tr.insert(
+                    0,
+                    parseHtmlToDoc("This is another node, wild!", false)
+                )
+            );
+            state = state.apply(
+                state.tr.setSelection(
+                    TextSelection.create(
+                        state.doc,
+                        firstNodePosEnd - 3,
+                        firstNodePosEnd
+                    )
+                )
+            );
+
+            const { result, dispatchCalled } =
+                whenEscapeUnselectableCommandCalled(state);
+
+            expect(result).toBe(false);
+            expect(dispatchCalled).toBe(false);
+        });
+
+        it("should add a paragraph block if there are no preceding textblock nodes", () => {
+            let state = EditorState.create({
+                doc: parseHtmlToDoc(
+                    "<table><thead><tr><td>Header 1</td><td>Header 2</td></tr></thead><tbody><tr><td>one</td><td>two</td></tr></tbody></table>",
+                    false
+                ),
+                schema: testRichTextSchema,
+                plugins: [],
+            });
+
+            const selection = TextSelection.create(state.doc, 4);
+            expect(selection.$to.parent.textContent).toBe("Header 1");
+            expect(selection.$from.parent.textContent).toBe("Header 1");
             state = state.apply(state.tr.setSelection(selection));
 
             const { result, dispatchCalled, matchedTransaction } =

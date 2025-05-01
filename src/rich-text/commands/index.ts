@@ -433,30 +433,87 @@ export function exitInclusiveMarkCommand(
  * Ensure there's a next block to move into - Adds an additional blank paragraph block
  *  if the next node available is unselectable and there is no node afterwards that is selectable.
  * */
-export function escapeUnselectableCommand(
+export function escapeUnselectableCommandDown(
     state: EditorState,
     dispatch: (tr: Transaction) => void
 ): boolean {
     //A resolved position of the cursor. Functionally: The place we're calculating the next line for.
     const selectionEndPos = state.selection.$to;
+    const topLevelParent = selectionEndPos.node(1) || selectionEndPos.parent;
+    const isLastNode = state.doc.lastChild.eq(topLevelParent);
+    const isSelectingWholeDoc = state.doc.eq(selectionEndPos.parent);
 
-    //If you're already at the end of the document, do the default action (nothing)
-    // Note: We're checking for either the last Inline character or the last node being selected here.
-    const isLastNode = state.doc.lastChild.eq(state.selection.$to.parent);
-    const isSelectingWholeDoc = state.doc.eq(state.selection.$to.parent);
-    if (isLastNode || isSelectingWholeDoc) {
+    //If we're selecting the whole document, don't mess with the node structure
+    if (isSelectingWholeDoc) {
         return false;
     }
 
-    //Calculate the position starting at the next line in the doc (the start point to check at)
-    const findStartPos = selectionEndPos.posAtIndex(
-        selectionEndPos.indexAfter(0),
-        0
-    );
+    //If this is the last node and we're at document-level, no need to go further.
+    if (isLastNode && selectionEndPos.depth == 1) {
+        return false;
+    }
 
+    //Ensure that one of the following elements is selectable, or add a paragraph
+    if (
+        !isTextSelectableInRange(
+            selectionEndPos.after(),
+            state.doc.content.size,
+            state
+        )
+    ) {
+        insertBlankParagraph(state.doc.content.size, state, dispatch);
+    }
+
+    //No matter what, we want the default behaviour to take over from here.
+    // Either we've created a new line to edit into just in time, or there was already something for it to move to
+    return false;
+}
+
+/**
+ * Ensure there's a next block to move into - Adds an additional blank paragraph block
+ *  if the previous node available is unselectable and there is no node before that is selectable.
+ * */
+export function escapeUnselectableCommandUp(
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+): boolean {
+    //A resolved position of the cursor. Functionally: The place we're calculating the next line for.
+    const selectionBeginPos = state.selection.$to;
+    const topLevelParent =
+        selectionBeginPos.node(1) || selectionBeginPos.parent;
+    const isFirstNode = state.doc.firstChild.eq(topLevelParent);
+    const isSelectingWholeDoc = state.doc.eq(selectionBeginPos.parent);
+
+    //If we're selecting the whole document, don't mess with the node structure
+    if (isSelectingWholeDoc) {
+        return false;
+    }
+
+    //If this is the last node and we're at document-level, no need to go further.
+    if (isFirstNode && selectionBeginPos.depth == 1) {
+        return false;
+    }
+
+    //If there's not something to move into, add it now
+    if (!isTextSelectableInRange(0, selectionBeginPos.before(), state)) {
+        insertBlankParagraph(0, state, dispatch);
+    }
+
+    //No matter what, we want the default behaviour to take over from here.
+    // Either we've created a new line to edit into just in time, or there was already something for it to move to
+    return false;
+}
+
+function isTextSelectableInRange(
+    beginPos: number,
+    endPos: number,
+    state: EditorState
+): boolean {
     //Starting from the next node position down, check all the nodes for being a text block.
+    // We care whether there's at least one - not necessarily the node that's found
     let foundSelectable: boolean = false;
-    state.doc.nodesBetween(findStartPos, state.doc.content.size, (node) => {
+
+    state.doc.nodesBetween(beginPos, endPos, (node) => {
         //Already found one, no need to delve deeper.
         if (foundSelectable) return !foundSelectable;
 
@@ -470,19 +527,15 @@ export function escapeUnselectableCommand(
         return true;
     });
 
-    //If there's not something to move into, add it now
-    if (!foundSelectable) {
-        dispatch(
-            state.tr.insert(
-                state.doc.content.size,
-                state.schema.nodes.paragraph.create()
-            )
-        );
-    }
+    return foundSelectable;
+}
 
-    //No matter what, we want the default behaviour to take over from here.
-    // Either we've created a new line to edit into just in time, or there was already something for it to move to
-    return false;
+function insertBlankParagraph(
+    pos: number,
+    state: EditorState,
+    dispatch: (tr: Transaction) => void
+) {
+    dispatch(state.tr.insert(pos, state.schema.nodes.paragraph.create()));
 }
 
 export function splitCodeBlockAtStartOfDoc(
