@@ -1,5 +1,21 @@
 # Changelog
 
+## 0.13.0
+
+### Minor Changes
+
+- [#430](https://github.com/StackExchange/Stacks-Editor/pull/430) [`9c9f946`](https://github.com/StackExchange/Stacks-Editor/commit/9c9f946265acd428aef4a8efe6ae281bc1f627b3) Thanks [@alizaberger](https://github.com/alizaberger)! - Adds show/hide functionality to Snippets
+
+### Patch Changes
+
+- [#439](https://github.com/StackExchange/Stacks-Editor/pull/439) [`2096f93`](https://github.com/StackExchange/Stacks-Editor/commit/2096f935997f00b94a7d150d73f7c631cd002b1f) Thanks [@threefjefff](https://github.com/threefjefff)! - Include Snippets Icon for local development. Minor copy change to Snippets menu item.
+
+- [#437](https://github.com/StackExchange/Stacks-Editor/pull/437) [`48dc5be`](https://github.com/StackExchange/Stacks-Editor/commit/48dc5be4703e20bd5bfcd3fb628cf642df6f3a6d) Thanks [@threefjefff](https://github.com/threefjefff)! - Fix the ability to move around Snippets (enter and exit with arrow keys) and swallows commands that are incompatible with snippets (e.g. creating horizontal rules)
+
+- [#436](https://github.com/StackExchange/Stacks-Editor/pull/436) [`b8c8274`](https://github.com/StackExchange/Stacks-Editor/commit/b8c82741954b3e2e4f82970f7ea1670a4a5a0510) Thanks [@alizaberger](https://github.com/alizaberger)! - fix markdown preview toggle bug
+
+- [#438](https://github.com/StackExchange/Stacks-Editor/pull/438) [`92c82d9`](https://github.com/StackExchange/Stacks-Editor/commit/92c82d9b117ba4709ff0569e80bff32d1eaecfa4) Thanks [@threefjefff](https://github.com/threefjefff)! - Actually register the Snippets open command (rather than just showing it in the tooltip)
+
 ## 0.12.0
 
 ### Minor Changes
