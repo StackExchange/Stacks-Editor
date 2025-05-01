@@ -118,6 +118,13 @@ export function openSnippetModal(options?: StackSnippetOptions): MenuCommand {
     };
 }
 
+/**
+ * Snippets are comprised of a container around customized codeblocks. Some of the default behaviour for key-binds makes them behave
+ * very strangely.
+ *
+ * In these cases, we override the command to (contextually) do nothing if the current context is a snippet
+ *   This is possible because returning truthy consumes the event.
+ * **/
 const swallowSnippetCommand = (state: EditorState): boolean => {
     const fromNodeType = state.selection.$from.node().type.name;
 
@@ -129,18 +136,14 @@ const swallowSnippetCommand = (state: EditorState): boolean => {
     }
 };
 
-export const swallowedCommandList = {
+export const OPEN_SNIPPET_SHORTCUT = "Mod-9";
+
+export const commandList = (opts?: StackSnippetOptions) => ({
     "Mod-Enter": swallowSnippetCommand,
     "Shift-Enter": swallowSnippetCommand,
     "Mod-r": swallowSnippetCommand,
-};
+    [OPEN_SNIPPET_SHORTCUT]: openSnippetModal(opts),
+});
 
-/**
- * Snippets are comprised of a container around customized codeblocks. Some of the default behaviour for key-binds makes them behave
- * very strangely.
- *
- * In these cases, we override the command to (contextually) do nothing if the current context is a snippet
- *   This is possible because returning truthy consumes the event.
- * **/
-export const stackSnippetCommandRedactor =
-    caseNormalizeKeymap(swallowedCommandList);
+export const stackSnippetCommandShortcuts = (opts?: StackSnippetOptions) =>
+    caseNormalizeKeymap(commandList(opts));

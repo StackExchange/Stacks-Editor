@@ -11,7 +11,7 @@ import { EditorView } from "prosemirror-view";
 import { StackSnippetView } from "./snippet-view";
 import { StackSnippetOptions } from "./common";
 import { stackSnippetPasteHandler } from "./paste-handler";
-import { openSnippetModal, stackSnippetCommandRedactor } from "./commands";
+import { openSnippetModal, stackSnippetCommandShortcuts } from "./commands";
 
 /**
  * Build the StackSnippet plugin using hoisted options that can be specified at runtime
@@ -30,7 +30,10 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
                     return new StackSnippetView(node, view, getPos, opts);
                 },
             },
-            plugins: [stackSnippetPasteHandler, stackSnippetCommandRedactor],
+            plugins: [
+                stackSnippetPasteHandler,
+                stackSnippetCommandShortcuts(opts),
+            ],
         },
         extendSchema: (schema) => {
             schema.nodes = schema.nodes.append(stackSnippetRichTextNodeSpec);

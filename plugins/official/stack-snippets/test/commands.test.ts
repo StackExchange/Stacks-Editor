@@ -227,17 +227,28 @@ describe("commands", () => {
         );
     });
 
-    describe("redactor", () => {
-        //Note: we're testing this functionality once with a command that is universal across Macs and PC.
-        // In the pipeline this is likely using a Linux environment, in which case "Mod" means "Ctrl" too, but
-        // the main concern is on other development environments.
+    describe("shortcuts", () => {
+        //Stolen eagerly from the Prosemirror-keymap git https://github.com/ProseMirror/prosemirror-keymap/blob/9df35bd441aa60b3ad620da66e0e3f75cd774075/src/keymap.ts#L5
+        const mac =
+            typeof navigator != "undefined"
+                ? /Mac|iP(hone|[oa]d)/.test(navigator.platform)
+                : false;
+
         it("should swallow commands when in a Snippet context", () => {
             const view = richView(`${validBegin}${validJs}${validEnd}`);
             const expectedHTML = view.editorView.dom.innerHTML;
-            const event = new KeyboardEvent("keydown", {
-                ctrlKey: true,
-                key: "Enter",
-            });
+            let event: KeyboardEvent;
+            if (mac) {
+                event = new KeyboardEvent("keydown", {
+                    metaKey: true,
+                    key: "Enter",
+                });
+            } else {
+                event = new KeyboardEvent("keydown", {
+                    ctrlKey: true,
+                    key: "Enter",
+                });
+            }
 
             view.editorView.someProp("handleKeyDown", (f) =>
                 f(view.editorView, event)
@@ -250,10 +261,18 @@ describe("commands", () => {
         it("should not swallow commands when in a non-Snippet context", () => {
             const view = richView("```javascript\nconsole.log('test');\n```");
             const expectedHTML = view.editorView.dom.innerHTML;
-            const event = new KeyboardEvent("keydown", {
-                ctrlKey: true,
-                key: "Enter",
-            });
+            let event: KeyboardEvent;
+            if (mac) {
+                event = new KeyboardEvent("keydown", {
+                    metaKey: true,
+                    key: "Enter",
+                });
+            } else {
+                event = new KeyboardEvent("keydown", {
+                    ctrlKey: true,
+                    key: "Enter",
+                });
+            }
 
             view.editorView.someProp("handleKeyDown", (f) =>
                 f(view.editorView, event)
@@ -261,6 +280,34 @@ describe("commands", () => {
 
             //The Dom is not the same - a change has occured
             expect(view.editorView.dom.innerHTML).not.toBe(expectedHTML);
+        });
+
+        it("should trigger the openModal event when shortcut pressed", () => {
+            let openSnippetTriggered = false;
+            const view = richView("```javascript\nconsole.log('test');\n```", {
+                openSnippetsModal: () => {
+                    openSnippetTriggered = true;
+                },
+                renderer: () => Promise.resolve(null),
+            });
+            let event: KeyboardEvent;
+            if (mac) {
+                event = new KeyboardEvent("keydown", {
+                    metaKey: true,
+                    key: "9",
+                });
+            } else {
+                event = new KeyboardEvent("keydown", {
+                    ctrlKey: true,
+                    key: "9",
+                });
+            }
+
+            view.editorView.someProp("handleKeyDown", (f) =>
+                f(view.editorView, event)
+            );
+
+            expect(openSnippetTriggered).toBe(true);
         });
     });
 });
