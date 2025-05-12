@@ -65,7 +65,9 @@ function buildUpdateDocumentCallback(view: EditorView) {
     };
 }
 
-export function openSnippetModalCommand(options?: StackSnippetOptions): MenuCommand {
+export function openSnippetModalCommand(
+    options?: StackSnippetOptions
+): MenuCommand {
     return (state, dispatch, view): boolean => {
         //If we have no means of opening a modal, reject immediately
         if (!options || options.openSnippetsModal == undefined) {
@@ -101,7 +103,11 @@ export function openSnippetModalCommand(options?: StackSnippetOptions): MenuComm
     };
 }
 
-export function openSnippetModal(node: Node, view: EditorView, options?: StackSnippetOptions): void {
+export function openSnippetModal(
+    node: Node,
+    view: EditorView,
+    options?: StackSnippetOptions
+): void {
     //If we have no means of opening a modal, reject immediately
     if (!options || options.openSnippetsModal == undefined) {
         return;

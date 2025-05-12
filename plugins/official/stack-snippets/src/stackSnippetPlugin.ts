@@ -11,7 +11,10 @@ import { EditorView } from "prosemirror-view";
 import { StackSnippetView } from "./snippet-view";
 import { StackSnippetOptions } from "./common";
 import { stackSnippetPasteHandler } from "./paste-handler";
-import { openSnippetModalCommand, stackSnippetCommandShortcuts } from "./commands";
+import {
+    openSnippetModalCommand,
+    stackSnippetCommandShortcuts,
+} from "./commands";
 
 /**
  * Build the StackSnippet plugin using hoisted options that can be specified at runtime
