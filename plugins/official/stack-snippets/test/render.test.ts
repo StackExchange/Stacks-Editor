@@ -29,12 +29,7 @@ describe("stack snippets", () => {
     const shouldHaveRunCodeButton = (rendered: Element) => {
         const runCode = rendered.querySelectorAll("div.snippet-ctas > button");
         expect(runCode).toHaveLength(1);
-        expect(runCode[0].attributes.getNamedItem("title").value).toBe(
-            "Run code snippet"
-        );
-        expect(runCode[0].attributes.getNamedItem("aria-label").value).toBe(
-            "Run code snippet"
-        );
+        expect(runCode[0].textContent).toBe("Run code snippet");
     };
 
     const shouldHaveLanguageBlocks = (rendered: Element, langs: string[]) => {
