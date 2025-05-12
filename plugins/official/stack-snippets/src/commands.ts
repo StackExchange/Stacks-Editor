@@ -65,7 +65,7 @@ function buildUpdateDocumentCallback(view: EditorView) {
     };
 }
 
-export function openSnippetModal(options?: StackSnippetOptions): MenuCommand {
+export function openSnippetModalCommand(options?: StackSnippetOptions): MenuCommand {
     return (state, dispatch, view): boolean => {
         //If we have no means of opening a modal, reject immediately
         if (!options || options.openSnippetsModal == undefined) {
@@ -96,26 +96,35 @@ export function openSnippetModal(options?: StackSnippetOptions): MenuCommand {
             return true;
         }
 
-        const snippetMetadata = getSnippetMetadata(discoveredSnippets[0]);
-        const [js] = snippetMetadata.langNodes.filter(
-            (l) => l.metaData.language == "js"
-        );
-        const [css] = snippetMetadata.langNodes.filter(
-            (l) => l.metaData.language == "css"
-        );
-        const [html] = snippetMetadata.langNodes.filter(
-            (l) => l.metaData.language == "html"
-        );
-
-        options.openSnippetsModal(
-            buildUpdateDocumentCallback(view),
-            snippetMetadata,
-            js?.content,
-            css?.content,
-            html?.content
-        );
+        openSnippetModal(discoveredSnippets[0], view, options);
         return true;
     };
+}
+
+export function openSnippetModal(node: Node, view: EditorView, options?: StackSnippetOptions): void {
+    //If we have no means of opening a modal, reject immediately
+    if (!options || options.openSnippetsModal == undefined) {
+        return;
+    }
+
+    const snippetMetadata = getSnippetMetadata(node);
+    const [js] = snippetMetadata.langNodes.filter(
+        (l) => l.metaData.language == "js"
+    );
+    const [css] = snippetMetadata.langNodes.filter(
+        (l) => l.metaData.language == "css"
+    );
+    const [html] = snippetMetadata.langNodes.filter(
+        (l) => l.metaData.language == "html"
+    );
+
+    options.openSnippetsModal(
+        buildUpdateDocumentCallback(view),
+        snippetMetadata,
+        js?.content,
+        css?.content,
+        html?.content
+    );
 }
 
 /**
@@ -142,7 +151,7 @@ export const commandList = (opts?: StackSnippetOptions) => ({
     "Mod-Enter": swallowSnippetCommand,
     "Shift-Enter": swallowSnippetCommand,
     "Mod-r": swallowSnippetCommand,
-    [OPEN_SNIPPET_SHORTCUT]: openSnippetModal(opts),
+    [OPEN_SNIPPET_SHORTCUT]: openSnippetModalCommand(opts),
 });
 
 export const stackSnippetCommandShortcuts = (opts?: StackSnippetOptions) =>

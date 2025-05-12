@@ -6,7 +6,7 @@ module.exports = (env, argv) =>
         entry: {
             app: "./src/index.ts",
             // NOTE we also get a `styles.bundle.js`, ignore this
-            styles: "./src/styles/index.css",
+            styles: ["./src/styles/index.css", "./plugins/official/index.css"],
         },
         mode: "production",
         // don't bundle highlight.js or its languages; we expect consumers to supply these themselves

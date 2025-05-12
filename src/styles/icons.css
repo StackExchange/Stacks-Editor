@@ -27,3 +27,16 @@
 .svg-icon-bg.iconStackSnippets {
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/StackSnippets.svg");
 }
+
+.svg-icon-bg.iconShareSm {
+    width: 18px;
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/ShareSm.svg");
+}
+
+.svg-icon-bg.iconEyeOff {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/EyeOff.svg");
+}
+
+.svg-icon-bg.iconEye {
+    --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/Eye.svg");
+}

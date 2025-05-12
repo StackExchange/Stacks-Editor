@@ -6,6 +6,7 @@ import {
     StackSnippetOptions,
 } from "./common";
 import { error } from "../../../../src";
+import { openSnippetModal } from "./commands";
 
 export class StackSnippetView implements NodeView {
     constructor(
@@ -83,75 +84,35 @@ export class StackSnippetView implements NodeView {
         snippetContainer.appendChild(snippetResult);
 
         const ctas = document.createElement("div");
-        ctas.className = "snippet-ctas";
+        ctas.className = "snippet-ctas d-flex ai-center";
         if (opts && opts.renderer) {
-            const runCodeButton = document.createElement("button");
-            runCodeButton.type = "button";
-            runCodeButton.className = "s-btn s-btn__filled";
-            runCodeButton.title = "Run code snippet";
-            runCodeButton.setAttribute("aria-label", "Run code snippet");
-            // create the svg svg-icon-bg element
-            const runIcon = document.createElement("span");
-            runIcon.className = "svg-icon-bg iconPlay";
-            runCodeButton.append(runIcon);
-            const runText = document.createElement("span");
-            runText.textContent = "Run code snippet";
-            runCodeButton.appendChild(runText);
-            runCodeButton.addEventListener("click", () => {
-                const [js] = this.snippetMetadata.langNodes.filter(
-                    (l) => l.metaData.language == "js"
-                );
-                const [css] = this.snippetMetadata.langNodes.filter(
-                    (l) => l.metaData.language == "css"
-                );
-                const [html] = this.snippetMetadata.langNodes.filter(
-                    (l) => l.metaData.language == "html"
-                );
-                this.opts
-                    .renderer(
-                        this.snippetMetadata,
-                        js?.content,
-                        css?.content,
-                        html?.content
-                    )
-                    .then((r) => {
-                        if (r) {
-                            this.contentNode = r;
-                            //Trigger an update on the ProseMirror node
-                            this.view.dispatch(
-                                this.view.state.tr.setNodeMarkup(
-                                    this.getPos(),
-                                    null,
-                                    {
-                                        ...node.attrs,
-                                        content: this.snippetMetadata,
-                                    }
-                                )
-                            );
-                        } else {
-                            error(
-                                "StackSnippetView - Run Code",
-                                "No content to be displayed"
-                            );
-                        }
-                    })
-                    .catch((r) => {
-                        error(
-                            "StackSnippetView - Run Code",
-                            "Error rendering snippet - %O",
-                            r
-                        );
-                    });
-            });
+            const snippetButtonContainer = document.createElement("div");
+            snippetButtonContainer.className = "snippet-buttons gs4";
+            ctas.appendChild(snippetButtonContainer);
+            this.buildRunButton(node, snippetButtonContainer);
+            this.buildEditButton(node, snippetButtonContainer);
 
-            ctas.appendChild(runCodeButton);
+            const snippetResultButtonContainer = document.createElement("div");
+            snippetResultButtonContainer.className = "snippet-result-buttons d-none ml-auto gs4";
+            ctas.appendChild(snippetResultButtonContainer);
+            this.showButton = this.buildShowButton(node, snippetResultButtonContainer);
+            this.hideButton = this.buildHideButton(node, snippetResultButtonContainer);
+            this.buildFullscreenExpandButton(node, snippetResultButtonContainer);
+            this.snippetResultButtonContainer = snippetResultButtonContainer;
         }
 
         snippetResult.appendChild(ctas);
 
         this.resultContainer = document.createElement("div");
         this.resultContainer.className = "snippet-result-code";
-        snippetResult.appendChild(this.resultContainer);
+        this.resultControlsContainer = document.createElement("div");
+        this.resultControlsContainer.className = "snippet-result-controls d-none";
+        this.fullscreenControls = document.createElement("div");
+        this.fullscreenControls.className = "snippet-fullscreen-controls d-none";
+        this.buildFullscreenCollapseButton(node, this.fullscreenControls);
+        this.resultControlsContainer.appendChild(this.fullscreenControls)
+        this.resultControlsContainer.appendChild(this.resultContainer);
+        snippetResult.appendChild(this.resultControlsContainer);
 
         //Rendered children will be handled by Prosemirror, but we want a handle on their content:
         this.snippetMetadata = getSnippetMetadata(node);
@@ -185,7 +146,49 @@ export class StackSnippetView implements NodeView {
 
         // Update the result container if metadata has changed
         const content = this.contentNode;
+
+        //Show the results, if the node meta allows it
+        if(content && node.attrs.showResult){
+            if(this.resultControlsContainer.classList.contains("d-none")){
+                this.resultControlsContainer.classList.remove("d-none")
+            }
+            if(!this.showButton.classList.contains("d-none")){
+                this.showButton.classList.add("d-none");
+            }
+            if(this.hideButton.classList.contains("d-none")){
+                this.hideButton.classList.remove("d-none");
+            }
+        } else {
+            if(!this.resultControlsContainer.classList.contains("d-none")){
+                this.resultControlsContainer.classList.add("d-none");
+            }
+            if(this.showButton.classList.contains("d-none")){
+                this.showButton.classList.remove("d-none");
+            }
+            if(!this.hideButton.classList.contains("d-none")){
+                this.hideButton.classList.add("d-none");
+            }
+        }
+
+        //Fullscreen the results, if the node meta needs it
+        if(content && node.attrs.fullscreen){
+            if(!this.resultControlsContainer.classList.contains("snippet-fullscreen")){
+                this.resultControlsContainer.classList.add("snippet-fullscreen");
+            }
+            if(this.fullscreenControls.classList.contains("d-none")){
+                this.fullscreenControls.classList.remove("d-none");
+            }
+        } else {
+            if(this.resultControlsContainer.classList.contains("snippet-fullscreen")){
+                this.resultControlsContainer.classList.remove("snippet-fullscreen");
+            }
+            if(!this.fullscreenControls.classList.contains("d-none")){
+                this.fullscreenControls.classList.add("d-none");
+            }
+        }
+
         if (metaChanged && content) {
+            this.snippetResultButtonContainer.classList.remove("d-none");
             //Clear the node
             this.resultContainer.innerHTML = "";
             const iframe = document.createElement("iframe");
@@ -204,12 +207,210 @@ export class StackSnippetView implements NodeView {
         return true;
     }
 
-    private opts: StackSnippetOptions;
-    private view: EditorView;
+    private readonly opts: StackSnippetOptions;
+    private readonly view: EditorView;
+    private readonly getPos: () => number;
     private snippetMetadata: SnippetMetadata;
     private contentNode: Node;
-    private getPos: () => number;
+    private snippetResultButtonContainer: HTMLDivElement;
+    private showButton: HTMLButtonElement;
+    private hideButton: HTMLButtonElement;
+    private resultControlsContainer: HTMLDivElement;
+    private fullscreenControls: HTMLDivElement;
     resultContainer: HTMLDivElement;
     dom: HTMLElement;
     contentDOM: HTMLElement;
+
+    private buildRunButton(node: ProseMirrorNode, container: HTMLDivElement): void {
+        const runCodeButton = document.createElement("button");
+        runCodeButton.type = "button";
+        runCodeButton.className = "s-btn s-btn__filled flex--item";
+        runCodeButton.title = "Run code snippet";
+        runCodeButton.setAttribute("aria-label", "Run code snippet");
+        // create the svg svg-icon-bg element
+        const runIcon = document.createElement("span");
+        runIcon.className = "svg-icon-bg iconPlay";
+        runCodeButton.append(runIcon);
+        const runText = document.createElement("span");
+        runText.textContent = "Run code snippet";
+        runCodeButton.appendChild(runText);
+        runCodeButton.addEventListener("click", () => {
+            const [js] = this.snippetMetadata.langNodes.filter(
+                (l) => l.metaData.language == "js"
+            );
+            const [css] = this.snippetMetadata.langNodes.filter(
+                (l) => l.metaData.language == "css"
+            );
+            const [html] = this.snippetMetadata.langNodes.filter(
+                (l) => l.metaData.language == "html"
+            );
+            this.opts
+                .renderer(
+                    this.snippetMetadata,
+                    js?.content,
+                    css?.content,
+                    html?.content
+                )
+                .then((r) => {
+                    if (r) {
+                        this.contentNode = r;
+                        //Trigger an update on the ProseMirror node
+                        this.view.dispatch(
+                            this.view.state.tr.setNodeMarkup(
+                                this.getPos(),
+                                null,
+                                {
+                                    ...node.attrs,
+                                    content: this.snippetMetadata,
+                                }
+                            )
+                        );
+                    } else {
+                        error(
+                            "StackSnippetView - Run Code",
+                            "No content to be displayed"
+                        );
+                    }
+                })
+                .catch((r) => {
+                    error(
+                        "StackSnippetView - Run Code",
+                        "Error rendering snippet - %O",
+                        r
+                    );
+                });
+        });
+
+        container.appendChild(runCodeButton);
+    }
+
+    private buildEditButton(node: ProseMirrorNode, container: HTMLDivElement): HTMLButtonElement {
+        const editButton = document.createElement("button");
+        editButton.type = "button";
+        editButton.className = "s-btn s-btn__outlined flex--item";
+        editButton.title = "Edit code snippet";
+        editButton.setAttribute("aria-label", "Edit code snippet");
+        editButton.textContent = "Edit code snippet";
+        editButton.addEventListener('click', () => {
+            openSnippetModal(node, this.view, this.opts);
+        });
+
+        container.appendChild(editButton);
+        return editButton;
+    }
+
+    private buildHideButton(node: ProseMirrorNode, container: HTMLDivElement): HTMLButtonElement {
+        const hideButton = document.createElement("button");
+        hideButton.type = "button";
+        hideButton.className = "s-btn flex--item";
+        hideButton.title = "Hide results";
+        hideButton.setAttribute("aria-label", "Hide results");
+        const hideIcon = document.createElement("span");
+        hideIcon.className = "svg-icon-bg iconEyeOff";
+        hideButton.append(hideIcon);
+        const hideText = document.createElement("span");
+        hideText.textContent = "Hide results";
+        hideButton.appendChild(hideText);
+        hideButton.addEventListener('click', () => {
+            //Trigger an update on the ProseMirror node
+            this.view.dispatch(
+                this.view.state.tr.setNodeMarkup(
+                    this.getPos(),
+                    null,
+                    {
+                        ...node.attrs,
+                        showResult: false
+                    }
+                )
+            );
+        })
+
+        container.appendChild(hideButton);
+        return hideButton;
+    }
+
+    private buildShowButton(node: ProseMirrorNode, container: HTMLDivElement): HTMLButtonElement {
+        const showButton = document.createElement("button");
+        showButton.type = "button";
+        showButton.className = "s-btn flex--item d-none";
+        showButton.title = "Show results";
+        showButton.setAttribute("aria-label", "Show results");
+        const hideIcon = document.createElement("span");
+        hideIcon.className = "svg-icon-bg iconEye";
+        showButton.append(hideIcon);
+        const showText = document.createElement("span");
+        showText.textContent = "Show results";
+        showButton.appendChild(showText);
+        showButton.addEventListener('click', () => {
+            //Trigger an update on the ProseMirror node
+            this.view.dispatch(
+                this.view.state.tr.setNodeMarkup(
+                    this.getPos(),
+                    null,
+                    {
+                        ...node.attrs,
+                        showResult: true
+                    }
+                )
+            );
+        })
+
+        container.appendChild(showButton);
+
+        return showButton;
+    }
+
+    private buildFullscreenExpandButton(node: ProseMirrorNode, container: HTMLDivElement): HTMLButtonElement {
+        const expandButton = document.createElement("button");
+        expandButton.type = "button";
+        expandButton.className = "s-btn flex--item";
+        expandButton.title = "Expand Snippet";
+        expandButton.setAttribute("aria-label", "Expand Snippet");
+        expandButton.addEventListener('click', () => {
+            //Trigger an update on the ProseMirror node
+            this.view.dispatch(
+                this.view.state.tr.setNodeMarkup(
+                    this.getPos(),
+                    null,
+                    {
+                        ...node.attrs,
+                        fullscreen: true
+                    }
+                )
+            );
+        })
+        const expandIcon = document.createElement("span");
+        expandIcon.className = "svg-icon-bg iconShareSm";
+        expandButton.append(expandIcon);
+        const expandText = document.createElement("span");
+        expandText.textContent = "Expand Snippet";
+        expandButton.appendChild(expandText);
+
+        container.appendChild(expandButton);
+        return expandButton;
+    }
+
+    private buildFullscreenCollapseButton(node: ProseMirrorNode, container: HTMLDivElement): HTMLButtonElement {
+        const collapseButton = document.createElement("button");
+        collapseButton.type = "button";
+        collapseButton.className = "s-btn flex--item td-underline ml-auto";
+        collapseButton.title = "Close Snippet";
+        collapseButton.textContent = "Close";
+        collapseButton.setAttribute("aria-label", "Close Snippet");
+        collapseButton.addEventListener('click', () => {
+            //Trigger an update on the ProseMirror node
+            this.view.dispatch(
+                this.view.state.tr.setNodeMarkup(
+                    this.getPos(),
+                    null,
+                    {
+                        ...node.attrs,
+                        fullscreen: false
+                    }
+                )
+            );
+        })
+        container.appendChild(collapseButton);
+        return collapseButton;
+    }
 }
