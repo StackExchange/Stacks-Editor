@@ -148,6 +148,11 @@ export class StackSnippetView implements NodeView {
 
             const isVisible = node.attrs.showCode as boolean;
             snippetCode.style.display = isVisible ? "" : "none";
+            if(isVisible && snippetCode.classList.contains("d-none")) {
+                snippetCode.classList.remove("d-none");
+            } else {
+                snippetCode.classList.add("d-none");
+            }
             toggleLink.textContent = isVisible
                 ? "Hide code snippet"
                 : "Show code snippet";
@@ -170,7 +175,7 @@ export class StackSnippetView implements NodeView {
             if (this.hideButton.classList.contains("d-none")) {
                 this.hideButton.classList.remove("d-none");
             }
-        } else {
+        } else if (content && !node.attrs.showResult) {
             if (!this.resultControlsContainer.classList.contains("d-none")) {
                 this.resultControlsContainer.classList.add("d-none");
             }

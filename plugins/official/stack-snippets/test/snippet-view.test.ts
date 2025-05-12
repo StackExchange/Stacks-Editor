@@ -59,29 +59,38 @@ describe("StackSnippetView", () => {
         return view;
     };
 
-    it("should render run code button if renderer provided", () => {
+    const findSnippetControls = (rendered: Element): NodeListOf<Element> =>
+        rendered.querySelectorAll("div.snippet-buttons > button");
+
+    it("should render snippet buttons if renderer provided", () => {
         const view = buildView({
             renderer: () => Promise.resolve(null),
             openSnippetsModal: () => {},
         });
-        const runCodeButton = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
-        );
 
-        expect(runCodeButton).toHaveLength(1);
-        expect(runCodeButton[0].getAttribute("aria-label")).toBe(
+        const snippetButtons = findSnippetControls(view.dom);
+
+        expect(snippetButtons).toHaveLength(2);
+        expect(snippetButtons[0].attributes.getNamedItem("title").value).toBe(
             "Run code snippet"
         );
-        expect(runCodeButton[0].getAttribute("title")).toBe("Run code snippet");
+        expect(snippetButtons[0].attributes.getNamedItem("aria-label").value).toBe(
+            "Run code snippet"
+        );
+        expect(snippetButtons[1].attributes.getNamedItem("title").value).toBe(
+            "Edit code snippet"
+        );
+        expect(snippetButtons[1].attributes.getNamedItem("aria-label").value).toBe(
+            "Edit code snippet"
+        );
     });
 
-    it("should not render run code button if no renderer provided", () => {
+    it("should not render snippet buttons if no renderer provided", () => {
         const view = buildView();
-        const runCodeButton = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
-        );
 
-        expect(runCodeButton).toHaveLength(0);
+        const snippetBUttons = findSnippetControls(view.dom)
+
+        expect(snippetBUttons).toHaveLength(0);
     });
 
     it("should call renderer when button clicked", () => {
@@ -94,7 +103,7 @@ describe("StackSnippetView", () => {
             openSnippetsModal: () => {},
         });
         const [runCodeButton] = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
+            ".snippet-buttons > button.s-btn"
         );
 
         (<HTMLButtonElement>runCodeButton).click();
@@ -115,7 +124,7 @@ describe("StackSnippetView", () => {
             openSnippetsModal: () => {},
         });
         const [runCodeButton] = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
+            ".snippet-buttons > button.s-btn"
         );
 
         (<HTMLButtonElement>runCodeButton).click();
