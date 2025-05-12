@@ -74,21 +74,21 @@ describe("StackSnippetView", () => {
         expect(snippetButtons[0].attributes.getNamedItem("title").value).toBe(
             "Run code snippet"
         );
-        expect(snippetButtons[0].attributes.getNamedItem("aria-label").value).toBe(
-            "Run code snippet"
-        );
+        expect(
+            snippetButtons[0].attributes.getNamedItem("aria-label").value
+        ).toBe("Run code snippet");
         expect(snippetButtons[1].attributes.getNamedItem("title").value).toBe(
             "Edit code snippet"
         );
-        expect(snippetButtons[1].attributes.getNamedItem("aria-label").value).toBe(
-            "Edit code snippet"
-        );
+        expect(
+            snippetButtons[1].attributes.getNamedItem("aria-label").value
+        ).toBe("Edit code snippet");
     });
 
     it("should not render snippet buttons if no renderer provided", () => {
         const view = buildView();
 
-        const snippetButtons = findSnippetControls(view.dom)
+        const snippetButtons = findSnippetControls(view.dom);
 
         expect(snippetButtons).toHaveLength(0);
     });

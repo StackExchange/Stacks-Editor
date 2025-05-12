@@ -27,20 +27,22 @@ describe("stack snippets", () => {
     };
 
     const shouldHaveSnippetControls = (rendered: Element) => {
-        const snippetButtons = rendered.querySelectorAll("div.snippet-buttons > button");
+        const snippetButtons = rendered.querySelectorAll(
+            "div.snippet-buttons > button"
+        );
         expect(snippetButtons).toHaveLength(2);
         expect(snippetButtons[0].attributes.getNamedItem("title").value).toBe(
             "Run code snippet"
         );
-        expect(snippetButtons[0].attributes.getNamedItem("aria-label").value).toBe(
-            "Run code snippet"
-        );
+        expect(
+            snippetButtons[0].attributes.getNamedItem("aria-label").value
+        ).toBe("Run code snippet");
         expect(snippetButtons[1].attributes.getNamedItem("title").value).toBe(
             "Edit code snippet"
         );
-        expect(snippetButtons[1].attributes.getNamedItem("aria-label").value).toBe(
-            "Edit code snippet"
-        );
+        expect(
+            snippetButtons[1].attributes.getNamedItem("aria-label").value
+        ).toBe("Edit code snippet");
     };
 
     const shouldHaveLanguageBlocks = (rendered: Element, langs: string[]) => {
