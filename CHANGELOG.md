@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.13.1
+
+### Patch Changes
+
+- [#434](https://github.com/StackExchange/Stacks-Editor/pull/434) [`1497b2d`](https://github.com/StackExchange/Stacks-Editor/commit/1497b2d4cd80a53632e5ad174fc0b5598090605e) Thanks [@dancormier](https://github.com/dancormier)! - Minor a11y and layout fixes for "Run code snippets" button
+
 ## 0.13.0
 
 ### Minor Changes
