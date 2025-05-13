@@ -193,7 +193,7 @@ export class StackSnippetView implements NodeView {
                 this.dom.classList.add("z-modal");
                 this.dom.classList.add("w-screen");
                 this.dom.classList.add("h-screen");
-                this.dom.style.setProperty("background-color", "var(--white)")
+                this.dom.style.setProperty("background-color", "var(--white)");
             }
             if (!this.fullscreenButton?.classList.contains("d-none")) {
                 this.fullscreenButton?.classList.add("d-none");
