@@ -187,12 +187,7 @@ export class StackSnippetView implements NodeView {
             if (!this.dom.classList.contains("snippet-fullscreen")) {
                 //We use `.snippet-fullscreen` as a marker for the rest of the styling
                 this.dom.classList.add("snippet-fullscreen");
-                this.dom.classList.add("ps-fixed");
-                this.dom.classList.add("t6");
-                this.dom.classList.add("l6");
-                this.dom.classList.add("z-modal");
-                this.dom.classList.add("w-screen");
-                this.dom.classList.add("h-screen");
+                this.dom.classList.add(...this.fullscreenClassList);
                 this.dom.style.setProperty("background-color", "var(--white)");
             }
             if (!this.fullscreenButton?.classList.contains("d-none")) {
@@ -205,12 +200,7 @@ export class StackSnippetView implements NodeView {
             if (this.dom.classList.contains("snippet-fullscreen")) {
                 //We use `.snippet-fullscreen` as a marker for the rest of the styling
                 this.dom.classList.remove("snippet-fullscreen");
-                this.dom.classList.remove("ps-fixed");
-                this.dom.classList.remove("t6");
-                this.dom.classList.remove("l6");
-                this.dom.classList.remove("z-modal");
-                this.dom.classList.remove("w-screen");
-                this.dom.classList.remove("h-screen");
+                this.dom.classList.remove(...this.fullscreenClassList);
             }
             if (this.fullscreenButton?.classList.contains("d-none")) {
                 this.fullscreenButton.classList.remove("d-none");
@@ -255,6 +245,15 @@ export class StackSnippetView implements NodeView {
     resultContainer: HTMLDivElement;
     dom: HTMLElement;
     contentDOM: HTMLElement;
+
+    private readonly fullscreenClassList = [
+        "ps-fixed",
+        "t6",
+        "l6",
+        "z-modal",
+        "w-screen",
+        "h-screen",
+    ];
 
     private buildRunButton(container: HTMLDivElement): void {
         const runCodeButton = document.createElement("button");
