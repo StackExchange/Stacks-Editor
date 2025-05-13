@@ -18,6 +18,7 @@ export class StackSnippetView implements NodeView {
         this.opts = opts;
         this.view = view;
         this.getPos = getPos;
+        this.node = node;
 
         this.snippetMetadata = getSnippetMetadata(node);
         const codeIsShown: boolean =
@@ -87,25 +88,25 @@ export class StackSnippetView implements NodeView {
         ctas.className = "snippet-ctas d-flex ai-center";
         if (opts && opts.renderer) {
             const snippetButtonContainer = document.createElement("div");
-            snippetButtonContainer.className = "snippet-buttons gs4";
+            snippetButtonContainer.className = "snippet-buttons mb0 gs4";
             ctas.appendChild(snippetButtonContainer);
-            this.buildRunButton(node, snippetButtonContainer);
-            this.buildEditButton(node, snippetButtonContainer);
+            this.buildRunButton(snippetButtonContainer);
+            this.buildEditButton(snippetButtonContainer);
 
             const snippetResultButtonContainer = document.createElement("div");
             snippetResultButtonContainer.className =
-                "snippet-result-buttons d-none ml-auto gs4";
+                "snippet-result-buttons d-flex mb0 d-none ml-auto gs4";
             ctas.appendChild(snippetResultButtonContainer);
             this.showButton = this.buildShowButton(
-                node,
                 snippetResultButtonContainer
             );
             this.hideButton = this.buildHideButton(
-                node,
                 snippetResultButtonContainer
             );
-            this.buildFullscreenExpandButton(
-                node,
+            this.fullscreenButton = this.buildFullscreenExpandButton(
+                snippetResultButtonContainer
+            );
+            this.fullscreenReturnButton = this.buildFullscreenCollapseButton(
                 snippetResultButtonContainer
             );
             this.snippetResultButtonContainer = snippetResultButtonContainer;
@@ -115,16 +116,8 @@ export class StackSnippetView implements NodeView {
 
         this.resultContainer = document.createElement("div");
         this.resultContainer.className = "snippet-result-code";
-        this.resultControlsContainer = document.createElement("div");
-        this.resultControlsContainer.className =
-            "snippet-result-controls d-none";
-        this.fullscreenControls = document.createElement("div");
-        this.fullscreenControls.className =
-            "snippet-fullscreen-controls d-none";
-        this.buildFullscreenCollapseButton(node, this.fullscreenControls);
-        this.resultControlsContainer.appendChild(this.fullscreenControls);
-        this.resultControlsContainer.appendChild(this.resultContainer);
-        snippetResult.appendChild(this.resultControlsContainer);
+
+        snippetResult.appendChild(this.resultContainer);
 
         //Rendered children will be handled by Prosemirror, but we want a handle on their content:
         this.snippetMetadata = getSnippetMetadata(node);
@@ -132,11 +125,13 @@ export class StackSnippetView implements NodeView {
 
     update(node: ProseMirrorNode): boolean {
         if (node.type.name !== "stack_snippet") return false;
+        //Update the reference used by buttons, etc. for the most up-to-date node reference
+        this.node = node;
 
         //Check to see if the metadata has changed
         const updatedMeta = getSnippetMetadata(node);
         const metaChanged =
-            JSON.stringify(updatedMeta) ===
+            JSON.stringify(updatedMeta) !==
             JSON.stringify(this.snippetMetadata);
         this.snippetMetadata = updatedMeta;
 
@@ -166,57 +161,67 @@ export class StackSnippetView implements NodeView {
 
         //Show the results, if the node meta allows it
         if (content && node.attrs.showResult) {
-            if (this.resultControlsContainer.classList.contains("d-none")) {
-                this.resultControlsContainer.classList.remove("d-none");
-            }
             if (!this.showButton.classList.contains("d-none")) {
                 this.showButton.classList.add("d-none");
             }
             if (this.hideButton.classList.contains("d-none")) {
                 this.hideButton.classList.remove("d-none");
             }
-        } else if (content && !node.attrs.showResult) {
-            if (!this.resultControlsContainer.classList.contains("d-none")) {
-                this.resultControlsContainer.classList.add("d-none");
+            if (this.resultContainer.classList.contains("d-none")) {
+                this.resultContainer.classList.remove("d-none");
             }
+        } else if (content && !node.attrs.showResult) {
             if (this.showButton.classList.contains("d-none")) {
                 this.showButton.classList.remove("d-none");
             }
             if (!this.hideButton.classList.contains("d-none")) {
                 this.hideButton.classList.add("d-none");
             }
+            if (!this.resultContainer.classList.contains("d-none")) {
+                this.resultContainer.classList.add("d-none");
+            }
         }
 
         //Fullscreen the results, if the node meta needs it
         if (content && node.attrs.fullscreen) {
-            if (
-                !this.resultControlsContainer.classList.contains(
-                    "snippet-fullscreen"
-                )
-            ) {
-                this.resultControlsContainer.classList.add(
-                    "snippet-fullscreen"
-                );
+            if (!this.dom.classList.contains("snippet-fullscreen")) {
+                //We use `.snippet-fullscreen` as a marker for the rest of the styling
+                this.dom.classList.add("snippet-fullscreen");
+                this.dom.classList.add("ps-fixed");
+                this.dom.classList.add("t6");
+                this.dom.classList.add("l6");
+                this.dom.classList.add("z-modal");
+                this.dom.classList.add("w-screen");
+                this.dom.classList.add("h-screen");
+                this.dom.style.setProperty("background-color", "var(--white)")
             }
-            if (this.fullscreenControls.classList.contains("d-none")) {
-                this.fullscreenControls.classList.remove("d-none");
+            if (!this.fullscreenButton?.classList.contains("d-none")) {
+                this.fullscreenButton?.classList.add("d-none");
+            }
+            if (this.fullscreenReturnButton?.classList.contains("d-none")) {
+                this.fullscreenReturnButton.classList.remove("d-none");
             }
         } else {
-            if (
-                this.resultControlsContainer.classList.contains(
-                    "snippet-fullscreen"
-                )
-            ) {
-                this.resultControlsContainer.classList.remove(
-                    "snippet-fullscreen"
-                );
+            if (this.dom.classList.contains("snippet-fullscreen")) {
+                //We use `.snippet-fullscreen` as a marker for the rest of the styling
+                this.dom.classList.remove("snippet-fullscreen");
+                this.dom.classList.remove("ps-fixed");
+                this.dom.classList.remove("t6");
+                this.dom.classList.remove("l6");
+                this.dom.classList.remove("z-modal");
+                this.dom.classList.remove("w-screen");
+                this.dom.classList.remove("h-screen");
             }
-            if (!this.fullscreenControls.classList.contains("d-none")) {
-                this.fullscreenControls.classList.add("d-none");
+            if (this.fullscreenButton?.classList.contains("d-none")) {
+                this.fullscreenButton.classList.remove("d-none");
+            }
+            if (!this.fullscreenReturnButton?.classList.contains("d-none")) {
+                this.fullscreenReturnButton?.classList.add("d-none");
             }
         }
 
-        if (metaChanged && content) {
+        //Re-run execution the snippet if something has changed, or we don't yet have a result
+        if (content && (metaChanged || this.resultContainer.innerHTML === "")) {
             this.snippetResultButtonContainer.classList.remove("d-none");
             //Clear the node
             this.resultContainer.innerHTML = "";
@@ -244,16 +249,14 @@ export class StackSnippetView implements NodeView {
     private snippetResultButtonContainer: HTMLDivElement;
     private showButton: HTMLButtonElement;
     private hideButton: HTMLButtonElement;
-    private resultControlsContainer: HTMLDivElement;
-    private fullscreenControls: HTMLDivElement;
+    private fullscreenButton: HTMLButtonElement;
+    private fullscreenReturnButton: HTMLButtonElement;
+    private node: ProseMirrorNode;
     resultContainer: HTMLDivElement;
     dom: HTMLElement;
     contentDOM: HTMLElement;
 
-    private buildRunButton(
-        node: ProseMirrorNode,
-        container: HTMLDivElement
-    ): void {
+    private buildRunButton(container: HTMLDivElement): void {
         const runCodeButton = document.createElement("button");
         runCodeButton.type = "button";
         runCodeButton.className = "s-btn s-btn__filled flex--item";
@@ -292,7 +295,7 @@ export class StackSnippetView implements NodeView {
                                 this.getPos(),
                                 null,
                                 {
-                                    ...node.attrs,
+                                    ...this.node.attrs,
                                     content: this.snippetMetadata,
                                 }
                             )
@@ -316,10 +319,7 @@ export class StackSnippetView implements NodeView {
         container.appendChild(runCodeButton);
     }
 
-    private buildEditButton(
-        node: ProseMirrorNode,
-        container: HTMLDivElement
-    ): HTMLButtonElement {
+    private buildEditButton(container: HTMLDivElement): HTMLButtonElement {
         const editButton = document.createElement("button");
         editButton.type = "button";
         editButton.className = "s-btn s-btn__outlined flex--item";
@@ -327,17 +327,14 @@ export class StackSnippetView implements NodeView {
         editButton.setAttribute("aria-label", "Edit code snippet");
         editButton.textContent = "Edit code snippet";
         editButton.addEventListener("click", () => {
-            openSnippetModal(node, this.view, this.opts);
+            openSnippetModal(this.node, this.view, this.opts);
         });
 
         container.appendChild(editButton);
         return editButton;
     }
 
-    private buildHideButton(
-        node: ProseMirrorNode,
-        container: HTMLDivElement
-    ): HTMLButtonElement {
+    private buildHideButton(container: HTMLDivElement): HTMLButtonElement {
         const hideButton = document.createElement("button");
         hideButton.type = "button";
         hideButton.className = "s-btn flex--item";
@@ -353,7 +350,7 @@ export class StackSnippetView implements NodeView {
             //Trigger an update on the ProseMirror node
             this.view.dispatch(
                 this.view.state.tr.setNodeMarkup(this.getPos(), null, {
-                    ...node.attrs,
+                    ...this.node.attrs,
                     showResult: false,
                 })
             );
@@ -363,10 +360,7 @@ export class StackSnippetView implements NodeView {
         return hideButton;
     }
 
-    private buildShowButton(
-        node: ProseMirrorNode,
-        container: HTMLDivElement
-    ): HTMLButtonElement {
+    private buildShowButton(container: HTMLDivElement): HTMLButtonElement {
         const showButton = document.createElement("button");
         showButton.type = "button";
         showButton.className = "s-btn flex--item d-none";
@@ -382,7 +376,7 @@ export class StackSnippetView implements NodeView {
             //Trigger an update on the ProseMirror node
             this.view.dispatch(
                 this.view.state.tr.setNodeMarkup(this.getPos(), null, {
-                    ...node.attrs,
+                    ...this.node.attrs,
                     showResult: true,
                 })
             );
@@ -394,7 +388,6 @@ export class StackSnippetView implements NodeView {
     }
 
     private buildFullscreenExpandButton(
-        node: ProseMirrorNode,
         container: HTMLDivElement
     ): HTMLButtonElement {
         const expandButton = document.createElement("button");
@@ -406,7 +399,7 @@ export class StackSnippetView implements NodeView {
             //Trigger an update on the ProseMirror node
             this.view.dispatch(
                 this.view.state.tr.setNodeMarkup(this.getPos(), null, {
-                    ...node.attrs,
+                    ...this.node.attrs,
                     fullscreen: true,
                 })
             );
@@ -423,7 +416,6 @@ export class StackSnippetView implements NodeView {
     }
 
     private buildFullscreenCollapseButton(
-        node: ProseMirrorNode,
         container: HTMLDivElement
     ): HTMLButtonElement {
         const collapseButton = document.createElement("button");
@@ -436,7 +428,7 @@ export class StackSnippetView implements NodeView {
             //Trigger an update on the ProseMirror node
             this.view.dispatch(
                 this.view.state.tr.setNodeMarkup(this.getPos(), null, {
-                    ...node.attrs,
+                    ...this.node.attrs,
                     fullscreen: false,
                 })
             );
