@@ -1,5 +1,15 @@
 # Changelog
 
+## 0.14.0
+
+### Minor Changes
+
+- [#440](https://github.com/StackExchange/Stacks-Editor/pull/440) [`c9e49d0`](https://github.com/StackExchange/Stacks-Editor/commit/c9e49d0e13dc8dadc736dcb14066551254c06015) Thanks [@threefjefff](https://github.com/threefjefff)! - Add extra controls to Snippet View (Edit, Show/Hide results, Expand/Shrink results)
+
+### Patch Changes
+
+- [#434](https://github.com/StackExchange/Stacks-Editor/pull/434) [`1497b2d`](https://github.com/StackExchange/Stacks-Editor/commit/1497b2d4cd80a53632e5ad174fc0b5598090605e) Thanks [@dancormier](https://github.com/dancormier)! - Minor a11y and layout fixes for "Run code snippets" button
+
 ## 0.13.0
 
 ### Minor Changes
