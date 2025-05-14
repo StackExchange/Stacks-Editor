@@ -26,10 +26,23 @@ describe("stack snippets", () => {
         expect(resultCode[0].childNodes).toHaveLength(0);
     };
 
-    const shouldHaveRunCodeButton = (rendered: Element) => {
-        const runCode = rendered.querySelectorAll("div.snippet-ctas > button");
-        expect(runCode).toHaveLength(1);
-        expect(runCode[0].textContent).toBe("Run code snippet");
+    const shouldHaveSnippetControls = (rendered: Element) => {
+        const snippetButtons = rendered.querySelectorAll(
+            "div.snippet-buttons > button"
+        );
+        expect(snippetButtons).toHaveLength(2);
+        expect(snippetButtons[0].attributes.getNamedItem("title").value).toBe(
+            "Run code snippet"
+        );
+        expect(
+            snippetButtons[0].attributes.getNamedItem("aria-label").value
+        ).toBe("Run code snippet");
+        expect(snippetButtons[1].attributes.getNamedItem("title").value).toBe(
+            "Edit code snippet"
+        );
+        expect(
+            snippetButtons[1].attributes.getNamedItem("aria-label").value
+        ).toBe("Edit code snippet");
     };
 
     const shouldHaveLanguageBlocks = (rendered: Element, langs: string[]) => {
@@ -55,7 +68,7 @@ describe("stack snippets", () => {
 
             const rendered = richEditorView.dom;
             shouldHaveSnippetBlock(rendered);
-            shouldHaveRunCodeButton(rendered);
+            shouldHaveSnippetControls(rendered);
             shouldHaveLanguageBlocks(rendered, langs);
         }
     );

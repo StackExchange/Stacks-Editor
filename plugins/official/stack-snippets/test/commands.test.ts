@@ -1,7 +1,7 @@
 import { Node } from "prosemirror-model";
 import { EditorState } from "prosemirror-state";
 import { SnippetMetadata, StackSnippetOptions } from "../src/common";
-import { openSnippetModal } from "../src/commands";
+import { openSnippetModalCommand } from "../src/commands";
 import { RichTextHelpers } from "../../../../test";
 import {
     buildSnippetSchema,
@@ -49,7 +49,7 @@ describe("commands", () => {
                 captureHtml = html;
             },
         };
-        const ret = openSnippetModal(snippetOptions)(state, () => {});
+        const ret = openSnippetModalCommand(snippetOptions)(state, () => {});
 
         //The openModal command is always handled when called with dispatch
         expect(ret).toBe(true);
@@ -73,7 +73,7 @@ describe("commands", () => {
                 []
             );
 
-            const command = openSnippetModal(snippetOptions);
+            const command = openSnippetModalCommand(snippetOptions);
 
             const ret = command(state, null);
 
@@ -166,7 +166,7 @@ describe("commands", () => {
                         captureCallback = updateDocumentCallback;
                     },
                 };
-                openSnippetModal(snippetOptions)(
+                openSnippetModalCommand(snippetOptions)(
                     view.editorView.state,
                     () => {},
                     view.editorView
@@ -206,7 +206,7 @@ describe("commands", () => {
                         captureCallback = updateDocumentCallback;
                     },
                 };
-                openSnippetModal(snippetOptions)(
+                openSnippetModalCommand(snippetOptions)(
                     view.editorView.state,
                     () => {},
                     view.editorView
