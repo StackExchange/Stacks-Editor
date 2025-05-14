@@ -30,7 +30,7 @@
 
 /* Required for the plugin/official/stackSnippet plugin */
 .svg-icon-bg.iconShareSm {
-    width: 18px;
+    width: 14px;
     --bg-icon: url("~@stackoverflow/stacks-icons/src/Icon/ShareSm.svg");
 }
 

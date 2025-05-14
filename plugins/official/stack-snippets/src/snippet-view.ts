@@ -95,20 +95,23 @@ export class StackSnippetView implements NodeView {
 
             const snippetResultButtonContainer = document.createElement("div");
             snippetResultButtonContainer.className =
-                "snippet-result-buttons d-flex mb0 d-none ml-auto gs4";
+                "snippet-result-buttons d-flex mb0 ml-auto gs4";
             ctas.appendChild(snippetResultButtonContainer);
             this.showButton = this.buildShowButton(
                 snippetResultButtonContainer
             );
+            this.showButton.classList.add("d-none");
             this.hideButton = this.buildHideButton(
                 snippetResultButtonContainer
             );
+            this.hideButton.classList.add("d-none");
             this.fullscreenButton = this.buildFullscreenExpandButton(
                 snippetResultButtonContainer
             );
             this.fullscreenReturnButton = this.buildFullscreenCollapseButton(
                 snippetResultButtonContainer
             );
+            this.fullscreenReturnButton.classList.add("d-none");
             this.snippetResultButtonContainer = snippetResultButtonContainer;
         }
 
@@ -183,7 +186,7 @@ export class StackSnippetView implements NodeView {
         }
 
         //Fullscreen the results, if the node meta needs it
-        if (content && node.attrs.fullscreen) {
+        if (node.attrs.fullscreen) {
             if (!this.dom.classList.contains("snippet-fullscreen")) {
                 //We use `.snippet-fullscreen` as a marker for the rest of the styling
                 this.dom.classList.add("snippet-fullscreen");
@@ -212,7 +215,7 @@ export class StackSnippetView implements NodeView {
 
         //Re-run execution the snippet if something has changed, or we don't yet have a result
         if (content && (metaChanged || this.resultContainer.innerHTML === "")) {
-            this.snippetResultButtonContainer.classList.remove("d-none");
+            this.hideButton.classList.remove("d-none");
             //Clear the node
             this.resultContainer.innerHTML = "";
             const iframe = document.createElement("iframe");
@@ -263,7 +266,7 @@ export class StackSnippetView implements NodeView {
         runCodeButton.setAttribute("aria-label", "Run code snippet");
         // create the svg svg-icon-bg element
         const runIcon = document.createElement("span");
-        runIcon.className = "svg-icon-bg iconPlay";
+        runIcon.className = "svg-icon-bg mr4 iconPlay";
         runCodeButton.append(runIcon);
         const runText = document.createElement("span");
         runText.textContent = "Run code snippet";
@@ -340,7 +343,7 @@ export class StackSnippetView implements NodeView {
         hideButton.title = "Hide results";
         hideButton.setAttribute("aria-label", "Hide results");
         const hideIcon = document.createElement("span");
-        hideIcon.className = "svg-icon-bg iconEyeOff";
+        hideIcon.className = "svg-icon-bg mr4 iconEyeOff";
         hideButton.append(hideIcon);
         const hideText = document.createElement("span");
         hideText.textContent = "Hide results";
@@ -366,7 +369,7 @@ export class StackSnippetView implements NodeView {
         showButton.title = "Show results";
         showButton.setAttribute("aria-label", "Show results");
         const hideIcon = document.createElement("span");
-        hideIcon.className = "svg-icon-bg iconEye";
+        hideIcon.className = "svg-icon-bg mr4 iconEye";
         showButton.append(hideIcon);
         const showText = document.createElement("span");
         showText.textContent = "Show results";
@@ -404,7 +407,7 @@ export class StackSnippetView implements NodeView {
             );
         });
         const expandIcon = document.createElement("span");
-        expandIcon.className = "svg-icon-bg iconShareSm";
+        expandIcon.className = "svg-icon-bg mr4 iconShareSm";
         expandButton.append(expandIcon);
         const expandText = document.createElement("span");
         expandText.textContent = "Expand Snippet";
@@ -420,9 +423,8 @@ export class StackSnippetView implements NodeView {
         const collapseButton = document.createElement("button");
         collapseButton.type = "button";
         collapseButton.className = "s-btn flex--item td-underline ml-auto";
-        collapseButton.title = "Close Snippet";
-        collapseButton.textContent = "Close";
-        collapseButton.setAttribute("aria-label", "Close Snippet");
+        collapseButton.title = "Return to post";
+        collapseButton.setAttribute("aria-label", "Return to post");
         collapseButton.addEventListener("click", () => {
             //Trigger an update on the ProseMirror node
             this.view.dispatch(
@@ -432,6 +434,13 @@ export class StackSnippetView implements NodeView {
                 })
             );
         });
+        const collapseIcon = document.createElement("span");
+        collapseIcon.className = "svg-icon-bg mr4 iconShareSm";
+        collapseButton.append(collapseIcon);
+        const expandText = document.createElement("span");
+        expandText.textContent = "Return to post";
+        collapseButton.appendChild(expandText);
+
         container.appendChild(collapseButton);
         return collapseButton;
     }
