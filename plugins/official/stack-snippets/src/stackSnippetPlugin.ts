@@ -11,7 +11,10 @@ import { EditorView } from "prosemirror-view";
 import { StackSnippetView } from "./snippet-view";
 import { StackSnippetOptions } from "./common";
 import { stackSnippetPasteHandler } from "./paste-handler";
-import { openSnippetModal, stackSnippetCommandShortcuts } from "./commands";
+import {
+    openSnippetModalCommand,
+    stackSnippetCommandShortcuts,
+} from "./commands";
 
 /**
  * Build the StackSnippet plugin using hoisted options that can be specified at runtime
@@ -63,10 +66,10 @@ export const stackSnippetPlugin: (opts?: StackSnippetOptions) => EditorPlugin =
                         {
                             key: "openSnippetModal",
                             richText: {
-                                command: openSnippetModal(opts),
+                                command: openSnippetModalCommand(opts),
                             },
                             commonmark: {
-                                command: openSnippetModal(opts),
+                                command: openSnippetModalCommand(opts),
                             },
                             display: makeMenuButton(
                                 "StackSnippets",

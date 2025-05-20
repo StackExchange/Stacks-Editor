@@ -1,6 +1,10 @@
 # Changelog
 
-## 0.13.1
+## 0.14.0
+
+### Minor Changes
+
+- [#440](https://github.com/StackExchange/Stacks-Editor/pull/440) [`c9e49d0`](https://github.com/StackExchange/Stacks-Editor/commit/c9e49d0e13dc8dadc736dcb14066551254c06015) Thanks [@threefjefff](https://github.com/threefjefff)! - Add extra controls to Snippet View (Edit, Show/Hide results, Expand/Shrink results)
 
 ### Patch Changes
 

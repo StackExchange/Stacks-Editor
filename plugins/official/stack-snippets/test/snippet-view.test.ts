@@ -59,109 +59,149 @@ describe("StackSnippetView", () => {
         return view;
     };
 
-    it("should render run code button if renderer provided", () => {
+    const findSnippetControls = (rendered: Element): NodeListOf<Element> =>
+        rendered.querySelectorAll("div.snippet-buttons > button");
+
+    it("should render snippet buttons if renderer provided", () => {
         const view = buildView({
             renderer: () => Promise.resolve(null),
             openSnippetsModal: () => {},
         });
-        const runCodeButton = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
-        );
 
-        expect(runCodeButton).toHaveLength(1);
-        expect(runCodeButton[0].textContent).toBe("Run code snippet");
+        const snippetButtons = findSnippetControls(view.dom);
+
+        expect(snippetButtons).toHaveLength(2);
+        expect(snippetButtons[0].attributes.getNamedItem("title").value).toBe(
+            "Run code snippet"
+        );
+        expect(
+            snippetButtons[0].attributes.getNamedItem("aria-label").value
+        ).toBe("Run code snippet");
+        expect(snippetButtons[1].attributes.getNamedItem("title").value).toBe(
+            "Edit code snippet"
+        );
+        expect(
+            snippetButtons[1].attributes.getNamedItem("aria-label").value
+        ).toBe("Edit code snippet");
     });
 
-    it("should not render run code button if no renderer provided", () => {
+    it("should not render snippet buttons if no renderer provided", () => {
         const view = buildView();
-        const runCodeButton = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
-        );
 
-        expect(runCodeButton).toHaveLength(0);
+        const snippetButtons = findSnippetControls(view.dom);
+
+        expect(snippetButtons).toHaveLength(0);
     });
 
-    it("should call renderer when button clicked", () => {
-        let buttonClicked = false;
-        const view = buildView({
-            renderer: () => {
-                buttonClicked = true;
-                return Promise.resolve(null);
-            },
-            openSnippetsModal: () => {},
+    describe("Run Code Snippet button", () => {
+        it("should call renderer when button clicked", () => {
+            let buttonClicked = false;
+            const view = buildView({
+                renderer: () => {
+                    buttonClicked = true;
+                    return Promise.resolve(null);
+                },
+                openSnippetsModal: () => {},
+            });
+            const [runCodeButton] = view.dom.querySelectorAll(
+                ".snippet-buttons > button.s-btn"
+            );
+
+            (<HTMLButtonElement>runCodeButton).click();
+
+            expect(buttonClicked).toBe(true);
         });
-        const [runCodeButton] = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
-        );
 
-        (<HTMLButtonElement>runCodeButton).click();
+        it("should render returned content when button clicked", async () => {
+            const renderDoc =
+                document.implementation.createHTMLDocument("test doc");
+            const testDiv = document.createElement("div");
+            testDiv.textContent = "test!";
+            renderDoc.body.appendChild(testDiv);
+            const view = buildView({
+                renderer: () => {
+                    return Promise.resolve(renderDoc);
+                },
+                openSnippetsModal: () => {},
+            });
+            const [runCodeButton] = view.dom.querySelectorAll(
+                ".snippet-buttons > button.s-btn"
+            );
 
-        expect(buttonClicked).toBe(true);
-    });
+            (<HTMLButtonElement>runCodeButton).click();
+            // wait for the promise to resolve (immediately) and check that the async content was pulled in
+            await RichTextHelpers.sleepAsync(0);
 
-    it("should render returned content when button clicked", async () => {
-        const renderDoc =
-            document.implementation.createHTMLDocument("test doc");
-        const testDiv = document.createElement("div");
-        testDiv.textContent = "test!";
-        renderDoc.body.appendChild(testDiv);
-        const view = buildView({
-            renderer: () => {
-                return Promise.resolve(renderDoc);
-            },
-            openSnippetsModal: () => {},
+            const [iframe] = view.dom.querySelectorAll(".snippet-box-result");
+            //Testing the HTMLIFrameElement is a nightmare, instead we're going to grab it's srcdoc and ensure that it parses back to our document
+            const foundDoc = (<HTMLIFrameElement>iframe).srcdoc;
+            const resultDoc = document.implementation.createHTMLDocument();
+            resultDoc.open();
+            resultDoc.write(foundDoc);
+            resultDoc.close();
+            const [resultDiv] = resultDoc.getElementsByTagName("div");
+            expect(resultDiv.textContent).toBe("test!");
         });
-        const [runCodeButton] = view.dom.querySelectorAll(
-            ".snippet-ctas > button.s-btn"
-        );
-
-        (<HTMLButtonElement>runCodeButton).click();
-        // wait for the promise to resolve (immediately) and check that the async content was pulled in
-        await RichTextHelpers.sleepAsync(0);
-
-        const [iframe] = view.dom.querySelectorAll(".snippet-box-result");
-        //Testing the HTMLIFrameElement is a nightmare, instead we're going to grab it's srcdoc and ensure that it parses back to our document
-        const foundDoc = (<HTMLIFrameElement>iframe).srcdoc;
-        const resultDoc = document.implementation.createHTMLDocument();
-        resultDoc.open();
-        resultDoc.write(foundDoc);
-        resultDoc.close();
-        const [resultDiv] = resultDoc.getElementsByTagName("div");
-        expect(resultDiv.textContent).toBe("test!");
     });
 
-    it("should render show/hide link if hide attr is true", () => {
-        const view = buildView(undefined, "true");
-        const toggleLink = view.dom.querySelectorAll(".snippet-toggle");
+    describe("Edit Snippet", () => {
+        it("should call openSnippetModal when clicked", async () => {
+            let openCalled = false;
+            const view = buildView({
+                renderer: () => {
+                    return Promise.resolve(null);
+                },
+                openSnippetsModal: () => {
+                    openCalled = true;
+                },
+            });
+            const editCodeButton = view.dom.querySelectorAll(
+                ".snippet-buttons > button.s-btn"
+            )[1];
+            //Double check we've grabbed the right button
+            expect(editCodeButton.textContent).toContain("Edit");
 
-        expect(toggleLink).toHaveLength(1);
-        expect(toggleLink[0].textContent).toBe("Hide code snippet");
+            (<HTMLButtonElement>editCodeButton).click();
+            await RichTextHelpers.sleepAsync(0);
+
+            expect(openCalled).toBeTruthy();
+        });
     });
 
-    it("should not render show/hide link if hide attr is false", () => {
-        const view = buildView(undefined, "false");
-        const toggleLink = view.dom.querySelectorAll(".snippet-toggle");
+    describe("Show/Hide Snippet", () => {
+        it("should render show/hide link if hide attr is true", () => {
+            const view = buildView(undefined, "true");
+            const toggleLink = view.dom.querySelectorAll(".snippet-toggle");
 
-        expect(toggleLink).toHaveLength(0);
-    });
+            expect(toggleLink).toHaveLength(1);
+            expect(toggleLink[0].textContent).toBe("Hide code snippet");
+        });
 
-    it("should toggle visibility of code snippet when show/hide link is clicked", () => {
-        const view = buildView(undefined, "true");
-        const toggleLink = view.dom.querySelector(".snippet-toggle");
-        const snippetCode = view.dom.querySelector(".snippet-code");
+        it("should not render show/hide link if hide attr is false", () => {
+            const view = buildView(undefined, "false");
+            const toggleLink = view.dom.querySelectorAll(".snippet-toggle");
 
-        // Initial state: Code is visible
-        expect((<HTMLDivElement>snippetCode).style.display).toBe("");
-        expect(toggleLink.textContent).toBe("Hide code snippet");
+            expect(toggleLink).toHaveLength(0);
+        });
 
-        // Click to hide
-        (<HTMLAnchorElement>toggleLink).click();
-        expect((<HTMLDivElement>snippetCode).style.display).toBe("none");
-        expect(toggleLink.textContent).toBe("Show code snippet");
+        it("should toggle visibility of code snippet when show/hide link is clicked", () => {
+            const view = buildView(undefined, "true");
+            const toggleLink = view.dom.querySelector(".snippet-toggle");
+            const snippetCode = view.dom.querySelector(".snippet-code");
 
-        // Click to show
-        (<HTMLAnchorElement>toggleLink).click();
-        expect((<HTMLDivElement>snippetCode).style.display).toBe("");
-        expect(toggleLink.textContent).toBe("Hide code snippet");
+            // Initial state: Code is visible
+            expect((<HTMLDivElement>snippetCode).style.display).toBe("");
+            expect(toggleLink.textContent).toBe("Hide code snippet");
+
+            // Click to hide
+            (<HTMLAnchorElement>toggleLink).click();
+            expect((<HTMLDivElement>snippetCode).style.display).toBe("none");
+            expect(toggleLink.textContent).toBe("Show code snippet");
+
+            // Click to show
+            (<HTMLAnchorElement>toggleLink).click();
+            expect((<HTMLDivElement>snippetCode).style.display).toBe("");
+            expect(toggleLink.textContent).toBe("Hide code snippet");
+        });
     });
 });
