@@ -22,7 +22,12 @@ module.exports = (env, argv) => {
                     {
                         test: /\.html$/,
                         use: [
-                            "html-loader",
+                            {
+                                loader: "html-loader",
+                                options: {
+                                    minimize: false,
+                                },
+                            },
                             {
                                 loader: "liquidjs-loader",
                                 options: {
@@ -65,6 +70,7 @@ module.exports = (env, argv) => {
                         new HtmlWebpackPlugin({
                             template: "./site/views/" + f,
                             filename: f,
+                            minify: false,
                         })
                 ),
             ],
