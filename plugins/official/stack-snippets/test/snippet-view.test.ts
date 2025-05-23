@@ -204,4 +204,54 @@ describe("StackSnippetView", () => {
             expect(toggleLink.textContent).toBe("Hide code snippet");
         });
     });
+
+    describe("Fullscren/Return Snippet", () => {
+        it("should trigger onFullscreenExpand callback if defined", () => {
+            let fullscreenExpandCalled = false;
+            const view = buildView({
+                renderer: () => {
+                    return Promise.resolve(null);
+                },
+                openSnippetsModal: () => {},
+                onFullscreenExpand: () => {
+                    fullscreenExpandCalled = true;
+                },
+            });
+
+            const [fullscreenButton] = view.dom.querySelectorAll(
+                ".snippet-result-buttons > button.s-btn[aria-label='Expand Snippet']"
+            );
+
+            //Fullscreen
+            (<HTMLAnchorElement>fullscreenButton).click();
+
+            expect(fullscreenExpandCalled).toBe(true);
+        });
+
+        it("should trigger onFullscreenReturn callback if defined", () => {
+            let fullscreenReturnCalled = false;
+            const view = buildView({
+                renderer: () => {
+                    return Promise.resolve(null);
+                },
+                openSnippetsModal: () => {},
+                onFullscreenReturn: () => {
+                    fullscreenReturnCalled = true;
+                },
+            });
+            const [fullscreenButton] = view.dom.querySelectorAll(
+                ".snippet-result-buttons > button.s-btn[aria-label='Expand Snippet']"
+            );
+            const [fullscreenReturn] = view.dom.querySelectorAll(
+                ".snippet-result-buttons > button.s-btn[aria-label='Return to post']"
+            );
+
+            //Fullscreen
+            (<HTMLAnchorElement>fullscreenButton).click();
+            //And then return
+            (<HTMLAnchorElement>fullscreenReturn).click();
+
+            expect(fullscreenReturnCalled).toBe(true);
+        });
+    });
 });

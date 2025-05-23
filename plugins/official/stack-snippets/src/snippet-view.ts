@@ -19,6 +19,7 @@ export class StackSnippetView implements NodeView {
         this.view = view;
         this.getPos = getPos;
         this.node = node;
+        this.isFullscreen = false; //Never start fullscreened
 
         this.snippetMetadata = getSnippetMetadata(node);
         const codeIsShown: boolean =
@@ -112,7 +113,6 @@ export class StackSnippetView implements NodeView {
                 snippetResultButtonContainer
             );
             this.fullscreenReturnButton.classList.add("d-none");
-            this.snippetResultButtonContainer = snippetResultButtonContainer;
         }
 
         snippetResult.appendChild(ctas);
@@ -187,6 +187,7 @@ export class StackSnippetView implements NodeView {
 
         //Fullscreen the results, if the node meta needs it
         if (node.attrs.fullscreen) {
+            //Verify the styles are correct - this is idempotent
             if (!this.dom.classList.contains("snippet-fullscreen")) {
                 //We use `.snippet-fullscreen` as a marker for the rest of the styling
                 this.dom.classList.add("snippet-fullscreen");
@@ -199,7 +200,15 @@ export class StackSnippetView implements NodeView {
             if (this.fullscreenReturnButton?.classList.contains("d-none")) {
                 this.fullscreenReturnButton.classList.remove("d-none");
             }
+            //If we weren't in fullscreen, trigger the fullscreen callback
+            if (this.isFullscreen == false) {
+                if (this.opts.onFullscreenExpand) {
+                    this.opts.onFullscreenExpand();
+                }
+                this.isFullscreen = true;
+            }
         } else {
+            //Verify the styles are correct - this is idempotent
             if (this.dom.classList.contains("snippet-fullscreen")) {
                 //We use `.snippet-fullscreen` as a marker for the rest of the styling
                 this.dom.classList.remove("snippet-fullscreen");
@@ -210,6 +219,14 @@ export class StackSnippetView implements NodeView {
             }
             if (!this.fullscreenReturnButton?.classList.contains("d-none")) {
                 this.fullscreenReturnButton?.classList.add("d-none");
+            }
+
+            //If we were in fullscreen, trigger the return
+            if (this.isFullscreen == true) {
+                if (this.opts.onFullscreenReturn) {
+                    this.opts.onFullscreenReturn();
+                }
+                this.isFullscreen = false;
             }
         }
 
@@ -239,12 +256,12 @@ export class StackSnippetView implements NodeView {
     private readonly getPos: () => number;
     private snippetMetadata: SnippetMetadata;
     private contentNode: Node;
-    private snippetResultButtonContainer: HTMLDivElement;
     private showButton: HTMLButtonElement;
     private hideButton: HTMLButtonElement;
     private fullscreenButton: HTMLButtonElement;
     private fullscreenReturnButton: HTMLButtonElement;
     private node: ProseMirrorNode;
+    private isFullscreen: boolean;
     resultContainer: HTMLDivElement;
     dom: HTMLElement;
     contentDOM: HTMLElement;
