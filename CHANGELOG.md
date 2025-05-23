@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.0
+
+### Minor Changes
+
+- [#447](https://github.com/StackExchange/Stacks-Editor/pull/447) [`8f0a781`](https://github.com/StackExchange/Stacks-Editor/commit/8f0a781894ae8d7981570280a843bcf7b0d8a912) Thanks [@threefjefff](https://github.com/threefjefff)! - Snippets - Adding in callback hooks for Fullscreen/Return
+
 ## 0.14.0
 
 ### Minor Changes
