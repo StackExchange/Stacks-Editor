@@ -21,6 +21,12 @@ export interface StackSnippetOptions {
         css?: string,
         html?: string
     ) => void;
+
+    /** Function to handle any required marshalling of components to render fullscreen correctly */
+    onFullscreenExpand?: () => void;
+
+    /** Function to handle any required marshalling of components to return from fullscreen correctly */
+    onFullscreenReturn?: () => void;
 }
 
 export interface SnippetMetadata {
