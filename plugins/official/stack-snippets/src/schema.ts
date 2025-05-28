@@ -110,13 +110,18 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
         if (metaLine.type === "begin") {
             if (inSnippet) {
                 // Found a new begin while still in a snippet - invalid state
+                state.line = i + 1;
                 return false;
             }
             inSnippet = true;
             snippetBegin = metaLine;
             rawMetaLines = [{ line, index: i }];
             currentLangLines = [];
-        } else if (metaLine.type === "lang" && inSnippet) {
+        } else if (metaLine.type === "lang") {
+            if (!inSnippet) {
+                state.line = i + 1;
+                return false;
+            }
             currentLangLines.push({ line, index: i });
             rawMetaLines.push({ line, index: i });
         } else if (metaLine.type === "end" && inSnippet) {
@@ -129,6 +134,7 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
 
             //We now know this is a valid snippet. Last call before we start processing
             if (silent || !validationResult.valid) {
+                state.line = i + 1;
                 return validationResult.valid;
             }
 
@@ -137,6 +143,7 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
             // This value is not serialized, and so is different on every new session of Rich Text (i.e. every mode switch)
             openToken.attrSet("id", Utils.generateRandomId());
             if (!snippetBegin || snippetBegin.type !== "begin") {
+                state.line = i + 1;
                 return false;
             }
             openToken.attrSet("hide", snippetBegin.hide);
@@ -182,10 +189,11 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
 
     // If we're still in a snippet at the end, it means we never found an end marker
     if (inSnippet) {
+        state.line = endLine;
         return false;
     }
 
-    return true;
+    return false;
 };
 
 export const stackSnippetRichTextNodeSpec: { [name: string]: NodeSpec } = {
