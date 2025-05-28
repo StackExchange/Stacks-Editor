@@ -102,83 +102,83 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
             continue;
         }
 
-        const metaLine = mapMetaLine({ line, index: i });
-        if (!metaLine) {
-            continue;
-        }
-
-        if (metaLine.type === "begin") {
-            if (inSnippet) {
-                // Found a new begin while still in a snippet - invalid state
-                return false;
-            }
-            inSnippet = true;
-            snippetBegin = metaLine;
-            rawMetaLines = [{ line, index: i }];
-            currentLangLines = [];
-        } else if (metaLine.type === "lang" && inSnippet) {
-            currentLangLines.push({ line, index: i });
-            rawMetaLines.push({ line, index: i });
-        } else if (metaLine.type === "end" && inSnippet) {
-            rawMetaLines.push({ line, index: i });
-
-            const metaLines = rawMetaLines
-                .map(mapMetaLine)
-                .filter((m) => m != null);
-            const validationResult = validateMetaLines(metaLines);
-
-            //We now know this is a valid snippet. Last call before we start processing
-            if (silent || !validationResult.valid) {
-                return validationResult.valid;
-            }
-
-            // Create the snippet tokens
-            const openToken = state.push("stack_snippet_open", "code", 1);
-            // This value is not serialized, and so is different on every new session of Rich Text (i.e. every mode switch)
-            openToken.attrSet("id", Utils.generateRandomId());
-            if (!snippetBegin || snippetBegin.type !== "begin") {
-                return false;
-            }
-            openToken.attrSet("hide", snippetBegin.hide);
-            openToken.attrSet("console", snippetBegin.console);
-            openToken.attrSet("babel", snippetBegin.babel);
-            openToken.attrSet(
-                "babelPresetReact",
-                snippetBegin.babelPresetReact
-            );
-            openToken.attrSet("babelPresetTS", snippetBegin.babelPresetTS);
-
-            // Sort and process language blocks
-            const langSort = currentLangLines.sort((a, b) => a.index - b.index);
-
-            for (let j = 0; j < langSort.length; j++) {
-                const langMeta = mapMetaLine(langSort[j]);
-                if (!langMeta || langMeta.type !== "lang") continue;
-
-                //Use the beginning of the next block to establish the end of this one, or the end of the snippet
-                const langEnd =
-                    j + 1 == langSort.length ? i : langSort[j + 1].index;
-                //Start after the header of the lang block (+1) and the following empty line (+1)
-                //End on the beginning of the next metaLine, less the preceding empty line (-1)
-                //All lang blocks are forcefully indented 4 spaces, so cleave those away.
-                const langBlock = state.getLines(
-                    langSort[j].index + 2,
-                    langEnd - 1,
-                    4,
-                    false
-                );
-                const langToken = state.push("stack_snippet_lang", "code", 1);
-                langToken.content = langBlock;
-                langToken.map = [langSort[j].index, langEnd];
-                langToken.attrSet("language", langMeta.language);
-            }
-
-            state.push("stack_snippet_close", "code", -1);
-            state.line = i + 1;
-
-            return true;
-        }
+    const metaLine = mapMetaLine({ line, index: i });
+    if (!metaLine) {
+        continue;
     }
+
+    if (metaLine.type === "begin") {
+        if (inSnippet) {
+            // Found a new begin while still in a snippet - invalid state
+            return false;
+        }
+        inSnippet = true;
+        snippetBegin = metaLine;
+        rawMetaLines = [{ line, index: i }];
+        currentLangLines = [];
+    } else if (metaLine.type === "lang" && inSnippet) {
+        currentLangLines.push({ line, index: i });
+        rawMetaLines.push({ line, index: i });
+    } else if (metaLine.type === "end" && inSnippet) {
+        rawMetaLines.push({ line, index: i });
+
+        const metaLines = rawMetaLines
+            .map(mapMetaLine)
+            .filter((m) => m != null);
+        const validationResult = validateMetaLines(metaLines);
+
+        //We now know this is a valid snippet. Last call before we start processing
+        if (silent || !validationResult.valid) {
+            return validationResult.valid;
+        }
+
+        // Create the snippet tokens
+        const openToken = state.push("stack_snippet_open", "code", 1);
+        // This value is not serialized, and so is different on every new session of Rich Text (i.e. every mode switch)
+        openToken.attrSet("id", Utils.generateRandomId());
+        if (!snippetBegin || snippetBegin.type !== "begin") {
+            return false;
+        }
+        openToken.attrSet("hide", snippetBegin.hide);
+        openToken.attrSet("console", snippetBegin.console);
+        openToken.attrSet("babel", snippetBegin.babel);
+        openToken.attrSet(
+            "babelPresetReact",
+            snippetBegin.babelPresetReact
+        );
+        openToken.attrSet("babelPresetTS", snippetBegin.babelPresetTS);
+
+        // Sort and process language blocks
+        const langSort = currentLangLines.sort((a, b) => a.index - b.index);
+
+        for (let j = 0; j < langSort.length; j++) {
+            const langMeta = mapMetaLine(langSort[j]);
+            if (!langMeta || langMeta.type !== "lang") continue;
+
+            //Use the beginning of the next block to establish the end of this one, or the end of the snippet
+            const langEnd =
+                j + 1 == langSort.length ? i : langSort[j + 1].index;
+            //Start after the header of the lang block (+1) and the following empty line (+1)
+            //End on the beginning of the next metaLine, less the preceding empty line (-1)
+            //All lang blocks are forcefully indented 4 spaces, so cleave those away.
+            const langBlock = state.getLines(
+                langSort[j].index + 2,
+                langEnd - 1,
+                4,
+                false
+            );
+            const langToken = state.push("stack_snippet_lang", "code", 1);
+            langToken.content = langBlock;
+            langToken.map = [langSort[j].index, langEnd];
+            langToken.attrSet("language", langMeta.language);
+        }
+
+        state.push("stack_snippet_close", "code", -1);
+        state.line = i + 1;
+
+        return true;
+    }
+}
 
     // If we're still in a snippet at the end, it means we never found an end marker
     if (inSnippet) {
