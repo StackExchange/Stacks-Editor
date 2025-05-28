@@ -121,14 +121,16 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
             rawMetaLines.push({ line, index: i });
         } else if (metaLine.type === "end" && inSnippet) {
             rawMetaLines.push({ line, index: i });
-            
-            const metaLines = rawMetaLines.map(mapMetaLine).filter((m) => m != null);
+
+            const metaLines = rawMetaLines
+                .map(mapMetaLine)
+                .filter((m) => m != null);
             const validationResult = validateMetaLines(metaLines);
 
-        //We now know this is a valid snippet. Last call before we start processing
-        if (silent || !validationResult.valid) {
-            return validationResult.valid;
-                }
+            //We now know this is a valid snippet. Last call before we start processing
+            if (silent || !validationResult.valid) {
+                return validationResult.valid;
+            }
 
             // Create the snippet tokens
             const openToken = state.push("stack_snippet_open", "code", 1);
@@ -140,12 +142,15 @@ const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
             openToken.attrSet("hide", snippetBegin.hide);
             openToken.attrSet("console", snippetBegin.console);
             openToken.attrSet("babel", snippetBegin.babel);
-            openToken.attrSet("babelPresetReact", snippetBegin.babelPresetReact);
+            openToken.attrSet(
+                "babelPresetReact",
+                snippetBegin.babelPresetReact
+            );
             openToken.attrSet("babelPresetTS", snippetBegin.babelPresetTS);
 
             // Sort and process language blocks
             const langSort = currentLangLines.sort((a, b) => a.index - b.index);
-            
+
             for (let j = 0; j < langSort.length; j++) {
                 const langMeta = mapMetaLine(langSort[j]);
                 if (!langMeta || langMeta.type !== "lang") continue;
