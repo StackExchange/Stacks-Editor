@@ -56,25 +56,25 @@ describe("stackSnippetPlugin (Markdown-it)", () => {
 Some text in between snippets.
 
 ${validBegin}${validJs}${validEnd}`;
-        
+
         const tokens = mdit.parse(multipleSnippets, {});
-        
+
         // We expect:
         // - First snippet: open + lang + close (3 tokens)
         // - Paragraph with text (3 tokens: paragraph_open, inline, paragraph_close)
         // - Second snippet: open + lang + close (3 tokens)
         expect(tokens).toHaveLength(9);
-        
+
         // First snippet
         expect(tokens[0].type).toBe("stack_snippet_open");
         expect(tokens[1].type).toBe("stack_snippet_lang");
         expect(tokens[2].type).toBe("stack_snippet_close");
-        
+
         // Text in between
         expect(tokens[3].type).toBe("paragraph_open");
         expect(tokens[4].type).toBe("inline");
         expect(tokens[5].type).toBe("paragraph_close");
-        
+
         // Second snippet
         expect(tokens[6].type).toBe("stack_snippet_open");
         expect(tokens[7].type).toBe("stack_snippet_lang");
