@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.1
+
+### Patch Changes
+
+- [#449](https://github.com/StackExchange/Stacks-Editor/pull/449) [`5587562`](https://github.com/StackExchange/Stacks-Editor/commit/558756220c1c80db6b6ec71ca16b154ad1a2e9ad) Thanks [@alizaberger](https://github.com/alizaberger)! - fix parsing of multiple snippets
+
 ## 0.15.0
 
 ### Minor Changes
