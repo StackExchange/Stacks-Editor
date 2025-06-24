@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.2
+
+### Patch Changes
+
+- [#457](https://github.com/StackExchange/Stacks-Editor/pull/457) [`1c70c0e`](https://github.com/StackExchange/Stacks-Editor/commit/1c70c0e0c8c349c9f6f1f9e933af618a0842892a) Thanks [@troygould-stack](https://github.com/troygould-stack)! - Exporting options used by the StacksSnippets plugin for user.
+
 ## 0.15.1
 
 ### Patch Changes
