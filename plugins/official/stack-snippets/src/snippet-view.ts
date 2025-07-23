@@ -224,7 +224,11 @@ export class StackSnippetView implements NodeView {
         }
 
         //Re-run execution the snippet if something has changed, or we don't yet have a result
-        if (content && (this.hasContentNodeChanged() || this.resultContainer.innerHTML === "")) {
+        if (
+            content &&
+            (this.hasContentNodeChanged() ||
+                this.resultContainer.innerHTML === "")
+        ) {
             this.hideButton.classList.remove("d-none");
             //Clear the node
             this.resultContainer.innerHTML = "";
@@ -274,8 +278,9 @@ export class StackSnippetView implements NodeView {
             return false;
         }
 
-        const documentInnerHtml = (this.contentNode as Document).documentElement.innerHTML;
-        var hasChanged = documentInnerHtml !== this.contentNodeSnapshot;
+        const documentInnerHtml = (this.contentNode as Document).documentElement
+            .innerHTML;
+        const hasChanged = documentInnerHtml !== this.contentNodeSnapshot;
         if (hasChanged) {
             this.contentNodeSnapshot = documentInnerHtml;
         }
