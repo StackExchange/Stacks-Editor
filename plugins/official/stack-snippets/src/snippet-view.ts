@@ -131,13 +131,7 @@ export class StackSnippetView implements NodeView {
         //Update the reference used by buttons, etc. for the most up-to-date node reference
         this.node = node;
 
-        //Check to see if the metadata has changed
-        const updatedMeta = getSnippetMetadata(node);
-        const metaChanged =
-            JSON.stringify(updatedMeta) !==
-            JSON.stringify(this.snippetMetadata);
-        this.snippetMetadata = updatedMeta;
-
+        this.snippetMetadata = getSnippetMetadata(node);
         if (this.snippetMetadata.hide === "true") {
             // Update the visibility of the snippet-code div and toggle link
             const snippetCode = this.contentDOM;
@@ -159,7 +153,6 @@ export class StackSnippetView implements NodeView {
                 : "svg-icon-bg iconArrowRightSm";
         }
 
-        // Update the result container if metadata has changed
         const content = this.contentNode;
 
         //Show the results, if the node meta allows it
@@ -231,7 +224,7 @@ export class StackSnippetView implements NodeView {
         }
 
         //Re-run execution the snippet if something has changed, or we don't yet have a result
-        if (content && (metaChanged || this.resultContainer.innerHTML === "")) {
+        if (content && (this.hasContentNodeChanged() || this.resultContainer.innerHTML === "")) {
             this.hideButton.classList.remove("d-none");
             //Clear the node
             this.resultContainer.innerHTML = "";
@@ -256,6 +249,7 @@ export class StackSnippetView implements NodeView {
     private readonly getPos: () => number;
     private snippetMetadata: SnippetMetadata;
     private contentNode: Node;
+    private contentNodeSnapshot: string;
     private showButton: HTMLButtonElement;
     private hideButton: HTMLButtonElement;
     private fullscreenButton: HTMLButtonElement;
@@ -274,6 +268,19 @@ export class StackSnippetView implements NodeView {
         "w-screen",
         "h-screen",
     ];
+
+    private hasContentNodeChanged(): boolean {
+        if (this.contentNode?.nodeType !== Node.DOCUMENT_NODE) {
+            return false;
+        }
+
+        const documentInnerHtml = (this.contentNode as Document).documentElement.innerHTML;
+        var hasChanged = documentInnerHtml !== this.contentNodeSnapshot;
+        if (hasChanged) {
+            this.contentNodeSnapshot = documentInnerHtml;
+        }
+        return hasChanged;
+    }
 
     private buildRunButton(container: HTMLDivElement): void {
         const runCodeButton = document.createElement("button");
