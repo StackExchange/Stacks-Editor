@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.3
+
+### Patch Changes
+
+- [#466](https://github.com/StackExchange/Stacks-Editor/pull/466) [`4802674`](https://github.com/StackExchange/Stacks-Editor/commit/48026745ecdd526eda44c41539503ac61e2e7bff) Thanks [@chris-doucette-stack](https://github.com/chris-doucette-stack)! - Fixes bug thats prevents snippets from rerendering on run button click
+
 ## 0.15.2
 
 ### Patch Changes
