@@ -33,22 +33,9 @@ export class ImageView implements NodeView {
             this.preventClose(event)
         );
     }
-    /**
-     * We want to trigger Stacks' showing and hiding of popovers whenever an image is considered
-     * "selected" by prosemirror. This can happen by mouse-clicking or arrowing through the editor
-     */
+
     selectNode(): void {
         this.img.classList.add("bs-ring");
-        this.selectionActive = true;
-        // tell Stacks to hide the popover
-        this.img.dispatchEvent(new Event("image-popover-show"));
-
-        const inputFields = this.form.querySelectorAll("input");
-        if (inputFields.length > 0) {
-            inputFields[0].focus({
-                preventScroll: true,
-            });
-        }
     }
 
     deselectNode(): void {
@@ -86,6 +73,8 @@ export class ImageView implements NodeView {
         img.src = node.attrs.src as string;
         if (node.attrs.alt) img.alt = node.attrs.alt as string;
         if (node.attrs.title) img.title = node.attrs.title as string;
+
+        img.onclick = () => this.handleClick();
 
         return img;
     }
@@ -156,6 +145,22 @@ export class ImageView implements NodeView {
     private preventClose(event: Event) {
         if (this.selectionActive) {
             event.preventDefault();
+        }
+    }
+
+    /**
+     * We want to trigger Stacks' showing and hiding of popovers whenever an image is clicked
+     */
+    private handleClick(): void {
+        this.selectionActive = true;
+        // tell Stacks to hide the popover
+        this.img.dispatchEvent(new Event("image-popover-show"));
+
+        const inputFields = this.form.querySelectorAll("input");
+        if (inputFields.length > 0) {
+            inputFields[0].focus({
+                preventScroll: true,
+            });
         }
     }
 }
