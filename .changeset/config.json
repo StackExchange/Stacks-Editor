@@ -8,6 +8,7 @@
     "fixed": [],
     "linked": [],
     "access": "public",
+    "canary": true,
     "baseBranch": "main",
     "updateInternalDependencies": "patch",
     "ignore": []
