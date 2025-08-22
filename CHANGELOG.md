@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- [#475](https://github.com/StackExchange/Stacks-Editor/pull/475) [`73e4b6e`](https://github.com/StackExchange/Stacks-Editor/commit/73e4b6e0191b25518b52e015d63b4853ea330f34) Thanks [@ttaylor-stack](https://github.com/ttaylor-stack)! - Add beta publishing information to README
+
+## 1.0.0-beta.0
+
+### Major Changes
+
+- enter prerelease mode for project shine
+
 ## 0.15.3
 
 ### Patch Changes
