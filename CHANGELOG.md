@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.0
+
+### Major Changes
+
+- enter prerelease mode for project shine
+
 ## 0.15.3
 
 ### Patch Changes

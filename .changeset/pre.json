@@ -1,0 +1,10 @@
+{
+  "mode": "pre",
+  "tag": "beta",
+  "initialVersions": {
+    "@stackoverflow/stacks-editor": "0.15.3"
+  },
+  "changesets": [
+    "wise-horses-wear"
+  ]
+}
