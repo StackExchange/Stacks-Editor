@@ -98,3 +98,20 @@ We use [changesets](https://github.com/changesets/changesets) to automatize the 
 _The release github workflow only run if the CI workflow (running linter, formatter and tests) is successful: CI is blocking accidental releases_.
 
 _Despite using changesets to communicate the intent of creating releases in a more explicit way, we still follow [conventional commits standards](https://www.conventionalcommits.org/en/v1.0.0/) for keeping our git history easily parseable by the human eye._
+
+### Beta publishing
+
+We use Changesets in prerelease mode to manage publishing to the beta branch. For more information, please refer to the official [Changesets prerelease documentation](https://github.com/changesets/changesets/blob/main/docs/prereleases.md).
+
+To prepare a beta release, follow these steps:
+
+1. Create a pull request (PR) targeting the beta branch.
+
+2. Ensure your PR includes a changeset.
+
+3. Merging the PR will trigger the release-beta workflow. This workflow creates or updates a chore(new-beta-release) PR.
+
+4. To cut a new beta release, merge the chore(new-beta-release) PR and wait for the `Release Beta` workflow to complete.
+
+Consumers can install the beta package by targeting the beta tag:
+`npm install @stackoverflow/stacks-editor@beta`
