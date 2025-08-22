@@ -43,6 +43,8 @@ jobs:
                   title: "chore(new-beta-release)"
                   commit: "chore(new-beta-release)"
                   branch: "beta"
+                  createGithubReleases: false
+                  commitMode: "github-api"
               env:
                   GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
