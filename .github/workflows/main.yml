@@ -10,7 +10,7 @@ jobs:
     lint:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
             - name: Setup Node.js environment
               uses: actions/setup-node@v4
               with:
@@ -25,7 +25,7 @@ jobs:
     unit-test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
 
             - name: Setup Node.js environment
               uses: actions/setup-node@v4
@@ -41,7 +41,7 @@ jobs:
     e2e-test:
         runs-on: ubuntu-latest
         steps:
-            - uses: actions/checkout@v4
+            - uses: actions/checkout@v5
 
             - name: Setup Node.js environment
               uses: actions/setup-node@v4
@@ -63,6 +63,64 @@ jobs:
               with:
                   name: playwright-test-results
                   path: test-results/
+    release:
+        name: Release
+        if: github.ref == 'refs/heads/main'
+        needs: [lint, unit-test, e2e-test]
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: 🚀 Create/Update Release Pull Request or Publish to npm
+              id: changesets
+              uses: changesets/action@v1
+              with:
+                  version: npm run version
+                  publish: npm run release
+                  title: "chore(new-release)"
+                  commit: "chore(new-release)"
+              env:
+                  GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
+                  NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
+    release-beta:
+        name: Release Beta
+        if: github.ref == 'refs/heads/beta'
+        needs: [lint, unit-test, e2e-test]
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: 🚀 Create/Update Release Pull Request or Publish to npm
+              id: changesets
+              uses: changesets/action@v1
+              with:
+                  version: npm run version
+                  publish: npm run release
+                  title: "chore(new-beta-release)"
+                  commit: "chore(new-beta-release)"
+                  branch: "beta"
+                  createGithubReleases: false
+              env:
+                  GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
+                  NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
 
 # cancel the jobs if another workflow is kicked off for the same branch
 concurrency:
