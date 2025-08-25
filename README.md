@@ -109,9 +109,9 @@ To prepare a beta release, follow these steps:
 
 2. Ensure your PR includes a changeset.
 
-3. Merging the PR will trigger the release-beta workflow. This workflow creates or updates a chore(new-beta-release) PR.
+3. Merging the PR will trigger the release-beta job. This job creates or updates a chore(new-beta-release) PR.
 
-4. To cut a new beta release, merge the chore(new-beta-release) PR and wait for the `Release Beta` workflow to complete.
+4. To cut a new beta release, merge the chore(new-beta-release) PR and wait for the `Release Beta` job to complete.
 
 Consumers can install the beta package by targeting the beta tag:
 `npm install @stackoverflow/stacks-editor@beta`
