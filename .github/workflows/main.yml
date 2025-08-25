@@ -93,6 +93,8 @@ jobs:
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
 
             - name: Docs on Release Pull Request
+              # run only if there is a release pull request open
+              if: steps.changesets.outputs.pullRequestNumber
               uses: thollander/actions-comment-pull-request@v3
               with:
                   comment-tag: "pr-release-docs"
@@ -134,6 +136,8 @@ jobs:
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
 
             - name: Docs on Release Pull Request
+              # run only if there is a release pull request open
+              if: steps.changesets.outputs.pullRequestNumber
               uses: thollander/actions-comment-pull-request@v3
               with:
                   comment-tag: "pr-release-docs"
