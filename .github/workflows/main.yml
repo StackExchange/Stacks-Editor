@@ -96,12 +96,12 @@ jobs:
               uses: thollander/actions-comment-pull-request@v3
               with:
                   comment-tag: "pr-release-docs"
+                  pr-number: ${{ steps.changesets.outputs.pullRequestNumber }}
                   message: |
                       To trigger the build for this PR, **close and re-open it**.
                       This is necessary because the PR is updated by github-actions[bot].
                       This is a technical user which does not trigger actions workflows on push events.
                       See this GH issue for more details: https://github.com/changesets/action/issues/187
-                  pr-number: ${{ steps.changesets.outputs.pullRequestNumber }}
     release-beta:
         name: Release Beta
         if: github.ref == 'refs/heads/beta'
@@ -137,6 +137,7 @@ jobs:
               uses: thollander/actions-comment-pull-request@v3
               with:
                   comment-tag: "pr-release-docs"
+                  pr-number: ${{ steps.changesets.outputs.pullRequestNumber }}
                   message: |
                       To trigger the build for this PR, **close and re-open it**.
                       This is necessary because the PR is updated by github-actions[bot].
