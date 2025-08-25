@@ -5,6 +5,7 @@
     "@stackoverflow/stacks-editor": "0.15.3"
   },
   "changesets": [
+    "mean-tools-hammer",
     "wise-horses-wear"
   ]
 }
