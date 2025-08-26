@@ -65,7 +65,7 @@ jobs:
                   path: test-results/
     release:
         name: Release
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta'
         needs: [lint, unit-test, e2e-test]
         runs-on: ubuntu-latest
         steps:
@@ -88,6 +88,8 @@ jobs:
                   publish: npm run release
                   title: "chore(new-release)"
                   commit: "chore(new-release)"
+                  branch: ${{ github.ref == 'refs/heads/beta' && 'beta' || '' }}
+                  createGithubReleases: ${{ github.ref == 'refs/heads/main' }}
               env:
                   GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
@@ -104,50 +106,6 @@ jobs:
                       This is necessary because the PR is updated by github-actions[bot].
                       This is a technical user which does not trigger actions workflows on push events.
                       See this GH issue for more details: https://github.com/changesets/action/issues/187
-    release-beta:
-        name: Release Beta
-        if: github.ref == 'refs/heads/beta'
-        needs: [lint, unit-test, e2e-test]
-        runs-on: ubuntu-latest
-        steps:
-            - uses: actions/checkout@v5
-
-            - name: Setup Node.js environment
-              uses: actions/setup-node@v4
-              with:
-                  node-version: lts/*
-                  cache: "npm"
-
-            - name: Install dependencies
-              run: npm ci
-
-            - name: 🚀 Create/Update Release Pull Request or Publish to npm
-              id: changesets
-              uses: changesets/action@v1
-              with:
-                  version: npm run version
-                  publish: npm run release
-                  title: "chore(new-beta-release)"
-                  commit: "chore(new-beta-release)"
-                  branch: "beta"
-                  createGithubReleases: false
-              env:
-                  GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
-                  NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
-
-            - name: Docs on Release Pull Request
-              # run only if there is a release pull request open
-              if: steps.changesets.outputs.pullRequestNumber
-              uses: thollander/actions-comment-pull-request@v3
-              with:
-                  comment-tag: "pr-release-docs"
-                  pr-number: ${{ steps.changesets.outputs.pullRequestNumber }}
-                  message: |
-                      To trigger the build for this PR, **close and re-open it**.
-                      This is necessary because the PR is updated by github-actions[bot].
-                      This is a technical user which does not trigger actions workflows on push events.
-                      See this GH issue for more details: https://github.com/changesets/action/issues/187
-
 # cancel the jobs if another workflow is kicked off for the same branch
 concurrency:
     group: ${{ github.workflow }}-${{ github.ref }}
