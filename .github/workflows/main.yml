@@ -88,7 +88,7 @@ jobs:
                   publish: npm run release
                   title: "chore(new-release)"
                   commit: "chore(new-release)"
-                  branch: ${{ github.ref == 'refs/heads/beta' && 'beta' || '' }}
+                  branch: ${{ github.ref == 'refs/heads/beta' && 'beta' || null }}
                   createGithubReleases: ${{ github.ref == 'refs/heads/main' }}
               env:
                   GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
