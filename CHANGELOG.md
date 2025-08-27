@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.2
+
+### Patch Changes
+
+- [#482](https://github.com/StackExchange/Stacks-Editor/pull/482) [`d9ad150`](https://github.com/StackExchange/Stacks-Editor/commit/d9ad150ecf4cf0ae987fbb14020cb07fb17d20dd) Thanks [@ttaylor-stack](https://github.com/ttaylor-stack)! - update workflow file
+
 ## 1.0.0-beta.1
 
 ### Patch Changes
