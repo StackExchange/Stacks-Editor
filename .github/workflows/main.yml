@@ -64,7 +64,7 @@ jobs:
                   name: playwright-test-results
                   path: test-results/
     release:
-        name: ${{ github.ref == 'refs/heads/main' && 'Release' || 'Release Beta'}}
+        name: ${{ github.ref == 'refs/heads/beta' && 'Release Beta' || 'Release' }}
         if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta'
         needs: [lint, unit-test, e2e-test]
         runs-on: ubuntu-latest
