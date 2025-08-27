@@ -364,6 +364,11 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
         state.write(node.attrs.content as string);
     },
 
+    html_comment(state, node) {
+        state.write(node.attrs.content as string);
+        state.closeBlock(node);
+    },
+
     html_block(state, node) {
         state.write(node.attrs.content as string);
         state.closeBlock(node);
