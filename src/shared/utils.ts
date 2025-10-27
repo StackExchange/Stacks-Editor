@@ -321,7 +321,10 @@ export function setAttributesOnElement(
         if (val !== false) {
             // set falsy values, but don't set properties that are explicitly false
             // otherwise, use setAttribute to set the string representation
-            el.setAttribute(toKebabCase(key), val === true ? "" : String(val));
+            el.setAttribute(
+                toKebabCase(key),
+                val === true ? "" : (val as string)
+            );
         }
     });
 }
