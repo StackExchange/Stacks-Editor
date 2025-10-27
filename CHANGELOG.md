@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- [`b9019be`](https://github.com/StackExchange/Stacks-Editor/commit/b9019bea1b4078016b352611edcf827c402adfd8) Thanks [@giamir](https://github.com/giamir)! - update stacks classic peer dependency to point to beta
+
 ## 1.0.0-beta.2
 
 ### Patch Changes
