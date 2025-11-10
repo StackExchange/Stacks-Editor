@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- [`2738c2e`](https://github.com/StackExchange/Stacks-Editor/commit/2738c2eae1e69dea5081df9f5c5a1fe22cac3119) Thanks [@giamir](https://github.com/giamir)! - Support both @stackoverflow/stacks v2 and v3 as peer dependencies
+
 ## 1.0.0-beta.3
 
 ### Patch Changes
