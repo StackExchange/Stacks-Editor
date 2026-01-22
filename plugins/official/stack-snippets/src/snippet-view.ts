@@ -89,14 +89,14 @@ export class StackSnippetView implements NodeView {
         ctas.className = "snippet-ctas d-flex ai-center";
         if (opts && opts.renderer) {
             const snippetButtonContainer = document.createElement("div");
-            snippetButtonContainer.className = "snippet-buttons mb0 gs4";
+            snippetButtonContainer.className = "snippet-buttons d-flex mb0 g4";
             ctas.appendChild(snippetButtonContainer);
             this.buildRunButton(snippetButtonContainer);
             this.buildEditButton(snippetButtonContainer);
 
             const snippetResultButtonContainer = document.createElement("div");
             snippetResultButtonContainer.className =
-                "snippet-result-buttons d-flex mb0 ml-auto gs4";
+                "snippet-result-buttons d-flex mb0 ml-auto g24";
             ctas.appendChild(snippetResultButtonContainer);
             this.showButton = this.buildShowButton(
                 snippetResultButtonContainer
@@ -290,12 +290,12 @@ export class StackSnippetView implements NodeView {
     private buildRunButton(container: HTMLDivElement): void {
         const runCodeButton = document.createElement("button");
         runCodeButton.type = "button";
-        runCodeButton.className = "s-btn s-btn__filled flex--item";
+        runCodeButton.className = "s-btn s-btn__icon flex--item";
         runCodeButton.title = "Run code snippet";
         runCodeButton.setAttribute("aria-label", "Run code snippet");
         // create the svg svg-icon-bg element
         const runIcon = document.createElement("span");
-        runIcon.className = "svg-icon-bg mr4 iconPlay";
+        runIcon.className = "svg-icon-bg mr4 h16 iconPlay";
         runCodeButton.append(runIcon);
         const runText = document.createElement("span");
         runText.textContent = "Run code snippet";
@@ -353,7 +353,7 @@ export class StackSnippetView implements NodeView {
     private buildEditButton(container: HTMLDivElement): HTMLButtonElement {
         const editButton = document.createElement("button");
         editButton.type = "button";
-        editButton.className = "s-btn s-btn__outlined flex--item";
+        editButton.className = "s-btn s-btn__clear flex--item";
         editButton.title = "Edit code snippet";
         editButton.setAttribute("aria-label", "Edit code snippet");
         editButton.textContent = "Edit code snippet";
@@ -368,11 +368,11 @@ export class StackSnippetView implements NodeView {
     private buildHideButton(container: HTMLDivElement): HTMLButtonElement {
         const hideButton = document.createElement("button");
         hideButton.type = "button";
-        hideButton.className = "s-btn flex--item";
+        hideButton.className = "s-btn s-btn__link d-flex flex--item";
         hideButton.title = "Hide results";
         hideButton.setAttribute("aria-label", "Hide results");
         const hideIcon = document.createElement("span");
-        hideIcon.className = "svg-icon-bg mr4 iconEyeOff";
+        hideIcon.className = "svg-icon-bg iconEyeOff";
         hideButton.append(hideIcon);
         const hideText = document.createElement("span");
         hideText.textContent = "Hide results";
@@ -394,11 +394,11 @@ export class StackSnippetView implements NodeView {
     private buildShowButton(container: HTMLDivElement): HTMLButtonElement {
         const showButton = document.createElement("button");
         showButton.type = "button";
-        showButton.className = "s-btn flex--item d-none";
+        showButton.className = "s-btn s-btn__link flex--item d-flex d-none";
         showButton.title = "Show results";
         showButton.setAttribute("aria-label", "Show results");
         const hideIcon = document.createElement("span");
-        hideIcon.className = "svg-icon-bg mr4 iconEye";
+        hideIcon.className = "svg-icon-bg iconEye";
         showButton.append(hideIcon);
         const showText = document.createElement("span");
         showText.textContent = "Show results";
@@ -423,7 +423,7 @@ export class StackSnippetView implements NodeView {
     ): HTMLButtonElement {
         const expandButton = document.createElement("button");
         expandButton.type = "button";
-        expandButton.className = "s-btn flex--item";
+        expandButton.className = "s-btn s-btn__link d-flex flex--item";
         expandButton.title = "Expand Snippet";
         expandButton.setAttribute("aria-label", "Expand Snippet");
         expandButton.addEventListener("click", () => {
@@ -436,7 +436,7 @@ export class StackSnippetView implements NodeView {
             );
         });
         const expandIcon = document.createElement("span");
-        expandIcon.className = "svg-icon-bg mr4 iconShareSm";
+        expandIcon.className = "svg-icon-bg iconShareSm";
         expandButton.append(expandIcon);
         const expandText = document.createElement("span");
         expandText.textContent = "Expand Snippet";
@@ -451,7 +451,7 @@ export class StackSnippetView implements NodeView {
     ): HTMLButtonElement {
         const collapseButton = document.createElement("button");
         collapseButton.type = "button";
-        collapseButton.className = "s-btn flex--item td-underline ml-auto";
+        collapseButton.className = "s-btn s-btn__link d-flex flex--item ml-auto";
         collapseButton.title = "Return to post";
         collapseButton.setAttribute("aria-label", "Return to post");
         collapseButton.addEventListener("click", () => {
@@ -464,7 +464,7 @@ export class StackSnippetView implements NodeView {
             );
         });
         const collapseIcon = document.createElement("span");
-        collapseIcon.className = "svg-icon-bg mr4 iconShareSm";
+        collapseIcon.className = "svg-icon-bg iconShareSm";
         collapseButton.append(collapseIcon);
         const expandText = document.createElement("span");
         expandText.textContent = "Return to post";

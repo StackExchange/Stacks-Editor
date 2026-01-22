@@ -82,10 +82,10 @@ export class LinkEditor extends PluginInterfaceView<
             </div>
 
             <div class="flex--item">
-                <button class="s-btn s-btn__primary js-link-editor-save-btn" type="submit" disabled>${_t(
+                <button class="s-btn js-link-editor-save-btn" type="submit" disabled>${_t(
                     "link_editor.save_button"
                 )}</button>
-                <button class="s-btn" type="reset">${_t(
+                <button class="s-btn s-btn__clear" type="reset">${_t(
                     "link_editor.cancel_button"
                 )}</button>
             </div>
@@ -316,7 +316,6 @@ class LinkTooltip {
         this.content.innerHTML = escapeHTML`<div class="s-popover is-visible p4 w-auto wmx-initial wmn-initial js-link-tooltip"
             id="${popoverId}"
             role="menu">
-            <div class="s-popover--arrow"></div>
             <div class="d-flex ai-center">
                 <a href="${this.href}"
                     class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4 us-none"
