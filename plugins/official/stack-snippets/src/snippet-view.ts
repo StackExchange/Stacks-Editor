@@ -451,7 +451,8 @@ export class StackSnippetView implements NodeView {
     ): HTMLButtonElement {
         const collapseButton = document.createElement("button");
         collapseButton.type = "button";
-        collapseButton.className = "s-btn s-btn__link d-flex flex--item ml-auto";
+        collapseButton.className =
+            "s-btn s-btn__link d-flex flex--item ml-auto";
         collapseButton.title = "Return to post";
         collapseButton.setAttribute("aria-label", "Return to post");
         collapseButton.addEventListener("click", () => {
