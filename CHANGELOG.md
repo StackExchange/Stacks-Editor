@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.0.0-beta.5
+
+### Minor Changes
+
+- [#505](https://github.com/StackExchange/Stacks-Editor/pull/505) [`4e0102a`](https://github.com/StackExchange/Stacks-Editor/commit/4e0102a6821436c5b307b747697aafa308229f4f) Thanks [@giamir](https://github.com/giamir)! - ensure editor continue to work with stacks v3 styles
+
 ## 1.0.0-beta.4
 
 ### Patch Changes
