@@ -72,7 +72,7 @@
         "@playwright/test": "^1.42.1",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
-        "@stackoverflow/stacks": "^2.3.2",
+        "@stackoverflow/stacks": "^3.0.0-beta.19",
         "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^29.5.12",
         "@types/markdown-it": "^14.0.0",

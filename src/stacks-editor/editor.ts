@@ -361,7 +361,7 @@ export class StacksEditor implements View {
         class="s-btn--radio js-editor-toggle-btn"
         data-mode="${EditorType.RichText}"
         ${richCheckedProp} />
-    <label class="s-btn s-btn__muted s-btn__icon px6 py2 s-editor-btn"
+    <label class="s-btn s-btn__clear s-btn__icon px6 py2 s-editor-btn"
         for="mode-toggle-rich-${this.internalId}"
         title="${_t("menubar.mode_toggle_richtext_title")}">
         <span class="svg-icon-bg iconRichText"></span>
@@ -375,7 +375,7 @@ export class StacksEditor implements View {
         data-mode="${EditorType.Commonmark}"
         data-preview="false"
         ${markCheckedProp} />
-    <label class="s-btn s-btn__muted px6 py2 s-editor-btn"
+    <label class="s-btn s-btn__clear px6 py2 s-editor-btn"
         for="mode-toggle-markdown-${this.internalId}"
         title="${_t("menubar.mode_toggle_markdown_title")}">
         <span class="svg-icon-bg iconMarkdown"></span>
@@ -396,7 +396,7 @@ export class StacksEditor implements View {
     data-mode="${EditorType.Commonmark}"
     data-preview="${previewEnabled.toString()}"
     ${previewCheckedProp} />
-<label class="s-btn s-btn__muted s-btn__icon px6 py2 s-editor-btn"
+<label class="s-btn s-btn__clear s-btn__icon px6 py2 s-editor-btn"
     for="mode-toggle-preview-${this.internalId}"
     title="${_t("menubar.mode_toggle_preview_title")}">
     <span class="svg-icon-bg iconMarkdownPreview"></span>

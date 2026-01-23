@@ -117,8 +117,6 @@ export class ImageView implements NodeView {
         popover.className = "s-popover ws-normal wb-normal js-img-popover";
         popover.id = `img-popover-${this.id}`;
 
-        // TODO added `ws-normal` to fix FF only bug. Will file bug against Stacks and revisit
-        popover.innerHTML = `<div class="s-popover--arrow ws-normal"></div>`;
         popover.append(this.form);
 
         return popover;

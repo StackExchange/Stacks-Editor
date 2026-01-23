@@ -342,12 +342,6 @@ export class MenuView implements PluginView {
         popover.id = popoverId;
         popover.setAttribute("role", "menu");
 
-        const arrow = document.createElement("div");
-        arrow.className = "s-popover--arrow";
-        arrow.setAttribute("aria-hidden", "true");
-
-        popover.appendChild(arrow);
-
         const content = document.createElement("div");
         content.className = "d-flex fd-column";
         content.setAttribute("role", "presentation");

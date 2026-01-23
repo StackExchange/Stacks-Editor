@@ -14,7 +14,7 @@
         <nav class="d-flex ai-center ps-fixed t8 r8 sm:d-none">
             <a
                 href="#"
-                class="s-btn js-repo-link"
+                class="s-btn s-btn__clear js-repo-link"
                 target="_blank"
                 title="Source"
             >
@@ -23,7 +23,7 @@
             </a>
             <a
                 href="https://stackoverflow.design/product/components/editor/"
-                class="s-btn"
+                class="s-btn s-btn__clear"
                 target="_blank"
                 title="Docs"
             >
@@ -32,7 +32,7 @@
             </a>
             <button
                 type="button"
-                class="s-btn s-btn__dropdown"
+                class="s-btn s-btn__clear s-btn__dropdown"
                 role="button"
                 aria-controls="js-settings-popover"
                 data-controller="s-popover"
@@ -42,7 +42,6 @@
                 Settings
             </button>
             <div class="s-popover px0 py4" id="js-settings-popover" role="menu">
-                <div class="s-popover--arrow"></div>
                 <ul class="s-menu">
                     <li class="s-menu--title" role="separator">Settings</li>
                     <li class="d-flex ai-center s-block-link">
@@ -83,47 +82,50 @@
                     </li>
                     <li class="s-menu--divider" role="separator"></li>
                     <li class="s-menu--title" role="separator">Playgrounds</li>
-                    <li role="menuitem">
-                        <a href="./index.html" class="s-block-link">
+                    <li role="menuitem" class="s-menu--item">
+                        <a href="./index.html" class="s-menu--action">
                             Example editor
                         </a>
                     </li>
-                    <li role="menuitem">
-                        <a href="./empty.html" class="s-block-link">
+                    <li role="menuitem" class="s-menu--item">
+                        <a href="./empty.html" class="s-menu--action">
                             Empty editor
                         </a>
                     </li>
-                    <li role="menuitem">
-                        <a href="./noimage.html" class="s-block-link">
+                    <li role="menuitem" class="s-menu--item">
+                        <a href="./noimage.html" class="s-menu--action">
                             No image upload
                         </a>
                     </li>
-                    <li role="menuitem">
-                        <a href="./dualeditor.html" class="s-block-link">
+                    <li role="menuitem" class="s-menu--item">
+                        <a href="./dualeditor.html" class="s-menu--action">
                             Dual editor playground
                         </a>
                     </li>
-                    <li role="menuitem">
-                        <a href="./plugins.html" class="s-block-link">
+                    <li role="menuitem" class="s-menu--item">
+                        <a href="./plugins.html" class="s-menu--action">
                             Plugins playground
                         </a>
                     </li>
-                    <li role="menuitem">
-                        <a href="./md-preview.html" class="s-block-link">
+                    <li role="menuitem" class="s-menu--item">
+                        <a href="./md-preview.html" class="s-menu--action">
                             Markdown preview
                         </a>
                     </li>
-                    <li role="menuitem">
-                        <a href="./snippets.html" class="s-block-link">
+                    <li role="menuitem" class="s-menu--item">
+                        <a href="./snippets.html" class="s-menu--action">
                             Snippets preview
                         </a>
                     </li>
                     <li class="s-menu--divider" role="separator"></li>
-                    <li class="s-menu--title" role="separator">
+                    <li class="s-menu--item">
                         v<span class="js-version-number">???</span>
                     </li>
-                    <li class="s-menu--title tt-unset mt0" role="separator">
-                        Deploys by <a href="https://www.netlify.com">Netlify</a>
+                    <li class="s-menu--item d-block">
+                        Deploys by
+                        <a href="https://www.netlify.com" class="s-link"
+                            >Netlify</a
+                        >
                     </li>
                 </ul>
             </div>
