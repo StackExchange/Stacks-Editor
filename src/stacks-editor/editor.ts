@@ -230,6 +230,7 @@ export class StacksEditor implements View {
         // create specific area for the editor menu
         const menuTarget = document.createElement("div");
         menuTarget.className = "d-flex overflow-x-auto ai-center px12 py4 pb0";
+        menuTarget.addEventListener("mousedown", (e) => e.preventDefault());
         this.pluginContainer.appendChild(menuTarget);
 
         // set the editors' menu containers to be the combo container
