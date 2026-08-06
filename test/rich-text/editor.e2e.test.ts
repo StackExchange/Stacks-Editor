@@ -58,6 +58,7 @@ test.describe.serial("rich-text mode", () => {
 
     test("should insert heading from dropdown", async () => {
         await enterTextAsMarkdown(page, "plain text");
+        await page.locator(editorSelector).focus();
         await expect(page.locator(headingPopoverSelector)).not.toHaveClass(
             /is-visible/,
             { timeout: 1000 }
@@ -68,6 +69,7 @@ test.describe.serial("rich-text mode", () => {
             /is-visible/,
             { timeout: 1000 }
         );
+        await expect(page.locator(editorSelector)).toBeFocused();
 
         await page.click(insertH1ButtonSelector);
         await expect(page.locator(headingPopoverSelector)).not.toHaveClass(
