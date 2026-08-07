@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.4
+
+### Patch Changes
+
+- [#507](https://github.com/StackExchange/Stacks-Editor/pull/507) [`0807e9d`](https://github.com/StackExchange/Stacks-Editor/commit/0807e9d6e2d95592884775a9afb70bf326bd298c) Thanks [@alexwarren](https://github.com/alexwarren)! - Keep editor dropdown menus open when activated with a mouse.
+
 ## 0.15.3
 
 ### Patch Changes
