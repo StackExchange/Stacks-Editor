@@ -16,6 +16,10 @@ module.exports = {
         "no-console": "error",
         "no-alert": "error",
         "no-process-env": "error",
+        "@typescript-eslint/no-empty-object-type": "off",
+        "@typescript-eslint/no-unused-expressions": "off",
+        "@typescript-eslint/only-throw-error": "off",
+        "@typescript-eslint/prefer-promise-reject-errors": "off",
     },
     overrides: [
         {

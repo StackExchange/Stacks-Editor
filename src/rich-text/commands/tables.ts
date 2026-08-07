@@ -73,7 +73,7 @@ function exitTableCommand(
         // if the position before/after the table doesn't exist, let's insert a paragraph there
         try {
             tr.doc.resolve(newPosition);
-        } catch (e) {
+        } catch {
             const insertionPosition = before
                 ? newPosition + 1
                 : newPosition - 1;
