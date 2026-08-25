@@ -86,15 +86,16 @@ Generate a `stats.json` file for analysis using
 
 You can upload your `stats.json` file [here](http://webpack.github.io/analyse/) or [here](https://chrisbateman.github.io/webpack-visualizer/) for visualization. See more resources [here](https://webpack.js.org/guides/code-splitting/#bundle-analysis).
 
-## Publishing
+## Publishing V0 maintenance releases
 
-We use [changesets](https://github.com/changesets/changesets) to automatize the steps necessary to publish to NPM, create GH releases and a changelog.
+The `v0` branch preserves the final pre-1.0 Editor line for supported 0.15.x maintenance. Current Editor development and stable releases use `main`.
 
-- Every time you do work that requires a new release to be published, [add a changesets entry](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md) by running `npx @changesets/cli` and follow the instructions on screen. (changes that do not require a new release - e.g. changing a test file - don't need a changeset).
-    - When opening a PR without a corresponding changeset the [changesets-bot](https://github.com/apps/changeset-bot) will remind you to do so. It generally makes sense to have one changeset for PR (if the PR changes do not require a new release to be published the bot message can be safely ignored)
-- The release github job continuously check if there are new pending changesets in the main branch, if there are it creates a GH PR and continue updating it as more changesets are potentially pushed/merged to the main branch.
-- When we are ready to cut a release we need to simply merge the `chore(release)` PR back to main and the release github workflow will take care of publishing the changes to NPM and create a GH release for us. The `chore(release)` PR also give us an opportunity to adjust the automatically generated changelog when necessary (the entry in the changelog file is also what will end up in the GH release notes).
+We use [Changesets](https://github.com/changesets/changesets) to create release pull requests, update the changelog, and publish packages.
 
-_The release github job only run if the lint, unit-test and e2e-test jobs are all successful: this is to block accidental releases_.
+- Add a changeset to pull requests that require a package release.
+- Changesets opens release pull requests against `v0`.
+- Merging a release pull request publishes the package under npm's `legacy-v0` dist-tag. npm rejects `v0` because it parses as a semantic-version range.
+- V0 releases do not create GitHub Releases, preventing a maintenance release from replacing the current major as the repository-wide Latest release.
+- The release job runs only after lint, unit, end-to-end, and release-configuration tests pass.
 
-_Despite using changesets to communicate the intent of creating releases in a more explicit way, we still follow [conventional commits standards](https://www.conventionalcommits.org/en/v1.0.0/) for keeping our git history easily parseable by the human eye._
+Continue using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for repository history.
