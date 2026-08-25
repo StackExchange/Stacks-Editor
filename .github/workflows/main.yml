@@ -2,9 +2,9 @@ name: CI
 
 on:
     push:
-        branches: [main, beta]
+        branches: [main]
     pull_request:
-        branches: [main, beta]
+        branches: [main]
 
 jobs:
     lint:
@@ -38,6 +38,38 @@ jobs:
 
             - name: Run unit tests
               run: npm run test:unit
+    package-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Test package artifact
+              run: npm run test:package
+    release-config-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run release configuration tests
+              run: npm run test:release-config
     e2e-test:
         runs-on: ubuntu-latest
         steps:
@@ -64,9 +96,9 @@ jobs:
                   name: playwright-test-results
                   path: test-results/
     release:
-        name: Release (latest or beta)
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta'
-        needs: [lint, unit-test, e2e-test]
+        name: Release (latest)
+        if: github.ref == 'refs/heads/main'
+        needs: [lint, unit-test, e2e-test, package-test, release-config-test]
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
@@ -88,8 +120,8 @@ jobs:
                   publish: npm run release
                   title: "chore(new-release)"
                   commit: "chore(new-release)"
-                  branch: ${{ github.ref == 'refs/heads/beta' && 'beta' || null }}
-                  createGithubReleases: ${{ github.ref == 'refs/heads/main' }}
+                  branch: main
+                  createGithubReleases: true
               env:
                   GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}

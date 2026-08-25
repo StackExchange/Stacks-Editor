@@ -340,19 +340,18 @@ export class MenuView implements PluginView {
         const popover = document.createElement("div");
         popover.className = "s-popover wmn-initial w-auto px0 pt0 py8";
         popover.id = popoverId;
-        popover.setAttribute("role", "menu");
 
-        const arrow = document.createElement("div");
-        arrow.className = "s-popover--arrow";
-        arrow.setAttribute("aria-hidden", "true");
+        const content = document.createElement("ul");
+        content.className = "s-menu";
+        content.setAttribute("role", "menu");
 
-        popover.appendChild(arrow);
-
-        const content = document.createElement("div");
-        content.className = "d-flex fd-column";
-        content.setAttribute("role", "presentation");
-
-        content.append(...entry.children.map((c) => c.display));
+        for (const child of entry.children) {
+            const item = document.createElement("li");
+            item.className = "s-menu--item";
+            item.setAttribute("role", "none");
+            item.appendChild(child.display);
+            content.appendChild(item);
+        }
         popover.appendChild(content);
 
         const wrapper = document.createElement("div");

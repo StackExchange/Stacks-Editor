@@ -129,7 +129,7 @@ export function makeMenuLinkEntry(
     key: string
 ): MenuItem {
     const dom = document.createElement("a");
-    dom.className = `s-editor-btn s-btn s-btn__muted flex--item js-editor-btn js-${key}`;
+    dom.className = `s-editor-btn s-btn s-btn__clear flex--item js-editor-btn js-${key}`;
     dom.href = href;
     dom.target = "_blank";
     dom.title = title;
@@ -208,7 +208,7 @@ export function makeDropdownItem(
     button.dataset.key = key;
     button.textContent = title;
     button.setAttribute("role", "menuitem");
-    button.className = `s-block-link s-editor--dropdown-item js-editor-btn`;
+    button.className = `s-menu--action s-editor--dropdown-item js-editor-btn`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);
@@ -247,7 +247,7 @@ export function makeMenuButton(
     cssClasses?: string[]
 ): HTMLButtonElement {
     const button = document.createElement("button");
-    button.className = `s-editor-btn s-btn js-editor-btn js-${key}`;
+    button.className = `s-editor-btn s-btn s-btn__clear js-editor-btn js-${key}`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);

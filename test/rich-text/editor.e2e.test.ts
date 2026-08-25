@@ -69,6 +69,15 @@ test.describe.serial("rich-text mode", () => {
             /is-visible/,
             { timeout: 1000 }
         );
+        await expect(
+            page.locator(`${headingPopoverSelector} .s-menu[role="menu"]`)
+        ).toBeVisible();
+        await expect(page.locator(insertH1ButtonSelector)).toHaveClass(
+            /s-menu--action/
+        );
+        await expect(
+            page.locator(insertH1ButtonSelector).locator("..")
+        ).toHaveClass(/s-menu--item/);
         await expect(page.locator(editorSelector)).toBeFocused();
 
         await page.click(insertH1ButtonSelector);
