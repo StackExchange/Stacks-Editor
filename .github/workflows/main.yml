@@ -2,9 +2,9 @@ name: CI
 
 on:
     push:
-        branches: [main, beta]
+        branches: [v0]
     pull_request:
-        branches: [main, beta]
+        branches: [v0]
 
 jobs:
     lint:
@@ -38,6 +38,22 @@ jobs:
 
             - name: Run unit tests
               run: npm run test:unit
+    release-config-test:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v5
+
+            - name: Setup Node.js environment
+              uses: actions/setup-node@v4
+              with:
+                  node-version: lts/*
+                  cache: "npm"
+
+            - name: Install dependencies
+              run: npm ci
+
+            - name: Run release configuration tests
+              run: npm run test:release-config
     e2e-test:
         runs-on: ubuntu-latest
         steps:
@@ -64,9 +80,9 @@ jobs:
                   name: playwright-test-results
                   path: test-results/
     release:
-        name: Release (latest or beta)
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/beta'
-        needs: [lint, unit-test, e2e-test]
+        name: Release (v0)
+        if: github.ref == 'refs/heads/v0'
+        needs: [lint, unit-test, e2e-test, release-config-test]
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v5
@@ -85,11 +101,11 @@ jobs:
               uses: changesets/action@v1
               with:
                   version: npm run version
-                  publish: npm run release
+                  publish: npm run release:v0
                   title: "chore(new-release)"
                   commit: "chore(new-release)"
-                  branch: ${{ github.ref == 'refs/heads/beta' && 'beta' || null }}
-                  createGithubReleases: ${{ github.ref == 'refs/heads/main' }}
+                  branch: v0
+                  createGithubReleases: false
               env:
                   GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
                   NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
