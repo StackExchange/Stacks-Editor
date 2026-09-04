@@ -1,6 +1,6 @@
 {
     "name": "@stackoverflow/stacks-editor",
-    "version": "0.15.4",
+    "version": "1.0.0-beta.5",
     "description": "",
     "repository": {
         "type": "git",
@@ -43,6 +43,8 @@
         "test": "npm run test:unit && npm run test:e2e",
         "test:unit": "jest --config config/jest-unit.config.js",
         "test:e2e": "npx playwright test --config config/playwright.config.ts",
+        "test:package": "npm run prepublishOnly && node --test scripts/package-artifact.test.mjs",
+        "test:release-config": "node --test scripts/stable-release-config.test.mjs",
         "release": "npm run build && changeset publish",
         "version": "changeset version && npm install --package-lock-only",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
@@ -72,7 +74,7 @@
         "@playwright/test": "^1.42.1",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
-        "@stackoverflow/stacks": "^2.9.0",
+        "@stackoverflow/stacks": "^3.0.0",
         "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^29.5.12",
         "@types/markdown-it": "^14.0.0",
@@ -98,6 +100,7 @@
         "postcss-loader": "^8.1.1",
         "prettier": "^3.2.5",
         "prosemirror-test-builder": "^1.1.1",
+        "semver": "^7.6.3",
         "ts-jest": "^29.1.2",
         "ts-loader": "^9.5.1",
         "typescript": "^5.4.3",
@@ -129,7 +132,7 @@
         "prosemirror-view": "^1.37.1"
     },
     "peerDependencies": {
-        "@stackoverflow/stacks": "^2.3.0",
+        "@stackoverflow/stacks": "^3.0.0",
         "highlight.js": "^11.6.0"
     }
 }

@@ -1,0 +1,15 @@
+{
+  "mode": "exit",
+  "tag": "beta",
+  "initialVersions": {
+    "@stackoverflow/stacks-editor": "0.15.3"
+  },
+  "changesets": [
+    "better-deer-tap",
+    "mean-tools-hammer",
+    "ninety-lizards-report",
+    "odd-rules-jump",
+    "ripe-carpets-pull",
+    "wise-horses-wear"
+  ]
+}

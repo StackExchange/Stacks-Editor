@@ -88,13 +88,13 @@ You can upload your `stats.json` file [here](http://webpack.github.io/analyse/) 
 
 ## Publishing
 
-We use [changesets](https://github.com/changesets/changesets) to automatize the steps necessary to publish to NPM, create GH releases and a changelog.
+We use [Changesets](https://github.com/changesets/changesets) to publish to npm, create GitHub Releases, and update the changelog.
 
-- Every time you do work that requires a new release to be published, [add a changesets entry](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md) by running `npx @changesets/cli` and follow the instructions on screen. (changes that do not require a new release - e.g. changing a test file - don't need a changeset).
-    - When opening a PR without a corresponding changeset the [changesets-bot](https://github.com/apps/changeset-bot) will remind you to do so. It generally makes sense to have one changeset for PR (if the PR changes do not require a new release to be published the bot message can be safely ignored)
-- The release github job continuously check if there are new pending changesets in the main branch, if there are it creates a GH PR and continue updating it as more changesets are potentially pushed/merged to the main branch.
-- When we are ready to cut a release we need to simply merge the `chore(release)` PR back to main and the release github workflow will take care of publishing the changes to NPM and create a GH release for us. The `chore(release)` PR also give us an opportunity to adjust the automatically generated changelog when necessary (the entry in the changelog file is also what will end up in the GH release notes).
+- Add a changeset to pull requests that require a package release.
+- The release workflow creates and updates a release pull request against `main` while changesets are pending.
+- Merging the reviewed release pull request publishes the package under npm's `latest` tag and creates a GitHub Release.
+- The `v0` branch preserves supported Editor 0.15.x maintenance and publishes under the separate `legacy-v0` npm tag.
 
-_The release github job only run if the lint, unit-test and e2e-test jobs are all successful: this is to block accidental releases_.
+_The release job runs only after lint, unit, and end-to-end tests pass._
 
-_Despite using changesets to communicate the intent of creating releases in a more explicit way, we still follow [conventional commits standards](https://www.conventionalcommits.org/en/v1.0.0/) for keeping our git history easily parseable by the human eye._
+Continue using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for repository history.

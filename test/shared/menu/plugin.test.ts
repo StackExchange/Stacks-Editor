@@ -2,6 +2,7 @@ import { EditorState } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { EditorType } from "../../../src";
 import { MenuCommandExtended, MenuItem } from "../../../src/shared/menu";
+import { makeDropdownItem } from "../../../src/shared/menu/helpers";
 import { MenuView, createMenuPlugin } from "../../../src/shared/menu/plugin";
 import { createState } from "../../commonmark/test-helpers";
 import { applySelection, createView } from "../../rich-text/test-helpers";
@@ -80,13 +81,18 @@ describe("menu plugin view", () => {
                     entries: [
                         item("dropdown", {
                             children: [
-                                item("dropdown-item", {
-                                    commonmark: {
-                                        command: enabledCommand,
-                                        active: activeCommand,
-                                        visible: visibleCommand,
+                                makeDropdownItem(
+                                    "dropdown-item",
+                                    {
+                                        richText: null,
+                                        commonmark: {
+                                            command: enabledCommand,
+                                            active: activeCommand,
+                                            visible: visibleCommand,
+                                        },
                                     },
-                                }),
+                                    "dropdown-item"
+                                ),
                             ],
                         }),
                     ],
@@ -164,7 +170,13 @@ describe("menu plugin view", () => {
         // check the children menu
         item = menu.dom.querySelector(`#${item.getAttribute("aria-controls")}`);
         expect(item).toBeDefined();
-        expect(item.querySelectorAll(".js-editor-btn")).toHaveLength(1);
+        const childMenu = item.querySelector(".s-menu");
+        const childMenuItem = childMenu.querySelector(".s-menu--item");
+        const childButton = childMenuItem.querySelector(".js-editor-btn");
+        expect(childMenu.getAttribute("role")).toBe("menu");
+        expect(childMenuItem.getAttribute("role")).toBe("none");
+        expect(childButton.getAttribute("role")).toBe("menuitem");
+        expect(childButton.classList).toContain("s-menu--action");
     });
 
     it("should track and update an entry's enabled, active and visible states", () => {

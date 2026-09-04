@@ -146,6 +146,8 @@ describe("menu helpers", () => {
         expect(dom.type).toBe("button");
         expect(dom.dataset.key).toBe("key");
         expect(dom.textContent).toBe("label");
+        expect(dom.classList).toContain("s-menu--action");
+        expect(dom.classList).not.toContain("s-block-link");
         expect(dom.classList).toContain("class1");
         expect(item.key).toBe("key");
         expect(item.richText).toBe(commands.richText);
