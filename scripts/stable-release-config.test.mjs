@@ -68,6 +68,11 @@ describe("stable release configuration", () => {
         assert.match(workflow, /publish: npm run release/);
         assert.match(workflow, /branch: main/);
         assert.match(workflow, /createGithubReleases: true/);
+        assert.match(workflow, /^permissions:\n    contents: read$/m);
+        assert.match(
+            workflow,
+            /release:\n(?:.|\n)*?        permissions:\n            contents: read\n            pull-requests: write\n/m
+        );
         assert.match(
             workflow,
             /needs: \[lint, unit-test, e2e-test, package-test, release-config-test\]/
