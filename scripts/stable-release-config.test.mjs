@@ -3,11 +3,33 @@ import { existsSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { describe, test } from "node:test";
 import semver from "semver";
+import jestConfig from "../config/jest-unit.config.js";
 
 const readRepositoryFile = (path) =>
     readFile(new URL(`../${path}`, import.meta.url), "utf8");
 
 describe("stable release configuration", () => {
+    test("keeps emitted test copies out of unit-test discovery", () => {
+        const ignored = jestConfig.testPathIgnorePatterns.map(
+            (pattern) => new RegExp(pattern.replace("<rootDir>", "/editor"))
+        );
+        assert.ok(
+            ignored.some((pattern) =>
+                pattern.test(
+                    "/editor/dist/plugins/official/stack-snippets/test/common.test.js"
+                )
+            )
+        );
+        assert.ok(
+            ignored.every(
+                (pattern) =>
+                    !pattern.test(
+                        "/editor/plugins/official/stack-snippets/test/common.test.ts"
+                    )
+            )
+        );
+    });
+
     test("uses stable V3 package metadata", async () => {
         const packageJson = JSON.parse(
             await readRepositoryFile("package.json")

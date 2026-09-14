@@ -68,6 +68,10 @@ new StacksEditor(
 
 ## Run Tests
 
+Use a Node release supported by the locked Playwright version. Install
+dependencies with `npm ci` and the browser binaries with
+`npx playwright install` before running browser tests.
+
 Run all unit tests (no end-to-end tests) using
 
     npm run test:unit
@@ -77,6 +81,24 @@ Run all end-to-end tests (written in Playwright) using
     npm run test:e2e
 
 End-to-end tests need to follow the convention of using `someName.e2e.test.ts` as their filename. They'll automatically get picked up by the test runner this way.
+
+Verify the published package and release configuration using:
+
+```sh
+npm run test:package
+npm run test:release-config
+```
+
+The package check builds an npm tarball, installs it in a temporary consumer,
+type-checks the public imports, and bundles its JavaScript and CSS. It then
+opens the consumer in Chromium and checks editing and menu styling. Consumer
+installation may access npm; direct Classic, Icons, and Highlight.js versions
+match the repository lockfile. A missing Chromium binary fails the check.
+
+Menu end-to-end tests cover keyboard operation and layout in light, dark,
+high-contrast, and dark high-contrast themes across all three browsers.
+They save `heading-menu.png` review artifacts in `test-results/`. These are
+not pixel-regression baselines or a complete accessibility audit.
 
 ## Browser Bundle analysis
 
@@ -95,6 +117,10 @@ We use [Changesets](https://github.com/changesets/changesets) to publish to npm,
 - Merging the reviewed release pull request publishes the package under npm's `latest` tag and creates a GitHub Release.
 - The `v0` branch preserves supported Editor 0.15.x maintenance and publishes under the separate `legacy-v0` npm tag.
 
-_The release job runs only after lint, unit, and end-to-end tests pass._
+_The release job runs only after lint, unit, end-to-end, packed-package, and release-configuration tests pass._
+
+Review the generated versions, dependency ranges, changelog, and package
+contents before merging the release pull request. Its merge authorizes
+publication; there is no additional manual approval step in the workflow.
 
 Continue using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for repository history.

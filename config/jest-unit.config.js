@@ -6,7 +6,11 @@ module.exports = {
         "\\.svg$": "<rootDir>/test/__mocks__/svgMock.ts",
     },
     rootDir: "../",
-    testPathIgnorePatterns: ["/node_modules/", String.raw`\.e2e\.test`],
+    testPathIgnorePatterns: [
+        "/node_modules/",
+        "<rootDir>/dist/",
+        String.raw`\.e2e\.test`,
+    ],
     setupFilesAfterEnv: [
         "<rootDir>/test/setup.ts",
         "<rootDir>/test/matchers.ts",
