@@ -229,7 +229,8 @@ export class StacksEditor implements View {
 
         // create specific area for the editor menu
         const menuTarget = document.createElement("div");
-        menuTarget.className = "d-flex overflow-x-auto ai-center px12 py4 pb0";
+        menuTarget.className =
+            "d-flex fw-nowrap overflow-x-auto ai-center px12 py4 pb0 js-editor-toolbar";
         menuTarget.addEventListener("mousedown", (e) => e.preventDefault());
         this.pluginContainer.appendChild(menuTarget);
 
@@ -354,9 +355,10 @@ export class StacksEditor implements View {
         const previewEnabled = this.options.commonmarkOptions.preview.enabled;
 
         const container = document.createElement("div");
-        container.className = "flex--item d-flex ai-center ml24 fc-medium";
+        container.className =
+            "flex--item d-flex fw-nowrap fl-shrink0 ai-center ml24 fc-medium";
 
-        container.innerHTML = escapeHTML`<div class="s-btn-group s-editor-btn-group fw-nowrap myn2">
+        container.innerHTML = escapeHTML`<div class="s-btn-group s-editor-btn-group d-inline-flex fw-nowrap ba bc-black-300 bar-md p4 myn2">
     <input type="radio" name="mode-toggle-${this.internalId}"
         id="mode-toggle-rich-${this.internalId}"
         class="s-btn--radio js-editor-toggle-btn"

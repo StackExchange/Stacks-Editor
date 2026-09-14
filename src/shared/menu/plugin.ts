@@ -54,7 +54,8 @@ export class MenuView implements PluginView {
         this.editorType = editorType;
 
         this.dom = document.createElement("div");
-        this.dom.className = "d-flex g16 fl-grow1 ai-center js-editor-menu";
+        this.dom.className =
+            "d-flex fw-nowrap fl-grow1 fl-shrink0 g16 ai-center js-editor-menu";
 
         // sort the blocks by their priority; lower priority first
         this.blocks = blocks
@@ -255,7 +256,7 @@ export class MenuView implements PluginView {
     /** Creates the element that a block's child entries' doms are placed into */
     private makeBlockContainer(block: MenuBlock) {
         const dom = document.createElement("div");
-        dom.className = `s-editor-menu-block d-flex g2 ${
+        dom.className = `s-editor-menu-block d-flex fw-nowrap fl-shrink0 g2 ${
             block.classes?.join(" ") ?? ""
         } js-block-${block.name}`;
 

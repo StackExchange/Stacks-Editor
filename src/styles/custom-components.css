@@ -66,8 +66,8 @@
 
 .s-btn-group .s-btn--radio:focus-visible + .s-editor-btn {
     box-shadow:
-        0 0 0 var(--su-static2) var(--focus-neutral),
-        0 0 0 var(--su-static4) var(--focus-theme);
+        0 0 0 var(--su2) var(--focus-neutral),
+        0 0 0 var(--su4) var(--focus-theme) !important;
 }
 
 /*
@@ -77,9 +77,9 @@
 */
 .s-btn.s-editor-btn:not(.s-btn__link):not(.s-btn__unset):focus-visible {
     border-color: transparent !important;
-    box-shadow: 0 0 0 var(--su-static2) var(--theme-secondary-400) !important;
+    box-shadow: 0 0 0 var(--su2) var(--theme-secondary-400) !important;
     color: var(--black-500) !important;
-    outline: var(--su-static2) solid transparent !important;
+    outline: var(--su2) solid transparent !important;
 }
 
 /* NOTE: Transparent focus background only applied when not hovered or in the selected state */
@@ -147,6 +147,11 @@
     font-variant-ligatures: none;
     white-space: pre-wrap;
     white-space: break-spaces;
+}
+
+/* Preserve the Editor's established body size after Stacks 3 removed the default s-prose size. */
+.ProseMirror.s-prose {
+    font-size: 0.9375rem;
 }
 
 .ProseMirror [data-placeholder] {

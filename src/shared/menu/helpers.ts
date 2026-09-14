@@ -208,7 +208,7 @@ export function makeDropdownItem(
     button.dataset.key = key;
     button.textContent = title;
     button.setAttribute("role", "menuitem");
-    button.className = `s-menu--action s-editor--dropdown-item js-editor-btn`;
+    button.className = `s-menu--action s-editor--dropdown-item js-editor-btn bar0`;
 
     if (cssClasses) {
         button.classList.add(...cssClasses);

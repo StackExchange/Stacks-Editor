@@ -22,3 +22,14 @@ test("uses V3 menu styling for site settings", async ({ page }) => {
     await expect(settingsPopover.getByRole("checkbox")).toHaveCount(4);
     await expect(settingsPopover.getByRole("link")).not.toHaveCount(0);
 });
+
+test("omits the obsolete link-preview demonstration", async ({ page }) => {
+    await page.goto("/");
+
+    const editor = page.locator(".ProseMirror");
+    await expect(editor).not.toContainText("Example link preview");
+    await expect(editor).not.toContainText(
+        "demonstration of a potential way to handle the preview"
+    );
+    await expect(editor.locator(".s-link-preview, .js-onebox")).toHaveCount(0);
+});
