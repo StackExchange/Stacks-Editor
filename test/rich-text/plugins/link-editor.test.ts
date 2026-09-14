@@ -548,9 +548,11 @@ describe("link-editor", () => {
 
             // simulate clicking the button
             const renderedDeco = getRenderedDecoration(view);
-            renderedDeco
-                .querySelector<HTMLButtonElement>(".js-link-tooltip-edit")
-                .dispatchEvent(new Event("mousedown"));
+            const editButton = renderedDeco.querySelector<HTMLButtonElement>(
+                ".js-link-tooltip-edit"
+            );
+            expect(editButton.classList).toContain("s-btn__clear");
+            editButton.dispatchEvent(new Event("mousedown"));
 
             return promise;
         });
@@ -596,9 +598,11 @@ describe("link-editor", () => {
             expect(pluginContainer.parentElement).toBeNull();
 
             const renderedDeco = getRenderedDecoration(view);
-            renderedDeco
-                .querySelector<HTMLButtonElement>(".js-link-tooltip-remove")
-                .dispatchEvent(new Event("mousedown"));
+            const removeButton = renderedDeco.querySelector<HTMLButtonElement>(
+                ".js-link-tooltip-remove"
+            );
+            expect(removeButton.classList).toContain("s-btn__clear");
+            removeButton.dispatchEvent(new Event("mousedown"));
 
             return promise.then(() => cleanupPasteSupport());
         });
