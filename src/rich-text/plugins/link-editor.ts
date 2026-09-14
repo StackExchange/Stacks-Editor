@@ -318,16 +318,16 @@ class LinkTooltip {
             role="menu">
             <div class="d-flex ai-center">
                 <a href="${this.href}"
-                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr4 us-none"
+                    class="wmx3 flex--item fs-body1 fw-normal truncate ml8 mr6 us-none"
                     target="_blank"
                     rel="nofollow noreferrer">${this.href}</a>
                 <button type="button"
-                        class="flex--item s-btn s-btn__clear mr4 js-link-tooltip-edit"
+                        class="flex--item s-btn s-btn__clear p6 js-link-tooltip-edit"
                         title="${_t(
                             "link_tooltip.edit_button_title"
                         )}"><span class="svg-icon-bg iconPencilSm"></span></button>
                 <button type="button"
-                        class="flex--item s-btn s-btn__clear js-link-tooltip-remove"
+                        class="flex--item s-btn s-btn__clear p6 js-link-tooltip-remove"
                         title="${_t(
                             "link_tooltip.remove_button_title"
                         )}"><span class="svg-icon-bg iconTrashSm"></span></button>

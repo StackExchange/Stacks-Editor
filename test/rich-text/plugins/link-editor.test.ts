@@ -552,6 +552,9 @@ describe("link-editor", () => {
                 ".js-link-tooltip-edit"
             );
             expect(editButton.classList).toContain("s-btn__clear");
+            expect(editButton.classList).toContain("p6");
+            expect(editButton.classList).not.toContain("mr4");
+            expect(renderedDeco.querySelector("a").classList).toContain("mr6");
             editButton.dispatchEvent(new Event("mousedown"));
 
             return promise;
@@ -602,6 +605,7 @@ describe("link-editor", () => {
                 ".js-link-tooltip-remove"
             );
             expect(removeButton.classList).toContain("s-btn__clear");
+            expect(removeButton.classList).toContain("p6");
             removeButton.dispatchEvent(new Event("mousedown"));
 
             return promise.then(() => cleanupPasteSupport());
