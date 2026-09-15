@@ -95,6 +95,18 @@ test("installs, type-checks, bundles, and runs the published package", async () 
             root
         );
 
+        await writeFile(
+            path.join(root, "consumer.cjs"),
+            `const { EditorType, StacksEditor } = require("@stackoverflow/stacks-editor");
+window.commonJsExports = { EditorType, StacksEditor };
+window.commonJsEditor = new StacksEditor(
+    document.querySelector("#commonjs-editor"),
+    "CommonJS consumer smoke test",
+    { defaultView: EditorType.RichText }
+);
+`
+        );
+
         const imports = `
 import { EditorType, StacksEditor } from "@stackoverflow/stacks-editor";
 import { codeDetectionPlugin } from "@stackoverflow/stacks-editor/plugins/sample";
@@ -154,8 +166,8 @@ const MiniCssExtractPlugin = require(${JSON.stringify(require.resolve("mini-css-
 module.exports = {
     mode: "production",
     context: ${JSON.stringify(root)},
-    entry: "./consumer.js",
-    output: { path: ${JSON.stringify(path.join(root, "dist"))}, filename: "consumer.js" },
+    entry: { consumer: "./consumer.js", commonjs: "./consumer.cjs" },
+    output: { path: ${JSON.stringify(path.join(root, "dist"))}, filename: "[name].js" },
     module: { rules: [{ test: /\\.css$/, use: [MiniCssExtractPlugin.loader, ${JSON.stringify(require.resolve("css-loader"))}] }] },
     plugins: [new MiniCssExtractPlugin({ filename: "consumer.css" })],
 };
@@ -176,10 +188,18 @@ module.exports = {
 <html lang="en"><head><title>Editor package consumer</title><link rel="stylesheet" href="/consumer.css"></head>
 <body><main id="editor"></main><script src="/consumer.js"></script></body></html>`
         );
+        await writeFile(
+            path.join(root, "dist/commonjs.html"),
+            `<!doctype html>
+<html lang="en"><head><title>Editor CommonJS consumer</title></head>
+<body><main id="commonjs-editor"></main><script src="/commonjs.js"></script></body></html>`
+        );
 
         const files = new Map([
             ["/", ["index.html", "text/html"]],
+            ["/commonjs.html", ["commonjs.html", "text/html"]],
             ["/consumer.js", ["consumer.js", "text/javascript"]],
+            ["/commonjs.js", ["commonjs.js", "text/javascript"]],
             ["/consumer.css", ["consumer.css", "text/css"]],
         ]);
         server = createServer(async (request, response) => {
@@ -205,7 +225,7 @@ module.exports = {
         const errors = [];
         page.on("pageerror", (error) => errors.push(error.message));
         await page.goto(`http://127.0.0.1:${server.address().port}/`);
-        const editor = page.locator(".ProseMirror");
+        const editor = page.locator("#editor .ProseMirror");
         await expect(editor).toHaveCount(1);
         await expect(editor).toHaveAttribute("contenteditable", "true");
         await expect(editor).toHaveText("Packed consumer smoke test");
@@ -214,13 +234,26 @@ module.exports = {
             await page.evaluate(() => window.editor.content),
             /Edited through the packed package/
         );
-        const dropdown = page.locator('[id^="heading-dropdown-btn-"]');
+        const dropdown = page.locator('#editor [id^="heading-dropdown-btn-"]');
         await dropdown.click();
-        const menu = page.locator('[id^="heading-dropdown-popover-"]');
+        const menu = page.locator('#editor [id^="heading-dropdown-popover-"]');
         await expect(menu).toBeVisible();
         await expect(menu.locator(".s-menu--action").first()).toHaveCSS(
             "display",
             "flex"
+        );
+
+        await page.goto(
+            `http://127.0.0.1:${server.address().port}/commonjs.html`
+        );
+        const commonJsEditor = page.locator("#commonjs-editor .ProseMirror");
+        await expect(commonJsEditor).toHaveText("CommonJS consumer smoke test");
+        assert.deepEqual(
+            await page.evaluate(() => ({
+                EditorType: typeof window.commonJsExports.EditorType,
+                StacksEditor: typeof window.commonJsExports.StacksEditor,
+            })),
+            { EditorType: "object", StacksEditor: "function" }
         );
         assert.deepEqual(errors, []);
     } finally {
