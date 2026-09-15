@@ -1,5 +1,41 @@
 # Changelog
 
+## 1.0.0-beta.5
+
+### Minor Changes
+
+- [#505](https://github.com/StackExchange/Stacks-Editor/pull/505) [`4e0102a`](https://github.com/StackExchange/Stacks-Editor/commit/4e0102a6821436c5b307b747697aafa308229f4f) Thanks [@giamir](https://github.com/giamir)! - ensure editor continue to work with stacks v3 styles
+
+## 1.0.0-beta.4
+
+### Patch Changes
+
+- [`2738c2e`](https://github.com/StackExchange/Stacks-Editor/commit/2738c2eae1e69dea5081df9f5c5a1fe22cac3119) Thanks [@giamir](https://github.com/giamir)! - Support both @stackoverflow/stacks v2 and v3 as peer dependencies
+
+## 1.0.0-beta.3
+
+### Patch Changes
+
+- [`b9019be`](https://github.com/StackExchange/Stacks-Editor/commit/b9019bea1b4078016b352611edcf827c402adfd8) Thanks [@giamir](https://github.com/giamir)! - update stacks classic peer dependency to point to beta
+
+## 1.0.0-beta.2
+
+### Patch Changes
+
+- [#482](https://github.com/StackExchange/Stacks-Editor/pull/482) [`d9ad150`](https://github.com/StackExchange/Stacks-Editor/commit/d9ad150ecf4cf0ae987fbb14020cb07fb17d20dd) Thanks [@ttaylor-stack](https://github.com/ttaylor-stack)! - update workflow file
+
+## 1.0.0-beta.1
+
+### Patch Changes
+
+- [#475](https://github.com/StackExchange/Stacks-Editor/pull/475) [`73e4b6e`](https://github.com/StackExchange/Stacks-Editor/commit/73e4b6e0191b25518b52e015d63b4853ea330f34) Thanks [@ttaylor-stack](https://github.com/ttaylor-stack)! - Add beta publishing information to README
+
+## 1.0.0-beta.0
+
+### Major Changes
+
+- enter prerelease mode for project shine
+
 ## 0.15.4
 
 ### Patch Changes

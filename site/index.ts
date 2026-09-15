@@ -8,7 +8,6 @@ import {
     StacksEditorOptions,
 } from "../src";
 import { PreviewRenderer } from "../src/commonmark/editor";
-import type { LinkPreviewProvider } from "../src/rich-text/plugins/link-preview";
 import type { ImageUploadOptions } from "../src/shared/prosemirror-plugins/image-upload";
 import { sleepAsync } from "../test/rich-text/test-helpers";
 import { markdownLogging } from "../plugins/devx";
@@ -47,52 +46,6 @@ function setTimeoutAsync(delay: number): Promise<void> {
         setTimeout(() => resolve(), Math.max(delay, 2000));
     });
 }
-
-/**
- * Sample preview provider attached to `example.com` domain that simulates
- * a fetch by waiting five seconds from time of request to time of render
- */
-export const ExampleLinkPreviewProvider: LinkPreviewProvider = {
-    domainTest: /^https?:\/\/(www\.)?(example\.com)/i,
-    renderer: (url: string) => {
-        let returnValue: string = null;
-
-        // only render example.com urls, no matter what's registered downstream
-        if (url.includes("example.com")) {
-            const date = new Date().toString();
-            // NOTE: usually we'd use escapeHTML here, but I don't want to pull in any of the bundle (for demo purposes)
-            returnValue = `
-            <div class="s-link-preview js-onebox">
-                <div class="s-link-preview--header">
-                    <div>
-                        <a href="${url}" target="_blank" class="s-link-preview--title">Example link preview</a>
-                        <div class="s-link-preview--details">Not really a real link preview, but it acts like one!</div>
-                    </div>
-                </div>
-                <div class="s-link-preview--body">
-                    <strong>This is a link preview, yo.</strong><br><br>We can run arbitrary JS in here, so here's the current date:<br><em>${date}</em>
-                </div>
-            </div>`;
-        }
-
-        return setTimeoutAsync(5000).then(() => {
-            const el = document.createElement("div");
-            // Note: local development only, don't care to sanitize and don't want to import escapeHTML
-            // eslint-disable-next-line no-unsanitized/property
-            el.innerHTML = returnValue;
-            return el;
-        });
-    },
-};
-
-export const ExampleTextOnlyLinkPreviewProvider: LinkPreviewProvider = {
-    domainTest: /^https?:\/\/(www\.)?(example\.org)/i,
-    renderer: (url) =>
-        setTimeoutAsync(0).then(() =>
-            document.createTextNode(`Example domain (${new URL(url).pathname})`)
-        ),
-    textOnly: true,
-};
 
 /**
  * Sample image handler that processes the uploaded image and returns a data url
@@ -314,10 +267,6 @@ domReady(() => {
         },
         placeholderText: "This is placeholder text, so start typing…",
         richTextOptions: {
-            linkPreviewProviders: [
-                ExampleTextOnlyLinkPreviewProvider,
-                ExampleLinkPreviewProvider,
-            ],
             highlighting: {
                 highlightedNodeTypes: ["stack_snippet_lang"],
                 languages: [
