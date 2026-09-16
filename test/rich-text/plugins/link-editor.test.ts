@@ -62,13 +62,19 @@ describe("link-editor", () => {
             const container = getViewContainer(editor);
             const labels =
                 container.querySelectorAll<HTMLLabelElement>("label");
+            const inputs = [
+                container.querySelector<HTMLInputElement>(
+                    ".js-link-editor-href"
+                ),
+                container.querySelector<HTMLInputElement>(
+                    ".js-link-editor-text"
+                ),
+            ];
 
             expect(labels).toHaveLength(2);
-            labels.forEach((label) => {
-                expect(label.htmlFor).not.toBe("");
-                expect(
-                    container.querySelector(`#${label.htmlFor}`)
-                ).toBeInstanceOf(HTMLInputElement);
+            labels.forEach((label, index) => {
+                expect(inputs[index]).toBeInstanceOf(HTMLInputElement);
+                expect(label.htmlFor).toBe(inputs[index]?.id);
             });
         });
 
