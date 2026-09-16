@@ -55,6 +55,23 @@ describe("link-editor", () => {
             expect(updatedUploadContainer.parentElement).toBeTruthy();
         });
 
+        it("should associate each visible label with its input", () => {
+            showLinkEditor(view.editorView);
+            editor.update(view.editorView);
+
+            const container = getViewContainer(editor);
+            const labels =
+                container.querySelectorAll<HTMLLabelElement>("label");
+
+            expect(labels).toHaveLength(2);
+            labels.forEach((label) => {
+                expect(label.htmlFor).not.toBe("");
+                expect(
+                    container.querySelector(`#${label.htmlFor}`)
+                ).toBeInstanceOf(HTMLInputElement);
+            });
+        });
+
         it("should focus first input when showing image uploader", () => {
             // we need to add our DOM to the doc's body in order to make jsdom's "focus" handling work
             // see https://github.com/jsdom/jsdom/issues/2586#issuecomment-742593116
