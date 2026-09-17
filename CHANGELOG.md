@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.15.5
+
+### Patch Changes
+
+- [#530](https://github.com/StackExchange/Stacks-Editor/pull/530) [`2638d64`](https://github.com/StackExchange/Stacks-Editor/commit/2638d642778795c735a39c012c94860105b0c634) Thanks [@alexwarren](https://github.com/alexwarren)! - Associate the visible link text label with its form input.
+
 ## 0.15.4
 
 ### Patch Changes
