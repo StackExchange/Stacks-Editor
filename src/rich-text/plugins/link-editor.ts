@@ -78,7 +78,7 @@ export class LinkEditor extends PluginInterfaceView<
                 <label for="link-editor-text-input-${randomId}" class="s-label mb4">${_t(
                     "link_editor.text_label"
                 )}</label>
-                <input id="link-text-href-input-${randomId}" class="s-input js-link-editor-text" type="text" name="text" />
+                <input id="link-editor-text-input-${randomId}" class="s-input js-link-editor-text" type="text" name="text" />
             </div>
 
             <div class="flex--item">
