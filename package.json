@@ -68,7 +68,7 @@
         "@commitlint/cli": "^19.2.1",
         "@commitlint/config-conventional": "^21.2.2",
         "@changesets/changelog-github": "^1.0.0",
-        "@changesets/cli": "^2.28.1",
+        "@changesets/cli": "^3.0.2",
         "@playwright/test": "^1.42.1",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
