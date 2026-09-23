@@ -67,10 +67,10 @@
         ]
     },
     "devDependencies": {
-        "@commitlint/cli": "^19.2.1",
+        "@commitlint/cli": "^21.2.2",
         "@commitlint/config-conventional": "^21.2.2",
         "@changesets/changelog-github": "^1.0.0",
-        "@changesets/cli": "^2.28.1",
+        "@changesets/cli": "^3.0.3",
         "@playwright/test": "^1.63.0",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
@@ -113,7 +113,7 @@
     "dependencies": {
         "@lezer/highlight": "^1.2.0",
         "@lezer/markdown": "^1.2.0",
-        "@stackoverflow/stacks-icons": "^6.2.0",
+        "@stackoverflow/stacks-icons": "^6.9.0",
         "markdown-it": "^14.0.0",
         "orderedmap": "^2.1.1",
         "prosemirror-commands": "^1.5.2",
