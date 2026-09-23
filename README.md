@@ -68,9 +68,8 @@ new StacksEditor(
 
 ## Run Tests
 
-Use a Node release supported by the locked Playwright version. Install
-dependencies with `npm ci` and the browser binaries with
-`npx playwright install` before running browser tests.
+Use the current Node LTS release. Install dependencies with `npm ci` and the
+browser binaries with `npx playwright install` before running browser tests.
 
 Run all unit tests (no end-to-end tests) using
 
@@ -115,7 +114,8 @@ We use [Changesets](https://github.com/changesets/changesets) to publish to npm,
 - Add a changeset to pull requests that require a package release.
 - The release workflow creates and updates a release pull request against `main` while changesets are pending.
 - Merging the reviewed release pull request publishes the package under npm's `latest` tag and creates a GitHub Release.
-- The `v0` branch preserves supported Editor 0.15.x maintenance and publishes under the separate `legacy-v0` npm tag.
+- The `v2` branch preserves the final Stacks V2-compatible Editor source and documentation.
+- The `v0` branch publishes supported Editor 0.15.x maintenance under the separate `legacy-v0` npm tag.
 
 _The release job runs only after lint, unit, end-to-end, packed-package, and release-configuration tests pass._
 

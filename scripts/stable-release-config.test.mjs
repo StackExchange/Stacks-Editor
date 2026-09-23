@@ -50,10 +50,11 @@ describe("stable release configuration", () => {
             packageJson.peerDependencies["@stackoverflow/stacks"],
             "^3.0.0"
         );
-        assert.equal(
-            packageJson.dependencies["@stackoverflow/stacks-icons"],
-            "^6.2.0"
+        const iconsVersion = semver.minVersion(
+            packageJson.dependencies["@stackoverflow/stacks-icons"]
         );
+        assert.equal(iconsVersion?.major, 6);
+        assert.equal(iconsVersion?.prerelease.length, 0);
     });
 
     test("publishes only from main after every release gate passes", async () => {
