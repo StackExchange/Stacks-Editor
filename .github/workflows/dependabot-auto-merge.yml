@@ -8,16 +8,69 @@ permissions:
 jobs:
     dependabot:
         runs-on: ubuntu-latest
-        if: github.actor == 'dependabot[bot]'
+        if: github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'
         steps:
             - name: Dependabot metadata
               id: metadata
-              uses: dependabot/fetch-metadata@v1
+              uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
               with:
                   github-token: "${{ secrets.GITHUB_TOKEN }}"
+            - name: Validate eligible Dependabot PR
+              if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
+              shell: bash
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  set -euo pipefail
+
+                  fail() {
+                      echo "::error::$1"
+                      exit 1
+                  }
+
+                  pull_request="$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")"
+                  expected_commit_count="$(jq -r '.commits' <<<"$pull_request")"
+                  expected_file_count="$(jq -r '.changed_files' <<<"$pull_request")"
+
+                  commits="$(gh api --method GET --paginate --slurp "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/commits?per_page=100" | jq -c 'add')"
+                  actual_commit_count="$(jq 'length' <<<"$commits")"
+                  invalid_commits="$(jq -r '.[] | select((.author.login // "") != "dependabot[bot]" or .commit.verification.verified != true) | .sha' <<<"$commits")"
+
+                  if [[ "$actual_commit_count" -eq 0 || "$actual_commit_count" -ne "$expected_commit_count" || -n "$invalid_commits" ]]; then
+                      fail "Pull request commits are incomplete or not verified Dependabot commits"
+                  fi
+
+                  files="$(gh api --method GET --paginate --slurp "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/files?per_page=100" | jq -c 'add')"
+                  actual_file_count="$(jq 'length' <<<"$files")"
+                  unexpected_files="$(jq -r '.[] | select(.filename != "package.json" and .filename != "package-lock.json") | .filename' <<<"$files")"
+
+                  if [[ "$actual_file_count" -eq 0 || "$actual_file_count" -ne "$expected_file_count" || -n "$unexpected_files" ]]; then
+                      fail "Pull request file list is incomplete or contains unexpected paths"
+                  fi
+
+                  final_head="$(gh api --method GET "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq .head.sha)"
+                  if [[ "$final_head" != "$HEAD_SHA" ]]; then
+                      fail "Pull request head changed during validation"
+                  fi
+            - name: Approve eligible Dependabot PR
+              if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
+                  # stacks-tooling approves only. Keep Actions and Dependabot copies in sync.
+                  GH_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
+              run: |
+                  gh api --method POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" \
+                      -f event=APPROVE \
+                      -f commit_id="$HEAD_SHA"
             - name: Enable auto-merge for Dependabot PRs
               if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
-              run: gh pr merge --auto --squash "$PR_URL"
+              run: |
+                  gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
               env:
-                  PR_URL: ${{github.event.pull_request.html_url}}
-                  GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+                  HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+                  # Keep auto-merge on GITHUB_TOKEN so required checks remain enforced.
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
