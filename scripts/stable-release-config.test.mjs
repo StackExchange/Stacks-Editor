@@ -72,7 +72,7 @@ describe("stable release configuration", () => {
         assert.match(workflow, /^permissions:\n    contents: read$/m);
         assert.match(
             workflow,
-            /release:\n(?:.|\n)*?        permissions:\n            contents: read\n            pull-requests: write\n/m
+            /release:\n(?:.|\n)*?        permissions:\n            contents: write\n            pull-requests: write\n/m
         );
         assert.match(
             workflow,
