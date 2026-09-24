@@ -106,7 +106,7 @@ jobs:
         if: github.ref == 'refs/heads/main'
         needs: [lint, unit-test, e2e-test, package-test, release-config-test]
         permissions:
-            contents: read
+            contents: write
             pull-requests: write
         runs-on: ubuntu-latest
         steps:
