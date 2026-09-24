@@ -1,5 +1,29 @@
 # Changelog
 
+## 1.0.0
+
+### Major Changes
+
+- enter prerelease mode for project shine
+
+### Minor Changes
+
+- ensure editor continue to work with stacks v3 styles
+
+### Patch Changes
+
+- Support both @stackoverflow/stacks v2 and v3 as peer dependencies
+
+- Add beta publishing information to README
+
+- update stacks classic peer dependency to point to beta
+
+- update workflow file
+
+- [#519](https://github.com/StackExchange/Stacks-Editor/pull/519) [`047c734`](https://github.com/StackExchange/Stacks-Editor/commit/047c7340df93008c599ee8bf6a64fe58645ad814) Thanks [@dancormier](https://github.com/dancormier)! - Require stable Stacks Classic 3, preserve the established Editor presentation,
+  remove the obsolete link-preview demonstration, and prepare the final Editor
+  1.0 release.
+
 ## 1.0.0-beta.5
 
 ### Minor Changes
