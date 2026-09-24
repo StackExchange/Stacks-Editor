@@ -8,16 +8,30 @@ permissions:
 jobs:
     dependabot:
         runs-on: ubuntu-latest
-        if: github.actor == 'dependabot[bot]'
+        if: github.actor == 'dependabot[bot]' && github.event.pull_request.user.login == 'dependabot[bot]'
         steps:
             - name: Dependabot metadata
               id: metadata
-              uses: dependabot/fetch-metadata@v1
+              uses: dependabot/fetch-metadata@25dd0e34f4fe68f24cc83900b1fe3fe149efef98 # v3.1.0
               with:
                   github-token: "${{ secrets.GITHUB_TOKEN }}"
+            - name: Approve eligible Dependabot PR
+              if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
+              env:
+                  PR_NUMBER: ${{ github.event.pull_request.number }}
+                  HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
+                  # stacks-tooling approves only. Keep Actions and Dependabot copies in sync.
+                  GH_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
+              run: |
+                  gh api --method POST "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER/reviews" \
+                      -f event=APPROVE \
+                      -f commit_id="$HEAD_SHA"
             - name: Enable auto-merge for Dependabot PRs
               if: steps.metadata.outputs.update-type == 'version-update:semver-minor' || steps.metadata.outputs.update-type == 'version-update:semver-patch'
-              run: gh pr merge --auto --squash "$PR_URL"
+              run: |
+                  gh pr merge --auto --squash --match-head-commit "$HEAD_SHA" "$PR_URL"
               env:
-                  PR_URL: ${{github.event.pull_request.html_url}}
-                  GH_TOKEN: ${{secrets.GITHUB_TOKEN}}
+                  HEAD_SHA: "${{ github.event.pull_request.head.sha }}"
+                  PR_URL: ${{ github.event.pull_request.html_url }}
+                  # Keep auto-merge on GITHUB_TOKEN so required checks remain enforced.
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
