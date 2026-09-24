@@ -54,7 +54,8 @@ export class MenuView implements PluginView {
         this.editorType = editorType;
 
         this.dom = document.createElement("div");
-        this.dom.className = "d-flex g16 fl-grow1 ai-center js-editor-menu";
+        this.dom.className =
+            "d-flex fw-nowrap fl-grow1 fl-shrink0 g16 ai-center js-editor-menu";
 
         // sort the blocks by their priority; lower priority first
         this.blocks = blocks
@@ -255,7 +256,7 @@ export class MenuView implements PluginView {
     /** Creates the element that a block's child entries' doms are placed into */
     private makeBlockContainer(block: MenuBlock) {
         const dom = document.createElement("div");
-        dom.className = `s-editor-menu-block d-flex g2 ${
+        dom.className = `s-editor-menu-block d-flex fw-nowrap fl-shrink0 g2 ${
             block.classes?.join(" ") ?? ""
         } js-block-${block.name}`;
 
@@ -340,19 +341,18 @@ export class MenuView implements PluginView {
         const popover = document.createElement("div");
         popover.className = "s-popover wmn-initial w-auto px0 pt0 py8";
         popover.id = popoverId;
-        popover.setAttribute("role", "menu");
 
-        const arrow = document.createElement("div");
-        arrow.className = "s-popover--arrow";
-        arrow.setAttribute("aria-hidden", "true");
+        const content = document.createElement("ul");
+        content.className = "s-menu";
+        content.setAttribute("role", "menu");
 
-        popover.appendChild(arrow);
-
-        const content = document.createElement("div");
-        content.className = "d-flex fd-column";
-        content.setAttribute("role", "presentation");
-
-        content.append(...entry.children.map((c) => c.display));
+        for (const child of entry.children) {
+            const item = document.createElement("li");
+            item.className = "s-menu--item";
+            item.setAttribute("role", "none");
+            item.appendChild(child.display);
+            content.appendChild(item);
+        }
         popover.appendChild(content);
 
         const wrapper = document.createElement("div");

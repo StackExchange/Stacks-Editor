@@ -36,6 +36,29 @@ describe("StacksEditor", () => {
         expect(event.defaultPrevented).toBe(true);
     });
 
+    it("keeps toolbar controls in a horizontally scrolling row", () => {
+        const toolbar = target.querySelector<HTMLElement>(".js-editor-toolbar");
+
+        expect(Array.from(toolbar.classList)).toEqual(
+            expect.arrayContaining(["d-flex", "fw-nowrap", "overflow-x-auto"])
+        );
+        expect(
+            Array.from(toolbar.querySelector(".js-editor-menu").classList)
+        ).toEqual(expect.arrayContaining(["fw-nowrap", "fl-shrink0"]));
+        expect(
+            Array.from(toolbar.querySelector(".s-editor-btn-group").classList)
+        ).toEqual(
+            expect.arrayContaining([
+                "d-inline-flex",
+                "s-btn-group",
+                "fw-nowrap",
+                "ba",
+                "bc-black-300",
+                "bar-md",
+            ])
+        );
+    });
+
     it("allows plugin controls to receive focus", () => {
         const pluginTarget = target.querySelector<HTMLElement>(
             ".js-plugin-container > div:last-child"

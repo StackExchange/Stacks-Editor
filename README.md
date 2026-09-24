@@ -68,6 +68,9 @@ new StacksEditor(
 
 ## Run Tests
 
+Use the current Node LTS release. Install dependencies with `npm ci` and the
+browser binaries with `npx playwright install` before running browser tests.
+
 Run all unit tests (no end-to-end tests) using
 
     npm run test:unit
@@ -77,6 +80,24 @@ Run all end-to-end tests (written in Playwright) using
     npm run test:e2e
 
 End-to-end tests need to follow the convention of using `someName.e2e.test.ts` as their filename. They'll automatically get picked up by the test runner this way.
+
+Verify the published package and release configuration using:
+
+```sh
+npm run test:package
+npm run test:release-config
+```
+
+The package check builds an npm tarball, installs it in a temporary consumer,
+type-checks the public imports, and bundles its JavaScript and CSS. It then
+opens the consumer in Chromium and checks editing and menu styling. Consumer
+installation may access npm; direct Classic, Icons, and Highlight.js versions
+match the repository lockfile. A missing Chromium binary fails the check.
+
+Menu end-to-end tests cover keyboard operation and layout in light, dark,
+high-contrast, and dark high-contrast themes across all three browsers.
+They save `heading-menu.png` review artifacts in `test-results/`. These are
+not pixel-regression baselines or a complete accessibility audit.
 
 ## Browser Bundle analysis
 
@@ -88,13 +109,18 @@ You can upload your `stats.json` file [here](http://webpack.github.io/analyse/) 
 
 ## Publishing
 
-We use [changesets](https://github.com/changesets/changesets) to automatize the steps necessary to publish to NPM, create GH releases and a changelog.
+We use [Changesets](https://github.com/changesets/changesets) to publish to npm, create GitHub Releases, and update the changelog.
 
-- Every time you do work that requires a new release to be published, [add a changesets entry](https://github.com/changesets/changesets/blob/main/docs/adding-a-changeset.md) by running `npx @changesets/cli` and follow the instructions on screen. (changes that do not require a new release - e.g. changing a test file - don't need a changeset).
-    - When opening a PR without a corresponding changeset the [changesets-bot](https://github.com/apps/changeset-bot) will remind you to do so. It generally makes sense to have one changeset for PR (if the PR changes do not require a new release to be published the bot message can be safely ignored)
-- The release github job continuously check if there are new pending changesets in the main branch, if there are it creates a GH PR and continue updating it as more changesets are potentially pushed/merged to the main branch.
-- When we are ready to cut a release we need to simply merge the `chore(release)` PR back to main and the release github workflow will take care of publishing the changes to NPM and create a GH release for us. The `chore(release)` PR also give us an opportunity to adjust the automatically generated changelog when necessary (the entry in the changelog file is also what will end up in the GH release notes).
+- Add a changeset to pull requests that require a package release.
+- The release workflow creates and updates a release pull request against `main` while changesets are pending.
+- Merging the reviewed release pull request publishes the package under npm's `latest` tag and creates a GitHub Release.
+- The `v2` branch preserves the final Stacks V2-compatible Editor source and documentation.
+- The `v0` branch publishes supported Editor 0.15.x maintenance under the separate `legacy-v0` npm tag.
 
-_The release github job only run if the lint, unit-test and e2e-test jobs are all successful: this is to block accidental releases_.
+_The release job runs only after lint, unit, end-to-end, packed-package, and release-configuration tests pass._
 
-_Despite using changesets to communicate the intent of creating releases in a more explicit way, we still follow [conventional commits standards](https://www.conventionalcommits.org/en/v1.0.0/) for keeping our git history easily parseable by the human eye._
+Review the generated versions, dependency ranges, changelog, and package
+contents before merging the release pull request. Its merge authorizes
+publication; there is no additional manual approval step in the workflow.
+
+Continue using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for repository history.
