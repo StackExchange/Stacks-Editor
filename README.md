@@ -6,7 +6,19 @@ Stacks-Editor is a combination rich text / markdown editor that powers Stack Ove
 
 ### Installation
 
-`npm install @stackoverflow/stacks-editor`
+Editor 1.x requires **Stacks Classic 3** (`@stackoverflow/stacks@^3.0.0`)
+and declares `highlight.js@^11.6.0` as a peer dependency. Install them together:
+
+```sh
+npm install @stackoverflow/stacks-editor@^1.0.0 @stackoverflow/stacks@^3.0.0 highlight.js@^11.6.0
+```
+
+Classic 2 and beta Classic releases are not supported by Editor 1.x. Applications
+using Classic 2 should install Editor with the `^0.15.0` version range instead of
+`^1.0.0` or `latest`.
+
+Editor intentionally depends on stable Stacks Icons V6. npm installs it
+automatically; a separate Icons installation or upgrade to V7 is not required.
 
 ### Import via Modules or CommonJS
 
@@ -18,8 +30,7 @@ Stacks-Editor is a combination rich text / markdown editor that powers Stack Ove
 import { StacksEditor } from "@stackoverflow/stacks-editor";
 // don't forget to include the styles as well
 import "@stackoverflow/stacks-editor/dist/styles.css";
-// include the Stacks js and css as they're not included in the bundle
-import "@stackoverflow/stacks";
+// include the Classic styles as they're not included in the Editor styles
 import "@stackoverflow/stacks/dist/css/stacks.css";
 
 new StacksEditor(
@@ -29,6 +40,10 @@ new StacksEditor(
 ```
 
 ### Import via &lt;script&gt; tag
+
+Load Classic CSS and Editor CSS separately. The Editor bundle includes the Stacks
+JavaScript it uses; load Classic JavaScript separately only if your page needs it
+for other Stacks components.
 
 ```html
 <!--include Stacks -->
@@ -41,10 +56,8 @@ new StacksEditor(
 
 <div id="editor-container"></div>
 
-<!-- highlight.js is not included in the bundle, so include it as well if you want it -->
-<script src="//unpkg.com/@highlightjs/cdn-assets@latest/highlight.min.js"></script>
-<!--include Stacks -->
-<script src="path/to/node_modules/@stackoverflow/stacks/dist/js/stacks.min.js"></script>
+<!-- Optional: enables code-block syntax highlighting with Highlight.js 11 -->
+<script src="https://unpkg.com/@highlightjs/cdn-assets@11/highlight.min.js"></script>
 <!-- include the bundle -->
 <script src="path/to/node_modules/@stackoverflow/stacks-editor/dist/app.bundle.js"></script>
 
@@ -114,13 +127,17 @@ We use [Changesets](https://github.com/changesets/changesets) to publish to npm,
 - Add a changeset to pull requests that require a package release.
 - The release workflow creates and updates a release pull request against `main` while changesets are pending.
 - Merging the reviewed release pull request publishes the package under npm's `latest` tag and creates a GitHub Release.
-- The `v2` branch preserves the final Stacks V2-compatible Editor source and documentation.
-- The `v0` branch publishes supported Editor 0.15.x maintenance under the separate `legacy-v0` npm tag.
+- The `v2` branch preserves a Stacks Classic 2-compatible Editor source and documentation snapshot; its name refers to the Classic version, not the Editor version.
+- The `v0` branch is configured for Editor 0.15.x maintenance releases under the separate `legacy-v0` npm tag, without replacing `latest` or creating GitHub Releases. That tag is created when a maintenance release is published; use an explicit `0.15.x` version range until then.
 
 _The release job runs only after lint, unit, end-to-end, packed-package, and release-configuration tests pass._
 
 Review the generated versions, dependency ranges, changelog, and package
 contents before merging the release pull request. Its merge authorizes
 publication; there is no additional manual approval step in the workflow.
+
+When exiting prerelease mode, remove consumed changesets from both `.changeset/`
+and `.changeset/pre/`. Changesets 3 reads the latter directory as release input,
+so it must not be used to archive changesets from completed releases.
 
 Continue using [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) for repository history.
