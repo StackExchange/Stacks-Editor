@@ -130,8 +130,9 @@ Classic major version:
 | `editor.stackoverflow.design` | `main` | 1.x | Classic 3 |
 | `v0.editor.stackoverflow.design` | `v0` | 0.15.x | Classic 2 |
 
-Netlify manages the build settings and the `v0` branch subdomain. The `v2` branch
-is a historical Classic 2-compatible snapshot, not the maintained docs origin.
+Netlify manages the build settings and the `v0` branch subdomain. The `v0` branch
+supersedes the earlier `v2` branch for legacy maintenance and documentation. Its
+name reflects Editor's own major version; the old name referred to Classic 2.
 
 The beta-host redirect is defined in `netlify.toml`. It redirects only
 `beta.editor.stackoverflow.design` to the current host, preserving paths and
@@ -158,7 +159,6 @@ We use [Changesets](https://github.com/changesets/changesets) to publish to npm,
 - Add a changeset to pull requests that require a package release.
 - The release workflow creates and updates a release pull request against `main` while changesets are pending.
 - Merging the reviewed release pull request publishes the package under npm's `latest` tag and creates a GitHub Release.
-- The `v2` branch preserves a historical Stacks Classic 2-compatible source snapshot. Current legacy documentation is hosted from `v0`.
 - The `v0` branch is configured for Editor 0.15.x maintenance releases under the separate `legacy-v0` npm tag, without replacing `latest` or creating GitHub Releases. That tag is created when a maintenance release is published; use an explicit `0.15.x` version range until then.
 
 _The release job runs only after lint, unit, end-to-end, packed-package, and release-configuration tests pass._
