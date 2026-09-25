@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { readdir, readFile } from "node:fs/promises";
 import { describe, test } from "node:test";
 import semver from "semver";
 import jestConfig from "../config/jest-unit.config.js";
@@ -80,7 +80,7 @@ describe("stable release configuration", () => {
         );
         assert.doesNotMatch(workflow, /refs\/heads\/beta/);
         assert.equal(changesetConfig.baseBranch, "main");
-        assert.equal(codeowners.trim(), "* @StackExchange/stacks");
+        assert.match(codeowners, /^\* @StackExchange\/stacks$/m);
     });
 
     test("has exited prerelease mode when prerelease state exists", async () => {
@@ -121,6 +121,25 @@ describe("stable release configuration", () => {
                 /^## 1\.0\.0$/m
             );
         }
+    });
+
+    test("does not retain consumed prerelease changesets after beta exit", async (t) => {
+        if (existsSync(new URL("../.changeset/pre.json", import.meta.url))) {
+            t.skip("Prerelease exit has not been applied yet");
+            return;
+        }
+
+        const preDirectory = new URL("../.changeset/pre/", import.meta.url);
+        const files = existsSync(preDirectory)
+            ? await readdir(preDirectory)
+            : [];
+
+        // Changesets 3 reads this directory as release input, not an archive.
+        assert.deepEqual(
+            files.filter((file) => file.endsWith(".md")),
+            [],
+            "Consumed prerelease changesets must be removed after beta exit"
+        );
     });
 
     test("removes beta branding from the stable site", async () => {

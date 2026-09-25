@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.0.0
+
+### Major Changes
+
+- Release stable Editor 1.0. Editor 1.x requires Stacks Classic
+  `@stackoverflow/stacks@^3.0.0` and no longer supports Classic 2 or beta Classic
+  releases. Applications using Classic 2 should remain on Editor 0.15.x.
+
+### Patch Changes
+
+- [#519](https://github.com/StackExchange/Stacks-Editor/pull/519) - Preserve the
+  established toolbar, mode switcher, prose sizing, and link popovers under
+  Classic 3. Replace removed `.s-block-link` styles with accessible Stacks menu
+  markup and preserve the dropdown-focus fix from Editor 0.15.4.
+- Remove beta branding and the obsolete link-preview demonstration. Public
+  link-preview APIs remain available.
+- Retain stable Icons V6 as an installed dependency; Icons V7 is not required.
+- Publish stable releases from `main` after lint, unit, browser, packed-consumer,
+  and release-configuration checks pass.
+
 ## 1.0.0-beta.5
 
 ### Minor Changes
