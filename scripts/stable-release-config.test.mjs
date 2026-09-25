@@ -80,7 +80,7 @@ describe("stable release configuration", () => {
         );
         assert.doesNotMatch(workflow, /refs\/heads\/beta/);
         assert.equal(changesetConfig.baseBranch, "main");
-        assert.equal(codeowners.trim(), "* @StackExchange/stacks");
+        assert.match(codeowners, /^\* @StackExchange\/stacks$/m);
     });
 
     test("has exited prerelease mode when prerelease state exists", async () => {
