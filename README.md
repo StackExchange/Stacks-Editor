@@ -120,6 +120,37 @@ Generate a `stats.json` file for analysis using
 
 You can upload your `stats.json` file [here](http://webpack.github.io/analyse/) or [here](https://chrisbateman.github.io/webpack-visualizer/) for visualization. See more resources [here](https://webpack.js.org/guides/code-splitting/#bundle-analysis).
 
+## Documentation hosting
+
+Documentation hostnames follow the **Editor** major version, not the Stacks
+Classic major version:
+
+| Domain | Branch | Editor version | Classic compatibility |
+| --- | --- | --- | --- |
+| `editor.stackoverflow.design` | `main` | 1.x | Classic 3 |
+| `v0.editor.stackoverflow.design` | `v0` | 0.15.x | Classic 2 |
+
+Netlify manages the build settings and the `v0` branch subdomain. The `v2` branch
+is a historical Classic 2-compatible snapshot, not the maintained docs origin.
+
+The beta-host redirect is defined in `netlify.toml`. It redirects only
+`beta.editor.stackoverflow.design` to the current host, preserving paths and
+query parameters. It does not redirect the current site, legacy site, or deploy
+previews.
+
+To complete the beta-host cutover:
+
+1. Deploy the redirect configuration from `main` and verify the current and `v0`
+   sites before changing domain assignments.
+2. Remove `beta` from Netlify's branch subdomains, then add
+   `beta.editor.stackoverflow.design` as a production domain alias. The rules in
+   `main` do not apply while that hostname still serves the separate beta branch.
+3. Verify HTTPS and permanent redirects for the root and demo routes, including
+   URLs with query parameters. Confirm that the destination editors still work.
+4. Remove `beta` and `v2` from the branch-deploy allowlist, retaining `v0`.
+   Branch-deploy settings are separate from Git branches; do not delete branches
+   as part of this hosting change.
+
 ## Publishing
 
 We use [Changesets](https://github.com/changesets/changesets) to publish to npm, create GitHub Releases, and update the changelog.
@@ -127,7 +158,7 @@ We use [Changesets](https://github.com/changesets/changesets) to publish to npm,
 - Add a changeset to pull requests that require a package release.
 - The release workflow creates and updates a release pull request against `main` while changesets are pending.
 - Merging the reviewed release pull request publishes the package under npm's `latest` tag and creates a GitHub Release.
-- The `v2` branch preserves a Stacks Classic 2-compatible Editor source and documentation snapshot; its name refers to the Classic version, not the Editor version.
+- The `v2` branch preserves a historical Stacks Classic 2-compatible source snapshot. Current legacy documentation is hosted from `v0`.
 - The `v0` branch is configured for Editor 0.15.x maintenance releases under the separate `legacy-v0` npm tag, without replacing `latest` or creating GitHub Releases. That tag is created when a maintenance release is published; use an explicit `0.15.x` version range until then.
 
 _The release job runs only after lint, unit, end-to-end, packed-package, and release-configuration tests pass._

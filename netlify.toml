@@ -1,0 +1,13 @@
+# Keep build settings in Netlify. These rules apply only after the beta hostname
+# is attached to the production deployment as a domain alias.
+[[redirects]]
+from = "http://beta.editor.stackoverflow.design/*"
+to = "https://editor.stackoverflow.design/:splat"
+status = 301
+force = true
+
+[[redirects]]
+from = "https://beta.editor.stackoverflow.design/*"
+to = "https://editor.stackoverflow.design/:splat"
+status = 301
+force = true
