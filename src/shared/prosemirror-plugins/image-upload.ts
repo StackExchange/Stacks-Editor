@@ -94,7 +94,7 @@ export async function defaultImageUploadHandler(file: File): Promise<string> {
     return json.UploadedImage;
 }
 
-const defaultAcceptedFileTypes = ["image/jpeg", "image/png", "image/gif"];
+const defaultAcceptedFileTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
 const defaultSizeLimitMib = 2;
 
 enum ValidationResult {
