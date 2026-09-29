@@ -186,6 +186,15 @@ describe("image upload plugin", () => {
 
             await expect(
                 uploader.showImagePreview(
+                    mockFile("some webp file", "image/webp")
+                )
+            ).resolves.toBeUndefined();
+            expect(findValidationMessage(uploader).classList).toContain(
+                "d-none"
+            );
+
+            await expect(
+                uploader.showImagePreview(
                     mockFile("some bmp file", "image/bmp")
                 )
             ).rejects.toBe("invalid filetype");
