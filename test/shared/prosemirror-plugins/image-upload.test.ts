@@ -146,15 +146,15 @@ describe("image upload plugin", () => {
             expect(findAddButton(uploader).disabled).toBe(true);
             const validationMessage = findValidationMessage(uploader);
             expect(validationMessage.textContent).toBe(
-                "Please select an image (jpeg, png, gif) to upload"
+                "Please select an image (jpeg, png, gif, webp) to upload"
             );
             expect(validationMessage.classList).not.toContain("d-none");
         });
 
-        it("should accept jpeg, png and gif by default if no acceptedFileTypes option is provided", async () => {
+        it("should accept jpeg, png, webp and gif by default if no acceptedFileTypes option is provided", async () => {
             showImageUploader(view.editorView);
             expect(uploader.uploadField.accept).toBe(
-                "image/jpeg, image/png, image/gif"
+                "image/jpeg, image/png, image/gif, image/webp"
             );
 
             await expect(
@@ -186,11 +186,20 @@ describe("image upload plugin", () => {
 
             await expect(
                 uploader.showImagePreview(
+                    mockFile("some webp file", "image/webp")
+                )
+            ).resolves.toBeUndefined();
+            expect(findValidationMessage(uploader).classList).toContain(
+                "d-none"
+            );
+
+            await expect(
+                uploader.showImagePreview(
                     mockFile("some bmp file", "image/bmp")
                 )
             ).rejects.toBe("invalid filetype");
             expect(findValidationMessage(uploader).textContent).toBe(
-                "Please select an image (jpeg, png, gif) to upload"
+                "Please select an image (jpeg, png, gif, webp) to upload"
             );
         });
 
