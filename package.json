@@ -85,7 +85,7 @@
         "cssnano": "^9.0.0",
         "eslint": "^8.57.0",
         "eslint-config-prettier": "^10.1.8",
-        "eslint-plugin-jest": "^28.2.0",
+        "eslint-plugin-jest": "^29.16.6",
         "eslint-plugin-no-unsanitized": "^4.0.2",
         "highlight.js": "^11.9.0",
         "html-loader": "^5.0.0",
