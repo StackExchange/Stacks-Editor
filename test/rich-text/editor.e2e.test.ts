@@ -56,6 +56,31 @@ test.describe.serial("rich-text mode", () => {
         );
     });
 
+    test("should label link fields and save link text and destination", async () => {
+        await clearEditor(page);
+        await page.locator(editorSelector).focus();
+        await page.locator(".js-insert-link-btn").click();
+
+        const linkUrl = page.getByRole("textbox", {
+            name: "Link URL",
+            exact: true,
+        });
+        const linkText = page.getByRole("textbox", {
+            name: "Link text",
+            exact: true,
+        });
+        await expect(linkUrl).toBeFocused();
+        await linkUrl.fill("https://stackoverflow.com/");
+        await page.keyboard.press("Tab");
+        await expect(linkText).toBeFocused();
+        await linkText.fill("Example link");
+        await page.locator(".js-link-editor-save-btn").click();
+
+        expect(await getMarkdownContent(page)).toMatch(
+            /^\[Example link\]\(https:\/\/stackoverflow\.com\/\)\n?$/
+        );
+    });
+
     test("should insert heading from dropdown", async () => {
         await enterTextAsMarkdown(page, "plain text");
         await page.locator(editorSelector).focus();
