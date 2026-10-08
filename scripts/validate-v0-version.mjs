@@ -6,14 +6,9 @@ import semver from "semver";
 export function validateV0Version(version) {
     const parsedVersion = semver.parse(version);
 
-    if (
-        parsedVersion === null ||
-        parsedVersion.major !== 0 ||
-        parsedVersion.minor !== 15 ||
-        parsedVersion.prerelease.length !== 0
-    ) {
+    if (parsedVersion === null || parsedVersion.major !== 0) {
         throw new Error(
-            `The package version "${version}" is outside the supported stable 0.15.x maintenance line.`
+            `The package version "${version}" is outside the supported 0.x.x release line.`
         );
     }
 
