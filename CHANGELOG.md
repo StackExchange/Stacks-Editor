@@ -1,5 +1,11 @@
 # Changelog
 
+## 1.1.0
+
+### Minor Changes
+
+- [#536](https://github.com/StackExchange/Stacks-Editor/pull/536) [`f41287b`](https://github.com/StackExchange/Stacks-Editor/commit/f41287bb12b30559c7c6b2246542116ecace83ee) Thanks [@CoconutMacaroon](https://github.com/CoconutMacaroon)! - Add support for WebP images
+
 ## 1.0.0
 
 ### Major Changes
