@@ -88,7 +88,7 @@ You can upload your `stats.json` file [here](http://webpack.github.io/analyse/) 
 
 ## Publishing V0 maintenance releases
 
-The `v0` branch preserves the final pre-1.0 Editor line for supported 0.15.x maintenance. Current Editor development and stable releases use `main`.
+The `v0` branch supports Editor releases with major version zero (`0.x.x`), including prereleases such as `0.16.0-beta.1`. The release guard rejects invalid semantic versions and any version with major version one or higher. Current Editor development and stable releases use `main`.
 
 We use [Changesets](https://github.com/changesets/changesets) to create release pull requests, update the changelog, and publish packages.
 
