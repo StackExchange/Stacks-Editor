@@ -117,31 +117,34 @@ jobs:
               with:
                   node-version: lts/*
                   cache: "npm"
+                  registry-url: "https://registry.npmjs.org"
 
             - name: Install dependencies
               run: npm ci
 
             - name: 🚀 Create/Update Release Pull Request or Publish to npm
               id: changesets
-              uses: changesets/action@v1
+              uses: changesets/action@v2.1.2
               with:
-                  version: npm run version
-                  publish: npm run release
-                  title: "chore(new-release)"
-                  commit: "chore(new-release)"
-                  branch: main
-                  createGithubReleases: true
+                  github-token: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
+                  version-script: npm run version
+                  publish-script: npm run release
+                  pr-title: "chore(new-release)"
+                  commit-message: "chore(new-release)"
+                  pr-base-branch: main
+                  create-github-releases: true
+                  push-git-tags: true
+                  push-with-git-cli: true
               env:
-                  GITHUB_TOKEN: ${{ secrets.STACKS_TOOLING_GH_RW_PAT }}
-                  NPM_TOKEN: ${{ secrets.NPM_API_KEY }}
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_API_KEY }}
 
             - name: Docs on Release Pull Request
               # run only if there is a release pull request open
-              if: steps.changesets.outputs.pullRequestNumber
+              if: steps.changesets.outputs.pr-number
               uses: thollander/actions-comment-pull-request@v3
               with:
                   comment-tag: "pr-release-docs"
-                  pr-number: ${{ steps.changesets.outputs.pullRequestNumber }}
+                  pr-number: ${{ steps.changesets.outputs.pr-number }}
                   message: |
                       To trigger the build for this PR, **close and re-open it**.
                       This is necessary because the PR is updated by github-actions[bot].

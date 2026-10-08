@@ -66,9 +66,9 @@ describe("stable release configuration", () => {
 
         assert.equal(workflow.match(/branches: \[main\]/g)?.length, 2);
         assert.match(workflow, /if: github\.ref == 'refs\/heads\/main'/);
-        assert.match(workflow, /publish: npm run release/);
-        assert.match(workflow, /branch: main/);
-        assert.match(workflow, /createGithubReleases: true/);
+        assert.match(workflow, /publish-script: npm run release/);
+        assert.match(workflow, /pr-base-branch: main/);
+        assert.match(workflow, /create-github-releases: true/);
         assert.match(workflow, /^permissions:\n    contents: read$/m);
         assert.match(
             workflow,
@@ -81,6 +81,54 @@ describe("stable release configuration", () => {
         assert.doesNotMatch(workflow, /refs\/heads\/beta/);
         assert.equal(changesetConfig.baseBranch, "main");
         assert.match(codeowners, /^\* @StackExchange\/stacks$/m);
+    });
+
+    test("uses Changesets v3-compatible release automation", async () => {
+        const workflow = await readRepositoryFile(".github/workflows/main.yml");
+        const releaseJob = workflow.slice(workflow.indexOf("    release:\n"));
+        const packageJson = JSON.parse(
+            await readRepositoryFile("package.json")
+        );
+        const cliVersion = semver.minVersion(
+            packageJson.devDependencies["@changesets/cli"]
+        );
+
+        assert.equal(cliVersion?.major, 3);
+        assert.match(releaseJob, /uses: changesets\/action@v2\.1\.2\s/);
+        assert.match(releaseJob, /version-script: npm run version/);
+        assert.match(releaseJob, /publish-script: npm run release/);
+        assert.match(releaseJob, /pr-title: "chore\(new-release\)"/);
+        assert.match(releaseJob, /commit-message: "chore\(new-release\)"/);
+        assert.match(releaseJob, /push-git-tags: true/);
+        assert.match(releaseJob, /push-with-git-cli: true/);
+        assert.match(releaseJob, /if: steps\.changesets\.outputs\.pr-number/);
+        assert.match(
+            releaseJob,
+            /pr-number: \$\{\{ steps\.changesets\.outputs\.pr-number \}\}/
+        );
+        assert.doesNotMatch(
+            releaseJob,
+            /pullRequestNumber|createGithubReleases|^\s+(version|publish|title|commit|branch):/m
+        );
+    });
+
+    test("configures release authentication without Changesets v1 npmrc handling", async () => {
+        const workflow = await readRepositoryFile(".github/workflows/main.yml");
+        const releaseJob = workflow.slice(workflow.indexOf("    release:\n"));
+
+        assert.match(
+            releaseJob,
+            /uses: actions\/setup-node@v4\n\s+with:\n\s+node-version: lts\/\*\n\s+cache: "npm"\n\s+registry-url: "https:\/\/registry\.npmjs\.org"/
+        );
+        assert.match(
+            releaseJob,
+            /github-token: \$\{\{ secrets\.STACKS_TOOLING_GH_RW_PAT \}\}/
+        );
+        assert.match(
+            releaseJob,
+            /env:\n\s+NODE_AUTH_TOKEN: \$\{\{ secrets\.NPM_API_KEY \}\}/
+        );
+        assert.doesNotMatch(releaseJob, /^\s+(GITHUB_TOKEN|NPM_TOKEN):/m);
     });
 
     test("has exited prerelease mode when prerelease state exists", async () => {
