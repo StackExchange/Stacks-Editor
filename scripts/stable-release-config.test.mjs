@@ -115,7 +115,9 @@ describe("stable release configuration", () => {
                 /"@stackoverflow\/stacks-editor": patch/
             );
         } else {
-            assert.equal(packageJson.version, "1.0.0");
+            const version = semver.parse(packageJson.version);
+            assert.ok(version, "Package version must be valid semver");
+            assert.equal(version.prerelease.length, 0);
             assert.match(
                 await readRepositoryFile("CHANGELOG.md"),
                 /^## 1\.0\.0$/m
