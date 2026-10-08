@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.0
+
+### Minor Changes
+
+- [#552](https://github.com/StackExchange/Stacks-Editor/pull/552) [`b523877`](https://github.com/StackExchange/Stacks-Editor/commit/b5238774986c71c5555e9c1bc1af93074380b4c2) Thanks [@dancormier](https://github.com/dancormier)! - Add support for WebP images to the v0 editor.
+
 ## 0.15.4
 
 ### Patch Changes
