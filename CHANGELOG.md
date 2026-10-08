@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.16.1
+
+### Patch Changes
+
+- [#554](https://github.com/StackExchange/Stacks-Editor/pull/554) [`87f49b4`](https://github.com/StackExchange/Stacks-Editor/commit/87f49b4790948044d7cf7cf72311e57603ebc537) Thanks [@dancormier](https://github.com/dancormier)! - Restore the programmatic association between the visible Link text label and its form input in the V0 editor.
+
 ## 0.16.0
 
 ### Minor Changes
