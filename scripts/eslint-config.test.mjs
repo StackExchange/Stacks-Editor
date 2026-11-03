@@ -2,7 +2,17 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { ESLint } from "eslint";
 
-const eslint = new ESLint();
+const eslint = new ESLint({
+    overrideConfig: {
+        languageOptions: {
+            parserOptions: {
+                // lintText supplies different source for existing project files.
+                // Keep CI from reusing an immutable program built from disk.
+                disallowAutomaticSingleRunInference: true,
+            },
+        },
+    },
+});
 
 async function lint(code, filePath) {
     const [result] = await eslint.lintText(code, { filePath });
