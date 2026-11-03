@@ -585,7 +585,7 @@ class LinkTooltip {
 
             toggleMark(view.state.schema.marks.link)(
                 state,
-                view.dispatch.bind(view) as (tr: Transaction) => void
+                view.dispatch.bind(view)
             );
         };
 

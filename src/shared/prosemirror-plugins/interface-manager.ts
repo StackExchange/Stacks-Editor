@@ -80,7 +80,7 @@ class MainInterfaceManagerKey extends StatefulPluginKey<InterfaceManagerState> {
         tr = toShow.setMeta(tr, {
             ...state,
             shouldShow: true,
-        } as T);
+        });
 
         // set metadata for this plugin
         const { containerGetter, dom } = this.getState(viewState);
@@ -136,7 +136,7 @@ class MainInterfaceManagerKey extends StatefulPluginKey<InterfaceManagerState> {
         tr = toHide.setMeta(tr, {
             ...state,
             shouldShow: false,
-        } as T);
+        });
 
         // set metadata for this plugin
         const { containerGetter, dom } = this.getState(viewState);

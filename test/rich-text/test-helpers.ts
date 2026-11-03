@@ -163,7 +163,7 @@ export class DataTransferMock implements DataTransfer {
                 },
                 length: 1,
                 [Symbol.iterator]: jest.fn(),
-            } as FileList;
+            };
         }
     }
 
