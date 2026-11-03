@@ -119,7 +119,9 @@ describe("link-editor", () => {
                 );
 
             // submit the form without filling in any inputs
-            updatedUploadContainer.submit();
+            updatedUploadContainer.dispatchEvent(
+                new Event("submit", { bubbles: true, cancelable: true })
+            );
 
             const inputContainer = updatedUploadContainer.querySelector(
                 ".js-link-editor-href"
@@ -139,7 +141,9 @@ describe("link-editor", () => {
                 );
 
             // submit the form without filling in any inputs
-            updatedUploadContainer.submit();
+            updatedUploadContainer.dispatchEvent(
+                new Event("submit", { bubbles: true, cancelable: true })
+            );
 
             let inputContainer = updatedUploadContainer.querySelector(
                 ".js-link-editor-href"
@@ -312,7 +316,9 @@ describe("link-editor", () => {
                         "https://www.example.com"
                     );
                     setFormValue(updatedUploadContainer, "text", newLinkText);
-                    updatedUploadContainer.submit();
+                    updatedUploadContainer.dispatchEvent(
+                        new Event("submit", { bubbles: true, cancelable: true })
+                    );
 
                     return false;
                 },
@@ -390,7 +396,9 @@ describe("link-editor", () => {
                         "https://www.example.org"
                     );
                     setFormValue(updatedUploadContainer, "text", newLinkText);
-                    updatedUploadContainer.submit();
+                    updatedUploadContainer.dispatchEvent(
+                        new Event("submit", { bubbles: true, cancelable: true })
+                    );
 
                     return false;
                 },
@@ -448,7 +456,9 @@ describe("link-editor", () => {
                         "https://www.example.com"
                     );
                     setFormValue(updatedUploadContainer, "text", newLinkText);
-                    updatedUploadContainer.submit();
+                    updatedUploadContainer.dispatchEvent(
+                        new Event("submit", { bubbles: true, cancelable: true })
+                    );
 
                     return false;
                 },
