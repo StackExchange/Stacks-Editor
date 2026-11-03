@@ -60,7 +60,7 @@ describe("image node views", () => {
         findInput(form, "alt").value = "changed alt text";
         findInput(form, "title").value = "changed title";
 
-        form.submit();
+        form.requestSubmit();
         jest.runAllTimers();
 
         expect(richView.content).toBe(

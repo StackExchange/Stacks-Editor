@@ -119,7 +119,7 @@ describe("link-editor", () => {
                 );
 
             // submit the form without filling in any inputs
-            updatedUploadContainer.submit();
+            updatedUploadContainer.requestSubmit();
 
             const inputContainer = updatedUploadContainer.querySelector(
                 ".js-link-editor-href"
@@ -139,7 +139,7 @@ describe("link-editor", () => {
                 );
 
             // submit the form without filling in any inputs
-            updatedUploadContainer.submit();
+            updatedUploadContainer.requestSubmit();
 
             let inputContainer = updatedUploadContainer.querySelector(
                 ".js-link-editor-href"
@@ -312,7 +312,7 @@ describe("link-editor", () => {
                         "https://www.example.com"
                     );
                     setFormValue(updatedUploadContainer, "text", newLinkText);
-                    updatedUploadContainer.submit();
+                    updatedUploadContainer.requestSubmit();
 
                     return false;
                 },
@@ -390,7 +390,7 @@ describe("link-editor", () => {
                         "https://www.example.org"
                     );
                     setFormValue(updatedUploadContainer, "text", newLinkText);
-                    updatedUploadContainer.submit();
+                    updatedUploadContainer.requestSubmit();
 
                     return false;
                 },
@@ -448,7 +448,7 @@ describe("link-editor", () => {
                         "https://www.example.com"
                     );
                     setFormValue(updatedUploadContainer, "text", newLinkText);
-                    updatedUploadContainer.submit();
+                    updatedUploadContainer.requestSubmit();
 
                     return false;
                 },
