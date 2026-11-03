@@ -602,13 +602,12 @@ const extendedCodeMarkDeserializer: typeof defaultCodeMarkDeserializer = {
         }
 
         // run the backing method to get where the markup should be placed
-        // TODO the types are incorrect, the correct return type is "string", not "void"
         let defaultResult = defaultCodeMarkDeserializer.open(
             state,
             mark,
             parent,
             index
-        ) as unknown as string;
+        );
 
         if (mark.attrs.markup) {
             defaultResult = defaultResult.replace(
@@ -628,13 +627,12 @@ const extendedCodeMarkDeserializer: typeof defaultCodeMarkDeserializer = {
         }
 
         // run the backing method to get where the markup should be placed
-        // TODO the types are incorrect, the correct return type is "string", not "void"
         let defaultResult = defaultCodeMarkDeserializer.close(
             state,
             mark,
             parent,
             index
-        ) as unknown as string;
+        );
 
         if (mark.attrs.markup) {
             // insert the `/` on html closing tags

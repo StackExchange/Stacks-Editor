@@ -13,7 +13,7 @@ import type { TagLinkOptions } from "../shared/view";
  * @param formattingText
  */
 export const setBlockTypeCommand = (formattingText: string): MenuCommand =>
-    <MenuCommand>setBlockType.bind(null, formattingText);
+    setBlockType.bind(null, formattingText);
 
 /**
  * Shortcut binding that takes in a formatting string and returns a matching wrapIn command
@@ -24,18 +24,16 @@ export const setBlockTypeCommand = (formattingText: string): MenuCommand =>
 export const wrapInCommand = (
     leadingText: string,
     trailingText: string | null
-): MenuCommand =>
-    <MenuCommand>toggleWrapIn.bind(null, leadingText, trailingText);
+): MenuCommand => toggleWrapIn.bind(null, leadingText, trailingText);
 
 export const blockWrapInCommand = (formattingText: string): MenuCommand =>
-    <MenuCommand>toggleBlockWrap.bind(null, formattingText);
+    toggleBlockWrap.bind(null, formattingText);
 
 export const insertRawTextCommand = (
     text: string,
     selectFrom?: number,
     selectTo?: number
-): MenuCommand =>
-    <MenuCommand>insertRawText.bind(null, text, selectFrom, selectTo);
+): MenuCommand => insertRawText.bind(null, text, selectFrom, selectTo);
 
 const newTextNode = (schema: Schema, content: string) => schema.text(content);
 

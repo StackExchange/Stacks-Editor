@@ -18,7 +18,6 @@ import {
     ExternalPluginProvider,
     IExternalPluginProvider,
 } from "../shared/editor-plugin";
-import type { Transaction } from "prosemirror-state";
 import {
     setPreviewVisibility,
     previewIsVisible,
@@ -188,7 +187,7 @@ export class StacksEditor implements View {
         toggleReadonly(
             false,
             this.editorView.state,
-            this.editorView.dispatch.bind(null) as (tr: Transaction) => void
+            this.editorView.dispatch.bind(null)
         );
         this.innerTarget.removeAttribute("readonly");
         this.innerTarget.removeAttribute("aria-readonly");
@@ -201,7 +200,7 @@ export class StacksEditor implements View {
         toggleReadonly(
             true,
             this.editorView.state,
-            this.editorView.dispatch.bind(null) as (tr: Transaction) => void
+            this.editorView.dispatch.bind(null)
         );
 
         this.innerTarget.setAttribute("readonly", "");
@@ -412,7 +411,7 @@ export class StacksEditor implements View {
         container.querySelectorAll(".js-editor-toggle-btn").forEach((el) => {
             el.addEventListener(
                 "change",
-                this.editorSwitcherChangeHandler.bind(this) as EventListener
+                this.editorSwitcherChangeHandler.bind(this)
             );
         });
 

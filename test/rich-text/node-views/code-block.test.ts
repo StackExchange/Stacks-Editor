@@ -2,7 +2,7 @@ import { EditorPlugin } from "../../../src";
 import { Node as ProseMirrorNode } from "prosemirror-model";
 import { RichTextEditor } from "../../../src/rich-text/editor";
 import { externalPluginProvider } from "../../test-helpers";
-import { EditorView, EditorProps } from "prosemirror-view";
+import { EditorView } from "prosemirror-view";
 import { CodeBlockView } from "../../../src/rich-text/node-views/code-block";
 
 const languages = ["javascript", "python", "ruby"];
@@ -15,7 +15,7 @@ const testCodeBlockPlugin: EditorPlugin = () => ({
                 view: EditorView,
                 getPos: () => number
             ) => new CodeBlockView(node, view, getPos, languages),
-        } as EditorProps["nodeViews"],
+        },
     },
 });
 

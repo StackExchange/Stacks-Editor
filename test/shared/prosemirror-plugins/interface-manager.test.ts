@@ -8,13 +8,13 @@ import { StatefulPlugin } from "../../../src/shared/prosemirror-plugins/plugin-e
 import { createState, createView } from "../../rich-text/test-helpers";
 
 const { key: childKey1, plugin: childPlugin1 } = createPlugin("child1", {
-    arbitraryData: "foo" as string,
-    shouldShow: false as boolean,
+    arbitraryData: "foo",
+    shouldShow: false,
 });
 
 const { key: childKey2, plugin: childPlugin2 } = createPlugin("child2", {
-    arbitraryData: "bar" as string,
-    shouldShow: false as boolean,
+    arbitraryData: "bar",
+    shouldShow: false,
 });
 
 describe("interface-manager plugin", () => {

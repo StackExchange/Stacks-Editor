@@ -1,9 +1,4 @@
-import {
-    EditorState,
-    Plugin,
-    PluginView,
-    Transaction,
-} from "prosemirror-state";
+import { EditorState, Plugin, PluginView } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
 import { docChanged, generateRandomId } from "../utils";
 import { EditorType } from "../view";
@@ -135,7 +130,7 @@ export class MenuView implements PluginView {
             if (foundCommand.command) {
                 foundCommand.command(
                     view.state,
-                    view.dispatch.bind(view) as (tr: Transaction) => void,
+                    view.dispatch.bind(view),
                     view
                 );
             }
