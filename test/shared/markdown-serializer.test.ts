@@ -27,7 +27,6 @@ function nonMarkdownRichView(domstringInput: string) {
     doc.innerHTML = domstringInput;
     editor.editorView.updateState(
         EditorState.create({
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             schema: oldState.schema,
             doc: DOMParser.fromSchema(oldState.schema).parse(doc),
             plugins: oldState.plugins,

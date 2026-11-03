@@ -4,7 +4,7 @@ export {};
  * NOTE: Add all exposed matches to `expect.extend` at the bottom
  * and add all the definitions below so TS can pick them up without error
  */
-/* eslint-disable @typescript-eslint/no-empty-interface */
+
 interface CustomMatchers<R = unknown> {
     /**
      * Compares a node dynamically via a deep tree structure, recursing through a document's content via the tree's content
@@ -32,13 +32,11 @@ export interface CompareTree {
 }
 
 declare global {
-    // eslint-disable-next-line @typescript-eslint/no-namespace
     namespace jest {
-        // eslint-disable-next-line @typescript-eslint/no-empty-interface
         interface Expect extends CustomMatchers {}
-        // eslint-disable-next-line @typescript-eslint/no-empty-interface
+
         interface Matchers<R> extends CustomMatchers<R> {}
-        // eslint-disable-next-line @typescript-eslint/no-empty-interface
+
         interface InverseAsymmetricMatchers extends CustomMatchers {}
     }
 }

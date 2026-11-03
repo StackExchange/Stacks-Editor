@@ -36,7 +36,7 @@ function getTagInfo(tag: string): TagInfo {
         };
     }
 
-    let tagType = TagType.unknown;
+    let tagType: TagType;
     // check if this tag looks like `</div>` or `</div malformed>`
     const isClosingTag = /^<\/\S+?.*?>$/.test(tag);
 
@@ -139,7 +139,7 @@ function tagInfoToToken(
         : tagInfo.isClosing
           ? "_close"
           : "_open";
-    let tokenType = "";
+    let tokenType: string;
 
     switch (tagInfo.type) {
         case TagType.unknown:

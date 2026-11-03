@@ -36,7 +36,6 @@ class SOMarkdownSerializerState extends MarkdownSerializerState {
         marks: MarkdownSerializerMarks,
         options: { [key: string]: unknown }
     ) {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error TODO constructor not exposed in types
         super(nodes, marks, options);
     }
@@ -280,7 +279,7 @@ const defaultMarkdownSerializerNodes: MarkdownSerializerNodes = {
 
         const title = node.attrs.title
             ? // @ts-expect-error TODO types might be wrong here
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/restrict-plus-operands
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-call
               " " + state.quote(node.attrs.title)
             : "";
 
@@ -452,7 +451,6 @@ const customMarkdownSerializerNodes: MarkdownSerializerNodes = {
                 return null;
             }
 
-            // eslint-disable-next-line @typescript-eslint/prefer-regexp-exec
             const match = alignment.match(/text-align:[ ]?(left|right|center)/);
 
             if (match && match[1]) {

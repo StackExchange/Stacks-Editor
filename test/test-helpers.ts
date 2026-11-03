@@ -64,7 +64,6 @@ export function getPluginViewInstance<T extends PluginView>(
     editorView: EditorView,
     type: PluginViewConstructor<T>
 ): T | null {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error not exposed to consumers, but I don't care :P
     return (editorView.pluginViews as PluginView[]).find(
         (pv) => pv instanceof type
@@ -77,7 +76,6 @@ export function getPluginByName(
     name: string
 ): Plugin | null {
     return state.plugins.find(
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-expect-error not exposed to consumers, but this is a hack for tests so...
         (p) => p.spec.key?.name === name || p.key === name + "$"
     );

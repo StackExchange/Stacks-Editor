@@ -590,8 +590,7 @@ class LinkTooltip {
         };
 
         this.editListener = () => {
-            let tr = view.state.tr;
-            tr = this.expandSelection(view.state, view.state.tr);
+            let tr = this.expandSelection(view.state, view.state.tr);
 
             const state = view.state.apply(tr);
             const { from, to } = state.selection;
@@ -651,12 +650,14 @@ export const linkEditorPlugin = (features: CommonmarkParserFeatures) =>
 
                 //get decoration for current selection
                 const sel = state.selection;
-                let selectionDecoration = null;
-
                 if (meta.visible && sel && sel.from !== sel.to) {
-                    selectionDecoration = Decoration.inline(sel.from, sel.to, {
-                        class: "bg-black-225",
-                    });
+                    const selectionDecoration = Decoration.inline(
+                        sel.from,
+                        sel.to,
+                        {
+                            class: "bg-black-225",
+                        }
+                    );
                     decorations = decorations.add(newState.doc, [
                         selectionDecoration,
                     ]);
