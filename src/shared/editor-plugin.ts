@@ -1,6 +1,6 @@
-import MarkdownIt from "markdown-it";
+import { MarkdownIt } from "markdown-it";
 import OrderedMap from "orderedmap";
-import { MarkdownParser } from "prosemirror-markdown";
+import type { MarkdownParser } from "./markdown-parser-types";
 import type { MarkSpec, NodeSpec, Schema, SchemaSpec } from "prosemirror-model";
 import type { Plugin } from "prosemirror-state";
 import { EditorProps } from "prosemirror-view";

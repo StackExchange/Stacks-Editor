@@ -1,5 +1,8 @@
-import MarkdownIt, { Token } from "markdown-it";
-import { defaultMarkdownParser, MarkdownParser } from "prosemirror-markdown";
+import markdownit, { MarkdownIt, Token, Env } from "markdown-it";
+import {
+    MarkdownParser,
+    defaultMarkdownParserTokens,
+} from "./markdown-parser-types";
 import { NodeType, Schema } from "prosemirror-model";
 import { IExternalPluginProvider } from "./editor-plugin";
 import { log } from "./logger";
@@ -14,7 +17,7 @@ import type { CommonmarkParserFeatures } from "./view";
 
 // extend the default markdown parser's tokens and add our own
 const customMarkdownParserTokens: MarkdownParser["tokens"] = {
-    ...defaultMarkdownParser.tokens,
+    ...defaultMarkdownParserTokens,
     pre: { block: "pre" },
     kbd: { mark: "kbd" },
     sup: { mark: "sup" },
@@ -115,11 +118,14 @@ const customMarkdownParserTokens: MarkdownParser["tokens"] = {
         node: "image",
         getAttrs: (tok: Token) => {
             const attrs: Record<string, string> = {
-                src: tok.attrGet("src"),
-                width: tok.attrGet("width"),
-                height: tok.attrGet("height"),
-                alt: tok.attrGet("alt") || tok.children?.[0]?.content || null,
-                title: tok.attrGet("title"),
+                src: tok.attrGet("src")?.toString() ?? null,
+                width: tok.attrGet("width")?.toString() ?? null,
+                height: tok.attrGet("height")?.toString() ?? null,
+                alt:
+                    tok.attrGet("alt")?.toString() ||
+                    tok.children?.[0]?.content ||
+                    null,
+                title: tok.attrGet("title")?.toString() ?? null,
             };
 
             if (tok.markup === "reference") {
@@ -219,11 +225,6 @@ class SOMarkdownParser extends MarkdownParser {
     // TODO map the (private?) backing property not exposed by the typings
     declare schema: Schema;
 
-    // TODO the types are wrong on this one...
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    tokens: MarkdownParser["tokens"];
-
     constructor(
         schema: Schema,
         tokenizer: MarkdownIt,
@@ -246,15 +247,8 @@ class SOMarkdownParser extends MarkdownParser {
  * Extended MarkdownIt so we can peek into the tokens during parse
  * TODO we can likely remove this extended version now that we've moved internal items to plugins
  */
-class SOMarkdownIt extends MarkdownIt {
-    constructor(
-        presetName: MarkdownIt.PresetName,
-        options?: MarkdownIt.Options
-    ) {
-        super(presetName, options);
-    }
-
-    parse(src: string, env: unknown) {
+class SOMarkdownIt extends markdownit {
+    parse(src: string, env: Env) {
         const parsed = super.parse(src, env);
         log("Sanitized markdown token tree", parsed);
         return parsed;

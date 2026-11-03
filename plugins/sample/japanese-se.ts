@@ -1,4 +1,4 @@
-import MarkdownIt, { ParserInline, StateInline, Token } from "markdown-it";
+import { MarkdownIt, StateInline, Token } from "markdown-it";
 import type { EditorPlugin } from "../../src";
 
 // simple proof of concept that adds furigana support from https://japanese.meta.stackexchange.com/questions/806/how-should-i-format-my-questions-on-japanese-language-se/807#807
@@ -115,44 +115,48 @@ function findEndChar(
     return labelEnd;
 }
 
-const mdJSEPlugin: ParserInline.RuleInline = function (state, silent) {
-    const startCharCode = state.src.charCodeAt(state.pos);
+const mdJSEPlugin: Parameters<MarkdownIt["inline"]["ruler"]["push"]>[1] =
+    function (state, silent) {
+        const startCharCode = state.src.charCodeAt(state.pos);
 
-    // quick fail on first character
-    if (startCharCode !== 0x7b /* { */ && startCharCode !== 0x3010 /* 【 */) {
-        return false;
-    }
+        // quick fail on first character
+        if (
+            startCharCode !== 0x7b /* { */ &&
+            startCharCode !== 0x3010 /* 【 */
+        ) {
+            return false;
+        }
 
-    const endCharCode =
-        startCharCode === 0x7b /* { */ ? 0x7d /* } */ : 0x3011; /* 】 */
+        const endCharCode =
+            startCharCode === 0x7b /* { */ ? 0x7d /* } */ : 0x3011; /* 】 */
 
-    const endCharPos = findEndChar(
-        state,
-        state.pos + 1,
-        false,
-        startCharCode,
-        endCharCode
-    );
+        const endCharPos = findEndChar(
+            state,
+            state.pos + 1,
+            false,
+            startCharCode,
+            endCharCode
+        );
 
-    if (endCharPos < 0) {
-        return false;
-    }
+        if (endCharPos < 0) {
+            return false;
+        }
 
-    if (!silent) {
-        const totalContent = state.src.slice(state.pos, endCharPos + 1);
-        const text = totalContent.slice(1, -1);
+        if (!silent) {
+            const totalContent = state.src.slice(state.pos, endCharPos + 1);
+            const text = totalContent.slice(1, -1);
 
-        let token = state.push("jse_furigana_open", "span", 1);
-        token.attrSet("markup", String.fromCharCode(startCharCode));
-        token.content = text;
+            let token = state.push("jse_furigana_open", "span", 1);
+            token.attrSet("markup", String.fromCharCode(startCharCode));
+            token.content = text;
 
-        token = state.push("text", "", 0);
-        token.content = text;
+            token = state.push("text", "", 0);
+            token.content = text;
 
-        token = state.push("jse_furigana_close", "span", -1);
-        token.attrSet("markup", String.fromCharCode(endCharCode));
-    }
+            token = state.push("jse_furigana_close", "span", -1);
+            token.attrSet("markup", String.fromCharCode(endCharCode));
+        }
 
-    state.pos = endCharPos + 1;
-    return true;
-};
+        state.pos = endCharPos + 1;
+        return true;
+    };
