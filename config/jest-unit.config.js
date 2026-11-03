@@ -9,6 +9,7 @@ module.exports = {
     testPathIgnorePatterns: [
         "/node_modules/",
         "<rootDir>/dist/",
+        "<rootDir>/scripts/",
         String.raw`\.e2e\.test`,
     ],
     setupFilesAfterEnv: [
