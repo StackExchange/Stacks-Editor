@@ -1,12 +1,8 @@
 import type { EditorPlugin } from "../../src";
 import { log } from "../../src/shared/logger";
-import { Ruler } from "markdown-it";
 
-const ruleNames = (ruler: Ruler<unknown>): string => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore This is a hack to get at the underbelly of the rule engine
-    return (ruler.__rules__ as { name: string }[]).map((r) => r.name);
-};
+const ruleNames = (ruler: { __rules__: { name: string }[] }): string[] =>
+    ruler.__rules__.map((rule) => rule.name);
 
 /**
  * Adds the ability to configure logging for the parser stages.

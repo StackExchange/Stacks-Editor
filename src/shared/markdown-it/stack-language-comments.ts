@@ -1,4 +1,4 @@
-import MarkdownIt, { StateCore, StateBlock } from "markdown-it";
+import { MarkdownIt, StateCore, StateBlock } from "markdown-it";
 
 function langCommentParser(
     matcher: RegExp,
@@ -98,7 +98,7 @@ function sanitizeCodeBlockLangs(state: StateCore) {
     // TODO we need to support a default language at either parse or render time, will revisit this later in a separate plugin
     for (const token of state.tokens) {
         if (token.type === "stack_language_all_comment") {
-            currentLanguageAll = token.attrGet("language");
+            currentLanguageAll = token.attrGet("language")?.toString();
             break;
         }
     }
@@ -113,14 +113,14 @@ function sanitizeCodeBlockLangs(state: StateCore) {
             currentBlock.type === "stack_language_comment" &&
             nextBlock?.type === "code_block"
         ) {
-            const language = currentBlock.attrGet("language");
+            const language = currentBlock.attrGet("language")?.toString();
 
             // the "info string" for code fences gets set into Token.info, so reuse that
             nextBlock.info = language;
         }
         // later language-all blocks reset the "default" language for all following code_blocks
         else if (currentBlock.type === "stack_language_all_comment") {
-            currentLanguageAll = currentBlock.attrGet("language");
+            currentLanguageAll = currentBlock.attrGet("language")?.toString();
         }
         // set the language value on unmarked code blocks if we have a default language set
         else if (
