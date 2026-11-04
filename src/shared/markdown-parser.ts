@@ -1,8 +1,5 @@
 import markdownit, { MarkdownIt, Token, Env } from "markdown-it";
-import {
-    MarkdownParser,
-    defaultMarkdownParserTokens,
-} from "./markdown-parser-types";
+import { MarkdownParser, defaultMarkdownParser } from "prosemirror-markdown";
 import { NodeType, Schema } from "prosemirror-model";
 import { IExternalPluginProvider } from "./editor-plugin";
 import { log } from "./logger";
@@ -17,7 +14,7 @@ import type { CommonmarkParserFeatures } from "./view";
 
 // extend the default markdown parser's tokens and add our own
 const customMarkdownParserTokens: MarkdownParser["tokens"] = {
-    ...defaultMarkdownParserTokens,
+    ...defaultMarkdownParser.tokens,
     pre: { block: "pre" },
     kbd: { mark: "kbd" },
     sup: { mark: "sup" },

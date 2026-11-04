@@ -118,7 +118,7 @@
         "prosemirror-inputrules": "^1.4.0",
         "prosemirror-keymap": "^1.2.2",
         "prosemirror-lezer": "^0.0.5",
-        "prosemirror-markdown": "^1.12.0",
+        "prosemirror-markdown": "https://github.com/StackExchange/prosemirror-markdown/archive/ae92b4af23832ed0fdfe8a3e84651e62ba30301e.tar.gz",
         "prosemirror-model": "^1.24.1",
         "prosemirror-schema-basic": "^1.2.2",
         "prosemirror-schema-list": "^1.3.0",

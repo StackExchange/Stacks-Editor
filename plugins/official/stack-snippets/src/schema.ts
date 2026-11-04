@@ -1,5 +1,5 @@
 import { MarkdownIt, Token, StateBlock } from "markdown-it";
-import type { MarkdownParser } from "../../../../src/shared/markdown-parser-types";
+import type { MarkdownParser } from "prosemirror-markdown";
 import { Utils, MarkdownSerializerNodes } from "../../../../src";
 import {
     assertAttrValue,
