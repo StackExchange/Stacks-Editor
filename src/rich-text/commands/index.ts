@@ -145,7 +145,7 @@ export function toggleTagLinkCommand(
             return true;
         }
 
-        let tr = state.tr;
+        let tr: Transaction;
         const nodeCheck = nodeTypeActive(state.schema.nodes.tagLink);
         if (nodeCheck(state)) {
             const selectedText = state.selection.content().content.firstChild

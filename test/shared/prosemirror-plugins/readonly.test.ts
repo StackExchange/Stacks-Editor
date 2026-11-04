@@ -81,10 +81,10 @@ describe("readonly plugin", () => {
             expect(tr).toBeUndefined();
 
             // toggle on for next bit...
-            ({ state, tr } = toggleAndApplyState(state, true));
+            ({ state } = toggleAndApplyState(state, true));
 
             // now, set to "on" when already on
-            ({ state, tr } = toggleAndApplyState(state, true));
+            ({ tr } = toggleAndApplyState(state, true));
             expect(tr).toBeUndefined();
         });
     });

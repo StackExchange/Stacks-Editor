@@ -18,7 +18,6 @@ function parse_tag_link(
         return false;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     const labelEnd = state.md.helpers.parseLinkLabel(
         state,
         state.pos + 1,
@@ -51,7 +50,7 @@ function parse_tag_link(
         token = state.push("text", "", 0);
         token.content = tagName;
 
-        token = state.push("tag_link_close", "a", -1);
+        state.push("tag_link_close", "a", -1);
     }
 
     state.pos = labelEnd + 1;

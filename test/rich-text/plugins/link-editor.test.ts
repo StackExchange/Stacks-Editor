@@ -763,7 +763,7 @@ describe("link-editor", () => {
 
 function getDecorations(state: EditorState) {
     const pState = state.plugins
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
         // @ts-expect-error this isn't a public field, but I don't care
         .find((p) => p.spec?.key?.name === "LinkEditor")
         ?.getState(state) as {
@@ -854,7 +854,6 @@ function setFormValue(form: HTMLFormElement, name: string, value: string) {
 }
 
 function getViewContainer(editor: LinkEditor) {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-expect-error this isn't a public field, but I don't care
     return editor.viewContainer;
 }

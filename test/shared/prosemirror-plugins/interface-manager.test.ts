@@ -245,7 +245,7 @@ describe("interface-manager plugin", () => {
 
             let tr = childKey1.showInterfaceTr(state, {
                 arbitraryData: "foo1",
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
                 // @ts-expect-error we want to pass this in anyways to ensure it is not taken into account
                 shouldShow: false, // NOTE: this one is overwritten by showInterface
             });
@@ -258,7 +258,7 @@ describe("interface-manager plugin", () => {
 
             tr = childKey1.hideInterfaceTr(state, {
                 arbitraryData: "foo2",
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+
                 // @ts-expect-error we want to pass this in anyways to ensure it is not taken into account
                 shouldShow: true, // NOTE: this one is overwritten by hideInterface
             });

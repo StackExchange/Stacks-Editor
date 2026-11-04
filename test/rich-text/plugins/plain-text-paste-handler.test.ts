@@ -225,7 +225,7 @@ describe("plain-text-paste-handler", () => {
             );
 
             const doc = parseHtmlToDoc(pasteData["text/html"], true);
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+
             const handled = plainTextPasteHandler.props.handlePaste.bind(
                 plainTextPasteHandler
             )(view, evt, doc) as boolean;

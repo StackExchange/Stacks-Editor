@@ -38,13 +38,14 @@
         "build:dev": "webpack --config config/webpack.dev.js",
         "build:gh-pages": "webpack --config config/webpack.dev.js --mode=production --",
         "build:stats": "webpack --config config/webpack.prod.js --entry ./src/index.ts --profile --json > stats.json",
-        "lint": "prettier --check . && eslint .",
+        "lint": "prettier --check . && eslint . && npm run test:lint-config",
         "format": "prettier --write .",
         "test": "npm run test:unit && npm run test:e2e",
         "test:unit": "jest --config config/jest-unit.config.js",
         "test:e2e": "npx playwright test --config config/playwright.config.ts",
         "test:package": "npm run prepublishOnly && node --test scripts/package-artifact.test.mjs",
         "test:release-config": "node --test scripts/stable-release-config.test.mjs",
+        "test:lint-config": "node --test scripts/eslint-config.test.mjs",
         "release": "npm run build && changeset publish",
         "version": "changeset version && npm install --package-lock-only",
         "prepublishOnly": "npm run build && tsc --module ES6 --sourceMap false",
@@ -61,16 +62,12 @@
             "@stackoverflow"
         ]
     },
-    "eslintConfig": {
-        "extends": [
-            "./config/.eslintrc.js"
-        ]
-    },
     "devDependencies": {
         "@commitlint/cli": "^21.2.2",
         "@commitlint/config-conventional": "^21.2.2",
         "@changesets/changelog-github": "^1.0.0",
         "@changesets/cli": "^3.0.3",
+        "@eslint/js": "^10.0.1",
         "@playwright/test": "^1.63.0",
         "@stackoverflow/commitlint-config": "^1.0.0",
         "@stackoverflow/prettier-config": "^1.0.0",
@@ -78,15 +75,15 @@
         "@stackoverflow/tsconfig": "^1.0.0",
         "@types/jest": "^30.0.0",
         "@types/markdown-it": "^14.0.0",
-        "@typescript-eslint/eslint-plugin": "^8.46.2",
-        "@typescript-eslint/parser": "^8.46.2",
+        "@typescript-eslint/eslint-plugin": "^8.71.2",
+        "@typescript-eslint/parser": "^8.71.2",
         "clean-webpack-plugin": "^4.0.0",
         "css-loader": "^7.1.1",
         "cssnano": "^9.0.0",
-        "eslint": "^8.57.0",
+        "eslint": "^10.14.0",
         "eslint-config-prettier": "^10.1.8",
         "eslint-plugin-jest": "^29.16.6",
-        "eslint-plugin-no-unsanitized": "^4.0.2",
+        "eslint-plugin-no-unsanitized": "^4.1.5",
         "highlight.js": "^11.9.0",
         "html-loader": "^5.0.0",
         "html-webpack-plugin": "^5.6.0",

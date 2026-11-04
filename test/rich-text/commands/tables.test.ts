@@ -269,7 +269,7 @@ describe("table commands", () => {
         });
 
         it("should do nothing when outside of a table", () => {
-            let state = applySelection(
+            const state = applySelection(
                 createState(
                     "<p>some paragraph</p><table><thead><tr><th>original cell</th></tr></thead></table>",
                     []
@@ -279,7 +279,7 @@ describe("table commands", () => {
 
             expect(state.selection.$from.node().type.name).toBe("paragraph");
 
-            state = runCommand(state, insertTableRowBeforeCommand, false);
+            runCommand(state, insertTableRowBeforeCommand, false);
         });
     });
 
@@ -430,7 +430,7 @@ describe("table commands", () => {
         });
 
         it("should do nothing when outside of a table", () => {
-            let state = applySelection(
+            const state = applySelection(
                 createState(
                     "<p>some paragraph</p><table><thead><tr><th>original cell</th></tr></thead></table>",
                     []
@@ -440,7 +440,7 @@ describe("table commands", () => {
 
             expect(state.selection.$from.node().type.name).toBe("paragraph");
 
-            state = runCommand(state, insertTableColumnAfterCommand, false);
+            runCommand(state, insertTableColumnAfterCommand, false);
         });
     });
 

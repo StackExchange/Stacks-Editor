@@ -1,4 +1,3 @@
-/* eslint-disable jest/no-commented-out-tests */
 import { test, expect, Page } from "@playwright/test";
 import { editorSelector, switchMode } from "../../e2e-helpers";
 

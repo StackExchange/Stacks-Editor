@@ -33,7 +33,7 @@ function isPlainObject(obj: unknown): boolean {
 function mergeObject(object1: unknown, object2: unknown): unknown {
     // if both are arrays, shallow merge (else, non-object merge)
     if (object1 instanceof Array && object2 instanceof Array) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         return [...object1, ...object2];
     }
 
