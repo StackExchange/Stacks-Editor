@@ -1,4 +1,5 @@
 import MarkdownIt from "markdown-it";
+import { MarkdownParser } from "prosemirror-markdown";
 import { Plugin } from "prosemirror-state";
 import { ExternalPluginProvider } from "../../src/shared/editor-plugin";
 import { testRichTextSchema } from "../rich-text/test-helpers";
@@ -58,6 +59,33 @@ describe("editor-plugin", () => {
                 plugin4,
                 plugin1,
             ]);
+        });
+
+        it("should build rich-text plugin factories with finalized services", () => {
+            const staticPlugin = new Plugin({});
+            const generatedPlugin = new Plugin({});
+            const factory = jest.fn(() => generatedPlugin);
+            const provider = new ExternalPluginProvider(
+                [
+                    () => ({
+                        richText: {
+                            plugins: [staticPlugin],
+                            pluginFactories: [factory],
+                        },
+                    }),
+                ],
+                null
+            );
+            const context = {
+                schema: testRichTextSchema,
+                markdownParser: null as unknown as MarkdownParser,
+            };
+
+            expect(provider.getRichTextPlugins(context)).toEqual([
+                staticPlugin,
+                generatedPlugin,
+            ]);
+            expect(factory).toHaveBeenCalledWith(context);
         });
 
         it("should aggregate nodeViews", () => {
