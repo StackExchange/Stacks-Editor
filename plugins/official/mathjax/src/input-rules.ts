@@ -69,7 +69,7 @@ function isInsideCodeSpan(source: string, index: number): boolean {
 
 /** Build a non-empty, single-line capture that stops at the closing delimiter. */
 function sourceCapture(close: string): string {
-    return `((?:(?!${escapeRegExp(close)})[^\\n])+?)`;
+    return `((?:(?:\\\\.)|(?!${escapeRegExp(close)})[^\\n])+?)`;
 }
 
 /** Convert a completed inline formula into an atomic rich-text node. */
@@ -129,13 +129,13 @@ function inlineMathInputRule(
     };
 }
 
-/** Convert a completed, paragraph-sized display formula into a block node. */
+/** Convert completed display math into a block and preserve trailing text. */
 function blockMathInputRule([open, close]: MathJaxDelimiter): MathJaxRule {
     const expression = new RegExp(
         `^${escapeRegExp(open)}${sourceCapture(close)}${escapeRegExp(close)}$`
     );
 
-    const handler: MathJaxRule["handler"] = (state, match, start) => {
+    const handler: MathJaxRule["handler"] = (state, match, start, end) => {
         const source = match[1];
         const closeIndex = match[0].length - close.length;
         if (!source.trim() || isEscaped(match.input, closeIndex)) {
@@ -144,7 +144,13 @@ function blockMathInputRule([open, close]: MathJaxDelimiter): MathJaxRule {
 
         const nodeType = state.schema.nodes[blockNodeName];
         const paragraph = state.doc.resolve(start);
-        if (!nodeType || !paragraph.parent.isTextblock) {
+        const formulaEnd = state.doc.resolve(end);
+        if (
+            !nodeType ||
+            !paragraph.parent.isTextblock ||
+            paragraph.parentOffset !== 0 ||
+            !paragraph.sameParent(formulaEnd)
+        ) {
             return null;
         }
 
@@ -167,11 +173,17 @@ function blockMathInputRule([open, close]: MathJaxDelimiter): MathJaxRule {
             openDelimiter: open,
             closeDelimiter: close,
         });
+        const trailingContent = paragraph.parent.content.cut(
+            formulaEnd.parentOffset
+        );
         const tr = state.tr.replaceWith(blockStart, blockEnd, mathNode);
         const afterMath = blockStart + mathNode.nodeSize;
 
-        if (afterMath === tr.doc.content.size) {
-            const trailingParagraph = state.schema.nodes.paragraph.create();
+        if (trailingContent.size || afterMath === tr.doc.content.size) {
+            const trailingParagraph = paragraph.parent.type.create(
+                paragraph.parent.attrs,
+                trailingContent
+            );
             tr.insert(afterMath, trailingParagraph);
             tr.setSelection(TextSelection.create(tr.doc, afterMath + 1));
         }
@@ -216,9 +228,18 @@ export function mathJaxTransactionRules(options?: MathJaxOptions): Plugin {
     const rules = buildMathJaxRules(options);
 
     return new Plugin({
-        appendTransaction: (transactions, _, state) => {
+        appendTransaction: (transactions, oldState, state) => {
+            const inputRulePlugins = oldState.plugins.filter(
+                (plugin) =>
+                    (plugin.spec as { isInputRules?: boolean }).isInputRules
+            );
+            const isInputRuleUndo =
+                transactions.some((transaction) => transaction.docChanged) &&
+                inputRulePlugins.some((plugin) => plugin.getState(oldState));
+
             if (
                 !transactions.some((transaction) => transaction.docChanged) ||
+                isInputRuleUndo ||
                 transactions.some((transaction) =>
                     state.plugins.some(
                         (plugin) =>

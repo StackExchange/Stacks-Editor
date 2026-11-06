@@ -15,9 +15,12 @@ export const mathJaxPlugin: (options?: MathJaxOptions) => EditorPlugin =
     (options) => () => ({
         richText: {
             plugins: [
-                mathJaxPasteHandler(options),
                 mathJaxInputRules(options),
                 mathJaxTransactionRules(options),
+            ],
+            pluginFactories: [
+                ({ markdownParser }) =>
+                    mathJaxPasteHandler(markdownParser, options),
             ],
             nodeViews: {
                 math_inline: (node) => new MathJaxView(node, false, options),

@@ -1,18 +1,25 @@
-import { EditorState } from "prosemirror-state";
+import { EditorState, TextSelection } from "prosemirror-state";
 import { EditorView } from "prosemirror-view";
-import { Slice } from "prosemirror-model";
+import { Fragment, Slice } from "prosemirror-model";
+import { undoInputRule } from "prosemirror-inputrules";
 import { richTextInputRules } from "../../../../src/rich-text/inputrules";
+import { buildMarkdownParser } from "../../../../src/shared/markdown-parser";
 import { stackOverflowValidateLink } from "../../../../src/shared/utils";
 import { MathJaxOptions, MathJaxRenderRequest } from "../src/common";
 import { buildMathJaxSchema, mathJaxExternalProvider } from "./test-helpers";
 import { StacksEditor } from "../../../../src/stacks-editor/editor";
-import { EditorType } from "../../../../src/shared/view";
+import { defaultParserFeatures, EditorType } from "../../../../src/shared/view";
 import { mathJaxPlugin } from "../src/mathJaxPlugin";
 
 /** Create an editor view configured with the core and MathJax input rules. */
 function createView(options?: MathJaxOptions): EditorView {
     const provider = mathJaxExternalProvider(options);
     const schema = buildMathJaxSchema(options);
+    const markdownParser = buildMarkdownParser(
+        defaultParserFeatures,
+        schema,
+        provider
+    );
     return new EditorView(document.createElement("div"), {
         state: EditorState.create({
             schema,
@@ -20,11 +27,21 @@ function createView(options?: MathJaxOptions): EditorView {
                 richTextInputRules(schema, {
                     validateLink: stackOverflowValidateLink,
                 }),
-                ...provider.plugins.richText,
+                ...provider.getRichTextPlugins({ schema, markdownParser }),
             ],
         }),
         nodeViews: provider.nodeViews,
     });
+}
+
+function clipboardEvent(text: string, html = ""): ClipboardEvent {
+    return {
+        clipboardData: {
+            getData: (type: string) => (type === "text/html" ? html : text),
+            files: [],
+            types: html ? ["text/plain", "text/html"] : ["text/plain"],
+        },
+    } as unknown as ClipboardEvent;
 }
 
 /** Type text through ProseMirror's handleTextInput pipeline. */
@@ -126,13 +143,7 @@ describe("MathJax rich-text input rules", () => {
 
     it("renders a pasted formula", () => {
         const view = createView();
-        const event = {
-            clipboardData: {
-                getData: () => "Formula: $x^2$",
-                files: [],
-                types: ["text/plain"],
-            },
-        } as unknown as ClipboardEvent;
+        const event = clipboardEvent("Formula: $x^2$");
 
         const handled = view.someProp("handlePaste", (handler) =>
             handler(view, event, Slice.empty)
@@ -152,13 +163,7 @@ describe("MathJax rich-text input rules", () => {
         });
         const content =
             "Texto normal. Precio escapado: \\$5. Código: `$not_math$`. Fórmula: $x^2 + y^2$";
-        const event = {
-            clipboardData: {
-                getData: () => content,
-                files: [],
-                types: ["text/plain"],
-            },
-        } as unknown as ClipboardEvent;
+        const event = clipboardEvent(content);
 
         editor.editorView.someProp("handlePaste", (handler) =>
             handler(editor.editorView, event, Slice.empty)
@@ -183,13 +188,7 @@ describe("MathJax rich-text input rules", () => {
         });
         const content =
             "The quadratic formula is:\n\n$$x = \\frac{-b \\pm \\sqrt{b^2 - 4ac}}{2a}$$\n\nAnd here is inline math: $x_i = y^2 + 1$.";
-        const event = {
-            clipboardData: {
-                getData: () => content,
-                files: [],
-                types: ["text/plain"],
-            },
-        } as unknown as ClipboardEvent;
+        const event = clipboardEvent(content);
 
         const handled = editor.editorView.someProp("handlePaste", (handler) =>
             handler(editor.editorView, event, Slice.empty)
@@ -213,6 +212,128 @@ describe("MathJax rich-text input rules", () => {
             { type: "math_inline", source: "x_i = y^2 + 1" },
         ]);
         editor.destroy();
+    });
+
+    it("does not delete trailing paragraph text when display math is completed", () => {
+        const view = createView();
+
+        typeText(view, "$$x$ KEEP THIS");
+        view.dispatch(
+            view.state.tr.setSelection(TextSelection.create(view.state.doc, 5))
+        );
+        typeText(view, "$");
+
+        expect(view.state.doc.childCount).toBe(2);
+        expect(view.state.doc.child(0).type.name).toBe("math_block");
+        expect(view.state.doc.child(0).attrs.source).toBe("x");
+        expect(view.state.doc.child(1).type.name).toBe("paragraph");
+        expect(view.state.doc.child(1).textContent).toBe(" KEEP THIS");
+        expect(view.state.selection.from).toBe(2);
+    });
+
+    it("allows the standard input-rule undo to restore literal math", () => {
+        const view = createView();
+
+        typeText(view, "$x$");
+        expect(view.state.doc.firstChild.firstChild.type.name).toBe(
+            "math_inline"
+        );
+
+        const undone = undoInputRule(view.state, (transaction) =>
+            view.dispatch(transaction)
+        );
+
+        expect(undone).toBe(true);
+        expect(view.state.doc.textContent).toBe("$x$");
+        expect(view.state.doc.firstChild.firstChild.isText).toBe(true);
+    });
+
+    it("renders typed inline math containing an escaped dollar", () => {
+        const view = createView();
+
+        typeText(view, "$x+\\$y$");
+
+        expect(view.state.doc.firstChild.firstChild.type.name).toBe(
+            "math_inline"
+        );
+        expect(view.state.doc.firstChild.firstChild.attrs.source).toBe(
+            "x+\\$y"
+        );
+    });
+
+    it("includes math and escaped dollars in copied plain text", () => {
+        const editor = new StacksEditor(
+            document.createElement("div"),
+            "Before $x^2$ after. Price: \\$5",
+            { editorPlugins: [mathJaxPlugin()] }
+        );
+
+        expect(
+            editor.document.textBetween(0, editor.document.content.size, "\n\n")
+        ).toBe("Before $x^2$ after. Price: \\$5");
+        editor.destroy();
+    });
+
+    it.each(["~~text~~", "| A | B |\n| - | - |\n| 1 | 2 |"])(
+        "lets unsupported non-math paste use normal handling: %s",
+        (content) => {
+            const view = createView();
+
+            expect(() =>
+                view.someProp("handlePaste", (handler) =>
+                    handler(view, clipboardEvent(content), Slice.empty)
+                )
+            ).not.toThrow();
+            expect(
+                view.someProp("handlePaste", (handler) =>
+                    handler(view, clipboardEvent(content), Slice.empty)
+                )
+            ).toBeFalsy();
+        }
+    );
+
+    it("preserves rich marks, links, and images while converting math", () => {
+        const view = createView();
+        const { schema } = view.state;
+        const strong = schema.marks.strong.create();
+        const link = schema.marks.link.create({
+            href: "https://example.com/",
+        });
+        const paragraph = schema.nodes.paragraph.create(null, [
+            schema.text("Bold phrase", [strong]),
+            schema.text(" and "),
+            schema.text("linked phrase", [link]),
+            schema.text(" with $x$. "),
+            schema.nodes.image.create({
+                src: "https://example.com/image.png",
+                alt: "example",
+            }),
+        ]);
+        const slice = new Slice(Fragment.from(paragraph), 0, 0);
+
+        const handled = view.someProp("handlePaste", (handler) =>
+            handler(
+                view,
+                clipboardEvent(
+                    "Bold phrase and linked phrase with $x$.",
+                    '<p><strong>Bold phrase</strong> and <a href="https://example.com/">linked phrase</a> with $x$.</p>'
+                ),
+                slice
+            )
+        );
+
+        expect(handled).toBe(true);
+        const pasted = view.state.doc.firstChild;
+        expect(pasted.child(0).marks[0].type.name).toBe("strong");
+        expect(pasted.child(2).marks[0].type.name).toBe("link");
+        expect(
+            pasted.content.content.some(
+                (node) => node.type.name === "math_inline"
+            )
+        ).toBe(true);
+        expect(
+            pasted.content.content.some((node) => node.type.name === "image")
+        ).toBe(true);
     });
 
     it.each([

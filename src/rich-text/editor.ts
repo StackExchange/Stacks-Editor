@@ -141,7 +141,10 @@ export class RichTextEditor extends BaseView {
                         ),
                         readonlyPlugin(),
                         spoilerToggle,
-                        ...this.externalPluginProvider.plugins.richText,
+                        ...this.externalPluginProvider.getRichTextPlugins({
+                            schema: this.finalizedSchema,
+                            markdownParser: this.markdownParser,
+                        }),
                         //Keymaps are executed in order and can be consuming, so we let external plugins register first
                         ...allKeymaps(
                             this.finalizedSchema,

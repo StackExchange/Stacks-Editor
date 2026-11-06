@@ -14,7 +14,7 @@ const mathBlockToken = "math_block";
 const escapedDollarToken = "math_escaped_dollar";
 
 /** Determine whether the character at an index is escaped. */
-function isEscaped(source: string, index: number): boolean {
+export function isEscaped(source: string, index: number): boolean {
     let backslashes = 0;
     for (let i = index - 1; i >= 0 && source[i] === "\\"; i--) {
         backslashes++;
@@ -23,7 +23,7 @@ function isEscaped(source: string, index: number): boolean {
 }
 
 /** Find an unescaped closing delimiter in Markdown source. */
-function findClosingDelimiter(
+export function findClosingDelimiter(
     source: string,
     close: string,
     from: number
@@ -277,6 +277,7 @@ export const mathJaxRichTextNodeSpec: { [name: string]: NodeSpec } = {
         group: "inline",
         atom: true,
         selectable: true,
+        leafText: () => "\\$",
         toDOM: () => [
             "span",
             { class: "stacks-editor-math-escaped-dollar" },
@@ -289,6 +290,10 @@ export const mathJaxRichTextNodeSpec: { [name: string]: NodeSpec } = {
         atom: true,
         selectable: true,
         attrs: mathAttributes,
+        leafText: (node) =>
+            `${node.attrs.openDelimiter as string}${node.attrs.source as string}${
+                node.attrs.closeDelimiter as string
+            }`,
         toDOM: (node) => [
             "span",
             { class: "stacks-editor-math stacks-editor-math-inline" },
@@ -302,6 +307,10 @@ export const mathJaxRichTextNodeSpec: { [name: string]: NodeSpec } = {
         atom: true,
         selectable: true,
         attrs: mathAttributes,
+        leafText: (node) =>
+            `${node.attrs.openDelimiter as string}${node.attrs.source as string}${
+                node.attrs.closeDelimiter as string
+            }`,
         toDOM: (node) => [
             "div",
             { class: "stacks-editor-math stacks-editor-math-display" },

@@ -39,6 +39,15 @@ type AddMenuItemsCallback = (
     coreMenus: MenuBlock[]
 ) => MenuBlock[];
 
+/** Values available after the rich-text schema and Markdown parser are built. */
+export interface RichTextPluginContext {
+    schema: Schema;
+    markdownParser: MarkdownParser;
+}
+
+/** Builds a ProseMirror plugin that depends on finalized rich-text services. */
+export type RichTextPluginFactory = (context: RichTextPluginContext) => Plugin;
+
 /** Describes the properties that can be used for extending commonmark support in the editor */
 type MarkdownExtensionProps = {
     /**
@@ -75,6 +84,11 @@ export interface EditorPluginSpec {
          * @see {@type {import("prosemirror-state").EditorStateConfig["plugins"]}}
          */
         plugins?: Plugin[];
+        /**
+         * ProseMirror plugins that need the finalized schema or configured
+         * Markdown parser.
+         */
+        pluginFactories?: RichTextPluginFactory[];
     };
 
     /** Commonmark editor extensions */
@@ -127,6 +141,9 @@ export interface IExternalPluginProvider {
     /** All aggregated nodeViews */
     readonly nodeViews: EditorProps["nodeViews"];
 
+    /** Gets all rich-text plugins after finalized services are available. */
+    getRichTextPlugins(context: RichTextPluginContext): Plugin[];
+
     // TODO TYPES
     /**
      * Gets the final, aggregated schema
@@ -169,6 +186,8 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
 
     private _nodeViews: IExternalPluginProvider["nodeViews"] = {};
 
+    private _richTextPluginFactories: RichTextPluginFactory[] = [];
+
     /** {@inheritDoc IExternalPluginProvider.plugins} */
     get plugins() {
         return this._plugins;
@@ -182,6 +201,14 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
     /** {@inheritDoc IExternalPluginProvider.nodeViews} */
     get nodeViews() {
         return this._nodeViews;
+    }
+
+    /** {@inheritDoc IExternalPluginProvider.getRichTextPlugins} */
+    getRichTextPlugins(context: RichTextPluginContext): Plugin[] {
+        return [
+            ...this._plugins.richText,
+            ...this._richTextPluginFactories.map((factory) => factory(context)),
+        ];
     }
 
     protected menuCallbacks: AddMenuItemsCallback[] = [];
@@ -263,6 +290,10 @@ export class ExternalPluginProvider implements IExternalPluginProvider {
 
         config.richText?.plugins?.forEach((plugin) => {
             this._plugins.richText.push(plugin);
+        });
+
+        config.richText?.pluginFactories?.forEach((factory) => {
+            this._richTextPluginFactories.push(factory);
         });
 
         this.schemaCallbacks.push(config.extendSchema);
