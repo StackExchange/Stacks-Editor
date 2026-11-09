@@ -1,5 +1,5 @@
-import MarkdownIt, { Token } from "markdown-it";
-import { MarkdownParser } from "prosemirror-markdown";
+import { MarkdownIt, Token, StateBlock } from "markdown-it";
+import type { MarkdownParser } from "prosemirror-markdown";
 import { Utils, MarkdownSerializerNodes } from "../../../../src";
 import {
     assertAttrValue,
@@ -61,8 +61,10 @@ export const stackSnippetMarkdownSerializer: MarkdownSerializerNodes = {
     },
 };
 
-const parseSnippetBlockForMarkdownIt: MarkdownIt.ParserBlock.RuleBlock = (
-    state: MarkdownIt.StateBlock,
+const parseSnippetBlockForMarkdownIt: Parameters<
+    MarkdownIt["block"]["ruler"]["push"]
+>[1] = (
+    state: StateBlock,
     startLine: number,
     endLine: number,
     silent: boolean

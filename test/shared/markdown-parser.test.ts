@@ -23,6 +23,40 @@ const markdownParser = buildMarkdownParser(
 );
 
 describe("SOMarkdownParser", () => {
+    it("should normalize numeric image attributes from markdown-it plugins", () => {
+        const parser = buildMarkdownParser(
+            features,
+            testRichTextSchema,
+            externalPluginProvider([
+                () => ({
+                    markdown: {
+                        parser: {},
+                        serializers: { nodes: {}, marks: {} },
+                        alterMarkdownIt(md) {
+                            md.core.ruler.push(
+                                "numeric-image-size",
+                                (state) => {
+                                    const image = state.tokens[1].children[0];
+                                    image.attrSet("width", 640);
+                                    image.attrSet("height", 480);
+                                }
+                            );
+                        },
+                    },
+                }),
+            ])
+        );
+        const image = parser.parse("![alt](https://example.com/image.png)")
+            .firstChild.firstChild;
+        expect(image.attrs).toMatchObject({
+            src: "https://example.com/image.png",
+            width: "640",
+            height: "480",
+            alt: "alt",
+            title: null,
+        });
+    });
+
     describe("html support", () => {
         it.skip("should support inline html", () => {
             const doc = markdownParser.parse("<strong>test</strong>");

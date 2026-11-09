@@ -1,4 +1,4 @@
-import MarkdownIt, { StateCore, Token } from "markdown-it";
+import { MarkdownIt, StateCore, Token } from "markdown-it";
 
 function tightenList(tokens: Token[]) {
     let iteratedElements = 0;
