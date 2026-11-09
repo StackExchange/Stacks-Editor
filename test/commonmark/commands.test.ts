@@ -489,6 +489,18 @@ some text`;
                     "\nth"
                 );
             });
+
+            it("multi line, selection spanning a fenced code block", () => {
+                const content = "> ```\n> Some code\n> ```";
+                const state = createState(content, 0, content.length);
+                const command = commands.setBlockTypeCommand(">");
+
+                expect(state).transactionSuccess(
+                    command,
+                    "```\nSome code\n```",
+                    "```\nSome code\n```"
+                );
+            });
         });
 
         /* SWAP */
@@ -604,6 +616,11 @@ some text`;
                 commands.matchLeadingBlockCharacters("## Heading level 2");
 
             expect(command).toBe("## ");
+        });
+
+        it("return blockquote leading characters before a code fence", () => {
+            expect(commands.matchLeadingBlockCharacters("> ```")).toBe("> ");
+            expect(commands.matchLeadingBlockCharacters("> ~~~")).toBe("> ");
         });
     });
 
