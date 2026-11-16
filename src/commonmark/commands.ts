@@ -197,7 +197,7 @@ export function matchLeadingBlockCharacters(text: string) {
     // If text is not an ordered list block, check for other block types
     if (!match) {
         // TODO HACK assumes all non-ordered list block types are non-letter characters followed by a single space
-        match = /^[^a-zA-Z0-9]+\s{1}(?=[a-zA-Z0-9_*[!]|$)+/.exec(text)?.[0];
+        match = /^[^a-zA-Z0-9]+\s{1}(?=[a-zA-Z0-9_*[!`~]|$)+/.exec(text)?.[0];
     }
 
     return match || "";
