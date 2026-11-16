@@ -1,4 +1,4 @@
-import MarkdownIt, { StateCore, Token } from "markdown-it";
+import markdownit, { MarkdownIt, StateCore, Token } from "markdown-it";
 
 type LinkReference = { title?: string; href?: string };
 type LinkReferences = { [key: string]: LinkReference };
@@ -38,7 +38,7 @@ function setLinkReference(
             label = match[2];
         }
 
-        const normalizedLabel = new MarkdownIt().utils.normalizeReference(
+        const normalizedLabel = new markdownit().utils.normalizeReference(
             label
         );
         reference = references[normalizedLabel];
@@ -67,8 +67,8 @@ function setLinkReference(
           : "shortcut";
 
     token.markup = "reference";
-    token.meta = (token.meta as Record<string, unknown>) || {};
-    (token.meta as Record<string, unknown>)["reference"] = {
+    token.meta = token.meta || {};
+    token.meta["reference"] = {
         ...reference,
         label,
         type: refLinkType,

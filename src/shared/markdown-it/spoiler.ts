@@ -1,5 +1,5 @@
-import MarkdownIt, { StateBlock } from "markdown-it";
-import ParentType = MarkdownIt.StateBlock.ParentType;
+import markdownit, { MarkdownIt, StateBlock } from "markdown-it";
+type ParentType = StateBlock["parentType"];
 
 type BlockquoteExtOptions = {
     followingCharRegex: RegExp;
@@ -19,7 +19,7 @@ function blockquoteExt(
     endLine: number,
     silent: boolean
 ): boolean {
-    const md = new MarkdownIt();
+    const md = new markdownit();
     const isSpace = (code: number) => md.utils.isSpace(code);
     // NOTE: we're keeping the source as close to upstream as possible, so ignore errors like this
     // eslint-disable-next-line no-var
