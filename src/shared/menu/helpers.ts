@@ -135,7 +135,7 @@ export function makeMenuLinkEntry(
     dom.title = title;
     dom.setAttribute("aria-label", title);
     dom.dataset.controller = "s-tooltip";
-    dom.dataset.sTooltipPlacement = "bottom";
+    dom.dataset.sTooltipPlacement = "top";
 
     // create the svg svg-icon-bg element
     const icon = document.createElement("span");
@@ -268,7 +268,7 @@ export function makeMenuButton(
     button.title = title;
     button.setAttribute("aria-label", title);
     button.dataset.controller = "s-tooltip";
-    button.dataset.sTooltipPlacement = "bottom";
+    button.dataset.sTooltipPlacement = "top";
     button.dataset.key = key;
     button.type = "button";
 

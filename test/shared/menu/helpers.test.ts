@@ -20,6 +20,7 @@ describe("menu helpers", () => {
         expect(button.nodeName).toBe("BUTTON");
         expect(button.classList).toContain(`js-${key}`);
         expect(button.title).toBe(title);
+        expect(button.dataset.sTooltipPlacement).toBe("top");
         (cssClasses || []).forEach((c) => {
             expect(button.classList).toContain(c);
         });
@@ -57,6 +58,7 @@ describe("menu helpers", () => {
         expect(link.nodeName).toBe("A");
         expect(link.target).toBe("_blank");
         expect(link.href).toBe(href);
+        expect(link.dataset.sTooltipPlacement).toBe("top");
         expect(link.classList).toContain(`js-${key}`);
 
         expect(link.children).toHaveLength(1);
